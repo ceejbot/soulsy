@@ -1,0 +1,22 @@
+{
+    "name": "lamastinyhud",
+    "version-string": "1.4.4",
+    "description": "hud element for skyrim",
+    "homepage": "https://github.com/mlthelama/LamasTinyHUD",
+    "license": "GPL-2.0-or-later",
+    "dependencies": [
+        "simpleini",
+        "commonlibsse-ng",
+        "nanosvg",
+        {
+            "name": "imgui",
+            "features": [
+                "dx11-binding",
+                "win32-binding"
+            ]
+        }
+    ],
+  "overrides": [
+    { "name": "imgui", "version": "1.88" }
+  ]
+}
