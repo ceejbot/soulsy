@@ -1,5 +1,6 @@
-set windows-shell := ["powershell"]
+set windows-shell := ["pwsh.exe", "-Command"]
 set shell := ["bash", "-uc"]
+set dotenv-load := true
 
 # List available recipes.
 help:
@@ -13,17 +14,15 @@ help:
 
 # Set up the repo for the first time.
 setup:
-    git submodule update --init --recursive
     cmake --preset vs2022-windows
 
 # Build for debugging.
-@debug: sources
+@debug:
     cmake --build --preset vs2022-windows --config Debug
 
 # Build for release.
-@release: sources
+@release:
     cmake --build --preset vs2022-windows --config Release
-    # cargo build --release
 
 # Run the same tests we run in CI.
 @ci:
@@ -35,17 +34,17 @@ setup:
     cargo clippy --fix
     cargo +nightly fmt
 
-# Generate source files list for CMake.
+# Generate source files list for CMake. Only works in WSL.
 sources:
     #!/bin/bash
     set -e
     echo "set(headers \${headers}" > test.txt
-    headers=$(find . -name \*\.h | sort)
+    headers=$(find ./src -name \*\.h | sort)
     echo "${headers}" >> test.txt
     echo ")" >> test.txt
     echo "set(sources \${sources}" >> test.txt
     echo "    \${headers}" >> test.txt
-    cpps=$(find . -name \*\.cpp | sort)
+    cpps=$(find ./src -name \*\.cpp | sort)
     echo "${cpps}" >> test.txt
     echo ")" >> test.txt
     sed -e 's/^\.\//    /' test.txt > cmake/sourcelist.cmake

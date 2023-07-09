@@ -65,16 +65,17 @@ add_custom_command(
     COMMENT "Running cargo..."
 )
 
-set_target_properties(
-    soulsy
-    PROPERTIES ADDITIONAL_CLEAN_FILES ${CARGO_TARGET_DIR}
-)
-
 # Set up our version header.
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
-    @ONLY
+	${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in
+	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
+	@ONLY
+)
+
+configure_file(
+	${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
+	${CMAKE_CURRENT_BINARY_DIR}/version.rc
+	@ONLY
 )
 
 if(MSVC)
@@ -122,6 +123,11 @@ add_library(
     ${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc
     SoulsyHUD.toml
+)
+
+set_target_properties(
+    ${PROJECT_NAME}
+    PROPERTIES ADDITIONAL_CLEAN_FILES ${CARGO_TARGET_DIR}
 )
 
 target_compile_features(
@@ -221,9 +227,9 @@ target_link_libraries(
 
 # Windows-only configuration (from rust bridge example;)
 # if(WIN32)
-#     target_link_libraries(soulsy userenv ws2_32 bcrypt)
+#     target_link_libraries(${PROJECT_NAME} userenv ws2_32 bcrypt)
 #     set_target_properties(
-#         soulsy
+#         ${PROJECT_NAME}
 #         PROPERTIES
 #         MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"
 #         RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}
