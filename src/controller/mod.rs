@@ -1,12 +1,20 @@
-pub mod cycles;
 pub mod controller;
+pub mod cycles;
+pub mod layout;
 pub mod settings;
 
-pub use settings::*;
-pub use controller::*;
+pub use controller::handle_key_event;
+pub use layout::layout;
+pub use settings::{settings, Settings};
 
-pub fn handle_key_event(key: u32) -> bool {
-    let action = Action::from(key);
-    let controller = controller();
-    controller.handle_action(action)
+use crate::plugin::HudLayout;
+
+pub fn boxed_settings() -> Box<Settings> {
+    let v = settings();
+    Box::new(v.clone()) // grimacing emoji
+}
+
+pub fn boxed_layout() -> Box<HudLayout> {
+    let v = layout();
+    Box::new(v.clone()) // grimacing emoji
 }

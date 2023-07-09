@@ -1,0 +1,77 @@
+{
+  "modName": "SoulsyHUD",
+  "displayName": "SoulsyHUD",
+  "minMcmVersion": 11,
+  "cursorFillMode": "topToBottom",
+  "pages": [
+    {
+      "pageDisplayName": "$SoulsyHUD_HotkeysPage",
+      "cursorFillMode": "topToBottom",
+      "content": [
+        {
+          "text": "$SoulsyHUD_Hotkeys_KeyBindings",
+          "type": "header"
+        },
+        {
+          "id": "uPowerCycleKey:Controls",
+          "text": "$SoulsyHUD_Controls_PowerCycleKey_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Controls_PowerCycleKey_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "uUtilityCycleKey:Controls",
+          "text": "$SoulsyHUD_Controls_UtilityCycleKey_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Controls_UtilityCycleKey_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "uLeftCycleKey:Controls",
+          "text": "$SoulsyHUD_Controls_LeftCycleKey_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Controls_LeftCycleKey_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "uRightCycleKey:Controls",
+          "text": "$SoulsyHUD_Controls_RightCycleKey_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Controls_RightCycleKey_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "uRightCycleKey:Controls",
+          "text": "$SoulsyHUD_Controls_RightCycleKey_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Controls_RightCycleKey_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "bFade:Controls",
+          "text": "$SoulsyHUD_Controls_Fade_OptionText",
+          "type": "toggle",
+          "help": "$SoulsyHUD_Controls_Fade_InfoText",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        }
+      ]
+    }
+  ]
+}

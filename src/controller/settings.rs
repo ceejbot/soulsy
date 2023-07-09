@@ -1,8 +1,8 @@
+use std::path::PathBuf;
+
 use anyhow::Result;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
-
-use std::path::PathBuf;
 
 static SETTINGS_PATH: &str = "./data/SKSE/Plugins/SoulsySettings.toml";
 
@@ -33,7 +33,7 @@ pub struct Settings {
 impl Settings {
     /// Read a settings object from a toml file.
     pub fn read_from_file() -> Result<Self> {
-        let buf = std::fs::read_to_string(&PathBuf::from(SETTINGS_PATH))?;
+        let buf = std::fs::read_to_string(PathBuf::from(SETTINGS_PATH))?;
         let settings = toml::from_str::<Settings>(&buf)?;
         Ok(settings)
     }
