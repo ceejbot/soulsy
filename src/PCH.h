@@ -25,15 +25,17 @@
 namespace logger = SKSE::log;
 using namespace std::literals;
 
-namespace stl {
-    using namespace SKSE::stl;
+namespace stl
+{
+	using namespace SKSE::stl;
 
-    template <class T>
-    void write_thunk_call() {
-        auto& trampoline = SKSE::GetTrampoline();
-        const REL::Relocation<std::uintptr_t> hook{ T::id, T::offset };
-        T::func = trampoline.write_call<5>(hook.address(), T::thunk);
-    }
+	template <class T>
+	void write_thunk_call()
+	{
+		auto& trampoline = SKSE::GetTrampoline();
+		const REL::Relocation<std::uintptr_t> hook{ T::id, T::offset };
+		T::func = trampoline.write_call<5>(hook.address(), T::thunk);
+	}
 }
 
 #define EXTERN_C extern "C"

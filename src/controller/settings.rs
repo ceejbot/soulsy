@@ -44,7 +44,7 @@ impl Settings {
     /// with a boolean indicating success or failure.
     fn write_to_file(&self) -> Result<()> {
         let toml = toml::to_string(self)?;
-        std::fs::write(&SETTINGS_PATH, toml)?;
+        std::fs::write(SETTINGS_PATH, toml)?;
         Ok(())
     }
 

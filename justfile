@@ -29,10 +29,11 @@ setup:
     cargo nextest run
     cargo clippy
 
-# Fix clippy lints and format.
+# Fix clippy lints and format both Rust & C++.
 @lint:
-    cargo clippy --fix
+    cargo clippy --fix --allow-staged
     cargo +nightly fmt
+    find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
 
 # Generate source files list for CMake. Only works in WSL.
 sources:

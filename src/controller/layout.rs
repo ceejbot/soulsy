@@ -36,8 +36,8 @@ pub fn layout() -> &'static HudLayout {
             Ok(v) => v,
             Err(e) => {
                 log::warn!("Failed to read settings file; continuing with defaults; {e:?}");
-                let s = HudLayout::default();
-                s
+
+                HudLayout::default()
             }
         };
         LAYOUT.set(layout).unwrap();

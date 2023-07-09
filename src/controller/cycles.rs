@@ -24,8 +24,9 @@ public:
 };
  */
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 enum ItemKind {
+    #[default]
     Empty,
     Weapon,
     Magic,
@@ -40,12 +41,6 @@ enum ItemKind {
     Lantern,
     Torch,
     Mask,
-}
-
-impl Default for ItemKind {
-    fn default() -> Self {
-        ItemKind::Empty
-    }
 }
 
 // Haven't yet figured out how to serialize this to toml or anything yet.
@@ -89,11 +84,7 @@ impl CycleData {
             return None;
         }
         cycle.rotate_left(amount);
-        if let Some(next) = cycle.first() {
-            Some(next.clone())
-        } else {
-            None
-        }
+        cycle.first().cloned()
     }
 
     pub fn toggle(&mut self, which: Action, item: CycleEntry) -> ToggleResults {
