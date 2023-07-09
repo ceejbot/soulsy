@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="512"
+   width="512"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="destruction_fire.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false" />
+  <g
+     transform="matrix(4.3445057,0,0,4.3445057,23.043874,-48.224012)"
+     id="g4">
+    <path
+       d="M 42.15,36.05 Q 39.45,20 53.65,11.1 52.35,17.35 66.2,37 80.05,56.6 72,74.65 84.35,66.1 81.45,43.25 104.3,82.85 76.6,100.65 48.95,118.35 48.7,128.95 39.65,109.8 49.05,96.1 58.35,82.45 55.15,68.8 48,80.95 36.55,90.5 29,96.75 32.4,106.75 8.35,84.15 18.45,68.4 q 10.4,-12.2 16,-25.15 6,8.05 3.95,17.6 11.3,-7.05 3.75,-24.8"
+       fill="#e08300"
+       fill-rule="evenodd"
+       stroke="none"
+       id="path2" />
+  </g>
+</svg>

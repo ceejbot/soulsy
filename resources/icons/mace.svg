@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="512"
+   width="512"
+   version="1.1"
+   id="svg1034"
+   sodipodi:docname="mace.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1038" />
+  <sodipodi:namedview
+     id="namedview1036"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false" />
+  <g
+     transform="matrix(0.52175685,0,0,0.52175685,87.811679,-5.8958509)"
+     id="g1032">
+    <path
+       d="m 356.45,289.8 72.05,21.15 -72.05,21.7 q -4.7,52.2 -31,95.55 l -7.35,10.7 441.4,441.15 17,-16.7 L 813,899.9 721.15,991.85 684.6,955.3 700.55,939.1 259.1,497.85 q -4.7,3.4 -9.7,6.55 -44.65,27.65 -98.15,32.35 L 129.8,609.1 108.45,536.5 Q 45,530.55 -4.6,492.95 L -107.45,549.05 -51.1,445.9 Q -89.2,396.05 -94.65,332.4 L -168.3,310.7 -94.65,289 Q -89.2,225.6 -50.8,175.95 L -107.75,72.3 -3.8,128.7 Q 45.5,91.4 108.45,85.6 l 21.35,-73.55 21.95,73.3 q 63.75,5.55 113.9,43.35 L 369,72.3 312.6,175.95 q 38.1,50.45 43.85,113.85"
+       fill="#ffffff"
+       fill-rule="evenodd"
+       stroke="none"
+       id="path1030" />
+  </g>
+</svg>

@@ -6,6 +6,8 @@ use once_cell::sync::Lazy; // 1.3.1
 use super::cycles::*;
 use super::settings::settings;
 
+// File is named control.rs to avoid module inception.
+
 /// There can be only one. Not public because we want access managed.
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
 

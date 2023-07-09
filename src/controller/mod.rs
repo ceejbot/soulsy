@@ -1,9 +1,9 @@
-pub mod controller;
+pub mod control;
 pub mod cycles;
 pub mod layout;
 pub mod settings;
 
-pub use controller::handle_key_event;
+pub use control::handle_key_event;
 pub use layout::layout;
 pub use settings::{settings, Settings};
 

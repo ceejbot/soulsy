@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="512"
+   width="512"
+   version="1.1"
+   id="svg393"
+   sodipodi:docname="sword_two_handed.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs397" />
+  <sodipodi:namedview
+     id="namedview395"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false" />
+  <g
+     transform="matrix(0.49444713,0,0,0.49444713,164.35423,-0.42028006)"
+     id="g391">
+    <path
+       d="m 272.8,769.15 -605.2,-607.4 0.2,-159.8 160.7,-1.1 606.3,606.35 -47.65,47.65 46.05,46 63.3,-63.3 12.75,-34.05 10.05,-7.9 q 14.9,-14.95 30.7,0.9 l 30.65,30.6 q 15.75,15.8 0.85,30.75 l -8.95,8.9 -33.2,10.5 -70.25,70.25 181.4,181.3 16.15,-16.15 35.25,35.2 -88.55,88.5 -35.25,-35.2 15.45,-15.45 -181.35,-181.3 -71.1,71.1 -11.4,34.15 -7.8,7.8 q -10.5,10.5 -20.95,7.05 -5.55,-1.55 -10.85,-6.85 l -30.6,-30.6 q -5.3,-5.35 -6.9,-10.9 -3.4,-10.4 7.1,-20.95 l 7.8,-7.8 34.15,-15 64,-64 -46.05,-46 -46.8,46.75"
+       fill="#ffffff"
+       fill-rule="evenodd"
+       stroke="none"
+       id="path389" />
+  </g>
+</svg>

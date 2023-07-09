@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="512"
+   width="512"
+   version="1.1"
+   id="svg266"
+   sodipodi:docname="crossbow.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs270" />
+  <sodipodi:namedview
+     id="namedview268"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false" />
+  <g
+     transform="matrix(4.1320096,0,0,4.1320096,-2.4145475,-1.9983815)"
+     id="g264">
+    <path
+       d="m 87.05,70.15 -4.15,4.2 41.6,41.6 -8.05,8.05 -41.6,-41.6 -4.1,4 L 48.25,63.85 64.5,47.6 87.05,70.15 M 90.9,13.4 90.05,13 88.45,12.2 Q 77.1,7.1 63.8,6.7 45.8,6.15 36.25,19.3 l 22,22 L 41.95,57.6 20.1,35.8 Q 16.2,38.45 13.3,41.85 6,50.6 6.4,64.1 q 0.25,9.65 3.05,18.15 1.35,4.25 3.25,8.2 l 0.4,0.7 77.8,-77.75 m 1.55,-5.75 q 2.05,-0.1 4,0.85 2,1.05 2.7,2.55 0.7,1.5 -0.4,2.65 -0.9,1.1 -3.05,1.3 H 95.4 L 93.35,14.75 93,14.55 92.9,14.5 14.2,93.25 l 0.15,0.25 0.3,2.55 q -0.15,2.1 -1.35,3.15 -1.1,0.95 -2.6,0.3 Q 9.2,98.8 8.15,96.8 7.2,94.9 7.3,92.75 7.45,90.65 8.6,89.65 L 9.35,89.2 6.95,84.75 Q 1.05,72.65 0.6,58.3 0.2,44.75 7.55,36.05 q 2.85,-3.35 6.8,-6 L 8.9,24.55 v -3.7 L 21.45,8.2 h 3.75 l 5.25,5.3 Q 39.95,0.35 58.05,0.9 74.9,1.4 88.65,9.6 l 0.2,0.1 0.45,-0.75 q 1,-1.15 3.15,-1.3"
+       fill="#ffffff"
+       fill-rule="evenodd"
+       stroke="none"
+       id="path262" />
+  </g>
+</svg>

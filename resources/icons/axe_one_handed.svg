@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="512"
+   width="512"
+   version="1.1"
+   id="svg1232"
+   sodipodi:docname="axe_one_handed.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1236" />
+  <sodipodi:namedview
+     id="namedview1234"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false" />
+  <g
+     transform="matrix(0.55423252,0,0,0.55423252,91.185104,-0.02771261)"
+     id="g1230">
+    <path
+       d="M 459.3,367.7 Q 441.4,364.9 424,363 296.4,351.95 194.35,422.75 l 410.55,410.35 13.65,-13.85 29.75,29.8 -74.85,74.8 L 543.7,894.1 556.65,881.15 146.1,470.8 l -35.5,35.7 -20,-19.95 q -67.2,-16.4 -125.45,31.25 -13.6,-72.3 18.1,-138.65 l -30,-29.95 35.5,-35.75 -42.3,-42.5 48.25,-48.05 42.35,42.5 Q 68.3,225 84,178.65 111.45,98.5 91.65,0.05 154.2,21.1 208.2,54.7 360.85,149.1 447.35,339.8 l 11.95,27.9 M 78.3,306.45 154.6,383 q 15.95,-15.95 15.95,-38.5 0,-22.55 -15.95,-38.25 -15.95,-15.95 -38.05,-15.75 -22.35,0 -38.25,15.95"
+       fill="#ffffff"
+       fill-rule="evenodd"
+       stroke="none"
+       id="path1228" />
+  </g>
+</svg>

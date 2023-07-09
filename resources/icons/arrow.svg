@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="512"
+   width="512"
+   version="1.1"
+   id="svg1105"
+   sodipodi:docname="arrow.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1109" />
+  <sodipodi:namedview
+     id="namedview1107"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false" />
+  <g
+     transform="matrix(0.62041806,0,0,0.62041806,113.07119,-47.337902)"
+     id="g1103">
+    <path
+       d="m 93.9,172.25 -72.2,72.25 291.95,291.9 148.7,12 L 643,729.3 492.35,715.15 456.9,750.65 470.8,901.55 290.1,720.7 278.15,571.9 l -292,-291.95 -71,70.8 -97.4,-275.9 276.15,97.4"
+       fill="#ffffff"
+       fill-rule="evenodd"
+       stroke="none"
+       id="path1101" />
+  </g>
+</svg>

@@ -1,43 +1,20 @@
-[Controls]
-uTopActionKey = 10
-uRightActionKey = 11
-uBottomActionKey = 12
-uLeftActionKey = 13
-uToggleKey = 27
-uControllerSet = 0
-fConfigButtonHoldTime = 5
-uConfigPosition = 0
-sTriggerConfig = 
-sExecuteKeyTop = 
-sExecuteKeyBottom = 
-uShowHideKey = 26
-bBottomExecuteKeyComboOnly = 0
-bKeyPressToEnterEdit = 0
-uKeyToEnterEdit = 22
-uLeftOrOverwriteEditKey = 38
-uRemoveKey = 37
+bIsDebug = false
 
-[Page]
-uPositionSelect = 4
-uPageList = 0
-sPage = 
-sPosition = 
-uType = 0
-uHandSelection = 0
-uSlotAction = 0
-sFormName =
-sSelectedItemForm =
-uTypeLeft = 0
-uSlotActionLeft = 0
-sFormNameLeft = 
-sSelectedItemFormLeft =
-sResetSlot = 
-sAddUnarmed =
-sActorValue = 
+[Font]
+bLoad = true
+sName = "futura-book-bt.ttf"
+fSize = 20
+bChineseFull = 0
+bChineseSimplifiedCommon = 0
+bCyrillic = 0
+bJapanese = 0
+bKorean = 0
+bThai = 0
+bVietnamese = 0
 
 [HudSetting]
-sDisplayResolutionWidth =
-sDisplayResolutionHeight = 
+sDisplayResolutionWidth = 0
+sDisplayResolutionHeight = 0
 fHudImageScaleWidth = 0.16
 fHudImageScaleHeight = 0.16
 fHudImagePositionWidth = 200
@@ -70,6 +47,7 @@ fCurrentShoutOffsetX = -10
 fCurrentShoutOffsetY = -225
 
 [GraphicSetting]
+bDrawKeyBackground = 0
 uBackgroundTransparency = 255
 uBackgroundIconTransparency = 255
 uIconTransparency = 125
@@ -99,42 +77,6 @@ bDrawCurrentShoutText = 0
 fCurrentShoutFontSize = 20
 fItemNameTextFontSize = 20
 bDrawPageId = 0
-
-[MiscSetting]
-bActionCheck = 0
-bEmptyHandSetting = 0
-bHideOutsideCombat = 0
-fFadeTimerOutsideCombat = 5
-bDisableInputQuickLoot = 0
-bEldenDemonSouls = 0
-uMaxPageCount = 4
-uMaxAmmunitionType = 3
-bCheckDuplicateItems = 1
-bUnEquipAmmo = 0
-bOnlyFavoriteAmmo = 0
-sActiveSetting =
-uSettingList = 0
-sSettingName = 
-sCreateSetting =
-bPreventConsumptionOfLastDynamicPotion = 1
-bGroupPotions = 0
-fPotionMinPerfect = 0.7
-fPotionMaxPerfect = 1.2
-bDisableReEquipOfActives = 0
-bSortArrowByQuantity = 0
-bPoisonDoseOverwrite = 0
-uApplyPoisonDose = 5
-bTryDualCastTopSpell = 0
-
-[CleanupSetting]
-bAutoCleanup = 0
-bCleanArmor = 1
-bCleanWeapon = 1
-bCleanSpell = 1
-bCleanAlchemyItem = 0
-bCleanShout = 1
-bCleanLight = 0
-bCleanScroll = 0
 
 [AnimationSetting]
 uAlphaSlotAnimation = 51

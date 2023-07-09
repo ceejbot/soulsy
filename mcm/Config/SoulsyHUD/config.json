@@ -5,11 +5,11 @@
   "cursorFillMode": "topToBottom",
   "pages": [
     {
-      "pageDisplayName": "$SoulsyHUD_HotkeysPage",
+      "pageDisplayName": "$SoulsyHUD_MainPage_Title",
       "cursorFillMode": "topToBottom",
       "content": [
         {
-          "text": "$SoulsyHUD_Hotkeys_KeyBindings",
+          "text": "$SoulsyHUD_Controls_HeaderText",
           "type": "header"
         },
         {
@@ -53,22 +53,77 @@
           }
         },
         {
-          "id": "uRightCycleKey:Controls",
-          "text": "$SoulsyHUD_Controls_RightCycleKey_OptionText",
+          "id": "uUtilityActivateKey:Controls",
+          "text": "$SoulsyHUD_Controls_ActivateKey_OptionText",
           "type": "keymap",
-          "help": "$SoulsyHUD_Controls_RightCycleKey_InfoText",
+          "help": "$SoulsyHUD_Controls_ActivateKey_InfoText",
           "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
         },
         {
-          "id": "bFade:Controls",
+          "id": "uShowHideKey:Controls",
+          "text": "$SoulsyHUD_Controls_ShowHideKey_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Controls_ShowHideKey_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "text": "$SoulsyHUD_Options_Options_HeaderText",
+          "type": "header"
+        },
+        {
+          "id": "uMaxCycleLength:Options",
+          "text": "$SoulsyHUD_Options_Length_OptionText",
+          "type": "slider",
+          "help": "$SoulsyHUD_Options_Length_InfoText",
+          "valueOptions": {
+            "min": 2,
+            "max": 15,
+            "step": 1,
+            "formatString": "{0}",
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "uEquipDelay:Options",
+          "text": "$SoulsyHUD_Options_EquipDelay_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Options_EquipDelay_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "min": 0,
+            "max": 2500,
+            "step": 50,
+            "formatString": "{0}",
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "bFade:Options",
           "text": "$SoulsyHUD_Controls_Fade_OptionText",
           "type": "toggle",
           "help": "$SoulsyHUD_Controls_Fade_InfoText",
           "valueOptions": {
-            "sourceType": "ModSettingBool"
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "fFadeDelay:Options",
+          "text": "$SoulsyHUD_Controls_ShowHideKey_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Controls_ShowHideKey_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "min": 0,
+            "max": 5000,
+            "step": 100,
+            "formatString": "{0}",
+            "sourceType": "ModSettingInt"
           }
         }
       ]

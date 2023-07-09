@@ -1,4 +1,4 @@
-use super::controller::Action;
+use super::control::Action;
 
 // TODO: This should move to settings.
 static MAX_CYCLE_LEN: usize = 10;
@@ -51,6 +51,10 @@ pub struct CycleEntry {
     kind: ItemKind,
     // form: &TESForm,
     // slot: &BGSEquipSlot
+}
+
+impl CycleEntry {
+    // implement a from function for C++-side data
 }
 
 #[derive(Debug, Clone, Default)]

@@ -10,10 +10,13 @@ use controller::{boxed_settings, handle_key_event, layout};
 mod plugin {
     // Any shared structs, whose fields will be visible to both languages.
 
+    /// This struct exposes its fields because the UI implementation frequently
+    /// refers to them. It is read-only for the C++ side. The values are filled out
+    /// by lazily reading the layout toml file.
     #[derive(Deserialize, Serialize, Debug, Clone, Default)]
     pub struct HudLayout {
-        // Enable debug logging.
-        debug: bool,
+        /// Enable debug logging.
+        debug: bool
     }
 
     extern "Rust" {

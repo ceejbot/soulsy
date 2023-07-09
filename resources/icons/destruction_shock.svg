@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="512"
+   width="512"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="destruction_shock.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false" />
+  <g
+     id="g4"
+     transform="matrix(29.767442,0,0,29.767442,92.279069,-1.2e-6)">
+    <path
+       d="M 11,0 6.95,6.4 H 10.7 L 0,17.2 5.45,8.7 H 1.1 L 6.65,0 H 11"
+       fill="#ffd054"
+       fill-rule="evenodd"
+       stroke="none"
+       id="path2" />
+  </g>
+</svg>
