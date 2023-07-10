@@ -10,7 +10,7 @@
 #include "include/string_util.h"
 
 namespace handle {
-    using mcm = config::mcm_setting;
+    using mcm = config::MCMGlue;
     using position_type = position_setting::position_type;
 
     page_handle* page_handle::get_singleton() {
@@ -128,8 +128,8 @@ namespace handle {
         draw->offset_key_y = offset_y;
 
         //same for now
-        draw->offset_text_x = config::mcm_setting::get_slot_count_text_offset();
-        draw->offset_text_y = config::mcm_setting::get_slot_count_text_offset();
+        draw->offset_text_x = config::MCMGlue::get_slot_count_text_offset();
+        draw->offset_text_y = config::MCMGlue::get_slot_count_text_offset();
 
         if ((elden || mcm::get_draw_item_name_text()) &&
             (a_position == position_type::bottom || a_position == position_type::top)) {
@@ -161,14 +161,14 @@ namespace handle {
         if (first_slot->item_count == 0 && ((first_slot->type == slot_type::consumable) ||
                                                (first_slot->form && first_slot->form->IsInventoryObject() &&
                                                    first_slot->form->formID != util::unarmed))) {
-            draw->icon_transparency = config::mcm_setting::get_icon_transparency_blocked();
+            draw->icon_transparency = config::MCMGlue::get_icon_transparency_blocked();
         }
 
         page->draw_setting = draw;
 
         page->key = a_key_pos->get_key_for_position(a_position);
-        page->item_name_font_size = config::mcm_setting::get_item_name_font_size();
-        page->count_font_size = config::mcm_setting::get_slot_count_text_font_size();
+        page->item_name_font_size = config::MCMGlue::get_item_name_font_size();
+        page->count_font_size = config::MCMGlue::get_slot_count_text_font_size();
 
         if (elden) {
             if (first_slot->type != slot_type::empty || slots->size() == 2 && slots->at(1)->type != slot_type::empty) {
@@ -238,7 +238,7 @@ namespace handle {
     }
 
     std::map<position_type, position_setting*> page_handle::get_active_page() const {
-        if (config::mcm_setting::get_elden_demon_souls()) {
+        if (config::MCMGlue::get_elden_demon_souls()) {
             std::map<position_type, position_setting*> a_active;
             for (auto i = 0; i < static_cast<int>(position_type::total); ++i) {
                 const auto pos = static_cast<position_type>(i);
@@ -258,7 +258,7 @@ namespace handle {
     }
 
     uint32_t page_handle::get_active_page_id() const {
-        if (config::mcm_setting::get_elden_demon_souls()) {
+        if (config::MCMGlue::get_elden_demon_souls()) {
             return 0;
         }
         if (const page_handle_data* data = this->data_; data) {
@@ -271,7 +271,7 @@ namespace handle {
         if (const page_handle_data* data = this->data_; data) {
             //let's make it easy for now
             //we start at 0, so it is max count -1
-            if (data->active_page < config::mcm_setting::get_max_page_count() - 1) {
+            if (data->active_page < config::MCMGlue::get_max_page_count() - 1) {
                 return data->active_page + 1;
             }
             return 0;

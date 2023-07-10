@@ -47,7 +47,7 @@ namespace player
 		auto right_obj     = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 		auto left_obj      = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 
-		const auto empty_handle = config::mcm_setting::get_empty_hand_setting();
+		const auto empty_handle = config::MCMGlue::get_empty_hand_setting();
 
 		const auto item   = new data_helper();
 		item->form        = nullptr;

@@ -1,8 +1,8 @@
 ﻿#include "key_position_handle.h"
-#include "setting/mcm_setting.h"
+#include "include/user_settings.h"
 
 namespace handle {
-    using mcm = config::mcm_setting;
+    using mcm = config::MCMGlue;
     using position_type = position_setting::position_type;
 
     key_position_handle* key_position_handle::get_singleton() {

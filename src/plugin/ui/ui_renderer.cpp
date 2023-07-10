@@ -21,7 +21,7 @@
 
 namespace ui
 {
-	using mcm = config::mcm_setting;
+	using mcm = config::MCMGlue;
 
 	static std::map<animation_type, std::vector<image>> animation_frame_map = {};
 	static std::vector<std::pair<animation_type, std::unique_ptr<animation>>> animation_list;

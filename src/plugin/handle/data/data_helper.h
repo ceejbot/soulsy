@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "./data/page/slot_setting.h"
+#include "page/slot_setting.h"
 
 class data_helper {
 public:

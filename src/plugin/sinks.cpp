@@ -36,13 +36,13 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	// Here we want to turn over the processing to the Rust side.
 	// And also to make a Rust side exist.
 
-	if (config::mcm_setting::get_draw_current_items_text() &&
+	if (config::MCMGlue::get_draw_current_items_text() &&
 		(form->IsWeapon() || form->Is(RE::FormType::Spell) || form->IsAmmo() || form->Is(RE::FormType::Light)))
 	{
 		handle::name_handle::get_singleton()->init_names(player::get_hand_assignment());
 	}
 
-	if (config::mcm_setting::get_draw_current_shout_text() && form->Is(RE::FormType::Shout) ||
+	if (config::MCMGlue::get_draw_current_shout_text() && form->Is(RE::FormType::Shout) ||
 		form->Is(RE::FormType::Spell))
 	{
 		// call function there and check selected power, spell trigger and spells as well but that is ok for now

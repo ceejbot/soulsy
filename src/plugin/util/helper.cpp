@@ -2,6 +2,7 @@
 #include "include/constant.h"
 #include "include/gear.h"
 #include "include/user_settings.h"
+#include "include/custom_setting.h"
 #include "include/string_util.h"
 #include "include/player.h"
 // #include "data/config_writer_helper.h"
@@ -318,7 +319,7 @@ namespace helpers
 
 	RE::ActorValue get_actor_value_effect_from_potion(RE::TESForm* a_form, bool a_check)
 	{
-		if (!a_form->Is(RE::FormType::AlchemyItem) || (!config::mcm_setting::get_group_potions() && a_check))
+		if (!a_form->Is(RE::FormType::AlchemyItem) || (!config::MCMGlue::get_group_potions() && a_check))
 		{
 			return RE::ActorValue::kNone;
 		}
@@ -371,7 +372,7 @@ namespace helpers
 			return;
 		}
 
-		if (config::mcm_setting::get_elden_demon_souls())
+		if (config::MCMGlue::get_elden_demon_souls())
 		{
 			if (!a_data.empty())
 			{
@@ -437,7 +438,7 @@ namespace helpers
 				actor_value = a_data[1]->actor_value;
 			}
 		}
-		config::mcm_setting::read_setting();
+		config::MCMGlue::read_setting();
 
 		config::custom_setting::write_section_setting(section,
 			a_page,

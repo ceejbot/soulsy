@@ -46,7 +46,7 @@ namespace hooks
 						continue;
 					}
 
-					auto key = keycodes::get_keyid(button);
+					auto key = keycodes::get_key_id(button);
 
 					if (button->IsUp())
 					{

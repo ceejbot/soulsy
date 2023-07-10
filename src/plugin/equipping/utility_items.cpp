@@ -1,6 +1,6 @@
 ﻿#include "include/utility_items.h"
 #include "include/enums.h"
-#include "include/equip_slot.h"
+#include "include/gear.h"
 #include "include/user_settings.h"
 #include "include/constant.h"
 #include "include/helper.h"
@@ -214,7 +214,7 @@ namespace equip
 			}
 		}
 
-		if (config::mcm_setting::get_prevent_consumption_of_last_dynamic_potion() && obj && obj->IsDynamicForm() &&
+		if (config::MCMGlue::get_prevent_consumption_of_last_dynamic_potion() && obj && obj->IsDynamicForm() &&
 			left == 1)
 		{
 			logger::warn(
@@ -323,8 +323,8 @@ namespace equip
 			fmt::format(FMT_STRING("{:.2f}"), missing));
 
 		//min heal, max heal
-		auto min_perfect = config::mcm_setting::get_potion_min_perfect();
-		auto max_perfect = config::mcm_setting::get_potion_max_perfect();
+		auto min_perfect = config::MCMGlue::get_potion_min_perfect();
+		auto max_perfect = config::MCMGlue::get_potion_max_perfect();
 		logger::trace("min perfect {}, max perfect {}, missing {}"sv,
 			fmt::format(FMT_STRING("{:.2f}"), missing * min_perfect),
 			fmt::format(FMT_STRING("{:.2f}"), missing * max_perfect),
@@ -351,7 +351,7 @@ namespace equip
 			if (actor_value == a_actor_value)
 			{
 				//set obj here, because if we do not have a perfect hit, we still need to consume something
-				if (config::mcm_setting::get_prevent_consumption_of_last_dynamic_potion() &&
+				if (config::MCMGlue::get_prevent_consumption_of_last_dynamic_potion() &&
 					alchemy_item->IsDynamicForm() && num_items == 1)
 				{
 					logger::warn(
@@ -403,9 +403,9 @@ namespace equip
             * vokrii should be fine as well
             * other add av multiply implementations need to be handled by getting the data from the game 
             * the MCM setting will be left for overwrite handling */
-		if (config::mcm_setting::get_overwrite_poison_dose())
+		if (config::MCMGlue::get_overwrite_poison_dose())
 		{
-			potion_doses = config::mcm_setting::get_apply_poison_dose();
+			potion_doses = config::MCMGlue::get_apply_poison_dose();
 		}
 		else
 		{
