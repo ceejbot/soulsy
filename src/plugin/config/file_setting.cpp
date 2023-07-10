@@ -4,7 +4,7 @@
 // This name is bad, and this code needs to be re-implemented on the Rust side.
 // but for now...
 
-namespace layout {
+namespace file_setting {
     static const char* ini_path = R"(.\Data\SKSE\Plugins\LamasTinyHUD.ini)";
 
     CSimpleIniA ini;

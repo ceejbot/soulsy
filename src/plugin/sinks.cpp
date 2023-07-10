@@ -162,9 +162,9 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 		auto is_power_key              = key == key_binding->get_top_execute();
 		auto is_utility_key            = key == key_binding->get_bottom_action();
 		auto is_toggle_key             = key == key_binding->get_bottom_execute_or_toggle_action();
-		auto execute_requires_modifier = MCMGlue::get_bottom_execute_key_combo_only();
+		auto execute_requires_modifier = config::mcm_setting::get_bottom_execute_key_combo_only();
 
-		if (MCMGlue::get_hide_outside_combat() && !ui::ui_renderer::get_fade())
+		if (config::mcm_setting::get_hide_outside_combat() && !ui::ui_renderer::get_fade())
 		{
 			if ((is_position_button || is_toggle_key || (elden && is_power_key)) &&
 				(button->IsDown() || button->IsPressed()))

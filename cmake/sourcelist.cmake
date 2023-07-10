@@ -14,6 +14,7 @@ set(headers ${headers}
     src/include/keycodes.h
     src/include/magic.h
     src/include/offset.h
+    src/include/papyrus.h
     src/include/perk_visitor.h
     src/include/player.h
     src/include/sinks.h
@@ -51,6 +52,7 @@ set(sources ${sources}
     src/plugin/handle/page_handle.cpp
     src/plugin/hooks.cpp
     src/plugin/keycodes.cpp
+    src/plugin/papyrus.cpp
     src/plugin/processing/game_menu_setting.cpp
     src/plugin/processing/set_setting_data.cpp
     src/plugin/processing/setting_execute.cpp

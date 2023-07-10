@@ -63,7 +63,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 				ui::ui_renderer::load_all_images();
 				register_all_sinks();
 				hooks::install_hooks();
-				papyrus::Register();
+				papyrus::register_papyrus_functions();
 				// next line is rustland now, and we want to go with defaults instead...
 				control::binding::get_singleton()->set_all_keys();
 				logger::info("done with data loaded"sv);
