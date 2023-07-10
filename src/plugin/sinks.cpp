@@ -43,7 +43,7 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	}
 
 	// Here we want to turn over the processing to the Rust side.
-	// And also to make a Rust side exist.
+	// which does not yet exist
 
 	if (config::mcm_setting::get_draw_current_items_text() &&
 		(form->IsWeapon() || form->Is(RE::FormType::Spell) || form->IsAmmo() || form->Is(RE::FormType::Light)))

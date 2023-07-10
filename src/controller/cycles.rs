@@ -1,91 +1,232 @@
+use std::path::PathBuf;
+
 use anyhow::Result;
-use num_derive::{FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
 
 use super::user_settings;
 use crate::plugin::{Action, MenuEventResponse, TESForm};
 
-// TODO: This has moved to settings.
-static MAX_CYCLE_LEN: usize = 10;
-
-// This is in the same order as the slot_type enum on the C++ side.
-// I haven't yet decided I like shared enums. This is a pain, tho.
-#[derive(
-    Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default, FromPrimitive, ToPrimitive,
-)]
-pub enum ItemKind {
-    Weapon,
-    Magic,
+/// Knowing the icon for the item tells us *almost* everything we need to know
+/// about how to use it.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub enum EntryIcon {
+    Alteration,
+    ArmorClothing,
+    ArmorHeavy,
+    ArmorLight,
+    Arrow,
+    AxeOneHanded,
+    AxeTwoHanded,
+    Bow,
+    Claw,
+    Conjuration,
+    Crossbow,
+    Dagger,
+    DefaultPotion,
+    DestructionFire,
+    DestructionFrost,
+    DestructionShock,
+    Destruction,
+    Food,
+    Halberd,
+    HandToHand,
+    IconDefault,
+    Illusion,
+    Katana,
+    Mace,
+    Pike,
+    PoisonDefault,
+    PotionFireResist,
+    PotionFrostResist,
+    PotionHealth,
+    PotionMagicka,
+    PotionShockResist,
+    PotionStamina,
+    Power,
+    QuarterStaff,
+    Rapier,
+    Restoration,
+    Scroll,
     Shield,
     Shout,
-    Power,
-    Consumable,
-    Armor,
-    Scroll,
-    #[default]
-    Empty,
-    Misc,
-    Light,
-    Lantern,
-    Mask,
+    SpellDefault,
+    Staff,
+    SwordOneHanded,
+    SwordTwoHanded,
+    Torch,
+    Whip,
 }
 
-fn kind_from_slot(slot: u32) -> ItemKind {
-    num_traits::FromPrimitive::from_u32(slot).unwrap_or_default()
+// We cannot derive default for shared enums.
+impl Default for EntryIcon {
+    fn default() -> Self {
+        EntryIcon::IconDefault
+    }
 }
 
-fn left_hand_ok(kind: &ItemKind) -> bool {
-    matches!(
-        kind,
-        ItemKind::Weapon
-            | ItemKind::Magic
-            | ItemKind::Shield
-            | ItemKind::Scroll
-            | ItemKind::Light
-            | ItemKind::Lantern
-    )
-}
+impl EntryIcon {
+    fn is_magic(&self) -> bool {
+        matches!(
+            self,
+            EntryIcon::Alteration
+                | EntryIcon::Conjuration
+                | EntryIcon::Destruction
+                | EntryIcon::DestructionFire
+                | EntryIcon::DestructionFrost
+                | EntryIcon::DestructionShock
+                | EntryIcon::Illusion
+                | EntryIcon::Restoration
+                | EntryIcon::SpellDefault
+                | EntryIcon::Scroll
+        )
+    }
 
-fn right_hand_ok(kind: &ItemKind) -> bool {
-    matches!(kind, ItemKind::Weapon | ItemKind::Magic | ItemKind::Scroll)
-}
+    fn is_weapon(&self) -> bool {
+        matches!(
+            self,
+            EntryIcon::AxeOneHanded
+                | EntryIcon::AxeTwoHanded
+                | EntryIcon::AxeTwoHanded
+                | EntryIcon::Bow
+                | EntryIcon::Claw
+                | EntryIcon::Crossbow
+                | EntryIcon::Dagger
+                | EntryIcon::Halberd
+                | EntryIcon::HandToHand
+                | EntryIcon::Katana
+                | EntryIcon::Mace
+                | EntryIcon::Pike
+                | EntryIcon::QuarterStaff
+                | EntryIcon::Rapier
+                | EntryIcon::Staff
+                | EntryIcon::SwordOneHanded
+                | EntryIcon::Whip
+        )
+    }
 
-fn is_power(kind: &ItemKind) -> bool {
-    matches!(kind, ItemKind::Shout | ItemKind::Power)
-}
+    fn left_hand_ok(&self) -> bool {
+        self.is_weapon() || self.is_magic() || matches!(self, EntryIcon::Shield | EntryIcon::Torch)
+    }
 
-fn is_utility(kind: &ItemKind) -> bool {
-    matches!(
-        kind,
-        ItemKind::Consumable | ItemKind::Armor | ItemKind::Misc | ItemKind::Mask
-    )
+    fn right_hand_ok(&self) -> bool {
+        self.is_weapon() || self.is_magic()
+    }
+
+    fn is_power(&self) -> bool {
+        matches!(self, EntryIcon::Shout | EntryIcon::Power)
+    }
+
+    fn is_utility(&self) -> bool {
+        matches!(
+            self,
+            EntryIcon::ArmorClothing
+                | EntryIcon::ArmorHeavy
+                | EntryIcon::ArmorLight
+                | EntryIcon::DefaultPotion
+                | EntryIcon::Food
+                | EntryIcon::PotionFireResist
+                | EntryIcon::PoisonDefault
+                | EntryIcon::PotionFrostResist
+                | EntryIcon::PotionHealth
+                | EntryIcon::PotionMagicka
+                | EntryIcon::PotionShockResist
+                | EntryIcon::PotionStamina
+        )
+    }
 }
 
 // Haven't yet figured out how to serialize this to toml or anything yet.
 // Still working on what data I want to track.
-#[derive(Deserialize, Serialize, Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
 pub struct CycleEntry {
+    /// A string that can be turned back into form data; for serializing.
     form_string: String,
     /// An enum classifying this item for fast question-answering. Equiv to `type` from TESForm.
-    kind: ItemKind,
+    kind: EntryIcon,
     /// True if this item requires both hands to use.
     two_handed: bool,
     /// True if this item should be displayed with count data.
     has_count: bool,
-    icon: String,
-    // form: &TESForm,
-    // slot: &BGSEquipSlot
+    /// Cached count from inventory data. Relies on hooks to be updated.
+    count: usize,
+}
+
+// Testing the formstring is sufficient for our needs, which is figuring out if
+// this form item is in a cycle already.
+impl PartialEq for CycleEntry {
+    fn eq(&self, other: &Self) -> bool {
+        self.form_string == other.form_string
+    }
 }
 
 impl CycleEntry {
     /// This is called from C++ when handing us a new item.
-    pub fn new(slot: u32, two_handed: bool, has_count: bool, _form: &TESForm) -> Self {
-        // todo more
+    pub fn new(
+        slot: u32,
+        kind: EntryIcon,
+        two_handed: bool,
+        has_count: bool,
+        count: usize,
+        form_string: &str,
+        _form: &TESForm,
+    ) -> Self {
         CycleEntry {
-            kind: kind_from_slot(slot),
+            form_string: form_string.to_string(),
+            kind,
             two_handed,
             has_count,
-            ..Default::default()
+            count,
+        }
+    }
+
+    pub fn icon_file(&self) -> String {
+        // I regret my life choices.
+        match self.kind {
+            EntryIcon::Alteration => "alteration.svg".to_string(),
+            EntryIcon::ArmorClothing => "armor_clothing.svg".to_string(),
+            EntryIcon::ArmorHeavy => "armor_heavy.svg".to_string(),
+            EntryIcon::ArmorLight => "armor_light.svg".to_string(),
+            EntryIcon::Arrow => "arrow.svg".to_string(),
+            EntryIcon::AxeOneHanded => "axe_one_handed.svg".to_string(),
+            EntryIcon::AxeTwoHanded => "axe_two_handed.svg".to_string(),
+            EntryIcon::Bow => "bow.svg".to_string(),
+            EntryIcon::Claw => "claw.svg".to_string(),
+            EntryIcon::Conjuration => "conjuration.svg".to_string(),
+            EntryIcon::Crossbow => "crossbow.svg".to_string(),
+            EntryIcon::Dagger => "dagger.svg".to_string(),
+            EntryIcon::DefaultPotion => "default_potion.svg".to_string(),
+            EntryIcon::DestructionFire => "destruction_fire.svg".to_string(),
+            EntryIcon::DestructionFrost => "destruction_frost.svg".to_string(),
+            EntryIcon::DestructionShock => "destruction_shock.svg".to_string(),
+            EntryIcon::Destruction => "destruction.svg".to_string(),
+            EntryIcon::Food => "food.svg".to_string(),
+            EntryIcon::Halberd => "halberd.svg".to_string(),
+            EntryIcon::HandToHand => "hand_to_hand.svg".to_string(),
+            EntryIcon::IconDefault => "icon_default.svg".to_string(),
+            EntryIcon::Illusion => "illusion.svg".to_string(),
+            EntryIcon::Katana => "katana.svg".to_string(),
+            EntryIcon::Mace => "mace.svg".to_string(),
+            EntryIcon::Pike => "pike.svg".to_string(),
+            EntryIcon::PoisonDefault => "poison_default.svg".to_string(),
+            EntryIcon::PotionFireResist => "potion_fire_resist.svg".to_string(),
+            EntryIcon::PotionFrostResist => "potion_frost_resist.svg".to_string(),
+            EntryIcon::PotionHealth => "potion_health.svg".to_string(),
+            EntryIcon::PotionMagicka => "potion_magicka.svg".to_string(),
+            EntryIcon::PotionShockResist => "potion_shock_resist.svg".to_string(),
+            EntryIcon::PotionStamina => "potion_stamina.svg".to_string(),
+            EntryIcon::Power => "power.svg".to_string(),
+            EntryIcon::QuarterStaff => "quarterStaff.svg".to_string(),
+            EntryIcon::Rapier => "rapier.svg".to_string(),
+            EntryIcon::Restoration => "restoration.svg".to_string(),
+            EntryIcon::Scroll => "scroll.svg".to_string(),
+            EntryIcon::Shield => "shield.svg".to_string(),
+            EntryIcon::Shout => "shout.svg".to_string(),
+            EntryIcon::SpellDefault => "spell_default.svg".to_string(),
+            EntryIcon::Staff => "staff.svg".to_string(),
+            EntryIcon::SwordOneHanded => "sword_one_handed.svg".to_string(),
+            EntryIcon::SwordTwoHanded => "sword_two_handed.svg".to_string(),
+            EntryIcon::Torch => "torch.svg".to_string(),
+            EntryIcon::Whip => "whip.svg".to_string(),
         }
     }
 }
@@ -98,9 +239,19 @@ pub struct CycleData {
     utility: Vec<CycleEntry>,
 }
 
+static CYCLE_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Cycles.toml";
+
 impl CycleData {
     pub fn write(&self) -> Result<()> {
+        let buf = toml::to_string(self)?;
+        std::fs::write(CYCLE_PATH, &buf)?;
         Ok(())
+    }
+
+    pub fn read() -> Result<Self> {
+        let buf = std::fs::read_to_string(PathBuf::from(CYCLE_PATH))?;
+        let layout = toml::from_str::<CycleData>(&buf)?;
+        Ok(layout)
     }
 
     pub fn advance(&mut self, which: Action, amount: usize) -> Option<CycleEntry> {
@@ -124,25 +275,25 @@ impl CycleData {
     pub fn toggle(&mut self, which: Action, item: CycleEntry) -> MenuEventResponse {
         let cycle = match which {
             Action::Power => {
-                if !is_power(&item.kind) {
+                if !item.kind.is_power() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.power
             }
             Action::Left => {
-                if !left_hand_ok(&item.kind) {
+                if !item.kind.left_hand_ok() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.left
             }
             Action::Right => {
-                if !right_hand_ok(&item.kind) {
+                if !item.kind.right_hand_ok() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.right
             }
             Action::Utility => {
-                if !is_utility(&item.kind) {
+                if !item.kind.is_utility() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.utility

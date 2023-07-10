@@ -69,6 +69,8 @@ pub mod plugin {
         type UserSettings;
         /// This is an entry in the cycle. The UI will ask questions of it.
         type CycleEntry;
+        /// Icon data; probably needs to be shared
+        type EntryIcon;
 
         /// Managed access to the layout object, so we can lazy-load if necessary.
         fn layout() -> &'static HudLayout;
@@ -79,7 +81,7 @@ pub mod plugin {
         /// Handle an incoming key press event from the game. Returns true if handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
-        fn handle_menu_event(key: u32, item: &TESForm) -> MenuEventResponse;
+        fn handle_menu_event(key: u32, item: &CycleEntry) -> MenuEventResponse;
     }
 
     unsafe extern "C++" {

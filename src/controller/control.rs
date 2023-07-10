@@ -4,9 +4,7 @@ use once_cell::sync::Lazy;
 
 use super::cycles::*;
 use super::settings::user_settings;
-use crate::plugin::{
-    ui_renderer, Action, ButtonEvent, KeyEventResponse, MenuEventResponse, TESForm,
-};
+use crate::plugin::{ui_renderer, Action, ButtonEvent, KeyEventResponse, MenuEventResponse};
 
 /// There can be only one. Not public because we want access managed.
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
@@ -16,12 +14,9 @@ pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
     CONTROLLER.lock().unwrap().handle_key_event(action)
 }
 
-pub fn handle_menu_event(key: u32, _form: &TESForm) -> MenuEventResponse {
+pub fn handle_menu_event(key: u32, item: &CycleEntry) -> MenuEventResponse {
     let action = Action::from(key);
-    // todo for the moment, until the C++ side calls the constructor
-    let item = CycleEntry::default();
-    // let item = CycleEntry::from(form);
-    CONTROLLER.lock().unwrap().toggle_item(action, item)
+    CONTROLLER.lock().unwrap().toggle_item(action, item.clone())
 }
 
 impl From<u32> for Action {
@@ -55,8 +50,9 @@ pub struct Controller {
 
 impl Controller {
     pub fn new() -> Self {
+        let cycles = CycleData::read().unwrap_or_default();
         Controller {
-            cycles: CycleData::default(), // for now; will need to come from mcm data or from a file
+            cycles
         }
     }
 
@@ -71,7 +67,7 @@ impl Controller {
         // The second param to set_fade() is the desired end alpha.
         if !matches!(action, Action::ShowHide) {
             let is_fading: bool = ui_renderer::get_fade();
-            if settings().fade() && !is_fading {
+            if user_settings().fade() && !is_fading {
                 ui_renderer::set_fade(true, 1.0);
                 return KeyEventResponse {
                     handled: true,
@@ -157,7 +153,10 @@ impl Controller {
             MenuEventResponse::ItemAdded | MenuEventResponse::ItemRemoved
         ) {
             // the data changed. flush it to disk with char name in it or something
-            match self.cycles.write() {}
+            match self.cycles.write() {
+                Ok(_) => todo!(),
+                Err(_) => todo!(),
+            }
         }
 
         result

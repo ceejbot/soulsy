@@ -50,6 +50,7 @@ namespace hooks
 
 					auto key = keycodes::get_key_id(button);
 
+
 					if (button->IsUp())
 					{
 						// If this is a slot cycle button, start the equip timer now.
@@ -64,6 +65,7 @@ namespace hooks
 
 					if (button->IsPressed() && hotkeys->is_cycle_button(key))
 					{
+
 						auto menu_form = processing::game_menu_setting::get_selected_form(ui);
 						if (menu_form)
 						{
@@ -74,9 +76,13 @@ namespace hooks
 								// I don't like null pointer exceptions, I guess.
 								continue;
 							}
-							//extra
+							
+							// Now make a CycleEntry from the form data
+							// auto entry = CycleEntry::new(slot: u32, kind: EntryIcon, 
+							//              two_handed: bool, has_count: bool, count: usize, 
+							//              form_string: &str, _form: &TESForm);
 
-							auto result = handle_menu_event(key, tes_form_menu);
+							auto response = handle_menu_event(key, tes_form_menu, entry: &CycleEntry);
 							logger::info("got result code {} from menu event for {}"sv, result, key);
 							// TODO vary this response notification based on the result
 							// write_notification(fmt::format("Added Item {}", a_form ? a_form->GetName() : "null"));
@@ -153,7 +159,6 @@ namespace hooks
 
 		if (object->IsInventoryObject())
 		{
-			// Here we ca
 			processing::set_setting_data::set_new_item_count_if_needed(object, count);
 		}
 	}
