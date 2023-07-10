@@ -1,15 +1,14 @@
 
-#include "PCH.h"  // this will actually be force-included...
-#include "plugin/hooks.h"
-#include "plugin/mcm_glue.h"
-#include "plugin/sinks.h"
-#include "plugin/ui/ui_renderer.h"
+#include "include/hooks.h"
+#include "include/user_settings.h"
+#include "include/sinks.h"
+#include "include/ui_renderer.h"
+#include "include/file_setting.h"
 
-/*
-#include "control/binding.h"
 #include "processing/set_setting_data.h"
-#include "setting/file_setting.h"
-*/
+
+// #include "PCH.h"  // this will actually be force-included...
+// #include "control/binding.h" // this is already gone
 
 void init_logger()
 {
@@ -63,7 +62,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 
 				ui::ui_renderer::load_all_images();
 				register_all_sinks();
-				hook::install_hooks();
+				hooks::install_hooks();
 				papyrus::Register();
 				// next line is rustland now, and we want to go with defaults instead...
 				control::binding::get_singleton()->set_all_keys();
@@ -77,7 +76,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			// processing::set_setting_data::read_and_set_data();
 			// processing::set_setting_data::get_actives_and_equip();
 			// processing::set_setting_data::check_config_data();
-			ui::ui_renderer::set_show_ui(config::file_setting::get_show_ui());
+			ui::ui_renderer::set_show_ui(file_setting::get_show_ui());
 			logger::info("Done running after {}"sv, static_cast<uint32_t>(msg->type));
 			break;
 		default:

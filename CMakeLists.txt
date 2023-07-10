@@ -211,6 +211,7 @@ target_include_directories(
     PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/include
     ${CARGO_TARGET_DIR}/cxxbridge/soulsy/src/
     ${SIMPLEINI_INCLUDE_DIRS}
 )

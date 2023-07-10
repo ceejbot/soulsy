@@ -2,7 +2,7 @@
 
 #include "keycodes.h"
 
-namespace hook
+namespace hooks
 {
 	void install_hooks();
 

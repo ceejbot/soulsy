@@ -1,14 +1,14 @@
-#include "mcm_glue.h"
 
-#include "control/binding.h"
-#include "enums.h"
+#include "include/enums.h"
+#include "include/user_settings.h"
+#include "include/custom_setting.h"
+#include "include/file_setting.h"
+#include "include/ui_renderer.h"
+#include "include/constant.h"
+#include "include/helper.h"
+
 #include "processing/set_setting_data.h"
-#include "setting/custom_setting.h"
-#include "setting/file_setting.h"
-#include "setting/mcm_setting.h"
-#include "ui/ui_renderer.h"
-#include "util/constant.h"
-#include "util/helper.h"
+// #include "include/binding.h"
 
 static const char* mcm_name = "SoulsyHUD_MCM";
 
@@ -23,6 +23,7 @@ void register_papyrus_functions()
 	logger::info("Registered papyrus functions. return."sv);
 }
 
+// rename this at some point.
 void MCMGlue::on_config_close(RE::TESQuest*)
 {
 	logger::info("on config close"sv);

@@ -1,7 +1,6 @@
-#include "sinks.h"
-
-#include "mcm_glue.h"
-#include "ui/ui_renderer.h"
+#include "include/sinks.h"
+#include "include/user_settings.h"
+#include "include/ui_renderer.h"
 
 // Handle equipment change events. We need to update our UI when this happens.
 

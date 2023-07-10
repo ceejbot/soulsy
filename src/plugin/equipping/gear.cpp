@@ -1,7 +1,7 @@
-﻿#include "equip_slot.h"
-#include "util/offset.h"
-#include "util/player/player.h"
-#include "util/string_util.h"
+﻿#include "include/gear.h"
+#include "include/offset.h"
+#include "include/player.h"
+#include "include/string_util.h"
 
 // 90% mlthelama with ceej naming
 

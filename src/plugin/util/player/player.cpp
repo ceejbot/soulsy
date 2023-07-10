@@ -1,9 +1,9 @@
-#include "player.h"
-#include "../../enums.h"
-#include "../../mcm_glue.h"
-#include "../helper.h"
-#include "../offset.h"
-#include "../string_util.h"
+#include "include/player.h"
+#include "include/enums.h"
+#include "include/user_settings.h"
+#include "include/helper.h"
+#include "include/offset.h"
+#include "include/string_util.h"
 
 namespace player
 {

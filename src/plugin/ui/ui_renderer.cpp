@@ -1,14 +1,15 @@
-﻿#include "ui_renderer.h"
-#include "animation_handler.h"
-#include "control/common.h"
-#include "handle/ammo_handle.h"
-#include "handle/name_handle.h"
-#include "handle/page_handle.h"
-#include "image_path.h"
-#include "key_path.h"
-#include "setting/file_setting.h"
-#include "setting/mcm_setting.h"
-#include "util/constant.h"
+﻿#include "../handle/ammo_handle.h"
+#include "../handle/name_handle.h"
+#include "../handle/page_handle.h"
+#include "include/animation_handler.h"
+#include "include/constant.h"
+#include "include/file_setting.h"
+#include "include/image_path.h"
+#include "include/key_path.h"
+#include "include/keycodes.h"
+#include "include/ui_renderer.h"
+#include "include/user_settings.h"
+
 #pragma warning(push)
 #pragma warning(disable : 4702)
 #define NANOSVG_IMPLEMENTATION
@@ -653,7 +654,7 @@ namespace ui
 				continue;
 			}
 			const auto* draw_setting = page_setting->draw_setting;
-			if (config::file_setting::get_draw_key_background())
+			if (file_setting::get_draw_key_background())
 			{
 				draw_key(a_x,
 					a_y,
@@ -977,49 +978,49 @@ namespace ui
 
 	void ui_renderer::load_font()
 	{
-		std::string path = R"(Data\SKSE\Plugins\resources\font\)" + config::file_setting::get_font_file_name();
+		std::string path = R"(Data\SKSE\Plugins\resources\font\)" + file_setting::get_font_file_name();
 		auto file_path   = std::filesystem::path(path);
-		logger::trace("Need to load font {} from file {}"sv, config::file_setting::get_font_load(), path);
+		logger::trace("Need to load font {} from file {}"sv, file_setting::get_font_load(), path);
 		tried_font_load = true;
-		if (config::file_setting::get_font_load() && std::filesystem::is_regular_file(file_path) &&
+		if (file_setting::get_font_load() && std::filesystem::is_regular_file(file_path) &&
 			((file_path.extension() == ".ttf") || (file_path.extension() == ".otf")))
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			ImVector<ImWchar> ranges;
 			ImFontGlyphRangesBuilder builder;
 			builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
-			if (config::file_setting::get_font_chinese_full())
+			if (file_setting::get_font_chinese_full())
 			{
 				builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull());
 			}
-			if (config::file_setting::get_font_chinese_simplified_common())
+			if (file_setting::get_font_chinese_simplified_common())
 			{
 				builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 			}
-			if (config::file_setting::get_font_cyrillic())
+			if (file_setting::get_font_cyrillic())
 			{
 				builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
 			}
-			if (config::file_setting::get_font_japanese())
+			if (file_setting::get_font_japanese())
 			{
 				builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
 			}
-			if (config::file_setting::get_font_korean())
+			if (file_setting::get_font_korean())
 			{
 				builder.AddRanges(io.Fonts->GetGlyphRangesKorean());
 			}
-			if (config::file_setting::get_font_thai())
+			if (file_setting::get_font_thai())
 			{
 				builder.AddRanges(io.Fonts->GetGlyphRangesThai());
 			}
-			if (config::file_setting::get_font_vietnamese())
+			if (file_setting::get_font_vietnamese())
 			{
 				builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese());
 			}
 			builder.BuildRanges(&ranges);
 
 			loaded_font = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(),
-				config::file_setting::get_font_size(),
+				file_setting::get_font_size(),
 				nullptr,
 				ranges.Data);
 			if (io.Fonts->Build())
@@ -1041,7 +1042,7 @@ namespace ui
 		{
 			show_ui_ = true;
 		}
-		config::file_setting::set_show_ui(show_ui_);
+		file_setting::set_show_ui(show_ui_);
 		logger::trace("Show UI is now {}"sv, show_ui_);
 	}
 

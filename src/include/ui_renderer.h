@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "animation_handler.h"
-#include "../enums.h"
+#include "enums.h"
 #include "image_path.h"
 
 namespace ui

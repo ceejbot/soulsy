@@ -1,13 +1,13 @@
-﻿#include "item.h"
-#include "enums.h"
-#include "equip_slot.h"
-#include "handle/extra_data_holder.h"
-#include "setting/mcm_setting.h"
-#include "util/constant.h"
-#include "util/helper.h"
-#include "util/player/perk_visitor.h"
-#include "util/player/player.h"
-#include "util/string_util.h"
+﻿#include "include/utility_items.h"
+#include "include/enums.h"
+#include "include/equip_slot.h"
+#include "include/user_settings.h"
+#include "include/constant.h"
+#include "include/helper.h"
+#include "include/perk_visitor.h"
+#include "include/player.h"
+#include "include/string_util.h"
+// #include "include/extra_data_holder.h"
 
 namespace equip
 {

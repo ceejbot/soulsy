@@ -1,34 +1,59 @@
 set(headers ${headers}
     src/PCH.h
-    src/plugin/enums.h
-    src/plugin/equip/equip_slot.h
-    src/plugin/equip/item.h
-    src/plugin/equip/magic.h
-    src/plugin/hooks.h
-    src/plugin/keycodes.h
-    src/plugin/mcm_glue.h
-    src/plugin/sinks.h
-    src/plugin/ui/animation_handler.h
-    src/plugin/ui/image_path.h
-    src/plugin/ui/key_path.h
-    src/plugin/ui/ui_renderer.h
-    src/plugin/util/constant.h
-    src/plugin/util/data/config_writer_helper.h
-    src/plugin/util/helper.h
-    src/plugin/util/offset.h
-    src/plugin/util/player/perk_visitor.h
-    src/plugin/util/player/player.h
-    src/plugin/util/string_util.h
+    src/include/animation_handler.h
+    src/include/config_writer_helper.h
+    src/include/constant.h
+    src/include/custom_setting.h
+    src/include/enums.h
+    src/include/file_setting.h
+    src/include/gear.h
+    src/include/helper.h
+    src/include/hooks.h
+    src/include/image_path.h
+    src/include/key_path.h
+    src/include/keycodes.h
+    src/include/magic.h
+    src/include/offset.h
+    src/include/perk_visitor.h
+    src/include/player.h
+    src/include/sinks.h
+    src/include/string_util.h
+    src/include/ui_renderer.h
+    src/include/user_settings.h
+    src/include/utility_items.h
+    src/plugin/handle/ammo_handle.h
+    src/plugin/handle/data/ammo_data.h
+    src/plugin/handle/data/data_helper.h
+    src/plugin/handle/data/page/position_draw_setting.h
+    src/plugin/handle/data/page/position_setting.h
+    src/plugin/handle/data/page/slot_setting.h
+    src/plugin/handle/extra_data_holder.h
+    src/plugin/handle/key_position_handle.h
+    src/plugin/handle/name_handle.h
+    src/plugin/handle/page_handle.h
+    src/plugin/processing/game_menu_setting.h
+    src/plugin/processing/set_setting_data.h
+    src/plugin/processing/setting_execute.h
 )
 set(sources ${sources}
     ${headers}
     src/main.cpp
-    src/plugin/equip/equip_slot.cpp
-    src/plugin/equip/item.cpp
-    src/plugin/equip/magic.cpp
+    src/plugin/config/custom_setting.cpp
+    src/plugin/config/file_setting.cpp
+    src/plugin/config/user_settings.cpp
+    src/plugin/equipping/gear.cpp
+    src/plugin/equipping/magic.cpp
+    src/plugin/equipping/utility_items.cpp
+    src/plugin/handle/ammo_handle.cpp
+    src/plugin/handle/extra_data_holder.cpp
+    src/plugin/handle/key_position_handle.cpp
+    src/plugin/handle/name_handle.cpp
+    src/plugin/handle/page_handle.cpp
     src/plugin/hooks.cpp
     src/plugin/keycodes.cpp
-    src/plugin/mcm_glue.cpp
+    src/plugin/processing/game_menu_setting.cpp
+    src/plugin/processing/set_setting_data.cpp
+    src/plugin/processing/setting_execute.cpp
     src/plugin/sinks.cpp
     src/plugin/ui/ui_renderer.cpp
     src/plugin/util/helper.cpp

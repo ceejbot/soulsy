@@ -1,8 +1,8 @@
-﻿#include "magic.h"
-#include "equip_slot.h"
-#include "mcm_glue.h"
-#include "util/offset.h"
-#include "util/player/player.h"
+﻿#include "include/magic.h"
+#include "include/equip_slot.h"
+#include "include/user_settings.h"
+#include "include/offset.h"
+#include "include/player.h"
 
 namespace equip
 {

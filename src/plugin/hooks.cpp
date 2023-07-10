@@ -1,7 +1,5 @@
-#include "hooks.h"
-
-#include "soulsy/include/lib.rs.h"
-#include "mcm_glue.h"
+#include "include/hooks.h"
+#include "include/user_settings.h"
 
 namespace hooks
 {

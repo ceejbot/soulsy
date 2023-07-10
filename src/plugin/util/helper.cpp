@@ -1,12 +1,10 @@
-﻿#include "helper.h"
-#include "constant.h"
-#include "data/config_writer_helper.h"
-#include "../equip/equip_slot.h"
-#include "../mcm_glue.h"
-#include "string_util.h"
-#include "../util/player/player.h"
-
-#include "../target/cxxbridge/soulsy/src/lib.rs.h"
+﻿#include "include/helper.h"
+#include "include/constant.h"
+#include "include/gear.h"
+#include "include/user_settings.h"
+#include "include/string_util.h"
+#include "include/player.h"
+// #include "data/config_writer_helper.h"
 
 
 namespace helpers

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "../enums.h"
+#include "enums.h"
 
 namespace helpers
 {
