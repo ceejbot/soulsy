@@ -1,4 +1,4 @@
-#include "papyrus.h"
+#include "mcm_glue.h"
 
 #include "control/binding.h"
 #include "enums.h"
@@ -352,7 +352,7 @@ RE::BSFixedString MCMGlue::get_actor_value(RE::TESQuest*, uint32_t a_index, uint
 	return form_string;
 }
 
-bool MCMGlue::Register(RE::BSScript::IVirtualMachine* a_vm)
+bool registerGlue(RE::BSScript::IVirtualMachine* a_vm)
 {
 	a_vm->RegisterFunction("OnConfigClose", mcm_name, on_config_close);
 	a_vm->RegisterFunction("GetResolutionWidth", mcm_name, get_resolution_width);

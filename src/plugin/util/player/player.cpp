@@ -1,15 +1,15 @@
 #include "player.h"
-#include "enums.h"
-#include "mcm_glue.h"
-#include "util/helper.h"
-#include "util/offset.h"
-#include "util/string_util.h"
+#include "../../enums.h"
+#include "../../mcm_glue.h"
+#include "../helper.h"
+#include "../offset.h"
+#include "../string_util.h"
 
 namespace player
 {
 	using slot_type   = enums::slot_type;
 	using action_type = enums::action_type;
-
+	using data_helper = helpers::data_helper;
 
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
 		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)

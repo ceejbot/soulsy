@@ -1,6 +1,5 @@
 #pragma once
 
-#include "control/binding.h"
 #include "keycodes.h"
 
 namespace hook

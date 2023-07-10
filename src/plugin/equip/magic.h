@@ -1,12 +1,13 @@
 ﻿#pragma once
-#include "handle/data/page/slot_setting.h"
+
+#include "../enums.h"
 
 namespace equip
 {
 	class magic
 	{
 	public:
-		using action_type = handle::slot_setting::action_type;
+		using action_type = enums::action_type;
 
 		static void cast_magic(RE::TESForm* a_form,
 			action_type a_action,

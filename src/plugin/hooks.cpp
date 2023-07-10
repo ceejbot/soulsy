@@ -1,10 +1,7 @@
 #include "hooks.h"
-#include "soulsy/include/lib.rs.h"
 
-#include "handle/keyposition_handle.h"
+#include "soulsy/include/lib.rs.h"
 #include "mcm_glue.h"
-#include "processing/game_menu_setting.h"
-#include "processing/set_setting_data.h"
 
 namespace hooks
 {

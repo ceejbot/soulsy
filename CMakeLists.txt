@@ -122,7 +122,7 @@ add_library(
     ${SOULSY_BRIDGE_CPP}
     ${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc
-    SoulsyHUD.toml
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/SoulsyHUD_Layout.toml
 )
 
 set_target_properties(

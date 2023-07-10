@@ -1,6 +1,6 @@
 ﻿#include "magic.h"
 #include "equip_slot.h"
-#include "setting/mcm_setting.h"
+#include "mcm_glue.h"
 #include "util/offset.h"
 #include "util/player/player.h"
 

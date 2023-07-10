@@ -34,4 +34,4 @@ private:
 	static std::string get_form_name_string_for_section(const std::string& a_str);
 };
 
-void Register();
+void registerGlue();

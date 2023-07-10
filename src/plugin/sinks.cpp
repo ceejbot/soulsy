@@ -1,13 +1,9 @@
 #include "sinks.h"
 
-// TODO clear out most of these
-#include "handle/ammo_handle.h"
-#include "handle/extra_data_holder.h"
-#include "handle/page_handle.h"
-#include "processing/game_menu_setting.h"
-#include "processing/setting_execute.h"
-#include "setting/mcm_setting.h"
+#include "mcm_glue.h"
 #include "ui/ui_renderer.h"
+
+// Handle equipment change events. We need to update our UI when this happens.
 
 // Where all == both.
 void register_all_sinks()
@@ -15,8 +11,6 @@ void register_all_sinks()
 	EquipEventSink::register_sink();
 	KeyEventSink::register_sink();
 }
-
-// Handle equipment change events. We need to update our UI when this happens.
 
 EquipEventSink* EquipEventSink::get_singleton()
 {
@@ -69,9 +63,8 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 // Handle key press events. Do we need to act on the keypress in any way?
 
 using event_result    = RE::BSEventNotifyControl;
-using position_type   = handle::position_setting::position_type;
+using position_type   = enums::position_type;
 using common          = control::common;
-using mcm             = config::mcm_setting;
 using setting_execute = processing::setting_execute;
 
 KeyEventSink* KeyEventSink::get_singleton()
@@ -103,7 +96,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 	}
 
 
-	button_press_modify_ = mcm::get_slot_button_feedback();
+	button_press_modify_ = mcm_glue::get_slot_button_feedback();
 	auto* key_binding    = control::binding::get_singleton();
 
 
@@ -170,9 +163,9 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 		auto is_power_key              = key == key_binding->get_top_execute();
 		auto is_utility_key            = key == key_binding->get_bottom_action();
 		auto is_toggle_key             = key == key_binding->get_bottom_execute_or_toggle_action();
-		auto execute_requires_modifier = mcm::get_bottom_execute_key_combo_only();
+		auto execute_requires_modifier = MCMGlue::get_bottom_execute_key_combo_only();
 
-		if (mcm::get_hide_outside_combat() && !ui::ui_renderer::get_fade())
+		if (MCMGlue::get_hide_outside_combat() && !ui::ui_renderer::get_fade())
 		{
 			if ((is_position_button || is_toggle_key || (elden && is_power_key)) &&
 				(button->IsDown() || button->IsPressed()))

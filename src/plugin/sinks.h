@@ -12,8 +12,8 @@ class EquipEventSink final : public RE::BSTEventSink<RE::TESEquipEvent>
 public:
 	using event_result = RE::BSEventNotifyControl;
 
-	static EquipEventSink* get_singleton();
-	static void register_sink();
+	static EquipEventSink* get_singleton(void);
+	static void register_sink(void);
 
 	// It's a programmer error to have more than one.
 	EquipEventSink(const EquipEventSink&) = delete;
@@ -37,7 +37,7 @@ class KeyEventSink final : public RE::BSTEventSink<RE::InputEvent*>
 
 public:
 	static KeyEventSink* get_singleton();
-	static void sink();
+	static void register_sink();
 
 	KeyEventSink(const KeyEventSink&) = delete;
 	KeyEventSink(KeyEventSink&&)      = delete;

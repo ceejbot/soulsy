@@ -3,7 +3,7 @@
 #include "plugin/hooks.h"
 #include "plugin/mcm_glue.h"
 #include "plugin/sinks.h"
-#include "ui/ui_renderer.h"
+#include "plugin/ui/ui_renderer.h"
 
 /*
 #include "control/binding.h"

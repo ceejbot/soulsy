@@ -1,20 +1,21 @@
 ﻿#include "helper.h"
 #include "constant.h"
 #include "data/config_writer_helper.h"
-#include "equip/equip_slot.h"
-#include "mcm_glue.h"
-#include "soulsy/include/lib.rs.h"
+#include "../equip/equip_slot.h"
+#include "../mcm_glue.h"
 #include "string_util.h"
-#include "util/player/player.h"
+#include "../util/player/player.h"
+
+#include "../target/cxxbridge/soulsy/src/lib.rs.h"
 
 
-namespace helper
+namespace helpers
 {
 	data_helper* get_extra_data(RE::TESForm*& form)
 	{
 		const auto item       = new data_helper();
-		const auto type       = util::get_type(a_form);
-		const auto two_handed = util::is_two_handed(a_form);
+		const auto type       = helpers::get_type(form);
+		const auto two_handed = helpers::is_two_handed(form);
 
 		item->form       = form;
 		item->type       = type;
@@ -23,11 +24,12 @@ namespace helper
 		return item;
 	}
 
-	ItemData* = buildCycleEntry(RE::TESForm * &form)
+	ItemData* buildCycleEntry(RE::TESForm*& form)
 	{
+		auto* item       = new ItemData();
 		item->form       = form;
-		item->type       = util::get_type(a_form);
-		item->two_handed = util::is_two_handed(a_form);
+		item->type       = helpers::get_type(form);
+		item->two_handed = helpers::is_two_handed(form);
 		item->formspec   = get_form_spec(form);
 		// action_type action_type    = action_type::default_action;
 		// bool has_count             = false;
