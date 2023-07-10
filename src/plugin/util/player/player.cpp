@@ -1,22 +1,23 @@
 #include "player.h"
-#include "setting/mcm_setting.h"
+#include "enums.h"
+#include "mcm_glue.h"
 #include "util/helper.h"
 #include "util/offset.h"
 #include "util/string_util.h"
 
-namespace util
+namespace player
 {
-	using slot_type   = handle::slot_setting::slot_type;
-	using action_type = handle::slot_setting::action_type;
+	using slot_type   = enums::slot_type;
+	using action_type = enums::action_type;
 
 
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
-		player::get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)
+		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)
 	{
 		return a_player->GetInventory([a_type](const RE::TESBoundObject& a_object) { return a_object.Is(a_type); });
 	}
 
-	uint32_t player::get_inventory_count(const RE::TESForm* a_form)
+	uint32_t get_inventory_count(const RE::TESForm* a_form)
 	{
 		uint32_t count = 0;
 		if (!a_form)
@@ -39,7 +40,7 @@ namespace util
 		return count;
 	}
 
-	std::vector<data_helper*> player::get_hand_assignment(bool a_two_handed)
+	std::vector<data_helper*> get_hand_assignment(bool a_two_handed)
 	{
 		std::vector<data_helper*> data;
 		const auto* player = RE::PlayerCharacter::GetSingleton();
@@ -64,7 +65,7 @@ namespace util
 
 		if (!a_two_handed)
 		{
-			a_two_handed = right_obj && util::helper::is_two_handed(right_obj);
+			a_two_handed = right_obj && helper::is_two_handed(right_obj);
 		}
 
 		logger::trace("got form {}, name {} on both/right hand"sv,
@@ -79,7 +80,7 @@ namespace util
 		{
 			data[0]->form        = right_obj;
 			data[0]->left        = false;
-			data[0]->type        = util::helper::get_type(right_obj);
+			data[0]->type        = helper::get_type(right_obj);
 			data[0]->action_type = action_type::default_action;
 			data.erase(data.begin() + 1);
 		}
@@ -88,7 +89,7 @@ namespace util
 		{
 			data[0]->form        = right_obj;
 			data[0]->left        = false;
-			data[0]->type        = util::helper::get_type(right_obj);
+			data[0]->type        = helper::get_type(right_obj);
 			data[0]->action_type = action_type::default_action;
 		}
 
@@ -96,7 +97,7 @@ namespace util
 		{
 			data[1]->form        = left_obj;
 			data[1]->left        = true;
-			data[1]->type        = util::helper::get_type(left_obj);
+			data[1]->type        = helper::get_type(left_obj);
 			data[1]->action_type = action_type::default_action;
 		}
 
@@ -104,7 +105,7 @@ namespace util
 		return data;
 	}
 
-	bool player::has_item_or_spell(RE::TESForm* a_form)
+	bool has_item_or_spell(RE::TESForm* a_form)
 	{
 		auto has_it = false;
 		if (!a_form)
@@ -153,7 +154,7 @@ namespace util
 		return has_it;
 	}
 
-	uint32_t player::get_inventory_count(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
+	uint32_t get_inventory_count(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
 	{
 		auto count     = 0;
 		auto inventory = get_inventory(a_player, a_type);
@@ -168,14 +169,14 @@ namespace util
 		return count;
 	}
 
-	bool player::has_shout(RE::Actor* a_actor, RE::TESShout* a_shout)
+	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout)
 	{
 		using func_t = decltype(&has_shout);
 		REL::Relocation<func_t> func{ offset::has_shout };
 		return func(a_actor, a_shout);
 	}
 
-	void player::play_sound(RE::BGSSoundDescriptor* a_sound_descriptor, RE::PlayerCharacter*& a_player)
+	void play_sound(RE::BGSSoundDescriptor* a_sound_descriptor, RE::PlayerCharacter*& a_player)
 	{
 		auto* audio_manager = RE::BSAudioManager::GetSingleton();
 		if (audio_manager && a_sound_descriptor)

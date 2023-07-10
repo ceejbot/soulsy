@@ -1,11 +1,37 @@
 set(headers ${headers}
+    src/PCH.h
+    src/plugin/enums.h
+    src/plugin/equip/equip_slot.h
+    src/plugin/equip/item.h
+    src/plugin/equip/magic.h
+    src/plugin/hooks.h
+    src/plugin/keycodes.h
     src/plugin/mcm_glue.h
     src/plugin/sinks.h
-    src/PCH.h
+    src/plugin/ui/animation_handler.h
+    src/plugin/ui/image_path.h
+    src/plugin/ui/key_path.h
+    src/plugin/ui/ui_renderer.h
+    src/plugin/util/constant.h
+    src/plugin/util/data/config_writer_helper.h
+    src/plugin/util/helper.h
+    src/plugin/util/offset.h
+    src/plugin/util/player/perk_visitor.h
+    src/plugin/util/player/player.h
+    src/plugin/util/string_util.h
 )
 set(sources ${sources}
     ${headers}
     src/main.cpp
+    src/plugin/equip/equip_slot.cpp
+    src/plugin/equip/item.cpp
+    src/plugin/equip/magic.cpp
+    src/plugin/hooks.cpp
+    src/plugin/keycodes.cpp
     src/plugin/mcm_glue.cpp
     src/plugin/sinks.cpp
+    src/plugin/ui/ui_renderer.cpp
+    src/plugin/util/helper.cpp
+    src/plugin/util/player/perk_visitor.cpp
+    src/plugin/util/player/player.cpp
 )

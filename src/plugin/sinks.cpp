@@ -46,7 +46,7 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	if (config::mcm_setting::get_draw_current_items_text() &&
 		(form->IsWeapon() || form->Is(RE::FormType::Spell) || form->IsAmmo() || form->Is(RE::FormType::Light)))
 	{
-		handle::name_handle::get_singleton()->init_names(util::player::get_hand_assignment());
+		handle::name_handle::get_singleton()->init_names(player::get_hand_assignment());
 	}
 
 	if (config::mcm_setting::get_draw_current_shout_text() && form->Is(RE::FormType::Shout) ||
@@ -58,7 +58,7 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	}
 
 	// add check if we need to block left
-	if (!RE::UI::GetSingleton()->GameIsPaused() && util::helper::is_two_handed(form))
+	if (!RE::UI::GetSingleton()->GameIsPaused() && helper::is_two_handed(form))
 	{
 		processing::set_setting_data::check_if_location_needs_block(form, event->equipped);
 	}
@@ -165,11 +165,11 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 		// TODO hand off to Rust here, after first writing the Rust
 
 		// These are the buttons for cycling through positional lists.
-		auto is_position_button = key_binding->is_position_button(key);
-		auto is_showhide_key    = common::is_key_valid_and_matches(key, key_binding->get_hide_show());
-		auto is_power_key       = common::is_key_valid_and_matches(key, key_binding->get_top_execute());
-		auto is_utility_key     = key == key_binding->get_bottom_action();
-		auto is_toggle_key = common::is_key_valid_and_matches(key, key_binding->get_bottom_execute_or_toggle_action());
+		auto is_position_button        = key_binding->is_position_button(key);
+		auto is_showhide_key           = key == key_binding->get_hide_show();
+		auto is_power_key              = key == key_binding->get_top_execute();
+		auto is_utility_key            = key == key_binding->get_bottom_action();
+		auto is_toggle_key             = key == key_binding->get_bottom_execute_or_toggle_action();
 		auto execute_requires_modifier = mcm::get_bottom_execute_key_combo_only();
 
 		if (mcm::get_hide_outside_combat() && !ui::ui_renderer::get_fade())

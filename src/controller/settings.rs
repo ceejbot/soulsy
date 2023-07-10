@@ -112,6 +112,41 @@ impl Settings {
 
         Ok(settings)
     }
+
+    pub fn is_cycle_button(&self, key: u32) -> bool {
+        key == self.left || key == self.right || key == self.power || key == self.utility
+    }
+
+    pub fn left(&self) -> u32 {
+        self.left
+    }
+    pub fn right(&self) -> u32 {
+        self.right
+    }
+    pub fn power(&self) -> u32 {
+        self.power
+    }
+    pub fn utility(&self) -> u32 {
+        self.utility
+    }
+    pub fn activate(&self) -> u32 {
+        self.activate
+    }
+    pub fn showhide(&self) -> u32 {
+        self.showhide
+    }
+    pub fn maxlen(&self) -> u32 {
+        self.maxlen
+    }
+    pub fn equip_delay(&self) -> u32 {
+        self.equip_delay
+    }
+    pub fn fade(&self) -> bool {
+        self.fade
+    }
+    pub fn fade_delay(&self) -> u32 {
+        self.fade_delay
+    }
 }
 
 /// Read our user settings from the file, or fall back to defaults if the file

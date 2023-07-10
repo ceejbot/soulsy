@@ -1,6 +1,7 @@
 #include "papyrus.h"
 
 #include "control/binding.h"
+#include "enums.h"
 #include "processing/set_setting_data.h"
 #include "setting/custom_setting.h"
 #include "setting/file_setting.h"
@@ -29,7 +30,7 @@ void MCMGlue::on_config_close(RE::TESQuest*)
 	config::mcm_setting::read_setting();
 	if (config::mcm_setting::get_elden_demon_souls())
 	{
-		util::helper::rewrite_settings();
+		helper::rewrite_settings();
 	}
 	processing::set_setting_data::read_and_set_data();
 	processing::set_setting_data::get_actives_and_equip();
@@ -53,7 +54,7 @@ RE::BSFixedString MCMGlue::get_resolution_height(RE::TESQuest*)
 
 std::vector<RE::BSFixedString> MCMGlue::get_section_names(RE::TESQuest*, uint32_t a_position)
 {
-	const auto sections = util::helper::get_configured_section_page_names(a_position);
+	const auto sections = helper::get_configured_section_page_names(a_position);
 	std::vector<RE::BSFixedString> sections_bs_string;
 	sections_bs_string.reserve(sections.size());
 	for (const auto& section : sections)
@@ -169,7 +170,7 @@ RE::BSFixedString MCMGlue::get_form_name(RE::TESQuest*, const uint32_t a_index, 
 		return form_string;
 	}
 
-	const auto* form = util::helper::get_form_from_mod_id_string(form_string);
+	const auto* form = helper::get_form_from_mod_id_string(form_string);
 	if (!form)
 	{
 		return form_string;
@@ -312,11 +313,11 @@ void MCMGlue::add_unarmed_setting(RE::TESQuest*, uint32_t a_position)
 
 		next_page         = highest_page + 1;
 		const auto item   = new data_helper();
-		item->type        = handle::slot_setting::slot_type::weapon;
+		item->type        = enums::slot_type::weapon;
 		item->left        = left;
 		item->form        = RE::TESForm::LookupByID(util::unarmed);  //unarmed
 		item->two_handed  = false;
-		item->action_type = handle::slot_setting::action_type::default_action;
+		item->action_type = enums::action_type::default_action;
 		data.push_back(item);
 	}
 	else
@@ -326,15 +327,15 @@ void MCMGlue::add_unarmed_setting(RE::TESQuest*, uint32_t a_position)
 		const auto item   = new data_helper();
 		item->form        = RE::TESForm::LookupByID(util::unarmed);
 		item->left        = false;
-		item->type        = handle::slot_setting::slot_type::weapon;
-		item->action_type = handle::slot_setting::action_type::default_action;
+		item->type        = enums::slot_type::weapon;
+		item->action_type = enums::action_type::default_action;
 		data.push_back(item);
 
 		const auto item2   = new data_helper();
 		item2->form        = RE::TESForm::LookupByID(util::unarmed);
 		item2->left        = true;
-		item2->type        = handle::slot_setting::slot_type::weapon;
-		item2->action_type = handle::slot_setting::action_type::default_action;
+		item2->type        = enums::slot_type::weapon;
+		item2->action_type = enums::action_type::default_action;
 		data.push_back(item2);
 	}
 	processing::set_setting_data::set_single_slot(next_page, position, data);
@@ -391,7 +392,7 @@ bool MCMGlue::is_size_ok(uint32_t a_idx, uint64_t a_size)
 std::string MCMGlue::get_section_by_index(const uint32_t a_index, uint32_t a_position)
 {
 	std::string section;
-	if (const auto sections = util::helper::get_configured_section_page_names(a_position);
+	if (const auto sections = helper::get_configured_section_page_names(a_position);
 		!sections.empty() && is_size_ok(a_index, sections.size()))
 	{
 		section = sections.at(a_index);
@@ -461,12 +462,12 @@ std::string MCMGlue::get_form_name_string_for_section(const std::string& a_str)
 	RE::TESForm* form = nullptr;
 	if (!form_string.empty())
 	{
-		form = util::helper::get_form_from_mod_id_string(form_string);
+		form = helper::get_form_from_mod_id_string(form_string);
 	}
 	RE::TESForm* form_left = nullptr;
 	if (!form_string_left.empty())
 	{
-		form_left = util::helper::get_form_from_mod_id_string(form_string_left);
+		form_left = helper::get_form_from_mod_id_string(form_string_left);
 	}
 
 	//if form is null check if av is set

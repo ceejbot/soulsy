@@ -498,14 +498,12 @@ namespace ui
 						break;
 					case slot_type::shout:
 					case slot_type::power:
-						slot_text =
-							slot_settings.front()->action == handle::slot_setting::action_type::instant ? "I" : "E";
+						slot_text = slot_settings.front()->action == enums::action_type::instant ? "I" : "E";
 						break;
 					case slot_type::magic:
 						if ((position == position_type::top && elden) || !elden)
 						{
-							slot_text =
-								slot_settings.front()->action == handle::slot_setting::action_type::instant ? "I" : "E";
+							slot_text = slot_settings.front()->action == enums::action_type::instant ? "I" : "E";
 						}
 						else if (draw_page)
 						{

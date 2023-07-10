@@ -1,33 +1,15 @@
-use super::control::Action;
+use num_derive::{FromPrimitive, ToPrimitive};
 
-// TODO: This should move to settings.
+use crate::controller::control::Action;
+use crate::plugin::{KeyEventResponse, TESForm};
+
+// TODO: This has moved to settings.
 static MAX_CYCLE_LEN: usize = 10;
 
-/*
-
-class slot_setting {
-public:
-    //un equip just makes sense with form == nullptr
-    enum class action_type : std::uint32_t { default_action = 0, instant = 1, un_equip = 2 };
-
-    enum class hand_equip : std::uint32_t { single = 0, both = 1, total = 2 };
-
-
-    RE::TESForm* form = nullptr;
-    slot_type type = slot_type::empty;
-    action_type action = action_type::default_action;
-    hand_equip equip = hand_equip::total;
-    RE::BGSEquipSlot* equip_slot = nullptr;
-    int32_t item_count = 0;
-    RE::ActorValue actor_value = RE::ActorValue::kNone;
-    bool display_item_count = false;
-};
- */
-
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-enum ItemKind {
-    #[default]
-    Empty,
+// This is in the same order as the slot_type enum on the C++ side.
+// I haven't yet decided I like shared enums. This is a pain, tho.
+#[derive(Debug, Clone, PartialEq, Eq, Default, FromPrimitive, ToPrimitive)]
+pub enum ItemKind {
     Weapon,
     Magic,
     Shield,
@@ -36,25 +18,72 @@ enum ItemKind {
     Consumable,
     Armor,
     Scroll,
+    #[default]
+    Empty,
     Misc,
     Light,
     Lantern,
-    Torch,
     Mask,
+}
+
+fn kind_from_slot(slot: u32) -> ItemKind {
+    num_traits::FromPrimitive::from_u32(slot).unwrap_or_default()
+}
+
+fn left_hand_ok(kind: &ItemKind) -> bool {
+    matches!(
+        kind,
+        ItemKind::Weapon
+            | ItemKind::Magic
+            | ItemKind::Shield
+            | ItemKind::Scroll
+            | ItemKind::Light
+            | ItemKind::Lantern
+    )
+}
+
+fn right_hand_ok(kind: &ItemKind) -> bool {
+    matches!(kind, ItemKind::Weapon | ItemKind::Magic | ItemKind::Scroll)
+}
+
+fn is_power(kind: &ItemKind) -> bool {
+    matches!(kind, ItemKind::Shout | ItemKind::Power)
+}
+
+fn is_utility(kind: &ItemKind) -> bool {
+    matches!(
+        kind,
+        ItemKind::Consumable | ItemKind::Armor | ItemKind::Misc | ItemKind::Mask
+    )
 }
 
 // Haven't yet figured out how to serialize this to toml or anything yet.
 // Still working on what data I want to track.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CycleEntry {
-    spec: String,
+    form_string: String,
+    /// An enum classifying this item for fast question-answering. Equiv to `type` from TESForm.
     kind: ItemKind,
+    /// True if this item requires both hands to use.
+    two_handed: bool,
+    /// True if this item should be displayed with count data.
+    has_count: bool,
+    icon: String,
     // form: &TESForm,
     // slot: &BGSEquipSlot
 }
 
 impl CycleEntry {
-    // implement a from function for C++-side data
+    /// This is called from C++ when handing us a new item.
+    pub fn new(slot: u32, two_handed: bool, has_count: bool, _form: &TESForm) -> Self {
+        // todo more
+        CycleEntry {
+            kind: kind_from_slot(slot),
+            two_handed,
+            has_count,
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -63,13 +92,6 @@ pub struct CycleData {
     right: Vec<CycleEntry>,
     power: Vec<CycleEntry>,
     utility: Vec<CycleEntry>,
-}
-
-pub enum ToggleResults {
-    Added,
-    Removed,
-    Inappropriate,
-    TooManyItems,
 }
 
 impl CycleData {
@@ -91,67 +113,47 @@ impl CycleData {
         cycle.first().cloned()
     }
 
-    pub fn toggle(&mut self, which: Action, item: CycleEntry) -> ToggleResults {
+    pub fn toggle(&mut self, which: Action, item: CycleEntry) -> KeyEventResponse {
         let cycle = match which {
             Action::Power => {
-                if item.kind != ItemKind::Power && item.kind != ItemKind::Shout {
-                    return ToggleResults::Inappropriate;
+                if !is_power(&item.kind) {
+                    return KeyEventResponse::ItemInappropriate;
                 }
                 &mut self.power
             }
             Action::Left => {
-                match item.kind {
-                    ItemKind::Weapon => {}
-                    ItemKind::Magic => {}
-                    ItemKind::Shield => {}
-                    ItemKind::Scroll => {}
-                    ItemKind::Light => {}
-                    ItemKind::Lantern => {}
-                    ItemKind::Torch => {}
-                    _ => {
-                        return ToggleResults::Inappropriate;
-                    }
+                if !left_hand_ok(&item.kind) {
+                    return KeyEventResponse::ItemInappropriate;
                 }
                 &mut self.left
             }
             Action::Right => {
-                match item.kind {
-                    ItemKind::Weapon => {}
-                    ItemKind::Magic => {}
-                    ItemKind::Scroll => {}
-                    _ => {
-                        return ToggleResults::Inappropriate;
-                    }
+                if !right_hand_ok(&item.kind) {
+                    return KeyEventResponse::ItemInappropriate;
                 }
                 &mut self.right
             }
             Action::Utility => {
-                match item.kind {
-                    ItemKind::Consumable => {}
-                    ItemKind::Armor => {}
-                    ItemKind::Misc => {}
-                    ItemKind::Mask => {}
-                    _ => {
-                        return ToggleResults::Inappropriate;
-                    }
+                if !is_utility(&item.kind) {
+                    return KeyEventResponse::ItemInappropriate;
                 }
                 &mut self.utility
             }
             _ => {
                 log::warn!("It is a programmer error to call toggle() with {which:?}");
-                return ToggleResults::Inappropriate;
+                return KeyEventResponse::ItemInappropriate;
             }
         };
 
         // We have at most 10 items, so we can do this with a linear search.
         if let Some(idx) = cycle.iter().position(|xs| *xs == item) {
             cycle.remove(idx);
-            ToggleResults::Removed
+            KeyEventResponse::ItemRemoved
         } else if cycle.len() >= MAX_CYCLE_LEN {
-            return ToggleResults::TooManyItems;
+            return KeyEventResponse::TooManyItems;
         } else {
             cycle.push(item);
-            ToggleResults::Added
+            KeyEventResponse::ItemAdded
         }
     }
 }

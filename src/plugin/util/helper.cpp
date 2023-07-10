@@ -2,28 +2,41 @@
 #include "constant.h"
 #include "data/config_writer_helper.h"
 #include "equip/equip_slot.h"
-#include "handle/data/page/position_setting.h"
-#include "setting/custom_setting.h"
-#include "setting/mcm_setting.h"
+#include "mcm_glue.h"
+#include "soulsy/include/lib.rs.h"
 #include "string_util.h"
 #include "util/player/player.h"
 
-namespace util
+
+namespace helper
 {
-	std::string helper::get_mod_and_form(const RE::FormID& a_form_id)
+	data_helper* get_extra_data(RE::TESForm*& form)
 	{
-		std::string form_string;
-		if (!a_form_id)
-		{
-			return form_string;
-		}
+		const auto item       = new data_helper();
+		const auto type       = util::get_type(a_form);
+		const auto two_handed = util::is_two_handed(a_form);
 
-		const auto* form = RE::TESForm::LookupByID(a_form_id);
-		logger::trace("Item is {}, formid {}, formid not translated {}. return."sv,
-			form->GetName(),
-			string_util::int_to_hex(form->GetFormID()),
-			form->GetFormID());
+		item->form       = form;
+		item->type       = type;
+		item->two_handed = two_handed;
 
+		return item;
+	}
+
+	ItemData* = buildCycleEntry(RE::TESForm * &form)
+	{
+		item->form       = form;
+		item->type       = util::get_type(a_form);
+		item->two_handed = util::is_two_handed(a_form);
+		item->formspec   = get_form_spec(form);
+		// action_type action_type    = action_type::default_action;
+		// bool has_count             = false;
+		// RE::ActorValue actor_value = RE::ActorValue::kNone;
+		// RE::BGSEquipSlot* slot     = nullptr;
+	}
+
+	std::string get_form_spec(const RE::TESForm& form)
+	{
 		if (form->IsDynamicForm())
 		{
 			form_string = fmt::format("{}{}{}", dynamic_name, delimiter, string_util::int_to_hex(form->GetFormID()));
@@ -45,7 +58,24 @@ namespace util
 		return form_string;
 	}
 
-	std::vector<std::string> helper::get_configured_section_page_names(uint32_t a_position)
+	std::string get_mod_and_form(const RE::FormID& a_form_id)
+	{
+		std::string form_string;
+		if (!a_form_id)
+		{
+			return form_string;
+		}
+
+		const auto* form = RE::TESForm::LookupByID(a_form_id);
+		logger::trace("Item is {}, formid {}, formid not translated {}. return."sv,
+			form->GetName(),
+			string_util::int_to_hex(form->GetFormID()),
+			form->GetFormID());
+
+		return get_form_spec(form);
+	}
+
+	std::vector<std::string> get_configured_section_page_names(uint32_t a_position)
 	{
 		//4 is all
 		std::vector<std::string> names;
@@ -68,7 +98,7 @@ namespace util
 		return names;
 	}
 
-	RE::TESForm* helper::get_form_from_mod_id_string(const std::string& a_str)
+	RE::TESForm* get_form_from_mod_id_string(const std::string& a_str)
 	{
 		if (!a_str.find(delimiter))
 		{
@@ -109,7 +139,7 @@ namespace util
 		return form;
 	}
 
-	bool helper::is_two_handed(RE::TESForm*& a_form)
+	bool is_two_handed(RE::TESForm*& a_form)
 	{
 		if (!a_form)
 		{
@@ -138,7 +168,7 @@ namespace util
 		return two_handed;
 	}
 
-	handle::slot_setting::slot_type helper::get_type(RE::TESForm*& a_form)
+	slot_type get_type(RE::TESForm*& a_form)
 	{
 		if (!a_form)
 		{
@@ -221,7 +251,7 @@ namespace util
 		return slot_type::misc;
 	}
 
-	void helper::rewrite_settings()
+	void rewrite_settings()
 	{
 		logger::trace("rewriting config ..."sv);
 		std::map<uint32_t, uint32_t> next_page_for_position;
@@ -280,13 +310,13 @@ namespace util
 		logger::trace("done rewriting."sv);
 	}
 
-	std::string helper::get_section_name_for_page_position(const uint32_t a_page, const uint32_t a_position)
+	std::string get_section_name_for_page_position(const uint32_t a_page, const uint32_t a_position)
 	{
 		//for now, I will just generate it
 		return fmt::format("Page{}Position{}", a_page, a_position);
 	}
 
-	RE::ActorValue helper::get_actor_value_effect_from_potion(RE::TESForm* a_form, bool a_check)
+	RE::ActorValue get_actor_value_effect_from_potion(RE::TESForm* a_form, bool a_check)
 	{
 		if (!a_form->Is(RE::FormType::AlchemyItem) || (!config::mcm_setting::get_group_potions() && a_check))
 		{
@@ -321,7 +351,7 @@ namespace util
 		return RE::ActorValue::kNone;
 	}
 
-	void helper::write_setting_to_file(const uint32_t a_page,
+	void write_setting_to_file(const uint32_t a_page,
 		const uint32_t a_position,
 		const std::vector<data_helper*>& a_data,
 		const uint32_t a_hand)
@@ -423,7 +453,7 @@ namespace util
 		config::custom_setting::read_setting();
 	}
 
-	bool helper::can_instant_cast(RE::TESForm* a_form, const slot_type a_type)
+	bool can_instant_cast(RE::TESForm* a_form, const slot_type a_type)
 	{
 		if (a_type == slot_type::magic)
 		{

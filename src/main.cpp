@@ -1,7 +1,7 @@
 
 #include "PCH.h"  // this will actually be force-included...
 #include "plugin/hooks.h"
-#include "plugin/papyrus.h"
+#include "plugin/mcm_glue.h"
 #include "plugin/sinks.h"
 #include "ui/ui_renderer.h"
 
@@ -9,7 +9,6 @@
 #include "control/binding.h"
 #include "processing/set_setting_data.h"
 #include "setting/file_setting.h"
-#include "setting/mcm_setting.h"
 */
 
 void init_logger()

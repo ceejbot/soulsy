@@ -1,10 +1,11 @@
 use std::sync::Mutex;
 use std::time::Duration;
 
-use once_cell::sync::Lazy; // 1.3.1
+use once_cell::sync::Lazy;
 
 use super::cycles::*;
 use super::settings::settings;
+use crate::plugin::{KeyEventResponse, TESForm};
 
 // File is named control.rs to avoid module inception.
 
@@ -14,6 +15,14 @@ static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller:
 pub fn handle_key_event(key: u32) -> bool {
     let action = Action::from(key);
     CONTROLLER.lock().unwrap().handle_action(action)
+}
+
+pub fn handle_menu_event(key: u32, _form: &TESForm) -> KeyEventResponse {
+    let action = Action::from(key);
+    // todo for the moment, until the C++ side calls the constructor
+    let item = CycleEntry::default();
+    // let item = CycleEntry::from(form);
+    CONTROLLER.lock().unwrap().toggle_item(action, item)
 }
 
 /// Turning the key number into an enum is handy.
@@ -135,11 +144,11 @@ impl Controller {
     /// This function is called when the user has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    pub fn toggle_item(&mut self, action: Action, item: CycleEntry) -> ToggleResults {
-        // The trick here is making the CycleEntry item out of UI data in the first place.
-        // I need to expose form data and other item data to Rust.
+    pub fn toggle_item(&mut self, action: Action, item: CycleEntry) -> KeyEventResponse {
         let result = self.cycles.toggle(action, item);
-        if matches!(result, ToggleResults::Added) || matches!(result, ToggleResults::Removed) {
+        if matches!(result, KeyEventResponse::ItemAdded)
+            || matches!(result, KeyEventResponse::ItemRemoved)
+        {
             // the data changed. might want to flush it to disk?
             // or do something depending on how I end up persisting this
         }

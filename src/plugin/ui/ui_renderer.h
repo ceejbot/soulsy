@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "animation_handler.h"
-#include "handle/data/page/position_setting.h"
+#include "enums.h"
 #include "image_path.h"
 
 namespace ui
@@ -15,8 +15,8 @@ namespace ui
 	class ui_renderer
 	{
 		using page_setting  = handle::position_setting;
-		using slot_type     = handle::slot_setting::slot_type;
-		using position_type = handle::position_setting::position_type;
+		using slot_type     = enums::slot_type;
+		using position_type = enums::position_type;
 
 		struct wnd_proc_hook
 		{

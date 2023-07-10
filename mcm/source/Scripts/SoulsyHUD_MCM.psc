@@ -1,4 +1,4 @@
-ScriptName LamasTinyHUD_MCM Extends MCM_ConfigBase
+ScriptName SoulsyHUD_MCM Extends MCM_ConfigBase
 
 bool property bChangeable Auto
 bool property bSpell Auto
@@ -63,6 +63,7 @@ function AddUnarmed()
 endfunction
 
 Event OnSettingChange(String a_ID)
+    ; TODO most of my work is here
     if (a_ID == "uPageList:Page")
         int idx = GetModSettingInt(a_ID)
         int position = GetModSettingInt("uPositionSelect:Page")
@@ -150,21 +151,12 @@ Event OnSettingChange(String a_ID)
 EndEvent
 
 Event OnPageSelect(string a_page)
-    if ( a_page == "$LamasTinyHUD_Pages")
-        string[] menu_list = GetSectionNames(GetModSettingInt("uPositionSelect:Page"))
-        SetMenuOptions("uPageList:Page", menu_list, menu_list)
-        RefreshMenu()
-    elseif ( a_page == "$LamasTinyHUD_HudSetting" )
-        SetModSettingString("sDisplayResolutionWidth:HudSetting",GetResolutionWidth())
-        SetModSettingString("sDisplayResolutionHeight:HudSetting",GetResolutionHeight())
-        RefreshMenu()
-    elseif ( a_page == "$LamasTinyHUD_MiscSetting" )
-        LoadReloadSettingFiles()
-        RefreshMenu()
-    endIf
+    LoadReloadSettingFiles()
+    RefreshMenu()
 EndEvent
 
 Event OnConfigOpen()
+    ; not sure what's needed here yet
     bElden = GetModSettingBool("bEldenDemonSouls:MiscSetting")
     bCombat = GetModSettingBool("bHideOutsideCombat:MiscSetting")
     bUnarmed = bElden && (GetModSettingInt("uPositionSelect:Page") == 1 || GetModSettingInt("uPositionSelect:Page") == 3)

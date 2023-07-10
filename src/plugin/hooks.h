@@ -1,7 +1,7 @@
 #pragma once
 
 #include "control/binding.h"
-#include "control/common.h"
+#include "keycodes.h"
 
 namespace hook
 {
