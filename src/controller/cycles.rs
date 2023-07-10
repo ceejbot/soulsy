@@ -1,14 +1,18 @@
+use anyhow::Result;
 use num_derive::{FromPrimitive, ToPrimitive};
+use serde::{Deserialize, Serialize};
 
-use crate::controller::control::Action;
-use crate::plugin::{KeyEventResponse, TESForm};
+use super::user_settings;
+use crate::plugin::{Action, MenuEventResponse, TESForm};
 
 // TODO: This has moved to settings.
 static MAX_CYCLE_LEN: usize = 10;
 
 // This is in the same order as the slot_type enum on the C++ side.
 // I haven't yet decided I like shared enums. This is a pain, tho.
-#[derive(Debug, Clone, PartialEq, Eq, Default, FromPrimitive, ToPrimitive)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default, FromPrimitive, ToPrimitive,
+)]
 pub enum ItemKind {
     Weapon,
     Magic,
@@ -59,7 +63,7 @@ fn is_utility(kind: &ItemKind) -> bool {
 
 // Haven't yet figured out how to serialize this to toml or anything yet.
 // Still working on what data I want to track.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default, PartialEq, Eq)]
 pub struct CycleEntry {
     form_string: String,
     /// An enum classifying this item for fast question-answering. Equiv to `type` from TESForm.
@@ -86,7 +90,7 @@ impl CycleEntry {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct CycleData {
     left: Vec<CycleEntry>,
     right: Vec<CycleEntry>,
@@ -95,6 +99,10 @@ pub struct CycleData {
 }
 
 impl CycleData {
+    pub fn write(&self) -> Result<()> {
+        Ok(())
+    }
+
     pub fn advance(&mut self, which: Action, amount: usize) -> Option<CycleEntry> {
         let cycle = match which {
             Action::Power => &mut self.power,
@@ -113,47 +121,48 @@ impl CycleData {
         cycle.first().cloned()
     }
 
-    pub fn toggle(&mut self, which: Action, item: CycleEntry) -> KeyEventResponse {
+    pub fn toggle(&mut self, which: Action, item: CycleEntry) -> MenuEventResponse {
         let cycle = match which {
             Action::Power => {
                 if !is_power(&item.kind) {
-                    return KeyEventResponse::ItemInappropriate;
+                    return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.power
             }
             Action::Left => {
                 if !left_hand_ok(&item.kind) {
-                    return KeyEventResponse::ItemInappropriate;
+                    return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.left
             }
             Action::Right => {
                 if !right_hand_ok(&item.kind) {
-                    return KeyEventResponse::ItemInappropriate;
+                    return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.right
             }
             Action::Utility => {
                 if !is_utility(&item.kind) {
-                    return KeyEventResponse::ItemInappropriate;
+                    return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.utility
             }
             _ => {
                 log::warn!("It is a programmer error to call toggle() with {which:?}");
-                return KeyEventResponse::ItemInappropriate;
+                return MenuEventResponse::ItemInappropriate;
             }
         };
 
-        // We have at most 10 items, so we can do this with a linear search.
+        // We have at most 15 items, so we can do this with a linear search.
+        let settings = user_settings();
         if let Some(idx) = cycle.iter().position(|xs| *xs == item) {
             cycle.remove(idx);
-            KeyEventResponse::ItemRemoved
-        } else if cycle.len() >= MAX_CYCLE_LEN {
-            return KeyEventResponse::TooManyItems;
+            MenuEventResponse::ItemRemoved
+        } else if cycle.len() >= settings.maxlen() as usize {
+            return MenuEventResponse::TooManyItems;
         } else {
             cycle.push(item);
-            KeyEventResponse::ItemAdded
+            MenuEventResponse::ItemAdded
         }
     }
 }

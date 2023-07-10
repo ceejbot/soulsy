@@ -1,8 +1,8 @@
 ﻿#include "include/magic.h"
 #include "include/gear.h"
-#include "include/user_settings.h"
 #include "include/offset.h"
 #include "include/player.h"
+#include "include/user_settings.h"
 
 namespace equip
 {

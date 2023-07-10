@@ -4,18 +4,18 @@
 
 namespace helpers
 {
-	using slot_type = enums::slot_type;
-	using action_type = enums::action_type;
+	using slot_type     = enums::slot_type;
+	using action_type   = enums::action_type;
 	using position_type = enums::position_type;
 
 	struct data_helper
 	{
-		RE::TESForm* form          = nullptr;
-		enums::slot_type type             = enums::slot_type::empty;
-		enums::action_type action_type    = enums::action_type::default_action;
-		bool left                  = false;
-		bool two_handed            = false;
-		RE::ActorValue actor_value = RE::ActorValue::kNone;
+		RE::TESForm* form              = nullptr;
+		enums::slot_type type          = enums::slot_type::empty;
+		enums::action_type action_type = enums::action_type::default_action;
+		bool left                      = false;
+		bool two_handed                = false;
+		RE::ActorValue actor_value     = RE::ActorValue::kNone;
 	};
 
 	struct ItemData

@@ -1,6 +1,8 @@
 #include "include/hooks.h"
 #include "include/user_settings.h"
 
+#include "lib.rs.h"
+
 namespace hooks
 {
 	void install_hooks()
@@ -25,7 +27,7 @@ namespace hooks
 		RE::BSTEventSource<RE::InputEvent*>* eventSource)
 	{
 		auto* ui          = RE::UI::GetSingleton();
-		auto* hotkeys     = boxed_settings();
+		auto* hotkeys     = user_settings();
 		auto* user_event  = RE::UserEvents::GetSingleton();
 		auto* control_map = RE::ControlMap::GetSingleton();
 
@@ -75,14 +77,10 @@ namespace hooks
 							//extra
 
 							auto result = handle_menu_event(key, tes_form_menu);
-
-							// TODO do some stuff based on the result
 							logger::info("got result code {} from menu event for {}"sv, result, key);
+							// TODO vary this response notification based on the result
 							// write_notification(fmt::format("Added Item {}", a_form ? a_form->GetName() : "null"));
-
-							processing::game_menu_setting::elden_souls_config(tes_form_menu,
-								keyposition,
-								binding->get_is_edit_left_down());
+							// here the old code wrote the config out; we've already done that in rust
 						}
 					}
 				}

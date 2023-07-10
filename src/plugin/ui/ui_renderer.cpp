@@ -1,4 +1,5 @@
-﻿#include "../handle/ammo_handle.h"
+﻿#include "include/ui_renderer.h"
+#include "../handle/ammo_handle.h"
 #include "../handle/name_handle.h"
 #include "../handle/page_handle.h"
 #include "include/animation_handler.h"
@@ -7,7 +8,6 @@
 #include "include/image_path.h"
 #include "include/key_path.h"
 #include "include/keycodes.h"
-#include "include/ui_renderer.h"
 #include "include/user_settings.h"
 
 #pragma warning(push)

@@ -1,9 +1,11 @@
 ﻿#pragma once
 #include "animation_handler.h"
 #include "enums.h"
+#include "handle/data/page/position_setting.h"
 #include "image_path.h"
 
-// TODO missing page_setting somewhere
+// TODO get rid of position setting; get this from Rust side
+// everything else will be fine. afaik.
 
 namespace ui
 {

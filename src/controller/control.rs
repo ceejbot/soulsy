@@ -1,23 +1,22 @@
 use std::sync::Mutex;
-use std::time::Duration;
 
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
-use super::settings::settings;
-use crate::plugin::{KeyEventResponse, TESForm};
-
-// File is named control.rs to avoid module inception.
+use super::settings::user_settings;
+use crate::plugin::{
+    ui_renderer, Action, ButtonEvent, KeyEventResponse, MenuEventResponse, TESForm,
+};
 
 /// There can be only one. Not public because we want access managed.
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
 
-pub fn handle_key_event(key: u32) -> bool {
+pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
     let action = Action::from(key);
-    CONTROLLER.lock().unwrap().handle_action(action)
+    CONTROLLER.lock().unwrap().handle_key_event(action)
 }
 
-pub fn handle_menu_event(key: u32, _form: &TESForm) -> KeyEventResponse {
+pub fn handle_menu_event(key: u32, _form: &TESForm) -> MenuEventResponse {
     let action = Action::from(key);
     // todo for the moment, until the C++ side calls the constructor
     let item = CycleEntry::default();
@@ -25,22 +24,10 @@ pub fn handle_menu_event(key: u32, _form: &TESForm) -> KeyEventResponse {
     CONTROLLER.lock().unwrap().toggle_item(action, item)
 }
 
-/// Turning the key number into an enum is handy.
-#[derive(Debug, Clone)]
-pub enum Action {
-    Power,
-    Left,
-    Right,
-    Utility,
-    Activate,
-    ShowHide,
-    Irrelevant,
-}
-
 impl From<u32> for Action {
     /// Turn the key code into an enum for easier processing.
     fn from(value: u32) -> Self {
-        let settings = settings();
+        let settings = user_settings();
 
         if value == settings.left {
             Action::Left
@@ -64,93 +51,113 @@ impl From<u32> for Action {
 pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
-    /// A timer for the power button. When this fires, the item equips.
-    _power_timer: Option<()>,
-    /// Repeat comment.
-    _left_timer: Option<()>,
-    /// Repeat comment.
-    _right_timer: Option<()>,
-    /// Yes, this unrolling thing is tedious. But the cost of abstraction doesn't yet feel worth it.
-    _utility_timer: Option<()>,
-    /// Storing this on the struct in case it becomes a user setting.
-    _delay_ms: Duration,
 }
 
 impl Controller {
     pub fn new() -> Self {
         Controller {
             cycles: CycleData::default(), // for now; will need to come from mcm data or from a file
-            _power_timer: None,
-            _left_timer: None,
-            _right_timer: None,
-            _utility_timer: None,
-            _delay_ms: Duration::from_micros(1000),
         }
     }
 
-    pub fn handle_action(&mut self, action: Action) -> bool {
+    pub fn handle_key_event(&mut self, action: Action) -> KeyEventResponse {
         // Sketching out what has to happen on fired timers
         // timer data should include the triggering action so we know what to do
         // de-highlight the button if necessary
         // if utility slot, nothing further to do
         // if left/right/power, equip the item
 
+        // If we're faded out in any way, show ourselves again.
+        // The second param to set_fade() is the desired end alpha.
+        if !matches!(action, Action::ShowHide) {
+            let is_fading: bool = ui_renderer::get_fade();
+            if settings().fade() && !is_fading {
+                ui_renderer::set_fade(true, 1.0);
+                return KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                };
+            }
+        }
+
+        // will clippy complain about the C++ method names?
+        let is_down: bool = button::IsDown();
+        let is_up: bool = button::IsUp();
+
         match action {
             Action::Power => {
                 let _next = self.cycles.advance(action, 1);
                 // tell the ui to show this and highlight this button
                 // start or restart the relevant timer
-                /*
-                if let Some(guard) = self.power_timer {
-                    drop(guard);
+                KeyEventResponse {
+                    handled: true,
+                    start_timer: Action::Power,
+                    stop_timer: Action::Irrelevant,
                 }
-                let t = Timer::new();
-                let guard = t.schedule_with_delay(self.delay_ms, || {
-                    self.power_timer = None;
-                });
-                self.power_timer = Some(guard);
-                */
-                todo!()
             }
             Action::Left => {
                 // cycle the left selection one forward; start the left timer
                 // highlight the button
-                todo!()
+                KeyEventResponse {
+                    handled: true,
+                    start_timer: Action::Left,
+                    stop_timer: Action::Irrelevant,
+                }
             }
             Action::Right => {
                 // cycle the left selection one forward; start the left timer
                 // highlight the button
-                todo!()
+                KeyEventResponse {
+                    handled: true,
+                    start_timer: Action::Right,
+                    stop_timer: Action::Irrelevant,
+                }
             }
             Action::Utility => {
                 // cycle the left selection one forward; start the left timer
                 // highlight the button
-                todo!()
+                KeyEventResponse {
+                    handled: true,
+                    start_timer: Action::Utility,
+                    stop_timer: Action::Irrelevant,
+                }
             }
             Action::Activate => {
                 // stop any timers for the utility cycle
                 // finalize the UI look (de-highlight)
                 // use the item
-                todo!()
+                // TODO
+                KeyEventResponse {
+                    handled: true,
+                    start_timer: Action::Irrelevant,
+                    stop_timer: Action::Utility,
+                }
             }
             Action::ShowHide => {
-                // do what it says plox
-                todo!()
+                // ask if we're visible now
+                // set val=0.0 if we are, 1.0 if we're not
+                // call set_fade(true, val)
+                ui_renderer::toggle_show_ui();
+                KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                }
             }
-            Action::Irrelevant => false,
+            Action::Irrelevant => KeyEventResponse::default(),
         }
     }
 
     /// This function is called when the user has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    pub fn toggle_item(&mut self, action: Action, item: CycleEntry) -> KeyEventResponse {
+    pub fn toggle_item(&mut self, action: Action, item: CycleEntry) -> MenuEventResponse {
         let result = self.cycles.toggle(action, item);
-        if matches!(result, KeyEventResponse::ItemAdded)
-            || matches!(result, KeyEventResponse::ItemRemoved)
-        {
-            // the data changed. might want to flush it to disk?
-            // or do something depending on how I end up persisting this
+        if matches!(
+            result,
+            MenuEventResponse::ItemAdded | MenuEventResponse::ItemRemoved
+        ) {
+            // the data changed. flush it to disk with char name in it or something
+            match self.cycles.write() {}
         }
 
         result
@@ -160,7 +167,17 @@ impl Controller {
         // this should be called by a top-level hook that also makes sure UI is updated
         // if item is any lists: rotate list so item is at front
         // else do nothing
-        // how do we notice if an item has left our inventory? event registration probably
+        // we have another hook set up for inventory changes that will also need a handler
         todo!();
+    }
+}
+
+impl Default for KeyEventResponse {
+    fn default() -> Self {
+        Self {
+            handled: false,
+            stop_timer: Action::Irrelevant,
+            start_timer: Action::Irrelevant,
+        }
     }
 }

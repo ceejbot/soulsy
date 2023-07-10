@@ -1,13 +1,15 @@
 #include "include/sinks.h"
-#include "include/user_settings.h"
-#include "include/ui_renderer.h"
-#include "handle/name_handle.h"
 #include "handle/extra_data_holder.h"
+#include "handle/name_handle.h"
+#include "include/helper.h"
+#include "include/keycodes.h"
+#include "include/player.h"
+#include "include/ui_renderer.h"
+#include "include/user_settings.h"
 #include "processing/set_setting_data.h"
 #include "processing/setting_execute.h"
-#include "include/keycodes.h"
-#include "include/helper.h"
-#include "include/player.h"
+
+#include "lib.rs.h"
 
 // Handle equipment change events. We need to update our UI when this happens.
 
@@ -100,11 +102,6 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 		return event_result::kContinue;
 	}
 
-
-	button_press_modify_ = config::mcm_setting::get_slot_button_feedback();
-	auto* key_binding    = control::binding::get_singleton();
-
-
 	// We do nothing if the console, the inventory menu, the magic menu, or the favorites
 	// menu are open.
 	const auto* interface_strings = RE::InterfaceStrings::GetSingleton();
@@ -139,7 +136,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 
 		// consider not acting when loot menu is open
 
-		// I need to read to figure out what this means.
+		// If we're not in control of the player character or otherwise not in gameplay, move on.
 		const auto* control_map = RE::ControlMap::GetSingleton();
 		if (!control_map || !control_map->IsMovementControlsEnabled() ||
 			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay)
@@ -150,47 +147,38 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 		// this stays static_cast
 		const auto* button =
 			static_cast<RE::ButtonEvent*>(event);  // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
-		if (button->idCode == -1)
-		{
-			continue;
-		}
 
 		// This offsets the button by an amount that varies based on what originated the
 		// event. This appears to be so that we can directly compare it to the hotkey numbers
 		// we have snagged from the MCM settings.
 		const uint32_t key = keycodes::get_key_id(button);
-
-		// TODO hand off to Rust here, after first writing the Rust
-
-		// These are the buttons for cycling through positional lists.
-		auto is_position_button        = key_binding->is_position_button(key);
-		auto is_showhide_key           = key == key_binding->get_hide_show();
-		auto is_power_key              = key == key_binding->get_top_execute();
-		auto is_utility_key            = key == key_binding->get_bottom_action();
-		auto is_toggle_key             = key == key_binding->get_bottom_execute_or_toggle_action();
-		auto execute_requires_modifier = config::mcm_setting::get_bottom_execute_key_combo_only();
-
-		if (config::mcm_setting::get_hide_outside_combat() && !ui::ui_renderer::get_fade())
+		if (key == -1)
 		{
-			if ((is_position_button || is_toggle_key || (elden && is_power_key)) &&
-				(button->IsDown() || button->IsPressed()))
-			{
-				ui::ui_renderer::set_fade(true, 1.f);
-			}
+			continue;
 		}
 
-		if (button->IsDown() && is_position_button)
+		const auto* settings       = user_settings();  // rust
+		const bool is_cycle_button = settings->is_cycle_button();
+
+		// we hand off to rust to act.
+		const KeyEventResponse response = handle_key_event(key, button);
+		if (!response.handled)
 		{
-			logger::debug("configured key ({}) is down"sv, key);
-			auto* position_setting = setting_execute::get_position_setting_for_key(key);
-			if (!position_setting)
-			{
-				logger::warn("setting for key {} is null. break."sv, key);
-				continue;
-			}
-			do_button_down(position_setting);
+			continue;
 		}
 
+		if (response.stop_timer != Action::Irrelevant)
+		{
+			// TODO stop the matching timer if we have one
+		}
+
+		if (response.start_timer != Action::Irrelevant)
+		{
+			// TODO start a matching timer and record it somewhere
+		}
+
+		/*
+this needs to be in its own function so Rust can call it with CycleEntry data when timers fire
 		if (button->IsUp() && is_position_button)
 		{
 			logger::debug("configured Key ({}) is up"sv, key);
@@ -212,53 +200,13 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 				}
 			}
 		}
-
-		// We've handled all the button-up cases. Button-down only from here on.
-		if (!button->IsDown())
-		{
-			continue;
-		}
-
-		// Note to self: figure out the difference between button down and is-pressed
-		if (button->IsPressed() && is_showhide_key)
-		{
-			ui::ui_renderer::toggle_show_ui();
-		}
-
-		if (button->IsPressed())
-		{
-			if (is_toggle_key)
-			{
-				auto* page_setting = setting_execute::get_position_setting_for_key(key);
-				if (!page_setting)
-				{
-					logger::warn("setting for key {} is null. break."sv, key);
-					break;
-				}
-				setting_execute::activate(page_setting->slot_settings);
-			}
-			if (is_power_key)
-			{
-				auto* page_setting = setting_execute::get_position_setting_for_key(key);
-				if (!page_setting)
-				{
-					logger::warn("setting for key {} is null. break."sv, key);
-					break;
-				}
-				// only instant should need work, the default shout will be handled by the game
-				setting_execute::activate(page_setting->slot_settings, false, true);
-			}
-		}
-
-		if (is_position_button && button->IsPressed())
-		{
-			handleCycleSlotKey(key, key_binding);
-		}
+		*/
 	}  // end event handling for loop
 
 	return event_result::kContinue;
 }
 
+// TODO turn this function into the timer-fired handler. It has most of the required logic in it already.
 void KeyEventSink::handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding) const
 {
 	logger::debug("configured Key ({}) pressed"sv, a_key);
@@ -306,6 +254,7 @@ void KeyEventSink::handleCycleSlotKey(uint32_t a_key, control::binding*& a_bindi
 	}
 }
 
+/*
 bool KeyEventSink::scroll_position(const uint32_t a_key, control::binding*& a_binding)
 {
 	if (a_key == a_binding->get_bottom_action() || a_key == a_binding->get_top_action())
@@ -336,3 +285,4 @@ void KeyEventSink::do_button_down(handle::position_setting*& a_position_setting)
 		}
 	}
 }
+*/

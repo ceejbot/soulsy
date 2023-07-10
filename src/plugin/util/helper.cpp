@@ -1,11 +1,11 @@
 ﻿#include "include/helper.h"
 #include "include/constant.h"
-#include "include/gear.h"
-#include "include/user_settings.h"
 #include "include/custom_setting.h"
-#include "include/string_util.h"
-#include "include/player.h"
 #include "include/enums.h"
+#include "include/gear.h"
+#include "include/player.h"
+#include "include/string_util.h"
+#include "include/user_settings.h"
 // #include "data/config_writer_helper.h"
 
 
@@ -76,7 +76,7 @@ namespace helpers
 			string_util::int_to_hex(form->GetFormID()),
 			form->GetFormID());
 
-				if (form->IsDynamicForm())
+		if (form->IsDynamicForm())
 		{
 			form_string = fmt::format("{}{}{}", dynamic_name, delimiter, string_util::int_to_hex(form->GetFormID()));
 		}

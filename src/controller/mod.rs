@@ -3,15 +3,16 @@ pub mod cycles;
 pub mod layout;
 pub mod settings;
 
+use anyhow::Result;
 pub use control::{handle_key_event, handle_menu_event};
+pub use cycles::CycleEntry;
 pub use layout::layout;
-pub use settings::{settings, Settings};
+pub use settings::{user_settings, UserSettings}; // hmm, is this for settings? I'm confused...
 
 use crate::plugin::HudLayout;
 
-pub fn boxed_settings() -> Box<Settings> {
-    let v = settings();
-    Box::new(v.clone()) // grimacing emoji
+pub fn refresh_user_settings() -> Result<()> {
+    settings::UserSettings::refresh()
 }
 
 pub fn boxed_layout() -> Box<HudLayout> {

@@ -1,11 +1,19 @@
+use std::sync::Mutex;
+
 use anyhow::Result;
 use ini::Ini;
-use once_cell::sync::OnceCell;
+use once_cell::sync::Lazy;
 
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
 
 /// There can be only one. Not public because we want access managed.
-static SETTINGS: OnceCell<Settings> = OnceCell::new();
+static SETTINGS: Lazy<Mutex<UserSettings>> = Lazy::new(|| Mutex::new(UserSettings::default()));
+
+/// We hand a read-only copy to C++ for use.
+pub fn user_settings() -> Box<UserSettings> {
+    let settings = SETTINGS.lock().unwrap();
+    Box::new(settings.clone())
+}
 
 /// User-modifiable settings for HUD behavior. Doesn't manage cycles.
 ///
@@ -13,7 +21,7 @@ static SETTINGS: OnceCell<Settings> = OnceCell::new();
 /// a UX for changing values. We are responsible for reading it, but do not need to
 /// write it.
 #[derive(Debug, Clone)]
-pub struct Settings {
+pub struct UserSettings {
     /// The key for the left hand's cycle.
     pub left: u32,
     /// The key for the right hand's cycle.
@@ -36,7 +44,7 @@ pub struct Settings {
     pub fade_delay: u32,
 }
 
-impl Default for Settings {
+impl Default for UserSettings {
     fn default() -> Self {
         Self {
             left: 11,
@@ -64,10 +72,14 @@ fn read_int_from(section: &ini::Properties, key: &str, default: u32) -> u32 {
     }
 }
 
-impl Settings {
-    /// Read a settings object from a toml file.
-    pub fn read_from_file() -> Result<Self> {
-        let mut settings = Settings::default();
+impl UserSettings {
+    pub fn refresh() -> Result<()> {
+        let mut settings = SETTINGS.lock().unwrap();
+        settings.read_from_file()
+    }
+
+    /// Refresh ourselves from the MCM-controlled file.
+    pub fn read_from_file(&mut self) -> Result<()> {
         // We'll fall back to defaults at a different level.
         let conf = Ini::load_from_file(SETTINGS_PATH)?;
         let empty = ini::Properties::new();
@@ -78,39 +90,39 @@ impl Settings {
         } else {
             &empty
         };
-        settings.left = read_int_from(controls, "uLeftCycleKey", settings.left);
-        settings.right = read_int_from(controls, "uRightCycleKey", settings.right);
-        settings.power = read_int_from(controls, "uPowerCycleKey", settings.power);
-        settings.utility = read_int_from(controls, "uUtilityCycleKey", settings.utility);
-        settings.activate = read_int_from(controls, "uUtilityActivateKey", settings.activate);
-        settings.showhide = read_int_from(controls, "uShowHideKey", settings.showhide);
+        self.left = read_int_from(controls, "uLeftCycleKey", self.left);
+        self.right = read_int_from(controls, "uRightCycleKey", self.right);
+        self.power = read_int_from(controls, "uPowerCycleKey", self.power);
+        self.utility = read_int_from(controls, "uUtilityCycleKey", self.utility);
+        self.activate = read_int_from(controls, "uUtilityActivateKey", self.activate);
+        self.showhide = read_int_from(controls, "uShowHideKey", self.showhide);
 
         let options = if let Some(s) = conf.section(Some("Options")) {
             s
         } else {
             &empty
         };
-        settings.maxlen = read_int_from(options, "uMaxCycleLength", settings.maxlen);
-        if settings.maxlen > 15 {
-            settings.maxlen = 15;
-        } else if settings.maxlen < 2 {
-            settings.maxlen = 2;
+        self.maxlen = read_int_from(options, "uMaxCycleLength", self.maxlen);
+        if self.maxlen > 15 {
+            self.maxlen = 15;
+        } else if self.maxlen < 2 {
+            self.maxlen = 2;
         }
-        settings.equip_delay = read_int_from(options, "uEquipDelay", settings.equip_delay);
-        if settings.equip_delay > 2500 {
-            settings.maxlen = 2500;
+        self.equip_delay = read_int_from(options, "uEquipDelay", self.equip_delay);
+        if self.equip_delay > 2500 {
+            self.maxlen = 2500;
         }
-        settings.fade_delay = read_int_from(options, "uFadeDelay", settings.fade_delay);
-        if settings.fade_delay > 10000 {
-            settings.maxlen = 10000;
+        self.fade_delay = read_int_from(options, "uFadeDelay", self.fade_delay);
+        if self.fade_delay > 10000 {
+            self.maxlen = 10000;
         }
-        settings.fade = if let Some(str_val) = options.get("bFade") {
+        self.fade = if let Some(str_val) = options.get("bFade") {
             str_val != "0"
         } else {
-            settings.fade
+            self.fade
         };
 
-        Ok(settings)
+        Ok(())
     }
 
     pub fn is_cycle_button(&self, key: u32) -> bool {
@@ -147,25 +159,4 @@ impl Settings {
     pub fn fade_delay(&self) -> u32 {
         self.fade_delay
     }
-}
-
-/// Read our user settings from the file, or fall back to defaults if the file
-/// is not present.
-///
-/// Lazily initialized on first request for the settings object. Will return all
-/// 0s if somebody nuked the ini file.
-pub fn settings() -> &'static Settings {
-    if SETTINGS.get().is_none() {
-        let settings = match Settings::read_from_file() {
-            Ok(v) => v,
-            Err(e) => {
-                log::warn!("Failed to read settings file; continuing with defaults; {e:?}");
-                Settings::default()
-            }
-        };
-        SETTINGS.set(settings).unwrap();
-    }
-
-    // If this fails, the universe is in a bad state. Crashing is fine.
-    SETTINGS.get().unwrap()
 }

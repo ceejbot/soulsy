@@ -9,7 +9,6 @@ namespace hooks
 	class MenuHook : public RE::MenuControls
 	{
 	public:
-
 		static void install();
 
 	private:

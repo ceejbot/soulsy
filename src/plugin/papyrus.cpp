@@ -1,14 +1,16 @@
 
 #include "include/papyrus.h"
-#include "include/enums.h"
-#include "include/user_settings.h"
-#include "include/custom_setting.h"
-#include "include/file_setting.h"
-#include "include/ui_renderer.h"
 #include "include/constant.h"
+#include "include/custom_setting.h"
+#include "include/enums.h"
+#include "include/file_setting.h"
 #include "include/helper.h"
+#include "include/ui_renderer.h"
+#include "include/user_settings.h"
 
 #include "processing/set_setting_data.h"
+
+#include "lib.rs.h"
 // #include "include/binding.h"
 
 static const char* mcm_name = "SoulsyHUD_MCM";
@@ -36,9 +38,8 @@ void MCMGlue::on_config_close(RE::TESQuest*)
 	}
 	processing::set_setting_data::read_and_set_data();
 	processing::set_setting_data::get_actives_and_equip();
-	control::binding::get_singleton()->set_all_keys();
-	//In case the setting was changed
-	// ceej: what's the side effect here? just a redraw?
+	refresh_user_settings();
+	// force a redraw if the settings changed
 	ui::ui_renderer::set_fade(true, 1.f);
 
 	logger::debug("on config close done. return."sv);

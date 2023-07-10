@@ -1,9 +1,9 @@
 #include "include/player.h"
 #include "include/enums.h"
-#include "include/user_settings.h"
 #include "include/helper.h"
 #include "include/offset.h"
 #include "include/string_util.h"
+#include "include/user_settings.h"
 
 namespace player
 {
