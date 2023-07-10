@@ -24,7 +24,6 @@ set(headers ${headers}
     src/include/utility_items.h
     src/plugin/handle/ammo_handle.h
     src/plugin/handle/data/ammo_data.h
-    src/plugin/handle/data/data_helper.h
     src/plugin/handle/data/page/position_draw_setting.h
     src/plugin/handle/data/page/position_setting.h
     src/plugin/handle/data/page/slot_setting.h

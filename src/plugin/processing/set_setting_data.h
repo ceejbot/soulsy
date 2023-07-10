@@ -1,19 +1,21 @@
 ﻿#pragma once
-#include "handle/data/data_helper.h"
+#include "include/helper.h"
 #include "handle/data/page/position_setting.h"
+#include "handle/data/page/slot_setting.h"
 #include "handle/key_position_handle.h"
 #include "handle/page_handle.h"
+#include "include/enums.h"
 
 namespace processing {
     class set_setting_data {
     public:
-        using position_type = handle::position_setting::position_type;
-        using slot_type = handle::slot_setting::slot_type;
+        using position_type = enums::position_type;
+        using slot_type = enums::slot_type;
 
         static void read_and_set_data();
         static void set_new_item_count_if_needed(RE::TESBoundObject* a_object, int32_t a_count);
-        static void set_single_slot(uint32_t a_page, position_type a_position, const std::vector<data_helper*>& a_data);
-        static void set_queue_slot(position_type a_pos, const std::vector<data_helper*>& a_data);
+        static void set_single_slot(uint32_t a_page, position_type a_position, const std::vector<helpers::data_helper*>& a_data);
+		static void set_queue_slot(position_type a_pos, const std::vector<helpers::data_helper*>& a_data);
         static void get_actives_and_equip();
         static void check_if_location_needs_block(RE::TESForm*& a_form, bool a_equipped);
         static void check_config_data();

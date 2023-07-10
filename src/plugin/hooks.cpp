@@ -107,6 +107,8 @@ namespace hooks
 		}
 
 		auto device = a_button->device.get();
+		auto key    = keycodes::get_key_id(a_button);
+
 		if (key == a_control_map->GetMappedKey(a_user_event->up, device) ||
 			key == a_control_map->GetMappedKey(a_user_event->right, device) ||
 			key == a_control_map->GetMappedKey(a_user_event->down, device) ||

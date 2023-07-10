@@ -1,21 +1,23 @@
 ﻿#pragma once
-#include "./data/data_helper.h"
+#include "include/helper.h"
 #include "./data/page/position_setting.h"
 #include "./key_position_handle.h"
 #include "include/image_path.h"
+#include "include/enums.h"
 
 namespace handle {
     class page_handle {
     public:
-        using position_type = position_setting::position_type;
-        using slot_type = slot_setting::slot_type;
+		using hand_equip = enums::hand_equip;
+        using position_type = enums::position_type;
+        using slot_type = enums::slot_type;
         using icon_type = ui::icon_image_type;
 
         static page_handle* get_singleton();
         void init_page(uint32_t a_page,
             position_type a_position,
-            const std::vector<data_helper*>& data_helpers,
-            slot_setting::hand_equip a_hand,
+            const std::vector<helpers::data_helper*>& data_helpers,
+            hand_equip a_hand,
             key_position_handle*& a_key_pos);
         void init_actives(uint32_t a_page, position_type a_position);
         void set_active_page(uint32_t a_page) const;
@@ -47,8 +49,8 @@ namespace handle {
             float a_setting_y,
             float& offset_x,
             float& offset_y);
-        static void get_equip_slots(slot_setting::slot_type a_type,
-            slot_setting::hand_equip a_hand,
+        static void get_equip_slots(slot_type a_type,
+            hand_equip a_hand,
             RE::BGSEquipSlot*& a_slot,
             bool a_left);
         static icon_type get_icon_type(slot_type a_type, RE::TESForm*& a_form);

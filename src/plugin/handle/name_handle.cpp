@@ -1,8 +1,10 @@
 ﻿#include "name_handle.h"
-#include "./data/data_helper.h"
+#include "include/helper.h"
 #include "include/constant.h"
 
 namespace handle {
+    using data_helper = helpers::data_helper;
+
     name_handle* name_handle::get_singleton() {
         static name_handle singleton;
         return std::addressof(singleton);

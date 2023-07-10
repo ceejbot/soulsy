@@ -1,4 +1,5 @@
 
+#include "include/papyrus.h"
 #include "include/enums.h"
 #include "include/user_settings.h"
 #include "include/custom_setting.h"
@@ -225,7 +226,7 @@ std::vector<RE::BSFixedString> MCMGlue::get_config_files(RE::TESQuest*, bool a_e
 
 RE::BSFixedString MCMGlue::get_active_config(RE::TESQuest*, bool a_elden)
 {
-	auto file = a_elden ? config::file_setting::get_config_elden() : config::file_setting::get_config_default();
+	auto file = a_elden ? file_setting::get_config_elden() : file_setting::get_config_default();
 	logger::trace("getting active Config File, Elden {}, File {}"sv, a_elden, file);
 	return file;
 }
@@ -238,7 +239,7 @@ void MCMGlue::set_config(RE::TESQuest*, bool a_elden, RE::BSFixedString a_name)
 		name = util::ini_elden_name + "_" + a_name.data() + util::ini_ending;
 		if (check_name(name))
 		{
-			config::file_setting::set_config_elden(name);
+			file_setting::set_config_elden(name);
 		}
 		else
 		{
@@ -250,7 +251,7 @@ void MCMGlue::set_config(RE::TESQuest*, bool a_elden, RE::BSFixedString a_name)
 		name = util::ini_default_name + "_" + a_name.data() + util::ini_ending;
 		if (check_name(name))
 		{
-			config::file_setting::set_config_default(name);
+			file_setting::set_config_default(name);
 		}
 		else
 		{
@@ -271,11 +272,11 @@ void MCMGlue::set_active_config(RE::TESQuest*, bool a_elden, uint32_t a_index)
 
 	if (a_elden)
 	{
-		config::file_setting::set_config_elden(file);
+		file_setting::set_config_elden(file);
 	}
 	else
 	{
-		config::file_setting::set_config_default(file);
+		file_setting::set_config_default(file);
 	}
 }
 
@@ -284,13 +285,13 @@ void MCMGlue::add_unarmed_setting(RE::TESQuest*, uint32_t a_position)
 	auto elden = config::mcm_setting::get_elden_demon_souls();
 	logger::trace("Try to add Unarmed for Position {}, Elden {}"sv, a_position, elden);
 	auto* page_handle = handle::page_handle::get_singleton();
-	auto position     = static_cast<handle::position_setting::position_type>(a_position);
-	std::vector<data_helper*> data;
+	auto position     = static_cast<enums::position_type>(a_position);
+	std::vector<helpers::data_helper*> data;
 	auto next_page = 0;
-	if (elden && (a_position == static_cast<uint32_t>(handle::position_setting::position_type::right) ||
-					 a_position == static_cast<uint32_t>(handle::position_setting::position_type::left)))
+	if (elden && (a_position == static_cast<uint32_t>(enums::position_type::right) ||
+					 a_position == static_cast<uint32_t>(enums::position_type::left)))
 	{
-		auto left      = a_position == static_cast<uint32_t>(handle::position_setting::position_type::left);
+		auto left      = a_position == static_cast<uint32_t>(enums::position_type::left);
 		auto max_pages = config::mcm_setting::get_max_page_count();
 
 		auto highest_page = page_handle->get_highest_page_id_position(position);
@@ -313,7 +314,7 @@ void MCMGlue::add_unarmed_setting(RE::TESQuest*, uint32_t a_position)
 		}
 
 		next_page         = highest_page + 1;
-		const auto item   = new data_helper();
+		const auto item   = new helpers::data_helper();
 		item->type        = enums::slot_type::weapon;
 		item->left        = left;
 		item->form        = RE::TESForm::LookupByID(util::unarmed);  //unarmed
@@ -325,14 +326,14 @@ void MCMGlue::add_unarmed_setting(RE::TESQuest*, uint32_t a_position)
 	{
 		next_page = static_cast<int>(page_handle->get_active_page_id());
 
-		const auto item   = new data_helper();
+		const auto item   = new helpers::data_helper();
 		item->form        = RE::TESForm::LookupByID(util::unarmed);
 		item->left        = false;
 		item->type        = enums::slot_type::weapon;
 		item->action_type = enums::action_type::default_action;
 		data.push_back(item);
 
-		const auto item2   = new data_helper();
+		const auto item2   = new helpers::data_helper();
 		item2->form        = RE::TESForm::LookupByID(util::unarmed);
 		item2->left        = true;
 		item2->type        = enums::slot_type::weapon;
@@ -393,7 +394,7 @@ bool MCMGlue::is_size_ok(uint32_t a_idx, uint64_t a_size)
 std::string MCMGlue::get_section_by_index(const uint32_t a_index, uint32_t a_position)
 {
 	std::string section;
-	if (const auto sections = helper::get_configured_section_page_names(a_position);
+	if (const auto sections = helpers::get_configured_section_page_names(a_position);
 		!sections.empty() && is_size_ok(a_index, sections.size()))
 	{
 		section = sections.at(a_index);
@@ -463,12 +464,12 @@ std::string MCMGlue::get_form_name_string_for_section(const std::string& a_str)
 	RE::TESForm* form = nullptr;
 	if (!form_string.empty())
 	{
-		form = helper::get_form_from_mod_id_string(form_string);
+		form = helpers::get_form_from_mod_id_string(form_string);
 	}
 	RE::TESForm* form_left = nullptr;
 	if (!form_string_left.empty())
 	{
-		form_left = helper::get_form_from_mod_id_string(form_string_left);
+		form_left = helpers::get_form_from_mod_id_string(form_string_left);
 	}
 
 	//if form is null check if av is set

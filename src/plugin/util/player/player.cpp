@@ -65,7 +65,7 @@ namespace player
 
 		if (!a_two_handed)
 		{
-			a_two_handed = right_obj && helper::is_two_handed(right_obj);
+			a_two_handed = right_obj && helpers::is_two_handed(right_obj);
 		}
 
 		logger::trace("got form {}, name {} on both/right hand"sv,
@@ -80,7 +80,7 @@ namespace player
 		{
 			data[0]->form        = right_obj;
 			data[0]->left        = false;
-			data[0]->type        = helper::get_type(right_obj);
+			data[0]->type        = helpers::get_type(right_obj);
 			data[0]->action_type = action_type::default_action;
 			data.erase(data.begin() + 1);
 		}
@@ -89,7 +89,7 @@ namespace player
 		{
 			data[0]->form        = right_obj;
 			data[0]->left        = false;
-			data[0]->type        = helper::get_type(right_obj);
+			data[0]->type        = helpers::get_type(right_obj);
 			data[0]->action_type = action_type::default_action;
 		}
 
@@ -97,7 +97,7 @@ namespace player
 		{
 			data[1]->form        = left_obj;
 			data[1]->left        = true;
-			data[1]->type        = helper::get_type(left_obj);
+			data[1]->type        = helpers::get_type(left_obj);
 			data[1]->action_type = action_type::default_action;
 		}
 

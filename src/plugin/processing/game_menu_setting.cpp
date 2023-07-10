@@ -6,15 +6,22 @@
 #include "include/helper.h"
 #include "include/player.h"
 #include "include/string_util.h"
+#include "include/enums.h"
 
 namespace processing {
+
+    using slot_type = enums::slot_type;
+    using position_type = enums::position_type;
+    using action_type = enums::action_type;
+	using data_helper   = helpers::data_helper;
+
     void game_menu_setting::elden_souls_config(RE::TESForm* a_form, position_type a_position, bool a_overwrite) {
         if (!a_form) {
             logger::warn("form is null. return."sv);
             return;
         }
 
-        std::vector<data_helper*> data;
+        std::vector<helpers::data_helper*> data;
 
         write_notification(fmt::format("Elden Souls Config, Position {}, overwrite {}"sv,
             static_cast<uint32_t>(a_position),
@@ -76,7 +83,7 @@ namespace processing {
             return;
         }
 
-        const auto two_handed = util::helper::is_two_handed(a_form);
+        const auto two_handed = helpers::is_two_handed(a_form);
         if (two_handed && a_left) {
             auto log_string = fmt::format("Going to Ignore {}, because Two Handed {} and Left {}",
                 a_form ? a_form->GetName() : "null",
@@ -87,9 +94,9 @@ namespace processing {
             return;
         }
 
-        std::vector<data_helper*> data;
-        const auto type = util::helper::get_type(a_form);
-        const auto item = new data_helper();
+        std::vector<helpers::data_helper*> data;
+        const auto type = helpers::get_type(a_form);
+		const auto item = new helpers::data_helper();
         switch (type) {
             case slot_type::empty:
                 item->form = nullptr;
@@ -110,7 +117,7 @@ namespace processing {
             case slot_type::consumable:
                 item->form = nullptr;
                 item->type = type;
-                item->actor_value = util::helper::get_actor_value_effect_from_potion(a_form);
+                item->actor_value = helpers::get_actor_value_effect_from_potion(a_form);
                 if (item->actor_value == RE::ActorValue::kNone) {
                     item->form = a_form;
                 }
@@ -123,7 +130,7 @@ namespace processing {
                 item->form = a_form;
                 item->left = a_left;
                 item->type = type;
-                item->action_type = handle::slot_setting::action_type::default_action;
+                item->action_type = enums::action_type::default_action;
                 item->two_handed = two_handed;
                 data.push_back(item);
                 break;
@@ -155,7 +162,7 @@ namespace processing {
                 RE::TESForm* current_left = nullptr;
                 if (!slot_settings.empty()) {
                     current_right = slot_settings.front()->form;
-                    current_two_handed = current_right && util::helper::is_two_handed(current_right);
+                    current_two_handed = current_right && helpers::is_two_handed(current_right);
                 }
                 if (slot_settings.size() == 2) {
                     current_left = slot_settings.at(1)->form;
@@ -205,7 +212,7 @@ namespace processing {
                     item2->form = RE::TESForm::LookupByID(util::unarmed);
                     item2->left = !a_left;  //need the opposite
                     item2->type = slot_type::weapon;
-                    item2->action_type = handle::slot_setting::action_type::default_action;
+                    item2->action_type = enums::action_type::default_action;
                     new_data[1] = item2;
                 } else {
                     if (a_left) {
@@ -287,8 +294,8 @@ namespace processing {
         const handle::position_setting::position_type a_position) {
         //all kind of weapons and magic/spells
         const auto item = new data_helper();
-        const auto type = util::helper::get_type(a_form);
-        const auto two_handed = util::helper::is_two_handed(a_form);
+        const auto type = helpers::get_type(a_form);
+        const auto two_handed = helpers::is_two_handed(a_form);
         logger::trace("Item {}, is Type {}, TwoHanded {}"sv,
             a_form ? util::string_util::int_to_hex(a_form->formID) : "null",
             static_cast<uint32_t>(type),
@@ -304,17 +311,17 @@ namespace processing {
                         item->type = type;
                         item->two_handed = two_handed;
                         item->left = false;
-                        item->action_type = util::helper::can_instant_cast(a_form, type) ?
-                                                handle::slot_setting::action_type::instant :
-                                                handle::slot_setting::action_type::default_action;
+                        item->action_type = helpers::can_instant_cast(a_form, type) ?
+                                                enums::action_type::instant :
+                                                enums::action_type::default_action;
                         break;
                     case slot_type::magic:
-                        if (util::helper::can_instant_cast(a_form, type)) {
+                        if (helpers::can_instant_cast(a_form, type)) {
                             item->form = a_form;
                             item->type = type;
                             item->two_handed = two_handed;
                             item->left = false;
-                            item->action_type = handle::slot_setting::action_type::instant;
+                            item->action_type = enums::action_type::instant;
                         }
                         break;
                 }
@@ -337,7 +344,7 @@ namespace processing {
                         item->type = type;
                         item->two_handed = two_handed;
                         item->left = false;
-                        item->actor_value = util::helper::get_actor_value_effect_from_potion(a_form);
+                        item->actor_value = helpers::get_actor_value_effect_from_potion(a_form);
                         if (item->actor_value == RE::ActorValue::kNone) {
                             item->form = a_form;
                         }
@@ -354,7 +361,7 @@ namespace processing {
                         item->type = type;
                         item->two_handed = two_handed;
                         item->left = false;
-                        item->action_type = handle::slot_setting::action_type::instant;
+                        item->action_type = enums::action_type::instant;
                         break;
                 }
                 break;
@@ -401,7 +408,7 @@ namespace processing {
 
         auto actor_value = RE::ActorValue::kNone;
         if (a_form->Is(RE::FormType::AlchemyItem)) {
-            actor_value = util::helper::get_actor_value_effect_from_potion(const_cast<RE::TESForm*>(a_form));
+            actor_value = helpers::get_actor_value_effect_from_potion(const_cast<RE::TESForm*>(a_form));
         }
 
         auto pages = page_handle->get_pages();
@@ -445,14 +452,14 @@ namespace processing {
         item_current->form = nullptr;
         item_current->left = false;
         item_current->type = slot_type::empty;
-        item_current->action_type = handle::slot_setting::action_type::default_action;
+        item_current->action_type = enums::action_type::default_action;
         a_config_data.push_back(item_current);
 
         const auto item2_current = new data_helper();
         item2_current->form = nullptr;
         item2_current->left = true;
         item2_current->type = slot_type::empty;
-        item2_current->action_type = handle::slot_setting::action_type::default_action;
+        item2_current->action_type = enums::action_type::default_action;
         a_config_data.push_back(item2_current);
     }
 }

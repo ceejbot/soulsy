@@ -1,13 +1,13 @@
 ﻿#pragma once
-#include "handle/data/page/position_setting.h"
-#include "handle/data/page/slot_setting.h"
+
+#include "include/enums.h"
 
 namespace processing {
     class setting_execute {
     public:
-        using position_type = handle::position_setting::position_type;
-        using slot_type = handle::slot_setting::slot_type;
-        using action_type = handle::slot_setting::action_type;
+        using position_type = enums::position_type;
+        using slot_type = enums::slot_type;
+        using action_type = enums::action_type;
 
         static void activate(const std::vector<handle::slot_setting*>& a_slots,
             bool a_only_equip = false,

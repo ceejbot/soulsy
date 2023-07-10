@@ -11,17 +11,21 @@
 #include "include/helper.h"
 #include "include/player.h"
 #include "include/string_util.h"
+#include "include/enums.h"
 
 namespace processing {
     using mcm = config::mcm_setting;
     using custom = config::custom_setting;
+    using data_helper = helpers::data_helper;
+	using hand_equip  = enums::hand_equip;
+	using action_type  = enums::action_type;
 
     void set_setting_data::read_and_set_data() {
         logger::trace("Setting handlers, elden demon souls {} ..."sv, mcm::get_elden_demon_souls());
 
         handle::key_position_handle::get_singleton()->init_key_position_map();
 
-        handle::name_handle::get_singleton()->init_names(util::player::get_hand_assignment());
+        handle::name_handle::get_singleton()->init_names(player::get_hand_assignment());
 
         write_empty_config_and_init_active();
 
@@ -41,17 +45,17 @@ namespace processing {
         const std::vector<data_helper*>& a_data) {
         //well for now we have to match
         auto* key_pos = handle::key_position_handle::get_singleton();
-        auto hand_equip = handle::slot_setting::hand_equip::total;
+        auto hand_equip = hand_equip::total;
         if (const auto hand = a_data.size(); hand == 1) {
-            hand_equip = handle::slot_setting::hand_equip::both;
+            hand_equip = hand_equip::both;
         } else if (hand == 2) {
-            hand_equip = handle::slot_setting::hand_equip::single;
+            hand_equip = hand_equip::single;
         }
 
         if (mcm::get_elden_demon_souls()) {
             if (!a_data.empty()) {
-                hand_equip = a_data.front()->two_handed ? handle::slot_setting::hand_equip::both :
-                                                          handle::slot_setting::hand_equip::single;
+                hand_equip = a_data.front()->two_handed ? hand_equip::both :
+                                                          hand_equip::single;
             }
         }
         logger::trace("calling init page for page {}, position {} ..."sv, a_page, static_cast<uint32_t>(a_position));
@@ -60,7 +64,7 @@ namespace processing {
         if (a_data.empty()) {
             const auto item = new data_helper();
             item->form = nullptr;
-            item->action_type = handle::slot_setting::action_type::default_action;
+            item->action_type = action_type::default_action;
             item->type = slot_type::empty;
             data.push_back(item);
 
@@ -74,7 +78,7 @@ namespace processing {
             key_pos);
 
         logger::debug("calling helper to write to file"sv);
-        util::helper::write_setting_to_file(a_page,
+        helpers::write_setting_to_file(a_page,
             static_cast<uint32_t>(a_position),
             a_data,
             static_cast<uint32_t>(hand_equip));
@@ -94,7 +98,7 @@ namespace processing {
         auto page = page_handle->get_highest_page_id_position(a_pos) + 1;
         for (auto* item : a_data) {
             auto hand =
-                item->two_handed ? handle::slot_setting::hand_equip::both : handle::slot_setting::hand_equip::single;
+                item->two_handed ? hand_equip::both : hand_equip::single;
             logger::trace("working page {}, pos {}"sv, page, pos);
             //for now make a vector with one item...
             std::vector<data_helper*> data;
@@ -102,7 +106,7 @@ namespace processing {
             page_handle->init_page(page, a_pos, data, hand, key_pos);
 
             logger::debug("calling helper to write to file, page {}, pos {}"sv, page, pos);
-            util::helper::write_setting_to_file(page, pos, data, static_cast<uint32_t>(hand));
+            helpers::write_setting_to_file(page, pos, data, static_cast<uint32_t>(hand));
 
             ++page;
         }
@@ -114,14 +118,14 @@ namespace processing {
         std::vector<data_helper*> data;
         const auto item = new data_helper();
         item->form = nullptr;
-        item->action_type = handle::slot_setting::action_type::default_action;
+        item->action_type = action_type::default_action;
         item->type = slot_type::empty;
         data.push_back(item);
 
         handle::page_handle::get_singleton()->init_page(a_page,
             static_cast<position_type>(a_pos),
             data,
-            handle::slot_setting::hand_equip::total,
+            hand_equip::total,
             a_key_pos);
     }
 
@@ -137,8 +141,8 @@ namespace processing {
         RE::ActorValue a_actor_value,
         handle::key_position_handle*& a_key_pos,
         const std::string& a_section) {
-        auto* form = util::helper::get_form_from_mod_id_string(a_form);
-        auto* form_left = util::helper::get_form_from_mod_id_string(a_form_left);
+        auto* form = helpers::get_form_from_mod_id_string(a_form);
+        auto* form_left = helpers::get_form_from_mod_id_string(a_form_left);
 
         if (form == nullptr && form_left == nullptr && a_actor_value == RE::ActorValue::kNone) {
             //reset section here if allowed
@@ -151,7 +155,7 @@ namespace processing {
             return;
         }
 
-        auto hand = static_cast<handle::slot_setting::hand_equip>(a_hand);
+        auto hand = static_cast<hand_equip>(a_hand);
         std::vector<data_helper*> data;
 
         auto action_check = config::mcm_setting::get_action_check();
@@ -161,26 +165,26 @@ namespace processing {
             a_hand,
             action_check);
 
-        handle::slot_setting::action_type action;
+        action_type action;
         if (action_check) {
             if (a_action == a_action_left) {
-                action = static_cast<handle::slot_setting::action_type>(a_action);
+                action = static_cast<action_type>(a_action);
             } else {
-                action = handle::slot_setting::action_type::default_action;
+                action = action_type::default_action;
                 logger::warn("action type {} differ from action type left {}, setting both to {}"sv,
                     a_action,
                     a_action_left,
                     static_cast<uint32_t>(action));
             }
         } else {
-            action = static_cast<handle::slot_setting::action_type>(a_action);
+            action = static_cast<action_type>(a_action);
         }
 
         const auto type = static_cast<slot_type>(a_type);
 
         if (type != slot_type::magic && type != slot_type::weapon && type != slot_type::shield &&
             type != slot_type::empty) {
-            hand = handle::slot_setting::hand_equip::total;
+            hand = hand_equip::total;
         }
 
         if (type == slot_type::shield) {
@@ -194,16 +198,16 @@ namespace processing {
             static_cast<uint32_t>(action),
             static_cast<uint32_t>(hand));
 
-        if (form && action == handle::slot_setting::action_type::un_equip) {
-            action = handle::slot_setting::action_type::default_action;
+        if (form && action == action_type::un_equip) {
+            action = action_type::default_action;
             logger::warn("set action to default, because form was not null but un equip was set");
         }
 
-        if (action == handle::slot_setting::action_type::instant && form) {
-            if (!util::helper::can_instant_cast(form, type)) {
+        if (action == action_type::instant && form) {
+            if (!helpers::can_instant_cast(form, type)) {
                 logger::warn("form {} cannot be instant cast, set to default"sv,
                     util::string_util::int_to_hex(form->GetFormID()));
-                action = handle::slot_setting::action_type::default_action;
+                action = action_type::default_action;
             }
         }
 
@@ -217,9 +221,9 @@ namespace processing {
 
         logger::trace("checking if we need to build a second data set, already got {}"sv, data.size());
 
-        if (hand == handle::slot_setting::hand_equip::single) {
+        if (hand == hand_equip::single) {
             const auto type_left = static_cast<slot_type>(a_type_left);
-            action = static_cast<handle::slot_setting::action_type>(a_action_left);
+            action = static_cast<action_type>(a_action_left);
             logger::trace("start building second set data pos {}, form {}, type {}, action {}, hand {}"sv,
                 static_cast<uint32_t>(a_position),
                 form_left ? util::string_util::int_to_hex(form_left->GetFormID()) : "null",
@@ -227,16 +231,16 @@ namespace processing {
                 static_cast<uint32_t>(action),
                 static_cast<uint32_t>(hand));
 
-            if (form_left && action == handle::slot_setting::action_type::un_equip) {
-                action = handle::slot_setting::action_type::default_action;
+            if (form_left && action == action_type::un_equip) {
+                action = action_type::default_action;
                 logger::warn("set left action to default, because form was not null but un equip was set");
             }
 
-            if (action == handle::slot_setting::action_type::instant && form_left) {
-                if (!util::helper::can_instant_cast(form_left, type)) {
+            if (action == action_type::instant && form_left) {
+                if (!helpers::can_instant_cast(form_left, type)) {
                     logger::warn("form {} cannot be instant cast, set to default"sv,
                         util::string_util::int_to_hex(form_left->GetFormID()));
-                    action = handle::slot_setting::action_type::default_action;
+                    action = action_type::default_action;
                 }
             }
 
@@ -263,7 +267,7 @@ namespace processing {
                 for (auto* setting : page_setting->slot_settings) {
                     if ((setting->form && setting->form->formID == a_object->formID) ||
                         (setting->actor_value != RE::ActorValue::kNone &&
-                            util::helper::get_actor_value_effect_from_potion(a_object) != RE::ActorValue::kNone)) {
+                            helpers::get_actor_value_effect_from_potion(a_object) != RE::ActorValue::kNone)) {
                         setting->item_count = setting->item_count + a_count;
                         logger::trace("FormId {}, new count {}, change count {}"sv,
                             util::string_util::int_to_hex(a_object->formID),
@@ -273,7 +277,7 @@ namespace processing {
                         if (setting->item_count == 0 && clean_type_allowed(setting->type)) {
                             do_cleanup(page_setting, setting);
                             if (mcm::get_elden_demon_souls()) {
-                                util::helper::rewrite_settings();
+                                helpers::rewrite_settings();
                             }
                             process_config_data();
                         }
@@ -320,7 +324,7 @@ namespace processing {
             }
         }
 
-        for (const auto sections = util::helper::get_configured_section_page_names(); const auto& section : sections) {
+        for (const auto sections = helpers::get_configured_section_page_names(); const auto& section : sections) {
             set_slot(custom::get_page_by_section(section),
                 static_cast<position_type>(custom::get_position_by_section(section)),
                 custom::get_item_form_by_section(section),
@@ -378,7 +382,7 @@ namespace processing {
                 position_type::right);
         if (right_position_setting && !right_position_setting->slot_settings.empty() &&
             right_position_setting->slot_settings.front()->form) {
-            is_right_two_handed = util::helper::is_two_handed(right_position_setting->slot_settings.front()->form);
+            is_right_two_handed = helpers::is_two_handed(right_position_setting->slot_settings.front()->form);
         }
 
         handle::position_setting* position_setting;
@@ -402,12 +406,12 @@ namespace processing {
         logger::trace("clear hands"sv);
         auto* player = RE::PlayerCharacter::GetSingleton();
         auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-        auto* right = equip::equip_slot::get_right_hand_slot();
-        auto* left = equip::equip_slot::get_left_hand_slot();
+        auto* right = equip::right_hand_equip_slot();
+		auto* left = equip::left_hand_equip_slot();
 
         //execute first setting for left, then right
-        equip::equip_slot::un_equip_object_ft_dummy_dagger(right, player, equip_manager);
-        equip::equip_slot::un_equip_object_ft_dummy_dagger(left, player, equip_manager);
+        equip::unequip_object_ft_dummy_dagger(right, player, equip_manager);
+        equip::unequip_object_ft_dummy_dagger(left, player, equip_manager);
         logger::trace("clear hands done."sv);
     }
 
@@ -439,12 +443,12 @@ namespace processing {
             handle::ammo_handle::get_singleton()->clear_ammo();
             //un equip armor here
             if (config::mcm_setting::get_un_equip_ammo()) {
-                equip::item::un_equip_ammo();
+                equip::unequip_ammo();
             }
         }
 
         if (!a_equipped) {
-            if (!util::helper::is_two_handed(a_form)) {
+            if (!helpers::is_two_handed(a_form)) {
                 processing::setting_execute::reequip_left_hand_if_needed(setting);
                 left_reequip_called = true;
             }
@@ -453,7 +457,7 @@ namespace processing {
         if (!left_reequip_called) {
             auto* obj_right =
                 RE::PlayerCharacter::GetSingleton()->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-            if ((obj_right && !util::helper::is_two_handed(obj_right)) || !obj_right) {
+            if ((obj_right && !helpers::is_two_handed(obj_right)) || !obj_right) {
                 processing::setting_execute::reequip_left_hand_if_needed(setting);
             }
         }
@@ -477,7 +481,7 @@ namespace processing {
         bool sort_by_quantity = config::mcm_setting::get_sort_arrow_by_quantity();
         const auto max_items = config::mcm_setting::get_max_ammunition_type();
         auto* player = RE::PlayerCharacter::GetSingleton();
-        const auto inv = util::player::get_inventory(player, RE::FormType::Ammo);
+        const auto inv = player::get_inventory(player, RE::FormType::Ammo);
         std::multimap<uint32_t, handle::ammo_data*, std::greater<>> ammo_list;
         for (const auto& [item, inv_data] : inv) {
             const auto& [num_items, entry] = inv_data;
@@ -548,34 +552,34 @@ namespace processing {
 
         if (mcm::get_elden_demon_souls()) {
             config::custom_setting::reset_section(
-                util::helper::get_section_name_for_page_position(a_position_setting->page,
+                helpers::get_section_name_for_page_position(a_position_setting->page,
                     static_cast<uint32_t>(a_position_setting->position)));
         } else {
             a_slot_setting->form = nullptr;
             a_slot_setting->type = slot_type::empty;
-            a_slot_setting->action = handle::slot_setting::action_type::default_action;
+            a_slot_setting->action = action_type::default_action;
 
             std::vector<data_helper*> data;
 
             for (auto* setting : a_position_setting->slot_settings) {
                 auto item = new data_helper();
                 item->form = setting->form;
-                item->left = setting->equip_slot == equip::equip_slot::get_left_hand_slot();
+                item->left = setting->equip_slot == equip::left_hand_equip_slot();
                 item->type = setting->type;
                 item->action_type = setting->action;
                 item->actor_value = setting->actor_value;
-                item->two_handed = util::helper::is_two_handed(setting->form);
+                item->two_handed = helpers::is_two_handed(setting->form);
                 data.push_back(item);
             }
 
-            auto hand_equip = handle::slot_setting::hand_equip::total;
+            auto hand_equip = hand_equip::total;
             if (const auto hand = data.size(); hand == 1) {
-                hand_equip = handle::slot_setting::hand_equip::both;
+                hand_equip = hand_equip::both;
             } else if (hand == 2) {
-                hand_equip = handle::slot_setting::hand_equip::single;
+                hand_equip = hand_equip::single;
             }
 
-            util::helper::write_setting_to_file(a_position_setting->page,
+            helpers::write_setting_to_file(a_position_setting->page,
                 static_cast<uint32_t>(static_cast<uint32_t>(a_position_setting->position)),
                 data,
                 static_cast<uint32_t>(hand_equip));
@@ -616,7 +620,7 @@ namespace processing {
         }
 
         if (need_reprocess) {
-            util::helper::rewrite_settings();
+            helpers::rewrite_settings();
             write_empty_config_and_init_active();
             process_config_data();
             get_actives_and_equip();
@@ -635,10 +639,10 @@ namespace processing {
                 for (auto* setting : page_setting->slot_settings) {
                     if ((setting->form && setting->form->formID == a_form->formID) ||
                         (setting->actor_value != RE::ActorValue::kNone &&
-                            util::helper::get_actor_value_effect_from_potion(a_form) != RE::ActorValue::kNone)) {
+                            helpers::get_actor_value_effect_from_potion(a_form) != RE::ActorValue::kNone)) {
                         do_cleanup(page_setting, setting);
                         if (config::mcm_setting::get_elden_demon_souls()) {
-                            util::helper::rewrite_settings();
+                            helpers::rewrite_settings();
                         }
                         write_empty_config_and_init_active();
                         process_config_data();

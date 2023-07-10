@@ -1,11 +1,11 @@
 ﻿#pragma once
-#include "./data/data_helper.h"
+#include "include/helper.h"
 
 namespace handle {
     class name_handle {
     public:
         static name_handle* get_singleton();
-        void init_names(const std::vector<data_helper*>& data_helpers);
+        void init_names(const std::vector<helpers::data_helper*>& data_helpers);
         void init_voice_name(const RE::TESForm* a_form);
         [[nodiscard]] std::string get_item_name_string() const;
         [[nodiscard]] std::string get_voice_name_string() const;

@@ -1,9 +1,10 @@
 ﻿#include "key_position_handle.h"
 #include "include/user_settings.h"
+#include "include/enums.h"
 
 namespace handle {
     using mcm = config::mcm_setting;
-    using position_type = position_setting::position_type;
+    using position_type = enums::position_type;
 
     key_position_handle* key_position_handle::get_singleton() {
         static key_position_handle singleton;

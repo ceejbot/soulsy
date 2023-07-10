@@ -5,6 +5,7 @@
 #include "include/custom_setting.h"
 #include "include/string_util.h"
 #include "include/player.h"
+#include "include/enums.h"
 // #include "data/config_writer_helper.h"
 
 
@@ -36,8 +37,10 @@ namespace helpers
 		// RE::BGSEquipSlot* slot     = nullptr;
 	}
 
-	std::string get_form_spec(const RE::TESForm& form)
+	std::string get_form_spec(const RE::TESForm*& form)
 	{
+		std::string form_string;
+
 		if (form->IsDynamicForm())
 		{
 			form_string = fmt::format("{}{}{}", dynamic_name, delimiter, string_util::int_to_hex(form->GetFormID()));
@@ -73,7 +76,25 @@ namespace helpers
 			string_util::int_to_hex(form->GetFormID()),
 			form->GetFormID());
 
-		return get_form_spec(form);
+				if (form->IsDynamicForm())
+		{
+			form_string = fmt::format("{}{}{}", dynamic_name, delimiter, string_util::int_to_hex(form->GetFormID()));
+		}
+		else
+		{
+			//it is not, search for the file it is from
+			auto* source_file = form->sourceFiles.array->front()->fileName;
+			auto local_form   = form->GetLocalFormID();
+
+			logger::trace("form is from {}, local id is {}, translated {}"sv,
+				source_file,
+				local_form,
+				string_util::int_to_hex(local_form));
+
+			form_string = fmt::format("{}{}{}", source_file, delimiter, string_util::int_to_hex(local_form));
+		}
+
+		return form_string;
 	}
 
 	std::vector<std::string> get_configured_section_page_names(uint32_t a_position)

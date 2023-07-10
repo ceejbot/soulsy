@@ -3,6 +3,8 @@
 #include "enums.h"
 #include "image_path.h"
 
+// TODO missing page_setting somewhere
+
 namespace ui
 {
 	struct image

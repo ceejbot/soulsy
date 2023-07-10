@@ -23,12 +23,12 @@ namespace equip
 
 	RE::BGSEquipSlot* power_equip_slot()
 	{
-		using func_t = decltype(&getPowerEquipSlot);
+		using func_t = decltype(&power_equip_slot);
 		const REL::Relocation<func_t> func{ REL::ID(offset::getPowerEquipSlot) };
 		return func();
 	}
 
-	bool unequip_amor(RE::TESBoundObject*& item, RE::PlayerCharacter*& player, RE::ActorEquipManager*& equip_manager)
+	bool unequip_armor(RE::TESBoundObject*& item, RE::PlayerCharacter*& player, RE::ActorEquipManager*& equip_manager)
 	{
 		const auto is_worn = is_item_worn(item, player);
 		if (is_worn)

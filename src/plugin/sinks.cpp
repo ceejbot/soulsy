@@ -1,6 +1,13 @@
 #include "include/sinks.h"
 #include "include/user_settings.h"
 #include "include/ui_renderer.h"
+#include "handle/name_handle.h"
+#include "handle/extra_data_holder.h"
+#include "processing/set_setting_data.h"
+#include "processing/setting_execute.h"
+#include "include/keycodes.h"
+#include "include/helper.h"
+#include "include/player.h"
 
 // Handle equipment change events. We need to update our UI when this happens.
 
@@ -51,7 +58,7 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	}
 
 	// add check if we need to block left
-	if (!RE::UI::GetSingleton()->GameIsPaused() && helper::is_two_handed(form))
+	if (!RE::UI::GetSingleton()->GameIsPaused() && helpers::is_two_handed(form))
 	{
 		processing::set_setting_data::check_if_location_needs_block(form, event->equipped);
 	}
@@ -63,7 +70,6 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 
 using event_result    = RE::BSEventNotifyControl;
 using position_type   = enums::position_type;
-using common          = control::common;
 using setting_execute = processing::setting_execute;
 
 KeyEventSink* KeyEventSink::get_singleton()
@@ -152,7 +158,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 		// This offsets the button by an amount that varies based on what originated the
 		// event. This appears to be so that we can directly compare it to the hotkey numbers
 		// we have snagged from the MCM settings.
-		const uint32_t key = offset_key_id(button);
+		const uint32_t key = keycodes::get_key_id(button);
 
 		// TODO hand off to Rust here, after first writing the Rust
 

@@ -7,7 +7,7 @@
 #include "include/perk_visitor.h"
 #include "include/player.h"
 #include "include/string_util.h"
-// #include "include/extra_data_holder.h"
+#include "handle/extra_data_holder.h"
 
 namespace equip
 {
@@ -16,13 +16,13 @@ namespace equip
 		RE::PlayerCharacter*& a_player,
 		enums::slot_type a_type)
 	{
-		auto left = a_slot == equip_slot::left_hand_equip_slot();
+		auto left = a_slot == equip::left_hand_equip_slot();
 		logger::trace("try to equip {}, left {}, type {}"sv, a_form->GetName(), left, static_cast<uint32_t>(a_type));
 
 		if (a_form->formID == util::unarmed)
 		{
 			logger::trace("Got unarmed, try to call un equip"sv);
-			equip_slot::un_equip_hand(a_slot, a_player, enums::action_type::un_equip);
+			equip::unequip_slot(a_slot, a_player, enums::action_type::un_equip);
 			return;
 		}
 
@@ -151,7 +151,7 @@ namespace equip
 			//all we have are already equipped
 			logger::warn("All Items we have of {} are equipped, return."sv, obj->GetName());
 			//try to prevent the game to equip something else
-			equip_slot::un_equip_hand(a_slot, a_player, enums::action_type::un_equip);
+			equip::unequip_slot(a_slot, a_player, enums::action_type::un_equip);
 			return;
 		}
 
@@ -190,7 +190,7 @@ namespace equip
 		logger::trace("try to equip armor/clothing {}"sv, a_form->GetName());
 
 		if (auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-			!equip_slot::un_equip_if_equipped(obj, a_player, equip_manager))
+			!equip::unequip_armor(obj, a_player, equip_manager))
 		{
 			equip_manager->EquipObject(a_player, obj);
 			logger::trace("equipped armor {}. return."sv, a_form->GetName());
@@ -342,7 +342,7 @@ namespace equip
 				continue;
 			}
 			//returns currently only the types we want
-			auto actor_value = util::helper::get_actor_value_effect_from_potion(item);
+			auto actor_value = helpers::get_actor_value_effect_from_potion(item);
 			if (actor_value == RE::ActorValue::kNone)
 			{
 				continue;

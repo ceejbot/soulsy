@@ -935,7 +935,7 @@ namespace ui
 	image ui_renderer::get_key_icon(const uint32_t a_key)
 	{
 		auto return_image = default_key_struct[static_cast<int32_t>(default_keys::key)];
-		if (a_key >= control::common::k_gamepad_offset)
+		if (a_key >= keycodes::k_gamepad_offset)
 		{
 			if (mcm::get_controller_set() == static_cast<uint32_t>(controller_set::playstation))
 			{

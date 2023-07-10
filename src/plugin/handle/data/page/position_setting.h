@@ -1,14 +1,15 @@
 ﻿#pragma once
 #include "position_draw_setting.h"
 #include "include/custom_setting.h"
-#include "slot_setting.h"
+#include "include/enums.h"
 #include "include/image_path.h"
+#include "handle/data/page/slot_setting.h"
 
 namespace handle {
+    using position_type = enums::position_type;
+
     class position_setting {
     public:
-        enum class position_type : std::uint32_t { top = 0, right = 1, bottom = 2, left = 3, total = 4 };
-
         uint32_t page = 0;
         position_type position = position_type::total;
         std::vector<slot_setting*> slot_settings;

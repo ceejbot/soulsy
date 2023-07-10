@@ -8,9 +8,13 @@
 #include "include/user_settings.h"
 #include "include/constant.h"
 #include "include/string_util.h"
+#include "handle/data/page/slot_setting.h"
+#include "include/enums.h"
 
 namespace processing {
     using mcm = config::mcm_setting;
+    using action_type = enums::action_type;
+    using position_type = enums::position_type;
 
     void setting_execute::activate(const std::vector<handle::slot_setting*>& a_slots,
         bool a_only_equip,
@@ -44,7 +48,7 @@ namespace processing {
             if (mcm::get_elden_demon_souls() && a_only_equip && slot->action != action_type::default_action) {
                 logger::trace("form {} does not need equip, skipping"sv,
                     slot->form ? util::string_util::int_to_hex(slot->form->GetFormID()) : "null");
-                equip::equip_slot::un_equip_shout_slot(player);
+                equip::un_equip_shout_slot(player);
                 continue;
             }
 
@@ -58,13 +62,13 @@ namespace processing {
                 static_cast<uint32_t>(slot->type),
                 static_cast<uint32_t>(slot->action),
                 slot->form ? util::string_util::int_to_hex(slot->form->GetFormID()) : "null",
-                slot->equip_slot == equip::equip_slot::get_left_hand_slot());
+                slot->equip_slot == equip::left_hand_equip_slot());
             execute_setting(slot, player);
         }
 
         if (!un_equip.empty()) {
             for (RE::BGSEquipSlot*& slot : un_equip) {
-                equip::equip_slot::un_equip_hand(slot, player, action_type::un_equip);
+                equip::unequip_slot(slot, player, action_type::un_equip);
             }
         }
     }
@@ -111,10 +115,10 @@ namespace processing {
         logger::trace("checking and calling re equip for setting {}, is setting empty {}"sv,
             static_cast<uint32_t>(a_setting->position),
             a_setting->slot_settings.empty());
-        auto* left_slot = equip::equip_slot::get_left_hand_slot();
+		auto* left_slot     = equip::left_hand_equip_slot();
         auto* equip_manager = RE::ActorEquipManager::GetSingleton();
         auto* player = RE::PlayerCharacter::GetSingleton();
-        equip::equip_slot::un_equip_object_ft_dummy_dagger(left_slot, player, equip_manager);
+        equip::unequip_object_ft_dummy_dagger(left_slot, player, equip_manager);
         if (!a_setting->slot_settings.empty()) {
             processing::setting_execute::activate(a_setting->slot_settings);
         }
@@ -124,9 +128,9 @@ namespace processing {
         switch (a_slot->type) {
             case slot_type::consumable:
                 if (a_slot->form) {
-                    equip::item::consume_potion(a_slot->form, a_player);
+                    equip::consume_potion(a_slot->form, a_player);
                 } else if (a_slot->actor_value != RE::ActorValue::kNone) {
-                    equip::item::find_and_consume_fitting_option(a_slot->actor_value, a_player);
+                    equip::find_and_consume_fitting_option(a_slot->actor_value, a_player);
                 }
                 break;
             case slot_type::magic:
@@ -141,12 +145,12 @@ namespace processing {
             case slot_type::weapon:
             case slot_type::shield:
             case slot_type::light:
-                equip::item::equip_item(a_slot->form, a_slot->equip_slot, a_player, a_slot->type);
+                equip::equip_item(a_slot->form, a_slot->equip_slot, a_player, a_slot->type);
                 break;
             case slot_type::armor:
             case slot_type::lantern:
             case slot_type::mask:
-                equip::item::equip_armor(a_slot->form, a_player);
+                equip::equip_armor(a_slot->form, a_player);
                 break;
             case slot_type::scroll:
                 equip::magic::cast_scroll(a_slot->form, a_slot->action, a_player);
@@ -156,7 +160,7 @@ namespace processing {
                 logger::warn("ignoring misc-item."sv);
                 break;
             case slot_type::empty:
-                equip::equip_slot::un_equip_hand(a_slot->equip_slot, a_player, a_slot->action);
+                equip::unequip_slot(a_slot->equip_slot, a_player, a_slot->action);
                 break;
         }
     }

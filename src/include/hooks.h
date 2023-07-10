@@ -9,7 +9,6 @@ namespace hooks
 	class MenuHook : public RE::MenuControls
 	{
 	public:
-		using common = control::common;
 
 		static void install();
 
@@ -21,7 +20,7 @@ namespace hooks
 					RE::BSTEventSource<RE::InputEvent*>*)>(&RE::MenuControls::ProcessEvent));
 		static inline REL::Relocation<process_event_type> process_event_;
 
-		uint32_t key_ = common::k_invalid;
+		uint32_t key_ = keycodes::k_invalid;
 
 		bool need_to_overwrite(RE::ButtonEvent*& a_button,
 			RE::UserEvents*& a_user_event,

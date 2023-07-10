@@ -10,7 +10,7 @@ namespace equip
 	RE::BGSEquipSlot* left_hand_equip_slot();
 	RE::BGSEquipSlot* power_equip_slot();
 	// Turns true if anything was unequipped.
-	bool unequip_amor(RE::TESBoundObject*& a_obj,
+	bool unequip_armor(RE::TESBoundObject*& a_obj,
 		RE::PlayerCharacter*& a_player,
 		RE::ActorEquipManager*& a_actor_equip_manager);
 	void unequip_slot(RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& a_player, action_type a_action);

@@ -1,18 +1,19 @@
 ﻿#include "page_handle.h"
 #include "include/enums.h"
 #include "include/gear.h"
-#include "handle/data/data_helper.h"
 #include "handle/data/page/position_setting.h"
-#include "handle/data/page/slot_setting.h"
+#include "include/enums.h"
 #include "include/user_settings.h"
 #include "include/constant.h"
 #include "include/helper.h"
 #include "include/player.h"
 #include "include/string_util.h"
+#include "handle/data/page/slot_setting.h"
 
 namespace handle {
     using mcm = config::mcm_setting;
     using position_type = enums::position_type;
+    using slot_type = enums::slot_type;
 
     page_handle* page_handle::get_singleton() {
         static page_handle singleton;
@@ -21,8 +22,8 @@ namespace handle {
 
     void page_handle::init_page(uint32_t a_page,
         const position_type a_position,
-        const std::vector<data_helper*>& data_helpers,
-        const slot_setting::hand_equip a_hand,
+        const std::vector<helpers::data_helper*>& data_helpers,
+        const enums::hand_equip a_hand,
         key_position_handle*& a_key_pos) {
         logger::trace("init page {}, position {}, data_size for settings {}, hand {} ..."sv,
             a_page,
@@ -344,18 +345,18 @@ namespace handle {
         }
     }
 
-    void page_handle::get_equip_slots(const slot_setting::slot_type a_type,
-        const slot_setting::hand_equip a_hand,
+    void page_handle::get_equip_slots(const enums::slot_type a_type,
+        const enums::hand_equip a_hand,
         RE::BGSEquipSlot*& a_slot,
         const bool a_left) {
         a_slot = nullptr;
-        if ((a_type == slot_type::magic || a_type == slot_type::weapon) && a_hand == slot_setting::hand_equip::single ||
+        if ((a_type == slot_type::magic || a_type == slot_type::weapon) && a_hand == enums::hand_equip::single ||
             a_type == slot_type::empty) {
-            a_slot = a_left ? equip::equip_slot::get_left_hand_slot() : equip::equip_slot::get_right_hand_slot();
+            a_slot = a_left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot();
         }
     }
 
-    ui::icon_image_type page_handle::get_icon_type(const slot_setting::slot_type a_type, RE::TESForm*& a_form) {
+    ui::icon_image_type page_handle::get_icon_type(const enums::slot_type a_type, RE::TESForm*& a_form) {
         auto icon = icon_type::icon_default;
         switch (a_type) {
             case slot_type::weapon:
@@ -522,7 +523,7 @@ namespace handle {
             return;
         }
 
-        auto actor_value = util::helper::get_actor_value_effect_from_potion(alchemy_potion, false);
+        auto actor_value = helpers::get_actor_value_effect_from_potion(alchemy_potion, false);
         get_consumable_icon_by_actor_value(actor_value, a_icon);
     }
 
@@ -599,7 +600,7 @@ namespace handle {
     void page_handle::get_consumable_item_count(RE::ActorValue& a_actor_value, int32_t& a_count) {
         auto* player = RE::PlayerCharacter::GetSingleton();
         a_count = 0;
-        for (auto potential_items = util::player::get_inventory(player, RE::FormType::AlchemyItem);
+        for (auto potential_items = player::get_inventory(player, RE::FormType::AlchemyItem);
              const auto& [item, inv_data] : potential_items) {
             const auto& [num_items, entry] = inv_data;
             auto alchemy_item = item->As<RE::AlchemyItem>();
@@ -607,7 +608,7 @@ namespace handle {
                 continue;
             }
             //returns currently only the types we want
-            auto actor_value = util::helper::get_actor_value_effect_from_potion(item);
+            auto actor_value = helpers::get_actor_value_effect_from_potion(item);
             if (actor_value == RE::ActorValue::kNone) {
                 continue;
             }
