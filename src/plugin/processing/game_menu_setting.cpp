@@ -20,13 +20,13 @@ namespace processing {
             static_cast<uint32_t>(a_position),
             static_cast<uint32_t>(a_overwrite)));
         const auto pos_max = handle::page_handle::get_singleton()->get_highest_page_id_position(a_position);
-        auto max = config::MCMGlue::get_max_page_count() - 1;  //we start at 0 so count -1
+        auto max = config::mcm_setting::get_max_page_count() - 1;  //we start at 0 so count -1
         logger::trace("Max for Position {} is {}, already set before edit {}"sv,
             static_cast<uint32_t>(a_position),
             max,
             pos_max);
         if (pos_max != -1) {
-            max = config::MCMGlue::get_max_page_count() - 1 - pos_max;
+            max = config::mcm_setting::get_max_page_count() - 1 - pos_max;
         }
 
         if (!a_overwrite && (data.size() == max || max == 0)) {
@@ -35,7 +35,7 @@ namespace processing {
             return;
         }
 
-        const auto check_duplicates = config::MCMGlue::get_check_duplicate_items();
+        const auto check_duplicates = config::mcm_setting::get_check_duplicate_items();
 
         auto* item = is_suitable_for_position(a_form, a_position);
         if (item->form || (a_form && item->actor_value != RE::ActorValue::kNone)) {

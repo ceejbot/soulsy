@@ -10,7 +10,7 @@
 #include "include/string_util.h"
 
 namespace processing {
-    using mcm = config::MCMGlue;
+    using mcm = config::mcm_setting;
 
     void setting_execute::activate(const std::vector<handle::slot_setting*>& a_slots,
         bool a_only_equip,

@@ -13,7 +13,7 @@
 #include "include/string_util.h"
 
 namespace processing {
-    using mcm = config::MCMGlue;
+    using mcm = config::mcm_setting;
     using custom = config::custom_setting;
 
     void set_setting_data::read_and_set_data() {
@@ -154,7 +154,7 @@ namespace processing {
         auto hand = static_cast<handle::slot_setting::hand_equip>(a_hand);
         std::vector<data_helper*> data;
 
-        auto action_check = config::MCMGlue::get_action_check();
+        auto action_check = config::mcm_setting::get_action_check();
         logger::trace("page {}, pos {}, start working data hands {}, action_check {} ..."sv,
             a_page,
             static_cast<uint32_t>(a_position),
@@ -353,7 +353,7 @@ namespace processing {
 
         auto* key_position = handle::key_position_handle::get_singleton();
         //set empty for each position, it will be overwritten if it is configured
-        const auto max = static_cast<int>(config::MCMGlue::get_max_page_count());
+        const auto max = static_cast<int>(config::mcm_setting::get_max_page_count());
         for (auto i = 0; i < max; ++i) {
             for (auto j = 0; j < static_cast<int>(position_type::total); ++j) {
                 set_empty_slot(i, j, key_position);
@@ -438,7 +438,7 @@ namespace processing {
         } else {
             handle::ammo_handle::get_singleton()->clear_ammo();
             //un equip armor here
-            if (config::MCMGlue::get_un_equip_ammo()) {
+            if (config::mcm_setting::get_un_equip_ammo()) {
                 equip::item::un_equip_ammo();
             }
         }
@@ -466,16 +466,16 @@ namespace processing {
             return;
         }
         if (a_condition) {
-            a_position_setting->draw_setting->icon_transparency = config::MCMGlue::get_icon_transparency_blocked();
+            a_position_setting->draw_setting->icon_transparency = config::mcm_setting::get_icon_transparency_blocked();
         } else {
-            a_position_setting->draw_setting->icon_transparency = config::MCMGlue::get_icon_transparency();
+            a_position_setting->draw_setting->icon_transparency = config::mcm_setting::get_icon_transparency();
         }
     }
 
     void set_setting_data::look_for_ammo(const bool a_crossbow) {
-        bool only_favorite = config::MCMGlue::get_only_favorite_ammo();
-        bool sort_by_quantity = config::MCMGlue::get_sort_arrow_by_quantity();
-        const auto max_items = config::MCMGlue::get_max_ammunition_type();
+        bool only_favorite = config::mcm_setting::get_only_favorite_ammo();
+        bool sort_by_quantity = config::mcm_setting::get_sort_arrow_by_quantity();
+        const auto max_items = config::mcm_setting::get_max_ammunition_type();
         auto* player = RE::PlayerCharacter::GetSingleton();
         const auto inv = util::player::get_inventory(player, RE::FormType::Ammo);
         std::multimap<uint32_t, handle::ammo_data*, std::greater<>> ammo_list;
@@ -637,7 +637,7 @@ namespace processing {
                         (setting->actor_value != RE::ActorValue::kNone &&
                             util::helper::get_actor_value_effect_from_potion(a_form) != RE::ActorValue::kNone)) {
                         do_cleanup(page_setting, setting);
-                        if (config::MCMGlue::get_elden_demon_souls()) {
+                        if (config::mcm_setting::get_elden_demon_souls()) {
                             util::helper::rewrite_settings();
                         }
                         write_empty_config_and_init_active();
@@ -650,35 +650,35 @@ namespace processing {
     }
 
     bool set_setting_data::clean_type_allowed(slot_type a_type) {
-        if (!config::MCMGlue::get_auto_cleanup()) {
+        if (!config::mcm_setting::get_auto_cleanup()) {
             return false;
         }
         auto allowed = false;
         switch (a_type) {
             case slot_type::weapon:
-                allowed = config::MCMGlue::get_clean_weapon();
+                allowed = config::mcm_setting::get_clean_weapon();
                 break;
             case slot_type::magic:
             case slot_type::power:
-                allowed = config::MCMGlue::get_clean_spell();
+                allowed = config::mcm_setting::get_clean_spell();
                 break;
             case slot_type::shield:
             case slot_type::armor:
             case slot_type::lantern:
             case slot_type::mask:
-                allowed = config::MCMGlue::get_clean_armor();
+                allowed = config::mcm_setting::get_clean_armor();
                 break;
             case slot_type::shout:
-                allowed = config::MCMGlue::get_clean_shout();
+                allowed = config::mcm_setting::get_clean_shout();
                 break;
             case slot_type::consumable:
-                allowed = config::MCMGlue::get_clean_alchemy_item();
+                allowed = config::mcm_setting::get_clean_alchemy_item();
                 break;
             case slot_type::scroll:
-                allowed = config::MCMGlue::get_clean_scroll();
+                allowed = config::mcm_setting::get_clean_scroll();
                 break;
             case slot_type::light:
-                allowed = config::MCMGlue::get_clean_light();
+                allowed = config::mcm_setting::get_clean_light();
                 break;
             case slot_type::empty:
             case slot_type::misc:
