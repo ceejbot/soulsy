@@ -7,6 +7,8 @@
 // TODO get rid of position setting; get this from Rust side
 // everything else will be fine. afaik.
 
+#include "lib.rs.h"
+
 namespace ui
 {
 	struct image
@@ -87,7 +89,7 @@ namespace ui
 			float a_scale_y,
 			float a_offset_x,
 			float a_offset_y,
-			EntryIcon a_type,
+			uint8_t a_type,
 			uint32_t a_alpha);
 		static void draw_key_icon(float a_x,
 			float a_y,
@@ -116,6 +118,8 @@ namespace ui
 
 		static image get_key_icon(uint32_t a_key);
 		static void load_font();
+
+		static void load_icon_images(std::map<uint32_t, image>& a_struct, std::string& file_path);
 
 	public:
 		static float get_resolution_scale_width();

@@ -1,6 +1,7 @@
 #include "equippable.h"
 
 #include "player.h"
+#include "lib.rs.h"
 
 namespace equippable
 {
@@ -16,7 +17,7 @@ namespace equippable
 		auto kind               = equippable::get_icon_type(item_type, item_form);
 		std::string name        = item_form->GetName();
 
-		rust::Box<CycleEntry> entry = create_cycle_entry(kind, two_handed, count, count, name, form_string);
+		auto entry = create_cycle_entry(kind, two_handed, count, count, name, form_string);
 		return entry;
 	}
 

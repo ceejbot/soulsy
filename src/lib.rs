@@ -130,7 +130,7 @@ pub mod plugin {
 
         /// This is an entry in the cycle. The UI will ask questions of it.
         type CycleEntry;
-        fn icon_file(self: &CycleEntry) -> String;
+        fn get_icon_file(icon: &EntryIcon) -> String;
         fn create_cycle_entry(
             kind: EntryIcon,
             two_handed: bool,
@@ -151,13 +151,10 @@ pub mod plugin {
     }
 
     unsafe extern "C++" {
-        /// Advertise to CXX what our C++ is supposed to look like.
-        include!("PCH.h");
-        include!("HeadersForRust.hxx"); // we don't want this handed to CMake, so we name it oddly.
-
         // everything in the RE namespace is from CommonLibSE
         // I can imagine auto-generating a complete bridge at some point.
 
+        include!("PCH.h");
         #[namespace = "RE"]
         type TESForm;
         #[namespace = "RE"]
@@ -168,15 +165,15 @@ pub mod plugin {
         fn IsDown(self: &ButtonEvent) -> bool;
         fn IsUp(self: &ButtonEvent) -> bool;
 
-        // the UI renderer
-        #[namespace = "ui::ui_renderer"]
-        fn set_fade(do_fade: bool, alpha: f64);
-        #[namespace = "ui::ui_renderer"]
-        fn get_fade() -> bool;
-        #[namespace = "ui::ui_renderer"]
-        fn toggle_show_ui();
-
+        // Selected helpers.
+        include!("include/helper.h");
         #[namespace = "helpers"]
-        fn notify_player(message: &str);
+        fn notify_player(message: &CxxString);
+        #[namespace = "helpers"]
+        fn set_alpha_transition(do_fade: bool, alpha: f64);
+        #[namespace = "helpers"]
+        fn get_is_transitioning() -> bool;
+        #[namespace = "helpers"]
+        fn toggle_hud_visibility();
     }
 }

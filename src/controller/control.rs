@@ -67,9 +67,9 @@ impl Controller {
         // If we're faded out in any way, show ourselves again.
         // The second param to set_fade() is the desired end alpha.
         if !matches!(action, Action::ShowHide) {
-            let is_fading: bool = get_fade();
+            let is_fading: bool = get_is_transitioning();
             if user_settings().fade() && !is_fading {
-                set_fade(true, 1.0);
+                set_alpha_transition(true, 1.0);
                 return KeyEventResponse {
                     handled: true,
                     ..Default::default()
@@ -134,7 +134,7 @@ impl Controller {
                 // ask if we're visible now
                 // set val=0.0 if we are, 1.0 if we're not
                 // call set_fade(true, val)
-                toggle_show_ui();
+                toggle_hud_visibility();
                 KeyEventResponse {
                     handled: true,
                     ..Default::default()

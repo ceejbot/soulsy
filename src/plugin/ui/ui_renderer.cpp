@@ -19,6 +19,8 @@
 #include <nanosvgrast.h>
 #pragma warning(pop)
 
+#include "lib.rs.h"
+
 namespace ui
 {
 	using mcm = config::mcm_setting;
@@ -398,15 +400,13 @@ namespace ui
 	{
 		// This changes a lot. We have exactly four items to draw at any time,
 		// and to find out what they are, we ask the controller for the four currently-visible
-		// cycle entries. 
+		// cycle entries.
 		// skip highlighting for first implementation
-		// might need to fill out cycle entry struct with more info; 
+		// might need to fill out cycle entry struct with more info;
 		// goal is to make this draw call only have to ask simple questions of one object
 
 		// draw settings need to come from the shared layout struct
 		// this is pretty complicated but do not simplify yet; just make it work you doofus
-
-
 
 
 		auto draw_page = mcm::get_draw_page_id();
@@ -600,7 +600,7 @@ namespace ui
 				mcm::get_arrow_icon_scale_height(),
 				mcm::get_arrow_slot_offset_x(),
 				mcm::get_arrow_slot_offset_y(),
-				EntryIcon::Arrow,
+				static_cast<uint8_t>(EntryIcon::Arrow),
 				mcm::get_icon_transparency());
 			draw_text(a_x,
 				a_y,
@@ -705,7 +705,7 @@ namespace ui
 		const float a_scale_y,
 		const float a_offset_x,
 		const float a_offset_y,
-		const EntryIcon a_type,
+		const uint8_t icon_num,
 		const uint32_t a_alpha)
 	{
 		if (a_alpha == 0)
@@ -717,7 +717,7 @@ namespace ui
 
 		const auto center = ImVec2(a_x + a_offset_x, a_y + a_offset_y);
 
-		const auto [texture, width, height] = icon_struct[static_cast<int32_t>(a_type)];
+		const auto [texture, width, height] = icon_struct[static_cast<int32_t>(icon_num)];
 
 		const auto size = ImVec2(static_cast<float>(width) * a_scale_x, static_cast<float>(height) * a_scale_y);
 
@@ -882,11 +882,52 @@ namespace ui
 		}
 	}
 
+	// I regret all of my life choices.
+	void ui_renderer::load_icon_images(std::map<uint32_t, image>& a_struct, std::string& file_path)
+	{
+		const auto res_width  = get_resolution_scale_width();
+		const auto res_height = get_resolution_scale_height();
+
+		const auto start = static_cast<uint32_t>(EntryIcon::Alteration);
+		const auto end   = static_cast<uint32_t>(EntryIcon::Whip);
+
+		for (uint32_t idx = start; idx <= end; idx++)
+		{
+			EntryIcon icon       = static_cast<EntryIcon>(idx);
+			const auto icon_file = get_icon_file(icon);
+			auto entry = std::filesystem::path(file_path);
+			entry /= std::string(icon_file);
+
+			if (load_texture_from_file(entry.string().c_str(),
+					&a_struct[idx].texture,
+					a_struct[idx].width,
+					a_struct[idx].height))
+			{
+				logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
+					entry.filename().string().c_str(),
+					entry.filename().extension().string().c_str(),
+					a_struct[idx].width,
+					a_struct[idx].height);
+			}
+			else
+			{
+				logger::error("failed to load texture {}"sv, entry.filename().string().c_str());
+				continue;
+			}
+
+			a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
+			a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
+		}
+	}
+
 	template <typename T>
 	void ui_renderer::load_images(std::map<std::string, T>& a_map,
 		std::map<uint32_t, image>& a_struct,
 		std::string& file_path)
 	{
+		const auto res_width  = get_resolution_scale_width();
+		const auto res_height = get_resolution_scale_height();
+
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
 			if (a_map.contains(entry.path().filename().string()))
@@ -914,8 +955,8 @@ namespace ui
 					logger::error("failed to load texture {}"sv, entry.path().filename().string().c_str());
 				}
 
-				a_struct[index].width  = static_cast<int32_t>(a_struct[index].width * get_resolution_scale_width());
-				a_struct[index].height = static_cast<int32_t>(a_struct[index].height * get_resolution_scale_height());
+				a_struct[index].width  = static_cast<int32_t>(a_struct[index].width * res_width);
+				a_struct[index].height = static_cast<int32_t>(a_struct[index].height * res_height);
 			}
 		}
 	}
@@ -1064,7 +1105,7 @@ namespace ui
 	void ui_renderer::load_all_images()
 	{
 		load_images(image_type_name_map, image_struct, img_directory);
-		load_images(icon_type_name_map, icon_struct, icon_directory);
+		// load_images(icon_type_name_map, icon_struct, icon_directory);
 		load_images(key_icon_name_map, key_struct, key_directory);
 		load_images(default_key_icon_name_map, default_key_struct, key_directory);
 		load_images(gamepad_ps_icon_name_map, ps_key_struct, key_directory);

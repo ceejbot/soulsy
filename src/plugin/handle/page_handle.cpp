@@ -12,6 +12,8 @@
 #include "string_util.h"
 #include "user_settings.h"
 
+#include "lib.rs.h"
+
 namespace handle
 {
 	using mcm           = config::mcm_setting;
@@ -90,18 +92,20 @@ namespace handle
 
 		page->slot_settings = *slots;
 
-		//for now the right hand or the first setting defines the icon, works well for elden.
-		page->icon_type = equippable::get_icon_type(slots->front()->type, slots->front()->form);
-		if (slots->size() == 2 && page->icon_type == icon_type::icon_default)
+		auto icon_enum  = equippable::get_icon_type(slots->front()->type, slots->front()->form);
+		page->icon_type = static_cast<uint8_t>(icon_enum);
+		if (slots->size() == 2 && page->icon_type == static_cast<uint8_t>(EntryIcon::IconDefault))
 		{
 			logger::debug("Could not find an Icon with first setting, try next");
-			page->icon_type = equippable::get_icon_type(slots->at(1)->type, slots->at(1)->form);
+			auto icon_enum = equippable::get_icon_type(slots->at(1)->type, slots->at(1)->form);
+			page->icon_type = static_cast<uint8_t>(icon_enum);
 		}
 
 		//we set the icon type according to the actor value
 		if (slots->front()->actor_value != RE::ActorValue::kNone && slots->front()->type == slot_type::consumable)
 		{
-			equippable::get_consumable_icon_by_actor_value(slots->front()->actor_value, page->icon_type);
+			auto enum_icon  = equippable::get_consumable_icon_by_actor_value(slots->front()->actor_value);
+			page->icon_type = static_cast<uint8_t>(enum_icon);
 		}
 
 		auto* draw                         = new position_draw_setting();

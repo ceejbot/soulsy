@@ -12,10 +12,10 @@ namespace handle
 	class position_setting
 	{
 	public:
-		uint32_t page          = 0;
-		position_type position = position_type::total;
 		std::vector<slot_setting*> slot_settings;
-		EntryIcon icon_type                 = EntryIcon::IconDefault;
+		uint32_t page                       = 0;
+		position_type position              = position_type::total;
+		uint8_t icon_type                   = 19; // This is EntryIcon, but we're breaking a terrible dep cycle
 		uint32_t button_press_modify        = ui::draw_full;
 		uint32_t key                        = 0;
 		position_draw_setting* draw_setting = nullptr;

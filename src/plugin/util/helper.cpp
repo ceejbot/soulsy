@@ -8,14 +8,27 @@
 #include "player.h"
 #include "string_util.h"
 #include "user_settings.h"
+#include "ui_renderer.h"
 
 namespace helpers
 {
 	using string_util = util::string_util;
 
-	void notify_player(const std::string& a_string)
+	void notify_player(std::string& message)
 	{
-		 RE::DebugNotification(a_string.c_str());
+		 RE::DebugNotification(message.c_str());
+	}
+
+	void set_alpha_transition(bool shift, float target) {
+		ui::ui_renderer::set_fade(shift, target);
+	}
+
+    bool get_is_transitioning() {
+		return ui::ui_renderer::get_fade();
+	}
+
+	void toggle_hud_visibility() {
+		ui::ui_renderer::toggle_show_ui();
 	}
 
 	data_helper* get_extra_data(RE::TESForm*& form)

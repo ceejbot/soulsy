@@ -2,6 +2,8 @@
 
 #include "enums.h"
 
+// This namespace must never use a Rust type.
+
 namespace helpers
 {
 	using slot_type     = enums::slot_type;
@@ -46,5 +48,9 @@ namespace helpers
 		const std::vector<data_helper*>& a_data,
 		uint32_t a_hand);
 	
-	void notify_player(const std::string& message);
+	void notify_player(std::string& message);
+	void set_alpha_transition(bool shift, float target);
+    bool get_is_transitioning();
+	void toggle_hud_visibility();
+
 }

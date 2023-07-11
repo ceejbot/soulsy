@@ -5,6 +5,8 @@
 #include "include/helper.h"
 #include "include/image_path.h"
 
+#include "lib.rs.h"
+
 namespace handle
 {
 	class page_handle
@@ -13,7 +15,6 @@ namespace handle
 		using hand_equip    = enums::hand_equip;
 		using position_type = enums::position_type;
 		using slot_type     = enums::slot_type;
-		using icon_type     = EntryIcon;
 
 		static page_handle* get_singleton();
 		void init_page(uint32_t a_page,

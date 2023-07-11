@@ -1,6 +1,8 @@
 #include "hooks.h"
 #include "enums.h"
 #include "equippable.h"
+#include "processing/game_menu_setting.h"
+#include "processing/set_setting_data.h"
 
 #include "lib.rs.h"
 
@@ -9,7 +11,7 @@ namespace hooks
 	void install_hooks()
 	{
 		PlayerHook::install();
-		MenuHook::install()	;
+		MenuHook::install();
 	}
 
 	// ---------- MenuHook
@@ -73,13 +75,13 @@ namespace hooks
 					if (!item_form)
 						continue;
 
-					rust::Box<CycleEntry> entry = equippable::cycle_entry_from_form(item_form);
-					MenuEventResponse response  = handle_menu_event(key, *entry);
+					auto entry                 = equippable::cycle_entry_from_form(item_form);
+					MenuEventResponse response = handle_menu_event(key, entry);
 					logger::info("got result code {} from menu event for {}"sv, response, key);
 				}
 			}
 		}
-		
+
 		return process_event_(this, eventPtr, eventSource);
 	}
 
