@@ -43,7 +43,6 @@ namespace equippable
 	{
 		if (!item_form)
 		{
-			logger::warn("return false, form is null."sv);
 			return false;
 		}
 
@@ -258,7 +257,7 @@ namespace equippable
 	{
 		if (!item_form || !item_form->Is(RE::FormType::Spell))
 		{
-			return;
+			return EntryIcon::IconDefault;
 		}
 
 		auto* spell        = item_form->As<RE::SpellItem>();
@@ -305,7 +304,7 @@ namespace equippable
 	{
 		if (!item_form || !item_form->Is(RE::FormType::AlchemyItem))
 		{
-			return;
+			return EntryIcon::IconDefault;
 		}
 
 		auto* alchemy_potion = item_form->As<RE::AlchemyItem>();
@@ -326,7 +325,7 @@ namespace equippable
 	{
 		if (!item_form || !item_form->IsArmor())
 		{
-			return;
+			return EntryIcon::IconDefault;
 		}
 		switch (const auto* armor = item_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
 		{

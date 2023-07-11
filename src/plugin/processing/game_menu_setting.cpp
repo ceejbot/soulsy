@@ -360,12 +360,12 @@ namespace processing
 						item->type        = type;
 						item->two_handed  = two_handed;
 						item->left        = false;
-						item->action_type = equipabble::can_instant_cast(a_form, type) ?
+						item->action_type = equippable::can_instant_cast(a_form, type) ?
 						                        enums::action_type::instant :
 						                        enums::action_type::default_action;
 						break;
 					case slot_type::magic:
-						if (equipabble::can_instant_cast(a_form, type))
+						if (equippable::can_instant_cast(a_form, type))
 						{
 							item->form        = a_form;
 							item->type        = type;
