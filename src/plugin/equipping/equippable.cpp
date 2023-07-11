@@ -158,7 +158,7 @@ namespace equippable
 			case slot_type::weapon:
 				return get_weapon_type_icon(item_form);
 			case slot_type::magic:
-				return get_spell_icon(a_formn);
+				return get_spell_icon(item_form);
 			case slot_type::shout:
 				return EntryIcon::Shout;
 			case slot_type::power:
@@ -214,41 +214,41 @@ namespace equippable
 				return EntryIcon::Dagger;
 
 			case RE::WEAPON_TYPE::kOneHandAxe:
-				return EntryIcon::axe_one_handed;
+				return EntryIcon::AxeOneHanded;
 
 			case RE::WEAPON_TYPE::kOneHandMace:
 				if (weapon->HasKeywordString("WeapTypeWhip"))
 				{
-					return EntryIcon::whip;
+					return EntryIcon::Whip;
 				}
-				return EntryIcon::mace;
+				return EntryIcon::Mace;
 
 			case RE::WEAPON_TYPE::kTwoHandSword:
 				if (weapon->HasKeywordString("WeapTypePike"))
 				{
-					return EntryIcon::pike;
+					return EntryIcon::Pike;
 				}
-				return EntryIcon::sword_two_handed;
+				return EntryIcon::SwordTwoHanded;
 
 			case RE::WEAPON_TYPE::kTwoHandAxe:
 				if (weapon->HasKeywordString("WeapTypeHalberd"))
 				{
-					return EntryIcon::halberd;
+					return EntryIcon::Halberd;
 				}
 				else if (weapon->HasKeywordString("WeapTypeQtrStaff"))
 				{
-					return EntryIcon::quarter_staff;
+					return EntryIcon::QuarterStaff;
 				}
-				return EntryIcon::axe_two_handed;
+				return EntryIcon::AxeTwoHanded;
 
 			case RE::WEAPON_TYPE::kBow:
-				return EntryIcon::bow;
+				return EntryIcon::Bow;
 
 			case RE::WEAPON_TYPE::kStaff:
-				return EntryIcon::staff;
+				return EntryIcon::Staff;
 
 			case RE::WEAPON_TYPE::kCrossbow:
-				return EntryIcon::crossbow;
+				return EntryIcon::Crossbow;
 		}
 
 		return EntryIcon::IconDefault;
@@ -290,7 +290,7 @@ namespace equippable
 						return EntryIcon::Destruction;
 				}
 			case RE::ActorValue::kIllusion:
-				return EntryIcon::illusion;
+				return EntryIcon::Illusion;
 
 			case RE::ActorValue::kRestoration:
 				//might not fit all spells
