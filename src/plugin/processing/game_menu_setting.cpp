@@ -4,7 +4,7 @@
 #include "constant.h"
 #include "enums.h"
 #include "helper.h"
-#include "inventory_item.h"
+#include "equippable.h"
 #include "player.h"
 #include "set_setting_data.h"
 #include "string_util.h"
@@ -101,7 +101,7 @@ namespace processing
 			return;
 		}
 
-		const auto two_handed = inventory_item::is_two_handed(a_form);
+		const auto two_handed = equippable::is_two_handed(a_form);
 		if (two_handed && a_left)
 		{
 			auto log_string = fmt::format("Going to Ignore {}, because Two Handed {} and Left {}",
@@ -114,7 +114,7 @@ namespace processing
 		}
 
 		std::vector<helpers::data_helper*> data;
-		const auto type = inventory_item::get_type(a_form);
+		const auto type = equippable::get_type(a_form);
 		const auto item = new helpers::data_helper();
 		switch (type)
 		{
@@ -187,7 +187,7 @@ namespace processing
 				if (!slot_settings.empty())
 				{
 					current_right      = slot_settings.front()->form;
-					current_two_handed = current_right && inventory_item::is_two_handed(current_right);
+					current_two_handed = current_right && equippable::is_two_handed(current_right);
 				}
 				if (slot_settings.size() == 2)
 				{
@@ -341,8 +341,8 @@ namespace processing
 	{
 		//all kind of weapons and magic/spells
 		const auto item       = new data_helper();
-		const auto type       = inventory_item::get_type(a_form);
-		const auto two_handed = inventory_item::is_two_handed(a_form);
+		const auto type       = equippable::get_type(a_form);
+		const auto two_handed = equippable::is_two_handed(a_form);
 		logger::trace("Item {}, is Type {}, TwoHanded {}"sv,
 			a_form ? util::string_util::int_to_hex(a_form->formID) : "null",
 			static_cast<uint32_t>(type),
@@ -360,12 +360,12 @@ namespace processing
 						item->type        = type;
 						item->two_handed  = two_handed;
 						item->left        = false;
-						item->action_type = helpers::can_instant_cast(a_form, type) ?
+						item->action_type = equipabble::can_instant_cast(a_form, type) ?
 						                        enums::action_type::instant :
 						                        enums::action_type::default_action;
 						break;
 					case slot_type::magic:
-						if (helpers::can_instant_cast(a_form, type))
+						if (equipabble::can_instant_cast(a_form, type))
 						{
 							item->form        = a_form;
 							item->type        = type;

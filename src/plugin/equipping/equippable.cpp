@@ -1,21 +1,42 @@
-#include "inventory_item.h"
+#include "equippable.h"
 
 #include "player.h"
 
-namespace inventory_item
+namespace equippable
 {
+	using slot_type = enums::slot_type;
+
 	rust::Box<CycleEntry> cycle_entry_from_form(RE::TESForm*& item_form)
 	{
-		auto item_type          = inventory_item::get_type(item_form);
+		auto item_type          = equippable::get_type(item_form);
 		bool has_count          = (item_type == slot_type::consumable || item_type == slot_type::scroll);
 		auto count              = player::get_inventory_count(item_form);
-		bool two_handed         = inventory_item::is_two_handed(item_form);
+		bool two_handed         = equippable::is_two_handed(item_form);
 		std::string form_string = helpers::get_form_spec(item_form);
-		auto kind               = inventory_item::get_icon_type(item_type, item_form);
+		auto kind               = equippable::get_icon_type(item_type, item_form);
 		std::string name        = item_form->GetName();
 
 		rust::Box<CycleEntry> entry = create_cycle_entry(kind, two_handed, count, count, name, form_string);
 		return entry;
+	}
+
+	bool can_instant_cast(RE::TESForm* item_form, const slot_type item_type)
+	{
+		if (item_type == slot_type::magic)
+		{
+			const auto* spell = item_form->As<RE::SpellItem>();
+			if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell ||
+				spell->GetSpellType() == RE::MagicSystem::SpellType::kLeveledSpell)
+			{
+				if (spell->GetCastingType() != RE::MagicSystem::CastingType::kConcentration)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		return (item_type == slot_type::scroll);
 	}
 
 	bool is_two_handed(RE::TESForm*& item_form)
@@ -130,144 +151,117 @@ namespace inventory_item
 		return slot_type::misc;
 	}
 
-	ui::icon_image_type get_icon_type(const enums::slot_type a_type, RE::TESForm*& a_form)
+	EntryIcon get_icon_type(const enums::slot_type item_type, RE::TESForm*& item_form)
 	{
-		auto icon = icon_type::icon_default;
-		switch (a_type)
+		switch (item_type)
 		{
 			case slot_type::weapon:
-				get_weapon_type_icon(a_form, icon);
-				break;
+				return get_weapon_type_icon(item_form);
 			case slot_type::magic:
-				get_spell_icon(a_form, icon);
-				break;
+				return get_spell_icon(a_formn);
 			case slot_type::shout:
-				icon = icon_type::shout;
-				break;
+				return EntryIcon::Shout;
 			case slot_type::power:
-				icon = icon_type::power;
-				break;
+				return EntryIcon::Power;
 			case slot_type::consumable:
-				get_consumable_icon(a_form, icon);
-				break;
+				return get_consumable_icon(item_form);
 			case slot_type::shield:
-				icon = icon_type::shield;
-				break;
+				return EntryIcon::Shield;
 			case slot_type::armor:
-				get_armor_icon(a_form, icon);
-				break;
+				return get_armor_icon(item_form);
 			case slot_type::scroll:
-				icon = icon_type::scroll;
-				break;
+				return EntryIcon::Scroll;
 			case slot_type::light:
-				icon = icon_type::torch;
-				break;
+				return EntryIcon::Torch;
 			case slot_type::lantern:
-				icon = icon_type::lantern;
-				break;
+				return EntryIcon::Lantern;
 			case slot_type::mask:
-				icon = icon_type::mask;
-				break;
-			case slot_type::misc:
-			case slot_type::empty:
-				icon = icon_type::icon_default;
-				break;
+				return EntryIcon::Mask;
+			default:
+				return EntryIcon::IconDefault;
 		}
-		return icon;
+
+		return EntryIcon::IconDefault;  // unreachable statement lol
 	}
 
-	void get_weapon_type_icon(RE::TESForm*& a_form, icon_type& a_icon)
+	EntryIcon get_weapon_type_icon(RE::TESForm*& item_form)
 	{
-		if (!a_form || !a_form->IsWeapon())
+		if (!item_form || !item_form->IsWeapon())
 		{
-			a_icon = icon_type::icon_default;
-			return;
+			return EntryIcon::IconDefault;
 		}
-		switch (const auto* weapon = a_form->As<RE::TESObjectWEAP>(); weapon->GetWeaponType())
+		switch (const auto* weapon = item_form->As<RE::TESObjectWEAP>(); weapon->GetWeaponType())
 		{
 			case RE::WEAPON_TYPE::kHandToHandMelee:
-				a_icon = icon_type::hand_to_hand;
-				break;
+				return EntryIcon::HandToHand;
+
 			case RE::WEAPON_TYPE::kOneHandSword:
 				if (weapon->HasKeywordString("WeapTypeRapier"))
 				{
-					a_icon = icon_type::rapier;
+					return EntryIcon::Rapier;
 				}
 				else if (weapon->HasKeywordString("WeapTypeKatana"))
 				{
-					a_icon = icon_type::katana;
+					return EntryIcon::Katana;
 				}
-				else
-				{
-					a_icon = icon_type::sword_one_handed;
-				}
-				break;
+				return EntryIcon::SwordOneHanded;
+
 			case RE::WEAPON_TYPE::kOneHandDagger:
 				if (weapon->HasKeywordString("WeapTypeClaw"))
 				{
-					a_icon = icon_type::claw;
+					return EntryIcon::Claw;
 				}
-				else
-				{
-					a_icon = icon_type::dagger;
-				}
-				break;
+				return EntryIcon::Dagger;
+
 			case RE::WEAPON_TYPE::kOneHandAxe:
-				a_icon = icon_type::axe_one_handed;
-				break;
+				return EntryIcon::axe_one_handed;
+
 			case RE::WEAPON_TYPE::kOneHandMace:
 				if (weapon->HasKeywordString("WeapTypeWhip"))
 				{
-					a_icon = icon_type::whip;
+					return EntryIcon::whip;
 				}
-				else
-				{
-					a_icon = icon_type::mace;
-				}
-				break;
+				return EntryIcon::mace;
+
 			case RE::WEAPON_TYPE::kTwoHandSword:
 				if (weapon->HasKeywordString("WeapTypePike"))
 				{
-					a_icon = icon_type::pike;
+					return EntryIcon::pike;
 				}
-				else
-				{
-					a_icon = icon_type::sword_two_handed;
-				}
-				break;
+				return EntryIcon::sword_two_handed;
+
 			case RE::WEAPON_TYPE::kTwoHandAxe:
 				if (weapon->HasKeywordString("WeapTypeHalberd"))
 				{
-					a_icon = icon_type::halberd;
+					return EntryIcon::halberd;
 				}
 				else if (weapon->HasKeywordString("WeapTypeQtrStaff"))
 				{
-					a_icon = icon_type::quarter_staff;
+					return EntryIcon::quarter_staff;
 				}
-				else
-				{
-					a_icon = icon_type::axe_two_handed;
-				}
-				break;
+				return EntryIcon::axe_two_handed;
+
 			case RE::WEAPON_TYPE::kBow:
-				a_icon = icon_type::bow;
-				break;
+				return EntryIcon::bow;
+
 			case RE::WEAPON_TYPE::kStaff:
-				a_icon = icon_type::staff;
-				break;
+				return EntryIcon::staff;
+
 			case RE::WEAPON_TYPE::kCrossbow:
-				a_icon = icon_type::crossbow;
-				break;
+				return EntryIcon::crossbow;
 		}
+
+		return EntryIcon::IconDefault;
 	}
 
-	void get_spell_icon(RE::TESForm*& a_form, icon_type& a_icon)
+	EntryIcon get_spell_icon(RE::TESForm*& item_form)
 	{
-		if (!a_form && !a_form->Is(RE::FormType::Spell))
+		if (!item_form || !item_form->Is(RE::FormType::Spell))
 		{
 			return;
 		}
-		auto* spell        = a_form->As<RE::SpellItem>();
+
+		auto* spell        = item_form->As<RE::SpellItem>();
 		const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
 		auto actor_value   = effect->GetMagickSkill();
 		if (actor_value == RE::ActorValue::kNone)
@@ -278,117 +272,108 @@ namespace inventory_item
 		switch (actor_value)
 		{
 			case RE::ActorValue::kAlteration:
-				a_icon = icon_type::alteration;
-				break;
+				return EntryIcon::Alteration;
+
 			case RE::ActorValue::kConjuration:
-				a_icon = icon_type::conjuration;
-				break;
+				return EntryIcon::Conjuration;
+
 			case RE::ActorValue::kDestruction:
 				switch (effect->data.resistVariable)
 				{
 					case RE::ActorValue::kResistFire:
-						a_icon = icon_type::destruction_fire;
-						break;
+						return EntryIcon::DestructionFire;
 					case RE::ActorValue::kResistFrost:
-						a_icon = icon_type::destruction_frost;
-						break;
+						return EntryIcon::DestructionFrost;
 					case RE::ActorValue::kResistShock:
-						a_icon = icon_type::destruction_shock;
-						break;
+						return EntryIcon::DestructionShock;
 					default:
-						a_icon = icon_type::destruction;
+						return EntryIcon::Destruction;
 				}
-				break;
 			case RE::ActorValue::kIllusion:
-				a_icon = icon_type::illusion;
-				break;
+				return EntryIcon::illusion;
+
 			case RE::ActorValue::kRestoration:
 				//might not fit all spells
-				a_icon = icon_type::restoration;
-				break;
+				return EntryIcon::Restoration;
+
 			default:
-				a_icon = icon_type::spell_default;
+				return EntryIcon::SpellDefault;
 		}
 	}
 
-	void get_consumable_icon(RE::TESForm*& a_form, icon_type& a_icon)
+	EntryIcon get_consumable_icon(RE::TESForm*& item_form)
 	{
-		if (!a_form || !a_form->Is(RE::FormType::AlchemyItem))
+		if (!item_form || !item_form->Is(RE::FormType::AlchemyItem))
 		{
 			return;
 		}
-		auto* alchemy_potion = a_form->As<RE::AlchemyItem>();
 
+		auto* alchemy_potion = item_form->As<RE::AlchemyItem>();
 		if (alchemy_potion->IsFood())
 		{
-			a_icon = icon_type::food;
-			return;
+			return EntryIcon::Food;
 		}
 		if (alchemy_potion->IsPoison())
 		{
-			a_icon = icon_type::poison_default;
-			return;
+			return EntryIcon::PoisonDefault;
 		}
 
 		auto actor_value = helpers::get_actor_value_effect_from_potion(alchemy_potion, false);
-		get_consumable_icon_by_actor_value(actor_value, a_icon);
+		return get_consumable_icon_by_actor_value(actor_value);
 	}
 
-	void get_armor_icon(RE::TESForm*& a_form, icon_type& a_icon)
+	EntryIcon get_armor_icon(RE::TESForm*& item_form)
 	{
-		if (!a_form && !a_form->IsArmor())
+		if (!item_form || !item_form->IsArmor())
 		{
 			return;
 		}
-		switch (const auto* armor = a_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
+		switch (const auto* armor = item_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
 		{
 			case RE::BIPED_MODEL::ArmorType::kLightArmor:
-				a_icon = icon_type::armor_light;
-				break;
+				return EntryIcon::ArmorLight;
+
 			case RE::BIPED_MODEL::ArmorType::kHeavyArmor:
-				a_icon = icon_type::armor_heavy;
-				break;
+				return EntryIcon::ArmorHeavy;
+
 			case RE::BIPED_MODEL::ArmorType::kClothing:
-				a_icon = icon_type::armor_clothing;
-				break;
+				return EntryIcon::ArmorClothing;
 		}
 	}
 
-	void get_consumable_icon_by_actor_value(RE::ActorValue& a_actor_value, icon_type& a_icon)
+	EntryIcon get_consumable_icon_by_actor_value(RE::ActorValue& actor_value)
 	{
-		switch (a_actor_value)
+		switch (actor_value)
 		{
 			case RE::ActorValue::kHealth:
 			case RE::ActorValue::kHealRateMult:
 			case RE::ActorValue::kHealRate:
-				a_icon = icon_type::potion_health;
-				break;
+				return EntryIcon::PotionHealth;
+
 			case RE::ActorValue::kStamina:
 			case RE::ActorValue::kStaminaRateMult:
 			case RE::ActorValue::kStaminaRate:
-				a_icon = icon_type::potion_stamina;
-				break;
+				return EntryIcon::PotionStamina;
+
 			case RE::ActorValue::kMagicka:
 			case RE::ActorValue::kMagickaRateMult:
 			case RE::ActorValue::kMagickaRate:
-				a_icon = icon_type::potion_magicka;
-				break;
+				return EntryIcon::PotionMagicka;
+
 			case RE::ActorValue::kResistFire:
-				a_icon = icon_type::potion_fire_resist;
-				break;
+				return EntryIcon::PotionFireResist;
+
 			case RE::ActorValue::kResistShock:
-				a_icon = icon_type::potion_shock_resist;
-				break;
+				return EntryIcon::PotionShockResist;
+
 			case RE::ActorValue::kResistFrost:
-				a_icon = icon_type::potion_frost_resist;
-				break;
+				return EntryIcon::PotionFrostResist;
+
 			case RE::ActorValue::kResistMagic:
-				a_icon = icon_type::potion_magic_resist;
-				break;
+				return EntryIcon::PotionMagicResist;
+
 			default:
-				a_icon = icon_type::potion_default;
+				return EntryIcon::PotionDefault;
 		}
 	}
-
-
 }

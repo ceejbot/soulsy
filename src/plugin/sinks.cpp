@@ -1,5 +1,5 @@
 #include "helper.h"
-#include "inventory_item.h"
+#include "equippable.h"
 #include "keycodes.h"
 #include "player.h"
 #include "sinks.h"
@@ -62,7 +62,7 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	}
 
 	// add check if we need to block left
-	if (!RE::UI::GetSingleton()->GameIsPaused() && inventory_item::is_two_handed(form))
+	if (!RE::UI::GetSingleton()->GameIsPaused() && equippable::is_two_handed(form))
 	{
 		processing::set_setting_data::check_if_location_needs_block(form, event->equipped);
 	}

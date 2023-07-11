@@ -7,7 +7,7 @@
 #include "enums.h"
 #include "gear.h"
 #include "helper.h"
-#include "inventory_item.h"
+#include "equippable.h"
 #include "player.h"
 #include "string_util.h"
 #include "user_settings.h"
@@ -91,11 +91,11 @@ namespace handle
 		page->slot_settings = *slots;
 
 		//for now the right hand or the first setting defines the icon, works well for elden.
-		page->icon_type = inventory_item::get_icon_type(slots->front()->type, slots->front()->form);
+		page->icon_type = equippable::get_icon_type(slots->front()->type, slots->front()->form);
 		if (slots->size() == 2 && page->icon_type == icon_type::icon_default)
 		{
 			logger::debug("Could not find an Icon with first setting, try next");
-			page->icon_type = inventory_item::get_icon_type(slots->at(1)->type, slots->at(1)->form);
+			page->icon_type = equippable::get_icon_type(slots->at(1)->type, slots->at(1)->form);
 		}
 
 		//we set the icon type according to the actor value

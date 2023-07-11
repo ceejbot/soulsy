@@ -2,7 +2,7 @@
 
 #include "enums.h"
 #include "helper.h"
-#include "inventory_item.h"
+#include "equippable.h"
 #include "offset.h"
 #include "string_util.h"
 #include "user_settings.h"
@@ -68,7 +68,7 @@ namespace player
 
 		if (!a_two_handed)
 		{
-			a_two_handed = right_obj && inventory_item::is_two_handed(right_obj);
+			a_two_handed = right_obj && equippable::is_two_handed(right_obj);
 		}
 
 		logger::trace("got form {}, name {} on both/right hand"sv,
@@ -83,7 +83,7 @@ namespace player
 		{
 			data[0]->form        = right_obj;
 			data[0]->left        = false;
-			data[0]->type        = inventory_item::get_type(right_obj);
+			data[0]->type        = equippable::get_type(right_obj);
 			data[0]->action_type = action_type::default_action;
 			data.erase(data.begin() + 1);
 		}
@@ -92,7 +92,7 @@ namespace player
 		{
 			data[0]->form        = right_obj;
 			data[0]->left        = false;
-			data[0]->type        = inventory_item::get_type(right_obj);
+			data[0]->type        = equippable::get_type(right_obj);
 			data[0]->action_type = action_type::default_action;
 		}
 
@@ -100,7 +100,7 @@ namespace player
 		{
 			data[1]->form        = left_obj;
 			data[1]->left        = true;
-			data[1]->type        = inventory_item::get_type(left_obj);
+			data[1]->type        = equippable::get_type(left_obj);
 			data[1]->action_type = action_type::default_action;
 		}
 

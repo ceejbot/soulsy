@@ -4,7 +4,7 @@
 #include "custom_setting.h"
 #include "enums.h"
 #include "gear.h"
-#include "inventory_item.h"
+#include "equippable.h"
 #include "player.h"
 #include "string_util.h"
 #include "user_settings.h"
@@ -21,8 +21,8 @@ namespace helpers
 	data_helper* get_extra_data(RE::TESForm*& form)
 	{
 		const auto item       = new data_helper();
-		const auto type       = inventory_item::get_type(form);
-		const auto two_handed = inventory_item::is_two_handed(form);
+		const auto type       = equippable::get_type(form);
+		const auto two_handed = equippable::is_two_handed(form);
 
 		item->form       = form;
 		item->type       = type;
@@ -357,39 +357,5 @@ namespace helpers
 			action_left,
 			static_cast<int>(actor_value));
 		config::custom_setting::read_setting();
-	}
-
-	bool can_instant_cast(RE::TESForm* a_form, const slot_type a_type)
-	{
-		if (a_type == slot_type::magic)
-		{
-			const auto* spell = a_form->As<RE::SpellItem>();
-			if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell ||
-				spell->GetSpellType() == RE::MagicSystem::SpellType::kLeveledSpell)
-			{
-				if (spell->GetCastingType() != RE::MagicSystem::CastingType::kConcentration)
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-
-		if (a_type == slot_type::power)
-		{
-			return false;
-		}
-
-		if (a_type == slot_type::scroll)
-		{
-			return true;
-		}
-
-		if (a_type == slot_type::shout)
-		{
-			return false;
-		}
-
-		return false;
 	}
 }

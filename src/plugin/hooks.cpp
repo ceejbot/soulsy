@@ -1,6 +1,6 @@
 #include "hooks.h"
 #include "enums.h"
-#include "inventory_item.h"
+#include "equippable.h"
 
 #include "lib.rs.h"
 
@@ -9,7 +9,7 @@ namespace hooks
 	void install_hooks()
 	{
 		PlayerHook::install();
-		MenuHook::install();
+		MenuHook::install()	;
 	}
 
 	// ---------- MenuHook
@@ -73,7 +73,7 @@ namespace hooks
 					if (!item_form)
 						continue;
 
-					rust::Box<CycleEntry> entry = inventory_item::cycle_entry_from_form(item_form);
+					rust::Box<CycleEntry> entry = equippable::cycle_entry_from_form(item_form);
 					MenuEventResponse response  = handle_menu_event(key, *entry);
 					logger::info("got result code {} from menu event for {}"sv, response, key);
 				}

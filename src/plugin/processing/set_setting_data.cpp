@@ -5,7 +5,7 @@
 #include "enums.h"
 #include "gear.h"
 #include "helper.h"
-#include "inventory_item.h"
+#include "equippable.h"
 #include "player.h"
 #include "setting_execute.h"
 #include "string_util.h"
@@ -232,7 +232,7 @@ namespace processing
 
 		if (action == action_type::instant && form)
 		{
-			if (!helpers::can_instant_cast(form, type))
+			if (!equippable::can_instant_cast(form, type))
 			{
 				logger::warn("form {} cannot be instant cast, set to default"sv,
 					util::string_util::int_to_hex(form->GetFormID()));
@@ -269,7 +269,7 @@ namespace processing
 
 			if (action == action_type::instant && form_left)
 			{
-				if (!helpers::can_instant_cast(form_left, type))
+				if (!equippable::can_instant_cast(form_left, type))
 				{
 					logger::warn("form {} cannot be instant cast, set to default"sv,
 						util::string_util::int_to_hex(form_left->GetFormID()));
@@ -443,7 +443,7 @@ namespace processing
 		if (right_position_setting && !right_position_setting->slot_settings.empty() &&
 			right_position_setting->slot_settings.front()->form)
 		{
-			is_right_two_handed = inventory_item::is_two_handed(right_position_setting->slot_settings.front()->form);
+			is_right_two_handed = equippable::is_two_handed(right_position_setting->slot_settings.front()->form);
 		}
 
 		handle::position_setting* position_setting;
@@ -520,7 +520,7 @@ namespace processing
 
 		if (!a_equipped)
 		{
-			if (!inventory_item::is_two_handed(a_form))
+			if (!equippable::is_two_handed(a_form))
 			{
 				processing::setting_execute::reequip_left_hand_if_needed(setting);
 				left_reequip_called = true;
@@ -531,7 +531,7 @@ namespace processing
 		{
 			auto* obj_right =
 				RE::PlayerCharacter::GetSingleton()->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-			if ((obj_right && !inventory_item::is_two_handed(obj_right)) || !obj_right)
+			if ((obj_right && !equippable::is_two_handed(obj_right)) || !obj_right)
 			{
 				processing::setting_execute::reequip_left_hand_if_needed(setting);
 			}
@@ -668,7 +668,7 @@ namespace processing
 				item->type        = setting->type;
 				item->action_type = setting->action;
 				item->actor_value = setting->actor_value;
-				item->two_handed  = inventory_item::is_two_handed(setting->form);
+				item->two_handed  = equippable::is_two_handed(setting->form);
 				data.push_back(item);
 			}
 

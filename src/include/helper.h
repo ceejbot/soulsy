@@ -45,8 +45,6 @@ namespace helpers
 		uint32_t a_position,
 		const std::vector<data_helper*>& a_data,
 		uint32_t a_hand);
-	// this probably belongs in inventory_item??
-	bool can_instant_cast(RE::TESForm* a_form, const slot_type a_type);
 	
 	void notify_player(const std::string& message);
 }
