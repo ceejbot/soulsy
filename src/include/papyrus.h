@@ -1,6 +1,6 @@
 #pragma once
 
-namespace PapyrusGlue
+namespace papyrus
 {
 	void on_config_close(RE::TESQuest*);
 	RE::BSFixedString get_resolution_width(RE::TESQuest*);

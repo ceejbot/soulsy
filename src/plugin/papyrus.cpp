@@ -12,7 +12,7 @@
 
 #include "lib.rs.h"
 
-namespace PapyrusGlue
+namespace papyrus
 {
 
 	static const char* mcm_name = "SoulsyHUD_MCM";

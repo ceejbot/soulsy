@@ -63,7 +63,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 				ui::ui_renderer::load_all_images();
 				register_all_sinks();
 				hooks::install_hooks();
-				register_papyrus_functions();
+				papyrus::register_papyrus_functions();
 				logger::info("done with data loaded"sv);
 			}
 			break;
