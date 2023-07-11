@@ -15,6 +15,57 @@ pub mod plugin {
         debug: bool,
     }
 
+    /// Knowing the icon for the item tells us *almost* everything we need to know
+    /// about how to use it.
+    #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+    pub enum EntryIcon {
+        Alteration,
+        ArmorClothing,
+        ArmorHeavy,
+        ArmorLight,
+        Arrow,
+        AxeOneHanded,
+        AxeTwoHanded,
+        Bow,
+        Claw,
+        Conjuration,
+        Crossbow,
+        Dagger,
+        DefaultPotion,
+        DestructionFire,
+        DestructionFrost,
+        DestructionShock,
+        Destruction,
+        Food,
+        Halberd,
+        HandToHand,
+        IconDefault,
+        Illusion,
+        Katana,
+        Mace,
+        Pike,
+        PoisonDefault,
+        PotionFireResist,
+        PotionFrostResist,
+        PotionHealth,
+        PotionMagicka,
+        PotionShockResist,
+        PotionStamina,
+        Power,
+        QuarterStaff,
+        Rapier,
+        Restoration,
+        Scroll,
+        Shield,
+        Shout,
+        SpellDefault,
+        Staff,
+        SwordOneHanded,
+        SwordTwoHanded,
+        Torch,
+        Whip,
+    }
+
     /// Turning the key number into an enum is handy.
     #[derive(Debug, Clone)]
     pub enum Action {
@@ -67,15 +118,23 @@ pub mod plugin {
 
         /// Give access to the settings to the C++ side.
         type UserSettings;
+        fn is_cycle_button(self: &UserSettings, key: u32) -> bool;
+        /// Managed access to the settings object, so we can lazy-load if necessary.
+        fn user_settings() -> Box<UserSettings>;
+
         /// This is an entry in the cycle. The UI will ask questions of it.
         type CycleEntry;
-        /// Icon data; probably needs to be shared
-        type EntryIcon;
+        fn icon_file(self: &CycleEntry) -> String;
+        fn create_cycle_entry(
+            kind: EntryIcon,
+            two_handed: bool,
+            has_count: bool,
+            count: usize,
+            form_string: &str,
+        ) -> Box<CycleEntry>;
 
         /// Managed access to the layout object, so we can lazy-load if necessary.
         fn layout() -> &'static HudLayout;
-        /// Managed access to the settings object, so we can lazy-load if necessary.
-        fn user_settings() -> Box<UserSettings>;
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings() -> Result<()>;
         /// Handle an incoming key press event from the game. Returns true if handled.
@@ -90,6 +149,7 @@ pub mod plugin {
         include!("HeadersForRust.hxx"); // we don't want this handed to CMake, so we name it oddly.
 
         // everything in the RE namespace is from CommonLibSE
+        // I can imagine auto-generating a complete bridge at some point.
 
         #[namespace = "RE"]
         type TESForm;
@@ -97,13 +157,17 @@ pub mod plugin {
         type BGSEquipSlot;
         #[namespace = "RE"]
         type ButtonEvent;
+        #[namespace = "RE"]
+        fn IsDown(self: &ButtonEvent) -> bool;
+        fn IsUp(self: &ButtonEvent) -> bool;
 
         // the UI renderer
-        #[namespace = "ui"]
-        type ui_renderer;
-
-        #[namespace = "helpers"]
-        type slot_type; // this is an enum; TODO make it shared
+        #[namespace = "ui::ui_renderer"]
+        fn set_fade(do_fade: bool, alpha: f64);
+        #[namespace = "ui::ui_renderer"]
+        fn get_fade() -> bool;
+        #[namespace = "ui::ui_renderer"]
+        fn toggle_show_ui();
 
         #[namespace = "helpers"]
         fn is_two_handed(item: &TESForm) -> bool;

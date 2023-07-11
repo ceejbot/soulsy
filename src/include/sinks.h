@@ -5,6 +5,8 @@
 // with CommonLibSSE's events and do initial processing in the callbacks.
 // All heavy application-level logic happens on the Rust side.
 
+#include "handle/data/page/position_setting.h"
+
 void register_all_sinks();
 
 class EquipEventSink final : public RE::BSTEventSink<RE::TESEquipEvent>
@@ -56,7 +58,5 @@ private:
 	// I think this means highlight relevant slot on button down.
 	uint32_t button_press_modify_ = ui::draw_full;
 
-	void handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding) const;
-	[[nodiscard]] static bool scroll_position(uint32_t a_key, control::binding*& a_binding);
-	void do_button_down(handle::position_setting*& a_position_setting) const;
+	// void handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding) const;
 };

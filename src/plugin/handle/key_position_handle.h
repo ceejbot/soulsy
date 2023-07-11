@@ -1,12 +1,13 @@
 ﻿#pragma once
 #include "./data/page/position_setting.h"
+#include "include/enums.h"
 
 namespace handle
 {
 	class key_position_handle
 	{
 	public:
-		using position_type = position_setting::position_type;
+		using position_type = enums::position_type;
 
 		static key_position_handle* get_singleton();
 		void init_key_position_map();

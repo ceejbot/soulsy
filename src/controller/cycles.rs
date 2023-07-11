@@ -4,58 +4,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::user_settings;
-use crate::plugin::{Action, MenuEventResponse, TESForm};
-
-/// Knowing the icon for the item tells us *almost* everything we need to know
-/// about how to use it.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub enum EntryIcon {
-    Alteration,
-    ArmorClothing,
-    ArmorHeavy,
-    ArmorLight,
-    Arrow,
-    AxeOneHanded,
-    AxeTwoHanded,
-    Bow,
-    Claw,
-    Conjuration,
-    Crossbow,
-    Dagger,
-    DefaultPotion,
-    DestructionFire,
-    DestructionFrost,
-    DestructionShock,
-    Destruction,
-    Food,
-    Halberd,
-    HandToHand,
-    IconDefault,
-    Illusion,
-    Katana,
-    Mace,
-    Pike,
-    PoisonDefault,
-    PotionFireResist,
-    PotionFrostResist,
-    PotionHealth,
-    PotionMagicka,
-    PotionShockResist,
-    PotionStamina,
-    Power,
-    QuarterStaff,
-    Rapier,
-    Restoration,
-    Scroll,
-    Shield,
-    Shout,
-    SpellDefault,
-    Staff,
-    SwordOneHanded,
-    SwordTwoHanded,
-    Torch,
-    Whip,
-}
+use crate::plugin::{Action, EntryIcon, MenuEventResponse};
 
 // We cannot derive default for shared enums.
 impl Default for EntryIcon {
@@ -67,7 +16,7 @@ impl Default for EntryIcon {
 impl EntryIcon {
     fn is_magic(&self) -> bool {
         matches!(
-            self,
+            *self,
             EntryIcon::Alteration
                 | EntryIcon::Conjuration
                 | EntryIcon::Destruction
@@ -83,9 +32,8 @@ impl EntryIcon {
 
     fn is_weapon(&self) -> bool {
         matches!(
-            self,
+            *self,
             EntryIcon::AxeOneHanded
-                | EntryIcon::AxeTwoHanded
                 | EntryIcon::AxeTwoHanded
                 | EntryIcon::Bow
                 | EntryIcon::Claw
@@ -105,7 +53,7 @@ impl EntryIcon {
     }
 
     fn left_hand_ok(&self) -> bool {
-        self.is_weapon() || self.is_magic() || matches!(self, EntryIcon::Shield | EntryIcon::Torch)
+        self.is_weapon() || self.is_magic() || matches!(*self, EntryIcon::Shield | EntryIcon::Torch)
     }
 
     fn right_hand_ok(&self) -> bool {
@@ -113,12 +61,12 @@ impl EntryIcon {
     }
 
     fn is_power(&self) -> bool {
-        matches!(self, EntryIcon::Shout | EntryIcon::Power)
+        matches!(*self, EntryIcon::Shout | EntryIcon::Power)
     }
 
     fn is_utility(&self) -> bool {
         matches!(
-            self,
+            *self,
             EntryIcon::ArmorClothing
                 | EntryIcon::ArmorHeavy
                 | EntryIcon::ArmorLight
@@ -159,16 +107,30 @@ impl PartialEq for CycleEntry {
     }
 }
 
+pub fn create_cycle_entry(
+    kind: EntryIcon,
+    two_handed: bool,
+    has_count: bool,
+    count: usize,
+    form_string: &str,
+) -> Box<CycleEntry> {
+    Box::new(CycleEntry::new(
+        kind,
+        two_handed,
+        has_count,
+        count,
+        form_string,
+    ))
+}
+
 impl CycleEntry {
     /// This is called from C++ when handing us a new item.
     pub fn new(
-        slot: u32,
         kind: EntryIcon,
         two_handed: bool,
         has_count: bool,
         count: usize,
         form_string: &str,
-        _form: &TESForm,
     ) -> Self {
         CycleEntry {
             form_string: form_string.to_string(),
@@ -227,6 +189,7 @@ impl CycleEntry {
             EntryIcon::SwordTwoHanded => "sword_two_handed.svg".to_string(),
             EntryIcon::Torch => "torch.svg".to_string(),
             EntryIcon::Whip => "whip.svg".to_string(),
+            _ => "default_icon.svg".to_string(),
         }
     }
 }
@@ -244,7 +207,7 @@ static CYCLE_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Cycles.toml";
 impl CycleData {
     pub fn write(&self) -> Result<()> {
         let buf = toml::to_string(self)?;
-        std::fs::write(CYCLE_PATH, &buf)?;
+        std::fs::write(CYCLE_PATH, buf)?;
         Ok(())
     }
 

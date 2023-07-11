@@ -86,11 +86,11 @@ void KeyEventSink::register_sink()
 	logger::info("start listening for input events."sv);
 }
 
-event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
+event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 	[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* source)
 {
 	// We start by figuring out if we need to ddo anything at all.
-	if (!event)
+	if (!event_list)
 	{
 		return event_result::kContinue;
 	}
@@ -110,8 +110,8 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 		return event_result::kContinue;
 	}
 
-	if (a_ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) || a_ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
-		a_ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
+	if (ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) || ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
+		ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
 	{
 		return event_result::kContinue;
 	}
@@ -120,7 +120,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 	handle::extra_data_holder::get_singleton()->reset_data();
 
 	// We might get a list of events to handle.
-	for (auto* event = *event; event; event = event->next)
+	for (auto* event = *event_list; event; event = event->next)
 	{
 		if (event->eventType != RE::INPUT_EVENT_TYPE::kButton)
 		{
@@ -157,8 +157,8 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event,
 			continue;
 		}
 
-		const auto* settings       = user_settings();  // rust
-		const bool is_cycle_button = settings->is_cycle_button();
+		const rust::Box<UserSettings> settings       = user_settings();  // rust
+		const bool is_cycle_button = settings->is_cycle_button(key);
 
 		// we hand off to rust to act.
 		const KeyEventResponse response = handle_key_event(key, button);
@@ -240,9 +240,10 @@ void KeyEventSink::handleCycleSlotKey(uint32_t a_key, control::binding*& a_bindi
 
 	if (!new_position)
 	{
-		logger::warn("setting for key {} is null. break."sv, key);
+		logger::warn("setting for key {} is null. break."sv, a_key);
 		return;
 	}
+	/**
 	new_position->highlight_slot = true;
 	if (!scroll_position(a_key, a_binding))
 	{
@@ -252,6 +253,7 @@ void KeyEventSink::handleCycleSlotKey(uint32_t a_key, control::binding*& a_bindi
 	{
 		setting_execute::activate(new_position->slot_settings, true);
 	}
+	*/
 }
 
 /*

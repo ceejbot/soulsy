@@ -12,7 +12,7 @@ namespace equip
 		const RE::BGSEquipSlot* a_slot,
 		RE::PlayerCharacter*& a_player)
 	{
-		auto left = a_slot == equip_slot::left_hand_equip_slot();
+		auto left = a_slot == equip::left_hand_equip_slot();
 		logger::trace("try to work spell {}, action {}, left {}"sv,
 			a_form->GetName(),
 			static_cast<uint32_t>(a_action),
@@ -210,7 +210,7 @@ namespace equip
 		}
 
 		if (const auto* selected_power = a_player->GetActorRuntimeData().selectedPower;
-			selected_power && a_action != handle::slot_setting::action_type::instant)
+			selected_power && a_action != enums::action_type::instant)
 		{
 			logger::trace("current selected power is {}, is shout {}, is spell {}"sv,
 				selected_power->GetName(),
@@ -230,7 +230,7 @@ namespace equip
 			return;
 		}
 
-		if (a_action == handle::slot_setting::action_type::instant)
+		if (a_action == enums::action_type::instant)
 		{
 			if (config::mcm_setting::get_elden_demon_souls())
 			{
@@ -306,11 +306,11 @@ namespace equip
 
 	RE::MagicSystem::CastingSource magic::get_casting_source(const RE::BGSEquipSlot* a_slot)
 	{
-		if (a_slot == equip_slot::right_hand_equip_slot())
+		if (a_slot == equip::right_hand_equip_slot())
 		{
 			return RE::MagicSystem::CastingSource::kRightHand;
 		}
-		if (a_slot == equip_slot::left_hand_equip_slot())
+		if (a_slot == equip::left_hand_equip_slot())
 		{
 			return RE::MagicSystem::CastingSource::kLeftHand;
 		}

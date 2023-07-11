@@ -6,11 +6,12 @@
 #include "include/player.h"
 #include "include/string_util.h"
 #include "include/user_settings.h"
-// #include "data/config_writer_helper.h"
 
 
 namespace helpers
 {
+	using string_util = util::string_util;
+
 	data_helper* get_extra_data(RE::TESForm*& form)
 	{
 		const auto item       = new data_helper();
@@ -37,13 +38,14 @@ namespace helpers
 		// RE::BGSEquipSlot* slot     = nullptr;
 	}
 
-	std::string get_form_spec(const RE::TESForm*& form)
+	std::string get_form_spec(RE::TESForm*& form)
 	{
 		std::string form_string;
 
 		if (form->IsDynamicForm())
 		{
-			form_string = fmt::format("{}{}{}", dynamic_name, delimiter, string_util::int_to_hex(form->GetFormID()));
+			form_string =
+				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, string_util::int_to_hex(form->GetFormID()));
 		}
 		else
 		{
@@ -56,7 +58,7 @@ namespace helpers
 				local_form,
 				string_util::int_to_hex(local_form));
 
-			form_string = fmt::format("{}{}{}", source_file, delimiter, string_util::int_to_hex(local_form));
+			form_string = fmt::format("{}{}{}", source_file, util::delimiter, string_util::int_to_hex(local_form));
 		}
 
 		return form_string;
@@ -78,7 +80,8 @@ namespace helpers
 
 		if (form->IsDynamicForm())
 		{
-			form_string = fmt::format("{}{}{}", dynamic_name, delimiter, string_util::int_to_hex(form->GetFormID()));
+			form_string =
+				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, string_util::int_to_hex(form->GetFormID()));
 		}
 		else
 		{
@@ -91,7 +94,7 @@ namespace helpers
 				local_form,
 				string_util::int_to_hex(local_form));
 
-			form_string = fmt::format("{}{}{}", source_file, delimiter, string_util::int_to_hex(local_form));
+			form_string = fmt::format("{}{}{}", source_file, util::delimiter, string_util::int_to_hex(local_form));
 		}
 
 		return form_string;
@@ -103,7 +106,7 @@ namespace helpers
 		std::vector<std::string> names;
 		for (const auto entries = config::custom_setting::get_sections(); const auto& entry : entries)
 		{
-			if (a_position == static_cast<uint32_t>(handle::position_setting::position_type::total))
+			if (a_position == static_cast<uint32_t>(helpers::position_type::total))
 			{
 				names.emplace_back(entry.pItem);
 			}
@@ -122,7 +125,7 @@ namespace helpers
 
 	RE::TESForm* get_form_from_mod_id_string(const std::string& a_str)
 	{
-		if (!a_str.find(delimiter))
+		if (!a_str.find(util::delimiter))
 		{
 			return nullptr;
 		}
@@ -131,7 +134,7 @@ namespace helpers
 		std::istringstream string_stream{ a_str };
 		std::string plugin, id;
 
-		std::getline(string_stream, plugin, *delimiter);
+		std::getline(string_stream, plugin, *util::delimiter);
 		std::getline(string_stream, id);
 		RE::FormID form_id;
 		std::istringstream(id) >> std::hex >> form_id;
@@ -141,7 +144,7 @@ namespace helpers
 			return nullptr;
 		}
 
-		if (plugin == dynamic_name)
+		if (plugin == util::dynamic_name)
 		{
 			form = RE::TESForm::LookupByID(form_id);
 		}
@@ -278,11 +281,11 @@ namespace helpers
 		logger::trace("rewriting config ..."sv);
 		std::map<uint32_t, uint32_t> next_page_for_position;
 
-		for (auto i = 0; i < static_cast<int>(handle::position_setting::position_type::total); ++i)
+		for (auto i = 0; i < static_cast<int>(enums::position_type::total); ++i)
 		{
 			next_page_for_position[i] = 0;
 		}
-		std::vector<config_writer_helper*> configs;
+		std::vector<helpers::config_writer_helper*> configs;
 		const auto sections = get_configured_section_page_names();
 		logger::trace("got {} sections, rewrite that they are in consecutive pages"sv, sections.size());
 		for (const auto& section : sections)
@@ -290,7 +293,7 @@ namespace helpers
 			auto position        = config::custom_setting::get_position_by_section(section);
 			const auto next_page = next_page_for_position[position];
 
-			auto* config        = new config_writer_helper();
+			auto* config        = new helpers::config_writer_helper();
 			config->section     = section;
 			config->page        = next_page;
 			config->position    = position;

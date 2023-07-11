@@ -34,7 +34,7 @@ void MCMGlue::on_config_close(RE::TESQuest*)
 	config::mcm_setting::read_setting();
 	if (config::mcm_setting::get_elden_demon_souls())
 	{
-		helper::rewrite_settings();
+		helpers::rewrite_settings();
 	}
 	processing::set_setting_data::read_and_set_data();
 	processing::set_setting_data::get_actives_and_equip();
@@ -57,7 +57,7 @@ RE::BSFixedString MCMGlue::get_resolution_height(RE::TESQuest*)
 
 std::vector<RE::BSFixedString> MCMGlue::get_section_names(RE::TESQuest*, uint32_t a_position)
 {
-	const auto sections = helper::get_configured_section_page_names(a_position);
+	const auto sections = helpers::get_configured_section_page_names(a_position);
 	std::vector<RE::BSFixedString> sections_bs_string;
 	sections_bs_string.reserve(sections.size());
 	for (const auto& section : sections)
@@ -173,7 +173,7 @@ RE::BSFixedString MCMGlue::get_form_name(RE::TESQuest*, const uint32_t a_index, 
 		return form_string;
 	}
 
-	const auto* form = helper::get_form_from_mod_id_string(form_string);
+	const auto* form = helpers::get_form_from_mod_id_string(form_string);
 	if (!form)
 	{
 		return form_string;

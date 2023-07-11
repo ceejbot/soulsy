@@ -4,8 +4,11 @@
 #include "include/sinks.h"
 #include "include/ui_renderer.h"
 #include "include/user_settings.h"
+#include "include/papyrus.h"
 
 #include "processing/set_setting_data.h"
+
+#include "rust/cxx.h"
 
 // #include "PCH.h"  // this will actually be force-included...
 // #include "control/binding.h" // this is already gone
@@ -63,7 +66,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 				ui::ui_renderer::load_all_images();
 				register_all_sinks();
 				hooks::install_hooks();
-				papyrus::register_papyrus_functions();
+				register_papyrus_functions();
 				logger::info("done with data loaded"sv);
 			}
 			break;
@@ -94,8 +97,8 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
 
 	// We now load our user settings. This is our first dip into the Rust side.
-	Settings settings = settings();
-	if (settings.debug)
+	const rust::Box<UserSettings> settings = user_settings();
+	if (true)
 	{
 		spdlog::set_level(spdlog::level::trace);
 		spdlog::flush_on(spdlog::level::trace);

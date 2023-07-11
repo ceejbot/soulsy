@@ -286,7 +286,7 @@ namespace equip
 		logger::trace("equipped {}. return."sv, obj->GetName());
 	}
 
-	void un_equip_ammo()
+	void unequip_ammo()
 	{
 		logger::debug("check if we need to un equip ammo"sv);
 		auto player = RE::PlayerCharacter::GetSingleton();

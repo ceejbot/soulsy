@@ -342,7 +342,7 @@ namespace processing
 	}
 
 	data_helper* game_menu_setting::is_suitable_for_position(RE::TESForm*& a_form,
-		const handle::position_setting::position_type a_position)
+		const enums::position_type a_position)
 	{
 		//all kind of weapons and magic/spells
 		const auto item       = new data_helper();
@@ -451,7 +451,7 @@ namespace processing
 	void game_menu_setting::write_notification(const std::string& a_string) { RE::DebugNotification(a_string.c_str()); }
 
 	bool game_menu_setting::already_used(const RE::TESForm* a_form,
-		const handle::position_setting::position_type a_position,
+		const helpers::position_type a_position,
 		const std::vector<data_helper*>& a_config_data)
 	{
 		if (!a_form)
@@ -466,7 +466,7 @@ namespace processing
 		if (a_form->IsWeapon() || a_form->IsArmor())
 		{
 			//check item count in inventory
-			max_count = util::player::get_inventory_count(a_form);
+			max_count = player::get_inventory_count(a_form);
 		}
 
 		auto actor_value = RE::ActorValue::kNone;

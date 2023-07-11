@@ -27,7 +27,7 @@ namespace hooks
 		RE::BSTEventSource<RE::InputEvent*>* eventSource)
 	{
 		auto* ui          = RE::UI::GetSingleton();
-		auto* hotkeys     = user_settings();
+		rust::Box<UserSettings> hotkeys     = user_settings();
 		auto* user_event  = RE::UserEvents::GetSingleton();
 		auto* control_map = RE::ControlMap::GetSingleton();
 
@@ -63,7 +63,7 @@ namespace hooks
 						continue;
 					}
 
-					if (button->IsPressed() && hotkeys->is_cycle_button(key))
+					if (button->IsPressed() && hotkeys.is_cycle_button(key))
 					{
 
 						auto menu_form = processing::game_menu_setting::get_selected_form(ui);
@@ -77,13 +77,14 @@ namespace hooks
 								continue;
 							}
 							
-							// Now make a CycleEntry from the form data
-							// auto entry = CycleEntry::new(slot: u32, kind: EntryIcon, 
-							//              two_handed: bool, has_count: bool, count: usize, 
-							//              form_string: &str, _form: &TESForm);
-
-							auto response = handle_menu_event(key, tes_form_menu, entry: &CycleEntry);
-							logger::info("got result code {} from menu event for {}"sv, result, key);
+							rust::Box<CycleEntry> entry = create_cycle_entry(kind
+																			 : EntryIcon, two_handed
+																			 : bool, has_count
+																			 : bool, count
+																			 : usize, form_string
+																			 : &str);
+							MenuEventResponse response = handle_menu_event(key, entry);
+							logger::info("got result code {} from menu event for {}"sv, response, key);
 							// TODO vary this response notification based on the result
 							// write_notification(fmt::format("Added Item {}", a_form ? a_form->GetName() : "null"));
 							// here the old code wrote the config out; we've already done that in rust

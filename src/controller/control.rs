@@ -4,14 +4,14 @@ use once_cell::sync::Lazy;
 
 use super::cycles::*;
 use super::settings::user_settings;
-use crate::plugin::{ui_renderer, Action, ButtonEvent, KeyEventResponse, MenuEventResponse};
+use crate::plugin::*;
 
 /// There can be only one. Not public because we want access managed.
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
 
 pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
     let action = Action::from(key);
-    CONTROLLER.lock().unwrap().handle_key_event(action)
+    CONTROLLER.lock().unwrap().handle_key_event(action, button)
 }
 
 pub fn handle_menu_event(key: u32, item: &CycleEntry) -> MenuEventResponse {
@@ -51,12 +51,10 @@ pub struct Controller {
 impl Controller {
     pub fn new() -> Self {
         let cycles = CycleData::read().unwrap_or_default();
-        Controller {
-            cycles
-        }
+        Controller { cycles }
     }
 
-    pub fn handle_key_event(&mut self, action: Action) -> KeyEventResponse {
+    pub fn handle_key_event(&mut self, action: Action, button: &ButtonEvent) -> KeyEventResponse {
         // Sketching out what has to happen on fired timers
         // timer data should include the triggering action so we know what to do
         // de-highlight the button if necessary
@@ -66,9 +64,9 @@ impl Controller {
         // If we're faded out in any way, show ourselves again.
         // The second param to set_fade() is the desired end alpha.
         if !matches!(action, Action::ShowHide) {
-            let is_fading: bool = ui_renderer::get_fade();
+            let is_fading: bool = get_fade();
             if user_settings().fade() && !is_fading {
-                ui_renderer::set_fade(true, 1.0);
+                set_fade(true, 1.0);
                 return KeyEventResponse {
                     handled: true,
                     ..Default::default()
@@ -77,8 +75,8 @@ impl Controller {
         }
 
         // will clippy complain about the C++ method names?
-        let is_down: bool = button::IsDown();
-        let is_up: bool = button::IsUp();
+        let _is_down: bool = button.IsDown();
+        let _is_up: bool = button.IsUp();
 
         match action {
             Action::Power => {
@@ -133,13 +131,13 @@ impl Controller {
                 // ask if we're visible now
                 // set val=0.0 if we are, 1.0 if we're not
                 // call set_fade(true, val)
-                ui_renderer::toggle_show_ui();
+                toggle_show_ui();
                 KeyEventResponse {
                     handled: true,
                     ..Default::default()
                 }
             }
-            Action::Irrelevant => KeyEventResponse::default(),
+            _ => KeyEventResponse::default(),
         }
     }
 

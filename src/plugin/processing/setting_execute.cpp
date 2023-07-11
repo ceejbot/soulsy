@@ -126,7 +126,7 @@ namespace processing
 		if (a_form)
 		{
 			auto* player = RE::PlayerCharacter::GetSingleton();
-			equip::item::equip_ammo(a_form, player);
+			equip::equip_ammo(a_form, player);
 		}
 	}
 

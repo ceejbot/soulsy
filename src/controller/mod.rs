@@ -5,7 +5,7 @@ pub mod settings;
 
 use anyhow::Result;
 pub use control::{handle_key_event, handle_menu_event};
-pub use cycles::{CycleEntry, EntryIcon};
+pub use cycles::{create_cycle_entry, CycleEntry};
 pub use layout::layout;
 pub use settings::{user_settings, UserSettings}; // hmm, is this for settings? I'm confused...
 

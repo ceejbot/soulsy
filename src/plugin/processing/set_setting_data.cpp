@@ -712,7 +712,7 @@ namespace processing
 					{
 						if (clean_type_allowed(setting->type))
 						{
-							auto has_it = util::player::has_item_or_spell(setting->form);
+							auto has_it = player::has_item_or_spell(setting->form);
 							if ((!setting->form && setting->actor_value != RE::ActorValue::kNone &&
 									setting->item_count == 0) ||
 								!has_it)

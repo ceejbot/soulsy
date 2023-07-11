@@ -31,6 +31,21 @@ namespace helpers
 		bool has_count                 = false;
 	};
 
+	struct config_writer_helper
+	{
+		std::string section{};
+		uint32_t page{};
+		uint32_t position{};
+		uint32_t type{};
+		std::string form{};
+		uint32_t action{};
+		uint32_t hand{};
+		uint32_t type_left{};
+		std::string form_left{};
+		uint32_t action_left{};
+		int actor_value{};
+	};
+
 	std::string get_form_spec(const RE::TESForm& form);
 	std::string get_mod_and_form(const RE::FormID& a_form_id);
 	std::vector<std::string> get_configured_section_page_names(
