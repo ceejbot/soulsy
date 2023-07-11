@@ -150,12 +150,12 @@ namespace equip
 		}
 	}
 
-	bool is_item_worn(RE::TESBoundObject*& item, RE::PlayerCharacter*& player)
+	bool is_item_worn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& player)
 	{
 		auto worn = false;
 		for (const auto& [item, inv_data] : player::get_inventory(player, RE::FormType::Armor))
 		{
-			if (const auto& [count, entry] = inv_data; entry->object->formID == item->formID && entry->IsWorn())
+			if (const auto& [count, entry] = inv_data; entry->object->formID == bound_obj->formID && entry->IsWorn())
 			{
 				worn = true;
 				break;

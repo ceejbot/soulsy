@@ -141,7 +141,7 @@ pub mod plugin {
         /// Handle an incoming key press event from the game. Returns true if handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
-        fn handle_menu_event(key: u32, item: &CycleEntry) -> MenuEventResponse;
+        fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse;
     }
 
     unsafe extern "C++" {
@@ -169,9 +169,6 @@ pub mod plugin {
         fn get_fade() -> bool;
         #[namespace = "ui::ui_renderer"]
         fn toggle_show_ui();
-
-        #[namespace = "inventory_item"]
-        fn is_two_handed(item: &TESForm) -> bool;
 
         #[namespace = "helpers"]
         fn notify_player(message: &str);

@@ -4,16 +4,17 @@
 
 namespace inventory_item
 {
-	rust::Box<CycleEntry> cycle_entry_from_form(RE::TESForm*& item_form) {
-		auto item_type = inventory_item::get_type(item_form);
-		bool has_count = (item_type == slot_type::consumable || item_type == slot_type::scroll);
-		auto count = player::get_inventory_count(item_form);
-		bool two_handed = inventory_item::is_two_handed(item_form);
-		auto* form_string = helpers::get_form_spec(item_form);
-		auto kind = inventory_item::get_icon_type(item_type, item_form);
-		auto* name = item_form->GetName();
+	rust::Box<CycleEntry> cycle_entry_from_form(RE::TESForm*& item_form)
+	{
+		auto item_type          = inventory_item::get_type(item_form);
+		bool has_count          = (item_type == slot_type::consumable || item_type == slot_type::scroll);
+		auto count              = player::get_inventory_count(item_form);
+		bool two_handed         = inventory_item::is_two_handed(item_form);
+		std::string form_string = helpers::get_form_spec(item_form);
+		auto kind               = inventory_item::get_icon_type(item_type, item_form);
+		std::string name        = item_form->GetName();
 
-		rust::Box<CycleEntry> entry = create_cycle_entry(kind, twohanded, has_count, count, name, form_string);
+		rust::Box<CycleEntry> entry = create_cycle_entry(kind, two_handed, count, count, name, form_string);
 		return entry;
 	}
 
@@ -129,7 +130,7 @@ namespace inventory_item
 		return slot_type::misc;
 	}
 
-    ui::icon_image_type get_icon_type(const enums::slot_type a_type, RE::TESForm*& a_form)
+	ui::icon_image_type get_icon_type(const enums::slot_type a_type, RE::TESForm*& a_form)
 	{
 		auto icon = icon_type::icon_default;
 		switch (a_type)
@@ -153,7 +154,7 @@ namespace inventory_item
 				icon = icon_type::shield;
 				break;
 			case slot_type::armor:
-				get_item_icon(a_form, icon);
+				get_armor_icon(a_form, icon);
 				break;
 			case slot_type::scroll:
 				icon = icon_type::scroll;
@@ -332,4 +333,62 @@ namespace inventory_item
 		auto actor_value = helpers::get_actor_value_effect_from_potion(alchemy_potion, false);
 		get_consumable_icon_by_actor_value(actor_value, a_icon);
 	}
+
+	void get_armor_icon(RE::TESForm*& a_form, icon_type& a_icon)
+	{
+		if (!a_form && !a_form->IsArmor())
+		{
+			return;
+		}
+		switch (const auto* armor = a_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
+		{
+			case RE::BIPED_MODEL::ArmorType::kLightArmor:
+				a_icon = icon_type::armor_light;
+				break;
+			case RE::BIPED_MODEL::ArmorType::kHeavyArmor:
+				a_icon = icon_type::armor_heavy;
+				break;
+			case RE::BIPED_MODEL::ArmorType::kClothing:
+				a_icon = icon_type::armor_clothing;
+				break;
+		}
+	}
+
+	void get_consumable_icon_by_actor_value(RE::ActorValue& a_actor_value, icon_type& a_icon)
+	{
+		switch (a_actor_value)
+		{
+			case RE::ActorValue::kHealth:
+			case RE::ActorValue::kHealRateMult:
+			case RE::ActorValue::kHealRate:
+				a_icon = icon_type::potion_health;
+				break;
+			case RE::ActorValue::kStamina:
+			case RE::ActorValue::kStaminaRateMult:
+			case RE::ActorValue::kStaminaRate:
+				a_icon = icon_type::potion_stamina;
+				break;
+			case RE::ActorValue::kMagicka:
+			case RE::ActorValue::kMagickaRateMult:
+			case RE::ActorValue::kMagickaRate:
+				a_icon = icon_type::potion_magicka;
+				break;
+			case RE::ActorValue::kResistFire:
+				a_icon = icon_type::potion_fire_resist;
+				break;
+			case RE::ActorValue::kResistShock:
+				a_icon = icon_type::potion_shock_resist;
+				break;
+			case RE::ActorValue::kResistFrost:
+				a_icon = icon_type::potion_frost_resist;
+				break;
+			case RE::ActorValue::kResistMagic:
+				a_icon = icon_type::potion_magic_resist;
+				break;
+			default:
+				a_icon = icon_type::potion_default;
+		}
+	}
+
+
 }

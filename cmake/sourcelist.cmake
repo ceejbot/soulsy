@@ -10,6 +10,7 @@ set(headers ${headers}
     src/include/helper.h
     src/include/hooks.h
     src/include/image_path.h
+    src/include/inventory_item.h
     src/include/key_path.h
     src/include/keycodes.h
     src/include/magic.h
@@ -42,6 +43,7 @@ set(sources ${sources}
     src/plugin/config/file_setting.cpp
     src/plugin/config/user_settings.cpp
     src/plugin/equipping/gear.cpp
+    src/plugin/equipping/inventory_item.cpp
     src/plugin/equipping/magic.cpp
     src/plugin/equipping/utility_items.cpp
     src/plugin/handle/ammo_handle.cpp

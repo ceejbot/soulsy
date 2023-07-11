@@ -440,61 +440,6 @@ namespace handle
 		logger::trace("Item {}, count {}"sv, a_form->GetName(), a_count);
 	}
 
-	void page_handle::get_item_icon(RE::TESForm*& a_form, icon_type& a_icon)
-	{
-		if (!a_form && !a_form->IsArmor())
-		{
-			return;
-		}
-		switch (const auto* armor = a_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
-		{
-			case RE::BIPED_MODEL::ArmorType::kLightArmor:
-				a_icon = icon_type::armor_light;
-				break;
-			case RE::BIPED_MODEL::ArmorType::kHeavyArmor:
-				a_icon = icon_type::armor_heavy;
-				break;
-			case RE::BIPED_MODEL::ArmorType::kClothing:
-				a_icon = icon_type::armor_clothing;
-				break;
-		}
-	}
-	void page_handle::get_consumable_icon_by_actor_value(RE::ActorValue& a_actor_value, icon_type& a_icon)
-	{
-		switch (a_actor_value)
-		{
-			case RE::ActorValue::kHealth:
-			case RE::ActorValue::kHealRateMult:
-			case RE::ActorValue::kHealRate:
-				a_icon = icon_type::potion_health;
-				break;
-			case RE::ActorValue::kStamina:
-			case RE::ActorValue::kStaminaRateMult:
-			case RE::ActorValue::kStaminaRate:
-				a_icon = icon_type::potion_stamina;
-				break;
-			case RE::ActorValue::kMagicka:
-			case RE::ActorValue::kMagickaRateMult:
-			case RE::ActorValue::kMagickaRate:
-				a_icon = icon_type::potion_magicka;
-				break;
-			case RE::ActorValue::kResistFire:
-				a_icon = icon_type::potion_fire_resist;
-				break;
-			case RE::ActorValue::kResistShock:
-				a_icon = icon_type::potion_shock_resist;
-				break;
-			case RE::ActorValue::kResistFrost:
-				a_icon = icon_type::potion_frost_resist;
-				break;
-			case RE::ActorValue::kResistMagic:
-				a_icon = icon_type::potion_magic_resist;
-				break;
-			default:
-				a_icon = icon_type::potion_default;
-		}
-	}
-
 	void page_handle::get_consumable_item_count(RE::ActorValue& a_actor_value, int32_t& a_count)
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();

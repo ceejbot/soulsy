@@ -18,19 +18,6 @@ namespace helpers
 		RE::ActorValue actor_value     = RE::ActorValue::kNone;
 	};
 
-	struct ItemData
-	{
-		RE::TESForm* form              = nullptr;
-		RE::ActorValue actor_value     = RE::ActorValue::kNone;
-		RE::BGSEquipSlot* slot         = nullptr;
-		std::string formspec           = "";
-		enums::slot_type type          = enums::slot_type::empty;
-		enums::action_type action_type = enums::action_type::default_action;
-		bool left                      = false;
-		bool two_handed                = false;
-		bool has_count                 = false;
-	};
-
 	struct config_writer_helper
 	{
 		std::string section{};
@@ -46,7 +33,7 @@ namespace helpers
 		int actor_value{};
 	};
 
-	std::string get_form_spec(const RE::TESForm& form);
+	std::string get_form_spec(RE::TESForm*& form);
 	std::string get_mod_and_form(const RE::FormID& a_form_id);
 	std::vector<std::string> get_configured_section_page_names(
 		uint32_t a_position = static_cast<uint32_t>(position_type::total));
@@ -58,6 +45,8 @@ namespace helpers
 		uint32_t a_position,
 		const std::vector<data_helper*>& a_data,
 		uint32_t a_hand);
+	// this probably belongs in inventory_item??
+	bool can_instant_cast(RE::TESForm* a_form, const slot_type a_type);
 	
 	void notify_player(const std::string& message);
 }

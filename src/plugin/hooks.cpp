@@ -38,7 +38,7 @@ namespace hooks
 		{
 			for (auto* event = *eventPtr; event; event = event->next)
 			{
-				if (event->eventType != RE::INPUT_EVENT_TYPE::kButton || !event->HasIdCode())
+				if (event->eventType != RE::INPUT_EVENT_TYPE::kButton || !event->HasIDCode())
 				{
 					continue;
 				}
@@ -74,7 +74,7 @@ namespace hooks
 						continue;
 
 					rust::Box<CycleEntry> entry = inventory_item::cycle_entry_from_form(item_form);
-					MenuEventResponse response  = handle_menu_event(key, entry);
+					MenuEventResponse response  = handle_menu_event(key, *entry);
 					logger::info("got result code {} from menu event for {}"sv, response, key);
 				}
 			}
