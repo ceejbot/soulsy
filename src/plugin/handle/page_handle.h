@@ -52,10 +52,6 @@ namespace handle
 			float& offset_x,
 			float& offset_y);
 		static void get_equip_slots(slot_type a_type, hand_equip a_hand, RE::BGSEquipSlot*& a_slot, bool a_left);
-		static icon_type get_icon_type(slot_type a_type, RE::TESForm*& a_form);
-		static void get_weapon_type_icon(RE::TESForm*& a_form, icon_type& a_icon);
-		static void get_spell_icon(RE::TESForm*& a_form, icon_type& a_icon);
-		static void get_consumable_icon(RE::TESForm*& a_form, icon_type& a_icon);
 		static void get_item_count(RE::TESForm*& a_form, int32_t& a_count, slot_type a_type);
 		static void get_item_icon(RE::TESForm*& a_form, icon_type& a_icon);
 		static void get_consumable_icon_by_actor_value(RE::ActorValue& a_actor_value, icon_type& a_icon);

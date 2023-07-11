@@ -1,5 +1,6 @@
-#include "include/hooks.h"
-#include "include/user_settings.h"
+#include "hooks.h"
+#include "enums.h"
+#include "inventory_item.h"
 
 #include "lib.rs.h"
 
@@ -26,110 +27,60 @@ namespace hooks
 	RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 		RE::BSTEventSource<RE::InputEvent*>* eventSource)
 	{
-		auto* ui          = RE::UI::GetSingleton();
-		rust::Box<UserSettings> hotkeys     = user_settings();
-		auto* user_event  = RE::UserEvents::GetSingleton();
-		auto* control_map = RE::ControlMap::GetSingleton();
+		auto* ui                        = RE::UI::GetSingleton();
+		rust::Box<UserSettings> hotkeys = user_settings();
 
-		if (eventPtr && *eventPtr && processing::game_menu_setting::relevant_menu_open(ui))
+		auto relevant_menu_open = ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) ||
+		                          ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
+		                          ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
+
+		if (eventPtr && *eventPtr && relevant_menu_open)
 		{
 			for (auto* event = *eventPtr; event; event = event->next)
 			{
-				if (event->eventType != RE::INPUT_EVENT_TYPE::kButton)
+				if (event->eventType != RE::INPUT_EVENT_TYPE::kButton || !event->HasIdCode())
 				{
 					continue;
 				}
 
-				if (event->HasIDCode())
+				auto* button = static_cast<RE::ButtonEvent*>(event);
+				if (button->idCode == keycodes::k_invalid)
 				{
-					auto* button = static_cast<RE::ButtonEvent*>(event);
-					if (button->idCode == keycodes::k_invalid)
-					{
+					continue;
+				}
+
+				auto key = keycodes::get_key_id(button);
+
+
+				if (button->IsUp())
+				{
+					// TODO anything?
+				}
+
+				// Early return after we're finished processing button-up events.
+				if (!button->IsDown())
+				{
+					continue;
+				}
+
+				if (button->IsPressed() && hotkeys->is_cycle_button(key))
+				{
+					auto menu_form = processing::game_menu_setting::get_selected_form(ui);
+					if (!menu_form)
 						continue;
-					}
 
-					auto key = keycodes::get_key_id(button);
-
-
-					if (button->IsUp())
-					{
-						// If this is a slot cycle button, start the equip timer now.
-						// TODO
-					}
-
-					// Early return after we're finished processing button-up events.
-					if (!button->IsDown())
-					{
+					auto* item_form = RE::TESForm::LookupByID(menu_form);
+					if (!item_form)
 						continue;
-					}
 
-					if (button->IsPressed() && hotkeys->is_cycle_button(key))
-					{
-
-						auto menu_form = processing::game_menu_setting::get_selected_form(ui);
-						if (menu_form)
-						{
-							// TOOD: okay! Time to figure out how to send form info over to Rust.
-							auto* tes_form_menu = RE::TESForm::LookupByID(menu_form);
-							if (!tes_form_menu)
-							{
-								// I don't like null pointer exceptions, I guess.
-								continue;
-							}
-							
-							rust::Box<CycleEntry> entry = create_cycle_entry(kind
-																			 : EntryIcon, two_handed
-																			 : bool, has_count
-																			 : bool, count
-																			 : usize, form_string
-																			 : &str);
-							MenuEventResponse response = handle_menu_event(key, entry);
-							logger::info("got result code {} from menu event for {}"sv, response, key);
-							// TODO vary this response notification based on the result
-							// write_notification(fmt::format("Added Item {}", a_form ? a_form->GetName() : "null"));
-							// here the old code wrote the config out; we've already done that in rust
-						}
-					}
+					rust::Box<CycleEntry> entry = inventory_item::cycle_entry_from_form(item_form);
+					MenuEventResponse response  = handle_menu_event(key, entry);
+					logger::info("got result code {} from menu event for {}"sv, response, key);
 				}
 			}
 		}
+		
 		return process_event_(this, eventPtr, eventSource);
-	}
-
-	bool MenuHook::need_to_overwrite(RE::ButtonEvent*& a_button,
-		RE::UserEvents*& a_user_event,
-		RE::ControlMap*& a_control_map) const
-	{
-		auto button_event = a_button->userEvent;
-		if (button_event == a_user_event->up || button_event == a_user_event->right ||
-			button_event == a_user_event->down || button_event == a_user_event->left ||
-			button_event == a_user_event->strafeRight || button_event == a_user_event->strafeLeft ||
-			button_event == a_user_event->forward || button_event == a_user_event->back ||
-			button_event == a_user_event->pageUp || button_event == a_user_event->nextPage ||
-			button_event == a_user_event->pageDown || button_event == a_user_event->prevPage)
-		{
-			return true;
-		}
-
-		auto device = a_button->device.get();
-		auto key    = keycodes::get_key_id(a_button);
-
-		if (key == a_control_map->GetMappedKey(a_user_event->up, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->right, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->down, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->left, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->strafeRight, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->strafeLeft, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->forward, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->back, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->pageUp, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->nextPage, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->pageDown, device) ||
-			key == a_control_map->GetMappedKey(a_user_event->prevPage, device))
-		{
-			return true;
-		}
-		return false;
 	}
 
 	// ---------- PlayerHook

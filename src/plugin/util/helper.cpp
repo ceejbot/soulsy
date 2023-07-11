@@ -1,41 +1,34 @@
-﻿#include "include/helper.h"
-#include "include/constant.h"
-#include "include/custom_setting.h"
-#include "include/enums.h"
-#include "include/gear.h"
-#include "include/player.h"
-#include "include/string_util.h"
-#include "include/user_settings.h"
+﻿#include "helper.h"
 
+#include "constant.h"
+#include "custom_setting.h"
+#include "enums.h"
+#include "gear.h"
+#include "inventory_item.h"
+#include "player.h"
+#include "string_util.h"
+#include "user_settings.h"
 
 namespace helpers
 {
 	using string_util = util::string_util;
 
+	void notify_player(const std::string& a_string)
+	{
+		 RE::DebugNotification(a_string.c_str());
+	}
+
 	data_helper* get_extra_data(RE::TESForm*& form)
 	{
 		const auto item       = new data_helper();
-		const auto type       = helpers::get_type(form);
-		const auto two_handed = helpers::is_two_handed(form);
+		const auto type       = inventory_item::get_type(form);
+		const auto two_handed = inventory_item::is_two_handed(form);
 
 		item->form       = form;
 		item->type       = type;
 		item->two_handed = two_handed;
 
 		return item;
-	}
-
-	ItemData* buildCycleEntry(RE::TESForm*& form)
-	{
-		auto* item       = new ItemData();
-		item->form       = form;
-		item->type       = helpers::get_type(form);
-		item->two_handed = helpers::is_two_handed(form);
-		item->formspec   = get_form_spec(form);
-		// action_type action_type    = action_type::default_action;
-		// bool has_count             = false;
-		// RE::ActorValue actor_value = RE::ActorValue::kNone;
-		// RE::BGSEquipSlot* slot     = nullptr;
 	}
 
 	std::string get_form_spec(RE::TESForm*& form)
@@ -162,118 +155,6 @@ namespace helpers
 		}
 
 		return form;
-	}
-
-	bool is_two_handed(RE::TESForm*& a_form)
-	{
-		if (!a_form)
-		{
-			logger::warn("return false, form is null."sv);
-			return false;
-		}
-
-		auto two_handed = false;
-		if (a_form->Is(RE::FormType::Spell))
-		{
-			if (const auto* spell = a_form->As<RE::SpellItem>(); spell->IsTwoHanded())
-			{
-				two_handed = true;
-			}
-		}
-		else if (a_form->IsWeapon())
-		{
-			if (const auto* weapon = a_form->As<RE::TESObjectWEAP>();
-				weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow() || weapon->IsCrossbow())
-			{
-				two_handed = true;
-			}
-		}
-
-		//logger::trace("form {}, two handed {}"sv, a_form->GetName(), two_handed);
-		return two_handed;
-	}
-
-	slot_type get_type(RE::TESForm*& a_form)
-	{
-		if (!a_form)
-		{
-			return slot_type::empty;
-		}
-
-		if (a_form->IsWeapon())
-		{
-			if (const auto* weapon = a_form->As<RE::TESObjectWEAP>(); !weapon->IsBound())
-			{
-				return slot_type::weapon;
-			}
-		}
-
-		if (a_form->IsArmor())
-		{
-			const auto* armor = a_form->As<RE::TESObjectARMO>();
-			//GetSlotMask 49
-			if (armor->IsShield())
-			{
-				return slot_type::shield;
-			}
-			else if (armor->IsClothing() &&
-					 (armor->HasKeywordString("_WL_Lantern") &&
-							 armor->HasPartOf(RE::BIPED_MODEL::BipedObjectSlot::kNone) &&
-							 !armor->HasPartOf(RE::BIPED_MODEL::BipedObjectSlot::kModFaceJewelry) ||
-						 armor->HasPartOf(RE::BIPED_MODEL::BipedObjectSlot::kModPelvisPrimary)))
-			{
-				//Wearable Lanterns got keyword _WL_Lantern
-				//Simple Wearable Lanterns do not have a keyword, but will be equipped on 49 (30+19)
-				return slot_type::lantern;
-			}
-			else if (armor->IsClothing() && armor->HasKeywordString("BOS_DisplayMaskKeyword"))
-			{
-				return slot_type::mask;
-			}
-			return slot_type::armor;
-		}
-
-		if (a_form->Is(RE::FormType::Spell))
-		{
-			const auto spell_type = a_form->As<RE::SpellItem>()->GetSpellType();
-			if (spell_type == RE::MagicSystem::SpellType::kSpell ||
-				spell_type == RE::MagicSystem::SpellType::kLeveledSpell)
-			{
-				return slot_type::magic;
-			}
-			if (spell_type == RE::MagicSystem::SpellType::kLesserPower ||
-				spell_type == RE::MagicSystem::SpellType::kPower)
-			{
-				return slot_type::power;
-			}
-		}
-
-		if (a_form->Is(RE::FormType::Shout))
-		{
-			return slot_type::shout;
-		}
-
-		if (a_form->Is(RE::FormType::AlchemyItem))
-		{
-			return slot_type::consumable;
-		}
-
-		if (a_form->Is(RE::FormType::Scroll))
-		{
-			return slot_type::scroll;
-		}
-
-		if (a_form->Is(RE::FormType::Ammo))
-		{
-			return slot_type::misc;
-		}
-
-		if (a_form->Is(RE::FormType::Light))
-		{
-			return slot_type::light;
-		}
-
-		return slot_type::misc;
 	}
 
 	void rewrite_settings()

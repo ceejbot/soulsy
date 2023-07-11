@@ -1,13 +1,16 @@
 ﻿#include "page_handle.h"
+
 #include "handle/data/page/position_setting.h"
 #include "handle/data/page/slot_setting.h"
-#include "include/constant.h"
-#include "include/enums.h"
-#include "include/gear.h"
-#include "include/helper.h"
-#include "include/player.h"
-#include "include/string_util.h"
-#include "include/user_settings.h"
+
+#include "constant.h"
+#include "enums.h"
+#include "gear.h"
+#include "helper.h"
+#include "inventory_item.h"
+#include "player.h"
+#include "string_util.h"
+#include "user_settings.h"
 
 namespace handle
 {
@@ -88,11 +91,11 @@ namespace handle
 		page->slot_settings = *slots;
 
 		//for now the right hand or the first setting defines the icon, works well for elden.
-		page->icon_type = get_icon_type(slots->front()->type, slots->front()->form);
+		page->icon_type = inventory_item::get_icon_type(slots->front()->type, slots->front()->form);
 		if (slots->size() == 2 && page->icon_type == icon_type::icon_default)
 		{
 			logger::debug("Could not find an Icon with first setting, try next");
-			page->icon_type = get_icon_type(slots->at(1)->type, slots->at(1)->form);
+			page->icon_type = inventory_item::get_icon_type(slots->at(1)->type, slots->at(1)->form);
 		}
 
 		//we set the icon type according to the actor value
@@ -408,210 +411,6 @@ namespace handle
 		{
 			a_slot = a_left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot();
 		}
-	}
-
-	ui::icon_image_type page_handle::get_icon_type(const enums::slot_type a_type, RE::TESForm*& a_form)
-	{
-		auto icon = icon_type::icon_default;
-		switch (a_type)
-		{
-			case slot_type::weapon:
-				get_weapon_type_icon(a_form, icon);
-				break;
-			case slot_type::magic:
-				get_spell_icon(a_form, icon);
-				break;
-			case slot_type::shout:
-				icon = icon_type::shout;
-				break;
-			case slot_type::power:
-				icon = icon_type::power;
-				break;
-			case slot_type::consumable:
-				get_consumable_icon(a_form, icon);
-				break;
-			case slot_type::shield:
-				icon = icon_type::shield;
-				break;
-			case slot_type::armor:
-				get_item_icon(a_form, icon);
-				break;
-			case slot_type::scroll:
-				icon = icon_type::scroll;
-				break;
-			case slot_type::light:
-				icon = icon_type::torch;
-				break;
-			case slot_type::lantern:
-				icon = icon_type::lantern;
-				break;
-			case slot_type::mask:
-				icon = icon_type::mask;
-				break;
-			case slot_type::misc:
-			case slot_type::empty:
-				icon = icon_type::icon_default;
-				break;
-		}
-		return icon;
-	}
-
-	void page_handle::get_weapon_type_icon(RE::TESForm*& a_form, icon_type& a_icon)
-	{
-		if (!a_form || !a_form->IsWeapon())
-		{
-			a_icon = icon_type::icon_default;
-			return;
-		}
-		switch (const auto* weapon = a_form->As<RE::TESObjectWEAP>(); weapon->GetWeaponType())
-		{
-			case RE::WEAPON_TYPE::kHandToHandMelee:
-				a_icon = icon_type::hand_to_hand;
-				break;
-			case RE::WEAPON_TYPE::kOneHandSword:
-				if (weapon->HasKeywordString("WeapTypeRapier"))
-				{
-					a_icon = icon_type::rapier;
-				}
-				else if (weapon->HasKeywordString("WeapTypeKatana"))
-				{
-					a_icon = icon_type::katana;
-				}
-				else
-				{
-					a_icon = icon_type::sword_one_handed;
-				}
-				break;
-			case RE::WEAPON_TYPE::kOneHandDagger:
-				if (weapon->HasKeywordString("WeapTypeClaw"))
-				{
-					a_icon = icon_type::claw;
-				}
-				else
-				{
-					a_icon = icon_type::dagger;
-				}
-				break;
-			case RE::WEAPON_TYPE::kOneHandAxe:
-				a_icon = icon_type::axe_one_handed;
-				break;
-			case RE::WEAPON_TYPE::kOneHandMace:
-				if (weapon->HasKeywordString("WeapTypeWhip"))
-				{
-					a_icon = icon_type::whip;
-				}
-				else
-				{
-					a_icon = icon_type::mace;
-				}
-				break;
-			case RE::WEAPON_TYPE::kTwoHandSword:
-				if (weapon->HasKeywordString("WeapTypePike"))
-				{
-					a_icon = icon_type::pike;
-				}
-				else
-				{
-					a_icon = icon_type::sword_two_handed;
-				}
-				break;
-			case RE::WEAPON_TYPE::kTwoHandAxe:
-				if (weapon->HasKeywordString("WeapTypeHalberd"))
-				{
-					a_icon = icon_type::halberd;
-				}
-				else if (weapon->HasKeywordString("WeapTypeQtrStaff"))
-				{
-					a_icon = icon_type::quarter_staff;
-				}
-				else
-				{
-					a_icon = icon_type::axe_two_handed;
-				}
-				break;
-			case RE::WEAPON_TYPE::kBow:
-				a_icon = icon_type::bow;
-				break;
-			case RE::WEAPON_TYPE::kStaff:
-				a_icon = icon_type::staff;
-				break;
-			case RE::WEAPON_TYPE::kCrossbow:
-				a_icon = icon_type::crossbow;
-				break;
-		}
-	}
-
-	void page_handle::get_spell_icon(RE::TESForm*& a_form, icon_type& a_icon)
-	{
-		if (!a_form && !a_form->Is(RE::FormType::Spell))
-		{
-			return;
-		}
-		auto* spell        = a_form->As<RE::SpellItem>();
-		const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
-		auto actor_value   = effect->GetMagickSkill();
-		if (actor_value == RE::ActorValue::kNone)
-		{
-			actor_value = effect->data.primaryAV;
-		}
-
-		switch (actor_value)
-		{
-			case RE::ActorValue::kAlteration:
-				a_icon = icon_type::alteration;
-				break;
-			case RE::ActorValue::kConjuration:
-				a_icon = icon_type::conjuration;
-				break;
-			case RE::ActorValue::kDestruction:
-				switch (effect->data.resistVariable)
-				{
-					case RE::ActorValue::kResistFire:
-						a_icon = icon_type::destruction_fire;
-						break;
-					case RE::ActorValue::kResistFrost:
-						a_icon = icon_type::destruction_frost;
-						break;
-					case RE::ActorValue::kResistShock:
-						a_icon = icon_type::destruction_shock;
-						break;
-					default:
-						a_icon = icon_type::destruction;
-				}
-				break;
-			case RE::ActorValue::kIllusion:
-				a_icon = icon_type::illusion;
-				break;
-			case RE::ActorValue::kRestoration:
-				//might not fit all spells
-				a_icon = icon_type::restoration;
-				break;
-			default:
-				a_icon = icon_type::spell_default;
-		}
-	}
-
-	void page_handle::get_consumable_icon(RE::TESForm*& a_form, icon_type& a_icon)
-	{
-		if (!a_form || !a_form->Is(RE::FormType::AlchemyItem))
-		{
-			return;
-		}
-		auto* alchemy_potion = a_form->As<RE::AlchemyItem>();
-
-		if (alchemy_potion->IsFood())
-		{
-			a_icon = icon_type::food;
-			return;
-		}
-		if (alchemy_potion->IsPoison())
-		{
-			a_icon = icon_type::poison_default;
-			return;
-		}
-
-		auto actor_value = helpers::get_actor_value_effect_from_potion(alchemy_potion, false);
-		get_consumable_icon_by_actor_value(actor_value, a_icon);
 	}
 
 	void page_handle::get_item_count(RE::TESForm*& a_form, int32_t& a_count, const slot_type a_type)

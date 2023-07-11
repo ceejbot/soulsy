@@ -1,16 +1,17 @@
 #include "game_menu_setting.h"
+
 #include "../handle/page_handle.h"
-#include "include/constant.h"
-#include "include/enums.h"
-#include "include/helper.h"
-#include "include/player.h"
-#include "include/string_util.h"
-#include "include/user_settings.h"
+#include "constant.h"
+#include "enums.h"
+#include "helper.h"
+#include "inventory_item.h"
+#include "player.h"
 #include "set_setting_data.h"
+#include "string_util.h"
+#include "user_settings.h"
 
 namespace processing
 {
-
 	using slot_type     = enums::slot_type;
 	using position_type = enums::position_type;
 	using action_type   = enums::action_type;
@@ -100,7 +101,7 @@ namespace processing
 			return;
 		}
 
-		const auto two_handed = helpers::is_two_handed(a_form);
+		const auto two_handed = inventory_item::is_two_handed(a_form);
 		if (two_handed && a_left)
 		{
 			auto log_string = fmt::format("Going to Ignore {}, because Two Handed {} and Left {}",
@@ -113,7 +114,7 @@ namespace processing
 		}
 
 		std::vector<helpers::data_helper*> data;
-		const auto type = helpers::get_type(a_form);
+		const auto type = inventory_item::get_type(a_form);
 		const auto item = new helpers::data_helper();
 		switch (type)
 		{
@@ -186,7 +187,7 @@ namespace processing
 				if (!slot_settings.empty())
 				{
 					current_right      = slot_settings.front()->form;
-					current_two_handed = current_right && helpers::is_two_handed(current_right);
+					current_two_handed = current_right && inventory_item::is_two_handed(current_right);
 				}
 				if (slot_settings.size() == 2)
 				{
@@ -335,19 +336,13 @@ namespace processing
 		return menu_form;
 	}
 
-	bool game_menu_setting::relevant_menu_open(RE::UI*& a_ui)
-	{
-		return a_ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) || a_ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
-		       a_ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
-	}
-
 	data_helper* game_menu_setting::is_suitable_for_position(RE::TESForm*& a_form,
 		const enums::position_type a_position)
 	{
 		//all kind of weapons and magic/spells
 		const auto item       = new data_helper();
-		const auto type       = helpers::get_type(a_form);
-		const auto two_handed = helpers::is_two_handed(a_form);
+		const auto type       = inventory_item::get_type(a_form);
+		const auto two_handed = inventory_item::is_two_handed(a_form);
 		logger::trace("Item {}, is Type {}, TwoHanded {}"sv,
 			a_form ? util::string_util::int_to_hex(a_form->formID) : "null",
 			static_cast<uint32_t>(type),

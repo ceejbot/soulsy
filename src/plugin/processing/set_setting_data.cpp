@@ -1,17 +1,20 @@
 ﻿#include "set_setting_data.h"
+
+#include "constant.h"
+#include "custom_setting.h"
+#include "enums.h"
+#include "gear.h"
+#include "helper.h"
+#include "inventory_item.h"
+#include "player.h"
+#include "setting_execute.h"
+#include "string_util.h"
+#include "user_settings.h"
+#include "utility_items.h"
+
 #include "handle/ammo_handle.h"
 #include "handle/name_handle.h"
 #include "handle/page_handle.h"
-#include "include/constant.h"
-#include "include/custom_setting.h"
-#include "include/enums.h"
-#include "include/gear.h"
-#include "include/helper.h"
-#include "include/player.h"
-#include "include/string_util.h"
-#include "include/user_settings.h"
-#include "include/utility_items.h"
-#include "setting_execute.h"
 
 namespace processing
 {
@@ -440,7 +443,7 @@ namespace processing
 		if (right_position_setting && !right_position_setting->slot_settings.empty() &&
 			right_position_setting->slot_settings.front()->form)
 		{
-			is_right_two_handed = helpers::is_two_handed(right_position_setting->slot_settings.front()->form);
+			is_right_two_handed = inventory_item::is_two_handed(right_position_setting->slot_settings.front()->form);
 		}
 
 		handle::position_setting* position_setting;
@@ -517,7 +520,7 @@ namespace processing
 
 		if (!a_equipped)
 		{
-			if (!helpers::is_two_handed(a_form))
+			if (!inventory_item::is_two_handed(a_form))
 			{
 				processing::setting_execute::reequip_left_hand_if_needed(setting);
 				left_reequip_called = true;
@@ -528,7 +531,7 @@ namespace processing
 		{
 			auto* obj_right =
 				RE::PlayerCharacter::GetSingleton()->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-			if ((obj_right && !helpers::is_two_handed(obj_right)) || !obj_right)
+			if ((obj_right && !inventory_item::is_two_handed(obj_right)) || !obj_right)
 			{
 				processing::setting_execute::reequip_left_hand_if_needed(setting);
 			}
@@ -665,7 +668,7 @@ namespace processing
 				item->type        = setting->type;
 				item->action_type = setting->action;
 				item->actor_value = setting->actor_value;
-				item->two_handed  = helpers::is_two_handed(setting->form);
+				item->two_handed  = inventory_item::is_two_handed(setting->form);
 				data.push_back(item);
 			}
 

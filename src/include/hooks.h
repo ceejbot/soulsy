@@ -18,12 +18,6 @@ namespace hooks
 			decltype(static_cast<RE::BSEventNotifyControl (RE::MenuControls::*)(RE::InputEvent* const*,
 					RE::BSTEventSource<RE::InputEvent*>*)>(&RE::MenuControls::ProcessEvent));
 		static inline REL::Relocation<process_event_type> process_event_;
-
-		uint32_t key_ = keycodes::k_invalid;
-
-		bool need_to_overwrite(RE::ButtonEvent*& a_button,
-			RE::UserEvents*& a_user_event,
-			RE::ControlMap*& a_control_map) const;
 	};
 
 	class PlayerHook

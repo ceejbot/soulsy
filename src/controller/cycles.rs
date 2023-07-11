@@ -87,6 +87,8 @@ impl EntryIcon {
 // Still working on what data I want to track.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
 pub struct CycleEntry {
+    /// Player-visible name.
+    name: String,
     /// A string that can be turned back into form data; for serializing.
     form_string: String,
     /// An enum classifying this item for fast question-answering. Equiv to `type` from TESForm.
@@ -112,6 +114,7 @@ pub fn create_cycle_entry(
     two_handed: bool,
     has_count: bool,
     count: usize,
+    name: &str,
     form_string: &str,
 ) -> Box<CycleEntry> {
     Box::new(CycleEntry::new(
@@ -119,6 +122,7 @@ pub fn create_cycle_entry(
         two_handed,
         has_count,
         count,
+        name,
         form_string,
     ))
 }
@@ -130,9 +134,11 @@ impl CycleEntry {
         two_handed: bool,
         has_count: bool,
         count: usize,
+        name: &str,
         form_string: &str,
     ) -> Self {
         CycleEntry {
+            name: name.to_string(),
             form_string: form_string.to_string(),
             kind,
             two_handed,

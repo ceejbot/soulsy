@@ -130,6 +130,7 @@ pub mod plugin {
             two_handed: bool,
             has_count: bool,
             count: usize,
+            name: &str,
             form_string: &str,
         ) -> Box<CycleEntry>;
 
@@ -169,8 +170,10 @@ pub mod plugin {
         #[namespace = "ui::ui_renderer"]
         fn toggle_show_ui();
 
-        #[namespace = "helpers"]
+        #[namespace = "inventory_item"]
         fn is_two_handed(item: &TESForm) -> bool;
 
+        #[namespace = "helpers"]
+        fn notify_player(message: &str);
     }
 }

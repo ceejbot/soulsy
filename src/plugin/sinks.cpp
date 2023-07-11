@@ -1,11 +1,13 @@
-#include "include/sinks.h"
+#include "helper.h"
+#include "inventory_item.h"
+#include "keycodes.h"
+#include "player.h"
+#include "sinks.h"
+#include "ui_renderer.h"
+#include "user_settings.h"
+
 #include "handle/extra_data_holder.h"
 #include "handle/name_handle.h"
-#include "include/helper.h"
-#include "include/keycodes.h"
-#include "include/player.h"
-#include "include/ui_renderer.h"
-#include "include/user_settings.h"
 #include "processing/set_setting_data.h"
 #include "processing/setting_execute.h"
 
@@ -60,7 +62,7 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	}
 
 	// add check if we need to block left
-	if (!RE::UI::GetSingleton()->GameIsPaused() && helpers::is_two_handed(form))
+	if (!RE::UI::GetSingleton()->GameIsPaused() && inventory_item::is_two_handed(form))
 	{
 		processing::set_setting_data::check_if_location_needs_block(form, event->equipped);
 	}
