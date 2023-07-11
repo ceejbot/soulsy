@@ -155,8 +155,8 @@ pub struct CycleEntry {
     name: String,
     /// A string that can be turned back into form data; for serializing.
     form_string: String,
-    /// An enum classifying this item for fast question-answering. Equiv to `type` from TESForm.
-    kind: EntryIcon,
+    /// An enum classifying this item for fast question-answering as well as icon selection.
+    icon_kind: EntryIcon,
     /// True if this item requires both hands to use.
     two_handed: bool,
     /// True if this item should be displayed with count data.
@@ -174,7 +174,7 @@ impl PartialEq for CycleEntry {
 }
 
 pub fn create_cycle_entry(
-    kind: EntryIcon,
+    icon_kind: EntryIcon,
     two_handed: bool,
     has_count: bool,
     count: usize,
@@ -182,7 +182,7 @@ pub fn create_cycle_entry(
     form_string: &str,
 ) -> Box<CycleEntry> {
     Box::new(CycleEntry::new(
-        kind,
+        icon_kind,
         two_handed,
         has_count,
         count,
@@ -194,7 +194,7 @@ pub fn create_cycle_entry(
 impl CycleEntry {
     /// This is called from C++ when handing us a new item.
     pub fn new(
-        kind: EntryIcon,
+        icon_kind: EntryIcon,
         two_handed: bool,
         has_count: bool,
         count: usize,
@@ -204,11 +204,35 @@ impl CycleEntry {
         CycleEntry {
             name: name.to_string(),
             form_string: form_string.to_string(),
-            kind,
+            icon_kind,
             two_handed,
             has_count,
             count,
         }
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn two_handed(&self) -> bool {
+        self.two_handed
+    }
+
+    pub fn count(&self) -> usize {
+        self.count
+    }
+
+    pub fn set_count(&mut self, v: usize) {
+        self.count = v;
+    }
+
+    pub fn form_string(&self) -> String {
+        self.form_string.clone()
+    }
+
+    pub fn icon_kind(&self) -> EntryIcon {
+        self.icon_kind
     }
 
 }
@@ -257,25 +281,25 @@ impl CycleData {
     pub fn toggle(&mut self, which: Action, item: CycleEntry) -> MenuEventResponse {
         let cycle = match which {
             Action::Power => {
-                if !item.kind.is_power() {
+                if !item.icon_kind.is_power() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.power
             }
             Action::Left => {
-                if !item.kind.left_hand_ok() {
+                if !item.icon_kind.left_hand_ok() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.left
             }
             Action::Right => {
-                if !item.kind.right_hand_ok() {
+                if !item.icon_kind.right_hand_ok() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.right
             }
             Action::Utility => {
-                if !item.kind.is_utility() {
+                if !item.icon_kind.is_utility() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.utility

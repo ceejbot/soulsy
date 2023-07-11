@@ -148,15 +148,35 @@ impl Controller {
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
     pub fn toggle_item(&mut self, action: Action, item: CycleEntry) -> MenuEventResponse {
-        let result = self.cycles.toggle(action, item);
+        let result = self.cycles.toggle(action, item.clone());
+
+        // notify the player what happened...
+        let verb = match result {
+            MenuEventResponse::ItemAdded => "added to",
+            MenuEventResponse::ItemRemoved => "removed from",
+            _ => "not changed in"
+        };
+        let cyclename = match action {
+            Action::Power => "powers",
+            Action::Left => "left-hand",
+            Action::Right => "right-hand",
+            Action::Utility => "utility items",
+            _ => "any"
+        };
+        let message = format!("{} {} {} cycle", item.name(), verb, cyclename);
+        cxx::let_cxx_string!(msg = message);
+        notify_player(&msg);
+
         if matches!(
             result,
             MenuEventResponse::ItemAdded | MenuEventResponse::ItemRemoved
         ) {
             // the data changed. flush it to disk with char name in it or something
             match self.cycles.write() {
-                Ok(_) => todo!(),
-                Err(_) => todo!(),
+                Ok(_) => log::info!("successfully wrote cycle data"),
+                Err(e) => {
+                    log::warn!("failed to write cycle data, but gamely continuing; {e:?}");
+                },
             }
         }
 

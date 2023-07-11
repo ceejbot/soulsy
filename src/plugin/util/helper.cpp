@@ -14,9 +14,10 @@ namespace helpers
 {
 	using string_util = util::string_util;
 
-	void notify_player(std::string& message)
+	void notify_player(const std::string& message)
 	{
-		 RE::DebugNotification(message.c_str());
+		auto* msg = message.c_str();
+		 RE::DebugNotification(msg);
 	}
 
 	void set_alpha_transition(const bool shift, const float target) {
