@@ -8,6 +8,9 @@ license = "GPL-3.0"
 readme = "README.md"
 keywords = ["skyrim", "c++"]
 
+[lib]
+crate-type = ["staticlib"]
+
 [dependencies]
 anyhow = "1.0.71"
 cxx = { version = "1.0.100", features = ["c++20"] }

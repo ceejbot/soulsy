@@ -3,3 +3,5 @@
 build
 .env
 .vscode
+.vs
+.DS_Store
