@@ -12,48 +12,54 @@
 
 #include "lib.rs.h"
 
-static const char* mcm_name = "SoulsyHUD_MCM";
-
-void register_papyrus_functions()
+namespace PapyrusGlue
 {
-	const auto* papyrus = SKSE::GetPapyrusInterface();
-	papyrus->Register(PapyrusGlue::Register);
-	logger::info("Registered papyrus functions. return."sv);
-}
 
-bool Register(RE::BSScript::IVirtualMachine* a_vm)
-{
-	a_vm->RegisterFunction("OnConfigClose", mcm_name, PapyrusGlue::on_config_close);
-	a_vm->RegisterFunction("GetResolutionWidth", mcm_name, PapyrusGlue::get_resolution_width);
-	a_vm->RegisterFunction("GetResolutionHeight", mcm_name, PapyrusGlue::get_resolution_height);
+	static const char* mcm_name = "SoulsyHUD_MCM";
 
-	logger::info("Registered {} class. return."sv, mcm_name);
-	return true;
-}
-
-void PapyrusGlue::on_config_close(RE::TESQuest*)
-{
-	logger::info("on config close"sv);
-	rust::Box<UserSettings> old_settings = user_settings();
-	refresh_user_settings();
-	rust::Box<UserSettings> new_settings = user_settings();
-
-	if (old_settings->maxlen() > new_settings->maxlen()) {
-		// TODO trim cycles from the end
+	void register_papyrus_functions()
+	{
+		const auto* papyrus = SKSE::GetPapyrusInterface();
+		papyrus->Register(Register);
+		logger::info("Registered papyrus functions. return."sv);
 	}
 
-	// force a redraw if the settings changed
-	ui::ui_renderer::set_fade(true, 1.f);
+	bool Register(RE::BSScript::IVirtualMachine* a_vm)
+	{
+		a_vm->RegisterFunction("OnConfigClose", mcm_name, on_config_close);
+		a_vm->RegisterFunction("GetResolutionWidth", mcm_name, get_resolution_width);
+		a_vm->RegisterFunction("GetResolutionHeight", mcm_name, get_resolution_height);
 
-	logger::debug("on config close done. return."sv);
-}
+		logger::info("Registered {} class. return."sv, mcm_name);
+		return true;
+	}
 
-RE::BSFixedString PapyrusGlue::get_resolution_width(RE::TESQuest*)
-{
-	return fmt::format(FMT_STRING("{:.2f}"), ui::ui_renderer::get_resolution_width());
-}
+	void on_config_close(RE::TESQuest*)
+	{
+		logger::info("on config close"sv);
+		rust::Box<UserSettings> old_settings = user_settings();
+		refresh_user_settings();
+		rust::Box<UserSettings> new_settings = user_settings();
 
-RE::BSFixedString PapyrusGlue::get_resolution_height(RE::TESQuest*)
-{
-	return fmt::format(FMT_STRING("{:.2f}"), ui::ui_renderer::get_resolution_height());
+		if (old_settings->maxlen() > new_settings->maxlen())
+		{
+			// TODO trim cycles from the end
+		}
+
+		// force a redraw if the settings changed
+		ui::ui_renderer::set_fade(true, 1.f);
+
+		logger::debug("on config close done. return."sv);
+	}
+
+	RE::BSFixedString get_resolution_width(RE::TESQuest*)
+	{
+		return fmt::format(FMT_STRING("{:.2f}"), ui::ui_renderer::get_resolution_width());
+	}
+
+	RE::BSFixedString get_resolution_height(RE::TESQuest*)
+	{
+		return fmt::format(FMT_STRING("{:.2f}"), ui::ui_renderer::get_resolution_height());
+	}
+
 }
