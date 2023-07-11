@@ -246,7 +246,7 @@ void handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding)
 		logger::warn("setting for key {} is null. break."sv, a_key);
 		return;
 	}
-	/**
+
 	new_position->highlight_slot = true;
 	if (!scroll_position(a_key, a_binding))
 	{
@@ -256,7 +256,6 @@ void handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding)
 	{
 		setting_execute::activate(new_position->slot_settings, true);
 	}
-	*/
 }
 */
 

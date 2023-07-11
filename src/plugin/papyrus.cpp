@@ -27,9 +27,9 @@ void register_papyrus_functions()
 
 bool Register(RE::BSScript::IVirtualMachine* a_vm)
 {
-	a_vm->RegisterFunction("OnConfigClose", mcm_name, on_config_close);
-	a_vm->RegisterFunction("GetResolutionWidth", mcm_name, get_resolution_width);
-	a_vm->RegisterFunction("GetResolutionHeight", mcm_name, get_resolution_height);
+	a_vm->RegisterFunction("OnConfigClose", mcm_name, PapyrusGlue::on_config_close);
+	a_vm->RegisterFunction("GetResolutionWidth", mcm_name, PapyrusGlue::get_resolution_width);
+	a_vm->RegisterFunction("GetResolutionHeight", mcm_name, PapyrusGlue::get_resolution_height);
 
 	logger::info("Registered {} class. return."sv, mcm_name);
 	return true;
@@ -42,7 +42,7 @@ void PapyrusGlue::on_config_close(RE::TESQuest*)
 	refresh_user_settings();
 	rust::Box<UserSettings> new_settings = user_settings();
 
-	if (old_settings.maxlen() > new_settings.maxlen()) {
+	if (old_settings->maxlen() > new_settings->maxlen()) {
 		// TODO trim cycles from the end
 	}
 
