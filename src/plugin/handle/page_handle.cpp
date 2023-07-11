@@ -92,20 +92,17 @@ namespace handle
 
 		page->slot_settings = *slots;
 
-		auto icon_enum  = equippable::get_icon_type(slots->front()->type, slots->front()->form);
-		page->icon_type = static_cast<uint8_t>(icon_enum);
-		if (slots->size() == 2 && page->icon_type == static_cast<uint8_t>(EntryIcon::IconDefault))
+		page->icon_type = equippable::get_icon_type(slots->front()->type, slots->front()->form);
+		if (slots->size() == 2 && page->icon_type == EntryIcon::IconDefault)
 		{
 			logger::debug("Could not find an Icon with first setting, try next");
-			auto icon_enum = equippable::get_icon_type(slots->at(1)->type, slots->at(1)->form);
-			page->icon_type = static_cast<uint8_t>(icon_enum);
+			page->icon_type = equippable::get_icon_type(slots->at(1)->type, slots->at(1)->form);
 		}
 
 		//we set the icon type according to the actor value
 		if (slots->front()->actor_value != RE::ActorValue::kNone && slots->front()->type == slot_type::consumable)
 		{
-			auto enum_icon  = equippable::get_consumable_icon_by_actor_value(slots->front()->actor_value);
-			page->icon_type = static_cast<uint8_t>(enum_icon);
+			page->icon_type  = equippable::get_consumable_icon_by_actor_value(slots->front()->actor_value);
 		}
 
 		auto* draw                         = new position_draw_setting();

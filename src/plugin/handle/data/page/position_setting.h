@@ -5,6 +5,8 @@
 #include "include/image_path.h"
 #include "position_draw_setting.h"
 
+#include "lib.rs.h"
+
 namespace handle
 {
 	using position_type = enums::position_type;
@@ -15,7 +17,7 @@ namespace handle
 		std::vector<slot_setting*> slot_settings;
 		uint32_t page                       = 0;
 		position_type position              = position_type::total;
-		uint8_t icon_type                   = 19; // This is EntryIcon, but we're breaking a terrible dep cycle
+		EntryIcon icon_type = EntryIcon::IconDefault;   // 19; // This is EntryIcon, but we're breaking a terrible dep cycle
 		uint32_t button_press_modify        = ui::draw_full;
 		uint32_t key                        = 0;
 		position_draw_setting* draw_setting = nullptr;

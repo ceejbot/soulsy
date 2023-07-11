@@ -165,6 +165,9 @@ pub mod plugin {
         fn IsDown(self: &ButtonEvent) -> bool;
         fn IsUp(self: &ButtonEvent) -> bool;
 
+        include!("ui_renderer.h");
+        fn get_fade() -> bool;
+
         // Selected helpers.
         include!("include/helper.h");
         #[namespace = "helpers"]

@@ -600,7 +600,7 @@ namespace ui
 				mcm::get_arrow_icon_scale_height(),
 				mcm::get_arrow_slot_offset_x(),
 				mcm::get_arrow_slot_offset_y(),
-				static_cast<uint8_t>(EntryIcon::Arrow),
+				EntryIcon::Arrow,
 				mcm::get_icon_transparency());
 			draw_text(a_x,
 				a_y,
@@ -705,7 +705,7 @@ namespace ui
 		const float a_scale_y,
 		const float a_offset_x,
 		const float a_offset_y,
-		const uint8_t icon_num,
+		const EntryIcon icon_num,
 		const uint32_t a_alpha)
 	{
 		if (a_alpha == 0)

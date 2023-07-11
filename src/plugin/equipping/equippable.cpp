@@ -10,7 +10,7 @@ namespace equippable
 	rust::Box<CycleEntry> cycle_entry_from_form(RE::TESForm*& item_form)
 	{
 		auto item_type          = equippable::get_type(item_form);
-		bool has_count          = (item_type == slot_type::consumable || item_type == slot_type::scroll);
+		[[ maybe_unused ]] bool has_count          = (item_type == slot_type::consumable || item_type == slot_type::scroll);
 		auto count              = player::get_inventory_count(item_form);
 		bool two_handed         = equippable::is_two_handed(item_form);
 		std::string form_string = helpers::get_form_spec(item_form);
@@ -180,8 +180,6 @@ namespace equippable
 			default:
 				return EntryIcon::IconDefault;
 		}
-
-		return EntryIcon::IconDefault;  // unreachable statement lol
 	}
 
 	EntryIcon get_weapon_type_icon(RE::TESForm*& item_form)
@@ -339,6 +337,8 @@ namespace equippable
 			case RE::BIPED_MODEL::ArmorType::kClothing:
 				return EntryIcon::ArmorClothing;
 		}
+
+		return EntryIcon::IconDefault;
 	}
 
 	EntryIcon get_consumable_icon_by_actor_value(RE::ActorValue& actor_value)

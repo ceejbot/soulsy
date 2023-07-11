@@ -160,7 +160,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		}
 
 		const rust::Box<UserSettings> settings = user_settings();  // rust
-		const bool is_cycle_button = settings->is_cycle_button(key);
+		// const bool is_cycle_button = settings->is_cycle_button(key);
 
 		// we hand off to rust to act.
 		const KeyEventResponse response = handle_key_event(key, *button);
