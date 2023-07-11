@@ -8,7 +8,7 @@
 
 #include "processing/set_setting_data.h"
 
-#include "rust/cxx.h"
+#include "lib.rs.h"
 
 // #include "PCH.h"  // this will actually be force-included...
 // #include "control/binding.h" // this is already gone

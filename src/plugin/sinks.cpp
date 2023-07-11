@@ -207,7 +207,7 @@ this needs to be in its own function so Rust can call it with CycleEntry data wh
 }
 
 // TODO turn this function into the timer-fired handler. It has most of the required logic in it already.
-void KeyEventSink::handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding) const
+void handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding)
 {
 	logger::debug("configured Key ({}) pressed"sv, a_key);
 	auto* position_setting = setting_execute::get_position_setting_for_key(a_key);

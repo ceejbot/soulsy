@@ -63,7 +63,7 @@ namespace hooks
 						continue;
 					}
 
-					if (button->IsPressed() && hotkeys.is_cycle_button(key))
+					if (button->IsPressed() && hotkeys->is_cycle_button(key))
 					{
 
 						auto menu_form = processing::game_menu_setting::get_selected_form(ui);
