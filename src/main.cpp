@@ -1,17 +1,14 @@
 
-#include "include/file_setting.h"
-#include "include/hooks.h"
-#include "include/sinks.h"
-#include "include/ui_renderer.h"
-#include "include/user_settings.h"
-#include "include/papyrus.h"
+#include "file_setting.h"
+#include "hooks.h"
+#include "sinks.h"
+#include "ui_renderer.h"
+#include "papyrus.h"
 
-#include "processing/set_setting_data.h"
+#include "processing/set_setting_data.h" // to be deleted eventually
+#include "user_settings.h" // same
 
 #include "lib.rs.h"
-
-// #include "PCH.h"  // this will actually be force-included...
-// #include "control/binding.h" // this is already gone
 
 void init_logger()
 {
@@ -96,8 +93,6 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	logger::info("{} loading"sv, Version::PROJECT);
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
 
-	// We now load our user settings. This is our first dip into the Rust side.
-	const rust::Box<UserSettings> settings = user_settings();
 	if (true)
 	{
 		spdlog::set_level(spdlog::level::trace);

@@ -16,7 +16,10 @@ pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
 
 pub fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse {
     let action = Action::from(key);
-    CONTROLLER.lock().unwrap().toggle_item(action, *item.clone())
+    CONTROLLER
+        .lock()
+        .unwrap()
+        .toggle_item(action, *item.clone())
 }
 
 impl From<u32> for Action {

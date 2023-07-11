@@ -113,7 +113,7 @@
           }
         },
         {
-          "id": "fFadeDelay:Options",
+          "id": "uFadeDelay:Options",
           "text": "$SoulsyHUD_Controls_ShowHideKey_OptionText",
           "type": "keymap",
           "help": "$SoulsyHUD_Controls_ShowHideKey_InfoText",

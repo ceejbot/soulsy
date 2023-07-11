@@ -119,6 +119,8 @@ pub mod plugin {
         /// Give access to the settings to the C++ side.
         type UserSettings;
         fn is_cycle_button(self: &UserSettings, key: u32) -> bool;
+        fn maxlen(self: &UserSettings) -> u32;
+
         /// Managed access to the settings object, so we can lazy-load if necessary.
         fn user_settings() -> Box<UserSettings>;
 
@@ -137,7 +139,7 @@ pub mod plugin {
         /// Managed access to the layout object, so we can lazy-load if necessary.
         fn layout() -> &'static HudLayout;
         /// After an MCM-managed change, re-read our .ini file.
-        fn refresh_user_settings() -> Result<()>;
+        fn refresh_user_settings();
         /// Handle an incoming key press event from the game. Returns true if handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.

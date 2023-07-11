@@ -208,6 +208,7 @@ this needs to be in its own function so Rust can call it with CycleEntry data wh
 	return event_result::kContinue;
 }
 
+/*
 // TODO turn this function into the timer-fired handler. It has most of the required logic in it already.
 void handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding)
 {
@@ -257,6 +258,7 @@ void handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding)
 	}
 	*/
 }
+*/
 
 /*
 bool KeyEventSink::scroll_position(const uint32_t a_key, control::binding*& a_binding)
