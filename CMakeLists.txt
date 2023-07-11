@@ -218,6 +218,9 @@ target_include_directories(
     ${SIMPLEINI_INCLUDE_DIRS}
 )
 
+# The last few of these are surprising, but are pulled in by some of the rust crates
+# included in the Rust library. TODO trim down dependencies and enabled features so I
+# can trim this list.
 target_link_libraries(
     ${PROJECT_NAME}
     PRIVATE
@@ -226,6 +229,11 @@ target_link_libraries(
     spdlog::spdlog
     imgui::imgui
     unofficial::nanosvg::nanosvg
+    wsock32
+    ws2_32
+    bcrypt
+    ntdll
+    userenv
 )
 
 # Windows-only configuration (from rust bridge example;)
