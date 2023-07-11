@@ -87,7 +87,7 @@ namespace ui
 			float a_scale_y,
 			float a_offset_x,
 			float a_offset_y,
-			icon_image_type a_type,
+			EntryIcon a_type,
 			uint32_t a_alpha);
 		static void draw_key_icon(float a_x,
 			float a_y,

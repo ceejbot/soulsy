@@ -7,7 +7,6 @@
 namespace equippable
 {
 	using slot_type = enums::slot_type;
-    using icon_type = ui::icon_image_type;
 
     rust::Box<CycleEntry> cycle_entry_from_form(RE::TESForm*& item_form);
 

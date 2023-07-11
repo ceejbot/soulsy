@@ -14,10 +14,6 @@
 
 static const char* mcm_name = "SoulsyHUD_MCM";
 
-// TODO in this file: remove functions at the same time they're removed from the papyrus script
-// trimming everything down to the 1 page of settings defined in the mcm config json
-// rename as needed
-
 void register_papyrus_functions()
 {
 	const auto* papyrus = SKSE::GetPapyrusInterface();

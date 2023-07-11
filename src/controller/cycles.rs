@@ -175,9 +175,9 @@ impl CycleEntry {
             EntryIcon::IconDefault => "icon_default.svg".to_string(),
             EntryIcon::Illusion => "illusion.svg".to_string(),
             EntryIcon::Katana => "katana.svg".to_string(),
-            EntryIcon::Lantern => "torch.svg".to_string(), // TODO source lantern icon
+            EntryIcon::Lantern => "lantern.svg".to_string(),
             EntryIcon::Mace => "mace.svg".to_string(),
-            EntryIcon::Mask => "icon_default".to_string(), // TODO source mask or hat icon
+            EntryIcon::Mask => "mask.svg".to_string(), 
             EntryIcon::Pike => "pike.svg".to_string(),
             EntryIcon::PoisonDefault => "poison_default.svg".to_string(),
             EntryIcon::PotionDefault => "default_potion.svg".to_string(),
@@ -185,7 +185,7 @@ impl CycleEntry {
             EntryIcon::PotionFrostResist => "potion_frost_resist.svg".to_string(),
             EntryIcon::PotionHealth => "potion_health.svg".to_string(),
             EntryIcon::PotionMagicka => "potion_magicka.svg".to_string(),
-            EntryIcon::PotionMagicResist => "default_potion.svg".to_string(),
+            EntryIcon::PotionMagicResist => "potion_magic_resist.svg".to_string(),
             EntryIcon::PotionShockResist => "potion_shock_resist.svg".to_string(),
             EntryIcon::PotionStamina => "potion_stamina.svg".to_string(),
             EntryIcon::Power => "power.svg".to_string(),

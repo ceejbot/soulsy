@@ -389,13 +389,26 @@ namespace ui
 				a_duration,
 				size);
 		animation_list.emplace_back(static_cast<ui::animation_type>(animation_type), std::move(anim));
-		logger::trace("done inited animation. return.");
+		logger::trace("done initializing animation. return.");
 	}
 
 	void ui_renderer::draw_slots(const float a_x,
 		const float a_y,
 		const std::map<position_type, page_setting*>& a_settings)
 	{
+		// This changes a lot. We have exactly four items to draw at any time,
+		// and to find out what they are, we ask the controller for the four currently-visible
+		// cycle entries. 
+		// skip highlighting for first implementation
+		// might need to fill out cycle entry struct with more info; 
+		// goal is to make this draw call only have to ask simple questions of one object
+
+		// draw settings need to come from the shared layout struct
+		// this is pretty complicated but do not simplify yet; just make it work you doofus
+
+
+
+
 		auto draw_page = mcm::get_draw_page_id();
 		auto elden     = mcm::get_elden_demon_souls();
 		for (auto [position, page_setting] : a_settings)
@@ -587,7 +600,7 @@ namespace ui
 				mcm::get_arrow_icon_scale_height(),
 				mcm::get_arrow_slot_offset_x(),
 				mcm::get_arrow_slot_offset_y(),
-				icon_image_type::arrow,
+				EntryIcon::Arrow,
 				mcm::get_icon_transparency());
 			draw_text(a_x,
 				a_y,
@@ -692,7 +705,7 @@ namespace ui
 		const float a_scale_y,
 		const float a_offset_x,
 		const float a_offset_y,
-		const icon_image_type a_type,
+		const EntryIcon a_type,
 		const uint32_t a_alpha)
 	{
 		if (a_alpha == 0)
