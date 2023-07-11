@@ -12,7 +12,7 @@ help:
     cargo install nextest
     cargo install tomato
 
-# Set up the repo for the first time.
+# Run initial cmake step.
 setup:
     cmake --preset vs2022-windows
 

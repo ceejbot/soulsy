@@ -19,7 +19,7 @@ namespace helpers
 		 RE::DebugNotification(message.c_str());
 	}
 
-	void set_alpha_transition(bool shift, float target) {
+	void set_alpha_transition(const bool shift, const float target) {
 		ui::ui_renderer::set_fade(shift, target);
 	}
 

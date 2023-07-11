@@ -14,7 +14,7 @@ pub mod plugin {
         /// Enable debug logging.
         debug: bool,
     }
-
+    
     /// Knowing the icon for the item tells us *almost* everything we need to know
     /// about how to use it.
     #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -165,15 +165,12 @@ pub mod plugin {
         fn IsDown(self: &ButtonEvent) -> bool;
         fn IsUp(self: &ButtonEvent) -> bool;
 
-        include!("ui_renderer.h");
-        fn get_fade() -> bool;
-
         // Selected helpers.
         include!("include/helper.h");
         #[namespace = "helpers"]
         fn notify_player(message: &CxxString);
         #[namespace = "helpers"]
-        fn set_alpha_transition(do_fade: bool, alpha: f64);
+        fn set_alpha_transition(do_fade: bool, alpha: f32);
         #[namespace = "helpers"]
         fn get_is_transitioning() -> bool;
         #[namespace = "helpers"]

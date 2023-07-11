@@ -48,8 +48,8 @@ namespace helpers
 		const std::vector<data_helper*>& a_data,
 		uint32_t a_hand);
 	
-	void notify_player(std::string& message);
-	void set_alpha_transition(bool shift, float target);
+	void notify_player(const std::string& message);
+	void set_alpha_transition(const bool shift, const float target);
     bool get_is_transitioning();
 	void toggle_hud_visibility();
 

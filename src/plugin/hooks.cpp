@@ -53,7 +53,6 @@ namespace hooks
 
 				auto key = keycodes::get_key_id(button);
 
-
 				if (button->IsUp())
 				{
 					// TODO anything?
@@ -76,8 +75,8 @@ namespace hooks
 						continue;
 
 					auto entry                 = equippable::cycle_entry_from_form(item_form);
-					MenuEventResponse response = handle_menu_event(key, entry);
-					logger::info("got result code {} from menu event for {}"sv, response, key);
+					MenuEventResponse response = handle_menu_event(key, std::move(entry));
+					logger::info("got result code {} from menu event for {}"sv, static_cast<uint32_t>(response), key);
 				}
 			}
 		}
