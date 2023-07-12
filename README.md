@@ -6,7 +6,7 @@ Soulsy is a minimal-features Souls-style HUD for Skyrim SE and AE. It is inspire
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project is still in bringup phase. Neither the C++ nor the Rust compiles yet. The eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLibSE.
+This project is still in development. See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLib and the UI framework.
 
 The project I forked from uses CommonLibSE, but I also intend to migrate to CommonLibSE-NG.
 
@@ -82,6 +82,7 @@ Ceej's bringup to-do list:
 - [ ] Test to see if the mod loads at all into the game. Fix whatever's broken.
 - [ ] Fix whatever looks bad, repeat.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
+- [ ] Update to CommonLibSE-NG.
 - [ ] Get Rust logging to the same file as SKSE? Or at least log to a file in the same directory.
 - [ ] Add more Rust logging for happy-path cases, not just error cases.
 - [ ] Consider getting more testers.
