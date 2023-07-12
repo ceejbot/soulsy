@@ -57,6 +57,8 @@ The plugin requires the following vcpkg libraries, which will be installed for y
 
 If you have [just](https://just.systems) installed, the justfile has recipes for convenient setup and builds. `cargo install just` if you do not have it.
 
+`cargo --doc open` displays programmer documentation for the Rust side of the plugin. The C++ side is commented, but not to the same degree. (It's a lot more code right now, and most of it is forked code!)
+
 ## Credits
 
 All of the UI code is retained from [LamasTinyHud](https://www.nexusmods.com/skyrimspecialedition/mods/82545), so [mlthelama](https://github.com/mlthelama) gets all the props. I also learned a lot about how to make an SKSE plugin by reading their source. Give that HUD a try if you don't like the souls-game style, or want a UI you can edit in-game. The original has more features than this one does! It's also the only hotkeys hud mod I tried that worked well in my game, so that's a testimonial.

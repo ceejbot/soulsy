@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "image_path.h"
 #include "position_draw_setting.h"
+#include "util/enums.h"
 
 #include "lib.rs.h"
 

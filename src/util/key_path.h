@@ -288,6 +288,7 @@ namespace ui
 
 	enum class controller_set : uint32_t
 	{
+		pc,
 		playstation,
 		xbox
 	};

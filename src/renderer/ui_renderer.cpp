@@ -3,12 +3,9 @@
 #include "constant.h"
 #include "file_setting.h"
 #include "handle/ammo_handle.h"
-#include "handle/name_handle.h"
-#include "handle/page_handle.h"
 #include "image_path.h"
 #include "key_path.h"
 #include "keycodes.h"
-#include "user_settings.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4702)
@@ -23,8 +20,6 @@
 
 namespace ui
 {
-	using mcm = config::mcm_setting;
-
 	static std::map<animation_type, std::vector<image>> animation_frame_map = {};
 	static std::vector<std::pair<animation_type, std::unique_ptr<animation>>> animation_list;
 
@@ -35,10 +30,9 @@ namespace ui
 	static std::map<uint32_t, image> ps_key_struct;
 	static std::map<uint32_t, image> xbox_key_struct;
 
-
 	auto fade           = 1.0f;
 	auto fade_in        = true;
-	auto fade_out_timer = mcm::get_fade_timer_outside_combat();
+	auto fade_out_timer = 1.0f;
 	ImFont* loaded_font;
 	auto tried_font_load = false;
 
@@ -317,59 +311,6 @@ namespace ui
 			->AddImageQuad(a_texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], a_color);
 	}
 
-	void ui_renderer::draw_hud(const float a_x,
-		const float a_y,
-		const float a_scale_x,
-		const float a_scale_y,
-		const uint32_t a_alpha)
-	{
-		if (a_alpha == 0)
-		{
-			return;
-		}
-
-		constexpr auto angle = 0.f;
-
-		const auto center                   = ImVec2(a_x, a_y);
-		const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::hud)];
-		const auto size   = ImVec2(static_cast<float>(width) * a_scale_x, static_cast<float>(height) * a_scale_y);
-		const ImU32 color = IM_COL32(draw_full, draw_full, draw_full, a_alpha);
-
-		draw_element(texture, center, size, angle, color);
-	}
-
-	void ui_renderer::drawSlotBackground(const float scale_width,
-		const float scale_height,
-		const ImVec2 center,
-		const ImU32 color)
-	{
-		constexpr auto angle = 0.f;
-
-		const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::round)];
-		const auto size = ImVec2(static_cast<float>(width) * scale_width, static_cast<float>(height) * scale_height);
-
-		draw_element(texture, center, size, angle, color);
-	}
-
-	void ui_renderer::draw_slot(const float anchor_x,
-		const float anchor_y,
-		const float scale_width,
-		const float scale_height,
-		const float offset_x,
-		const float offset_y,
-		const uint32_t a_modify,
-		const uint32_t alpha)
-	{
-		constexpr auto angle = 0.f;
-
-		const auto center                   = ImVec2(anchor_x + offset_x, anchor_y + offset_y);
-		const ImU32 color                   = IM_COL32(a_modify, a_modify, a_modify, alpha);
-		const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::round)];
-		const auto size = ImVec2(static_cast<float>(width) * scale_width, static_cast<float>(height) * scale_height);
-
-		draw_element(texture, center, size, angle, color);
-	}
-
 	void ui_renderer::init_animation(const animation_type animation_type,
 		const float a_screen_x,
 		const float a_screen_y,
@@ -407,329 +348,156 @@ namespace ui
 		logger::trace("done initializing animation. return.");
 	}
 
-	// starting with same function signature...
-	void ui_renderer::drawAllSlots(const float anchor_x,
-		const float anchor_y,
-		const std::map<position_type, page_setting*>& slotLayoutMap)
+	void ui_renderer::drawElement(ID3D11ShaderResourceView* texture,
+		const ImVec2 center,
+		const ImVec2 size,
+		const float angle,
+		const Color color, )
 	{
-		// Inputs are: loc to draw at
-		// map of Slot -> CycleEntry aka all info about the item to show
-		// map Slot -> slot layout
+		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a);
 
-		// First implementation draws one slot, just to see how.
-		for (auto [position, page_setting] : slotLayoutMap)
+		const float cos_a   = cosf(angle);
+		const float sin_a   = sinf(angle);
+		const ImVec2 pos[4] = { a_center + ImRotate(ImVec2(-a_size.x * 0.5f, -a_size.y * 0.5f), cos_a, sin_a),
+			a_center + ImRotate(ImVec2(+size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+			a_center + ImRotate(ImVec2(+size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a),
+			a_center + ImRotate(ImVec2(-size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a)
+
+		};
+		constexpr ImVec2 uvs[4] = { ImVec2(0.0f, 0.0f), ImVec2(1.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec2(0.0f, 1.0f) };
+
+		ImGui::GetWindowDrawList()
+			->AddImageQuad(texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], im_color);
+	}
+
+	void ui_renderer::drawAllSlots()
+	{
+		const layout   = layout();
+		const settings = user_settings();
+
+		for (auto slot : layout.layouts)
 		{
-			if (!page_setting)
+			rust::Box<CycleEntry> entry;
+			if (slot.element == HudElement::Ammo)
 			{
-				continue;
+				// We're going to fake up an entry. We *should* track this.
+				const auto* ammo_handle  = handle::ammo_handle::get_singleton();
+				const auto* current_ammo = ammo_handle->get_current();
+				entry = create_cycle_entry(EnryKind::Arrow, false, count, count, std::to_string(count), std::to_string("");
 			}
-			// This changes a lot. We have exactly four items to draw at any time,
-			// and to find out what they are, we ask the controller for the four currently-visible
-			// cycle entries.
-			// skip highlighting for first implementation
-			// might need to fill out cycle entry struct with more info;
-			// goal is to make this draw call only have to ask simple questions of one object
-
-			// map position to action for now
-			auto slot = Action::Irrelevant;
-			switch (position)
+			else
 			{
-				case position_type::top:
-					slot = Action::Power;
-					break;
-				case position_type::bottom:
-					slot = Action::Utility;
-					break;
-				case position_type::left:
-					slot = Action::Left;
-					break;
-				case position_type::right:
-					slot = Action::Right;
-					break;
-				default:
-					continue;
+				entry = equipped_in_slot(slot.element);
 			}
-			auto entry      = equipped_in_slot(slot);
-			auto entry_kind = entry->kind();
-			auto entry_name = entry->name();
 
-			// this should come from the layout
-			const auto* slot_layout = page_setting->draw_setting;
-			const auto color_mod    = page_setting->button_press_modify;
-			const auto offset_x     = slot_layout->offset_slot_x;
-			const auto offset_y     = slot_layout->offset_slot_y;
-			const auto center       = ImVec2(anchor_x + offset_x, anchor_y + offset_y);
+			const auto entry_kind = entry->kind();
+			const auto entry_name = entry->name();
+			const auto hotkey     = settings.hotkey_for(slot.element);
 
-			if (slot_layout->background_icon_transparency > 0)
+			const auto center      = layout.anchor.offset_by(slot_layout.offset);
+			const auto slot_center = ImVec2(center.x, center.y);
+
+			if (slot_layout.bg_color.alpha > 0)
 			{
-				const ImU32 bgcolor =
-					IM_COL32(color_mod, color_mod, color_mod, slot_layout->background_icon_transparency);
-				drawSlotBackground(slot_layout->hud_image_scale_width,
-					slot_layout->hud_image_scale_height,
-					center,
-					bgcolor);
+				const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::round)];
+				const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.bg_scale,
+                    static_cast<float>(height) * slot_layout.bg_scale);
+				drawElement(texture, slot_center, size, 0.f, slot_layout.bg_color);
 			}
 
 			// now draw the icon over the background...
-			if (slot_layout->icon_transparency > 0)
+			if (slot_layout.icon_color.alpha > 0)
 			{
-				const auto iconColor = IM_COL32(draw_full, draw_full, draw_full, slot_layout->icon_transparency);
-				drawIcon(slot_layout->icon_scale_width, slot_layout->icon_scale_height, center, iconColor, entry_kind);
+				const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(entry_kind)];
+				const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.icon_scale,
+                    static_cast<float>(height) * slot_layout.icon_scale);
+				drawElement(texture, slot_center, size, 0.f, slot_layout.icon_color);
 			}
 
 			// If this item is highlighted, we draw an animation for it.
 			if (entry->highlighted())
 			{
+				// TODO tighten up this function signature
 				init_animation(animation_type::highlight,
-					anchor_x,
-					anchor_y,
-					slot_layout->hud_image_scale_width,
-					slot_layout->hud_image_scale_height,
-					offset_x,
-					offset_y,
+					anchor.x,
+					anchor.y,
+					slot_layout.bg_scale,
+					slot_layout.bg_scale,
+					slot_layout.offset.x,
+					slot_layout.offset.y,
 					draw_full,
-					slot_layout->alpha_slot_animation,
-					slot_layout->duration_slot_animation);
-				// TODO turn highlight off
+					layout.animation_alpha,
+					layout.animation_duration);
+				// TODO turn highlight off on the entry
 			}
 
 			// Now decide if we should draw the text showing the item's name.
-			if (page_setting->item_name && !entry_name.empty())
+			if (slot_layout.item_name.color.a > 0 && !entry_name.empty())
 			{
 				auto name = std::string(entry_name).c_str();
-				auto center_text =
-					(page_setting->position == position_type::top || page_setting->position == position_type::bottom);
-				auto deduct_text_x = page_setting->position == position_type::left;
-				auto deduct_text_y = page_setting->position == position_type::bottom;
-				auto add_text_x    = false;
-				auto add_text_y    = page_setting->position == position_type::top;
-				draw_text(slot_layout->width_setting,
-					slot_layout->height_setting,
-					slot_layout->offset_slot_x,
-					slot_layout->offset_slot_y,
-					slot_layout->offset_name_text_x,
-					slot_layout->offset_name_text_y,
+				// TODO this should be an alignment setting on the layout
+				auto center_text = (slot == Action::Power || slot == Action::Utility);
+
+				// TODO simplify this signature after old code is gone
+				draw_text(slot_layout.dimensions.x,
+					slot_layout.dimensions.y,
+					slot_layout.offset.x,
+					slot_layout.offset.y,
+					0,
+					0,
 					name,
-					slot_layout->slot_item_name_transparency,
-					slot_layout->slot_item_red,
-					slot_layout->slot_item_green,
-					slot_layout->slot_item_blue,
-					page_setting->item_name_font_size,
-					center_text,
-					deduct_text_x,
-					deduct_text_y,
-					add_text_x,
-					add_text_y);
+					slot_layout.name_color.a,
+					slot_layout.name_color.r,
+					slot_layout.name_color.g,
+					slot_layout.name_color.b,
+					slot_layout.name_font_size,
+					center_text, );
 			}
 
 			// next up: do we have extra text to show on this puppy?
-			std::string slot_text;
 			if (entry->has_count())
 			{
-				auto count = entry->count();
-				slot_text  = std::to_string(count);
+				auto count     = entry->count();
+				auto slot_text = std::to_string(count);
 				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
-					draw_text(slot_layout->width_setting,
-						slot_layout->height_setting,
-						slot_layout->offset_slot_x,
-						slot_layout->offset_slot_y,
-						slot_layout->offset_text_x,
-						slot_layout->offset_text_y,
+					draw_text(slot_layout.dimensions.x,
+						slot_layout.dimensions.y,
+						slot_layout.offset.x,
+						slot_layout.offset.y,
+						0,
+						0,
 						slot_text.c_str(),
-						slot_layout->slot_count_transparency,
-						slot_layout->slot_count_red,
-						slot_layout->slot_count_green,
-						slot_layout->slot_count_blue,
-						page_setting->count_font_size);
+						slot_layout.count_color.a,
+						slot_layout.count_color.r,
+						slot_layout.count_color.g,
+						slot_layout.count_color.b,
+						slot_layout.count_font_size;
 				}
 			}
-		}  // end of loop through front items in the cycles
 
-		// Ammo! how many arrows can we shoot into somebody's knee?
-		// I'll need to understand and then rewrite this.
-		const auto* ammo_handle = handle::ammo_handle::get_singleton();
-		if (auto* current_ammo = ammo_handle->get_current(); current_ammo)
-		{
-			draw_slot(anchor_x,
-				anchor_y,
-				mcm::get_hud_arrow_image_scale_width(),
-				mcm::get_hud_arrow_image_scale_height(),
-				mcm::get_arrow_slot_offset_x(),
-				mcm::get_arrow_slot_offset_y(),
-				current_ammo->button_press_modify,
-				mcm::get_background_icon_transparency());
-			draw_icon(anchor_x,
-				anchor_y,
-				mcm::get_arrow_icon_scale_width(),
-				mcm::get_arrow_icon_scale_height(),
-				mcm::get_arrow_slot_offset_x(),
-				mcm::get_arrow_slot_offset_y(),
-				EntryKind::Arrow,
-				mcm::get_icon_transparency());
-			draw_text(anchor_x,
-				anchor_y,
-				mcm::get_arrow_slot_offset_x(),
-				mcm::get_arrow_slot_offset_y(),
-				mcm::get_arrow_slot_count_text_offset(),
-				mcm::get_arrow_slot_count_text_offset(),
-				std::to_string(current_ammo->item_count ? current_ammo->item_count : 0).c_str(),
-				mcm::get_slot_count_transparency(),
-				mcm::get_slot_count_red(),
-				mcm::get_slot_count_green(),
-				mcm::get_slot_count_blue(),
-				mcm::get_arrow_count_font_size());
-
-			if (current_ammo->highlight_slot)
+			if (entry_kind != EnryKind::Arrow && slot_layout.hotkey_color.a > 0)
 			{
-				current_ammo->highlight_slot = false;
-				init_animation(animation_type::highlight,
-					anchor_x,
-					anchor_y,
-					mcm::get_hud_arrow_image_scale_width(),
-					mcm::get_hud_arrow_image_scale_height(),
-					mcm::get_arrow_slot_offset_x(),
-					mcm::get_arrow_slot_offset_y(),
-					draw_full,
-					mcm::get_alpha_slot_animation(),
-					mcm::get_duration_slot_animation());
+				const auto hotkey_center = center.offset_by(slot_layout.hotkey_offset);
+				const auto hk_im_center  = ImVec2(hotkey_center.x, hotkey_center.y);
+
+				if (slot_layout.hotkey_bg_color.a > 0)
+				{
+					const auto [texture, width, height] = image_struct[static_cast<uint32_t>(image_type::key)];
+					const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.hotkeyscale,
+                        static_cast<float>(height) * slot_layout.hotkeyscale);
+					drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_bg_color);
+				}
+
+				const auto [texture, width, height] = get_key_icon(hotkey);
+				const auto size =
+					ImVec2(static_cast<float>(width) * hotkey_scale, static_cast<float>(height) * hotkey_scale);
+				drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_color);
 			}
-			draw_animations_frame();
-		}
-	}
-
-	void ui_renderer::draw_key(const float a_x,
-		const float a_y,
-		const float a_scale_x,
-		const float a_scale_y,
-		const float a_offset_x,
-		const float a_offset_y,
-		const uint32_t a_alpha)
-	{
-		if (a_alpha == 0)
-		{
-			return;
 		}
 
-		constexpr auto angle = 0.f;
-
-		const auto center                   = ImVec2(a_x + a_offset_x, a_y + a_offset_y);
-		const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::key)];
-		const auto size   = ImVec2(static_cast<float>(width) * a_scale_x, static_cast<float>(height) * a_scale_y);
-		const ImU32 color = IM_COL32(draw_full, draw_full, draw_full, a_alpha);
-
-		draw_element(texture, center, size, angle, color);
-	}
-
-	void ui_renderer::draw_keys(const float a_x,
-		const float a_y,
-		const std::map<position_type, page_setting*>& a_settings)
-	{
-		for (auto [position, page_setting] : a_settings)
-		{
-			if (!page_setting)
-			{
-				continue;
-			}
-			const auto* draw_setting = page_setting->draw_setting;
-			if (file_setting::get_draw_key_background())
-			{
-				draw_key(a_x,
-					a_y,
-					draw_setting->key_icon_scale_width,
-					draw_setting->key_icon_scale_height,
-					draw_setting->offset_key_x,
-					draw_setting->offset_key_y);
-			}
-			draw_key_icon(a_x,
-				a_y,
-				draw_setting->key_icon_scale_width,
-				draw_setting->key_icon_scale_height,
-				draw_setting->offset_key_x,
-				draw_setting->offset_key_y,
-				page_setting->key,
-				draw_setting->key_transparency);
-		}
-
-		if (mcm::get_draw_toggle_button())
-		{
-			draw_key_icon(mcm::get_hud_image_position_width(),
-				mcm::get_hud_image_position_height(),
-				mcm::get_key_icon_scale_width(),
-				mcm::get_key_icon_scale_height(),
-				mcm::get_toggle_key_offset_x(),
-				mcm::get_toggle_key_offset_y(),
-				mcm::get_toggle_key(),
-				mcm::get_key_transparency());
-		}
-	}
-
-	void ui_renderer::drawIcon(const float scale_width,
-		const float scale_height,
-		const ImVec2 center,
-		const ImU32 color,
-		const EntryKind icon_num)
-	{
-		constexpr auto angle                = 0.f;
-		const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(icon_num)];
-		const auto size = ImVec2(static_cast<float>(width) * scale_width, static_cast<float>(height) * scale_height);
-
-		draw_element(texture, center, size, angle, color);
-	}
-
-	void ui_renderer::draw_icon(const float a_x,
-		const float a_y,
-		const float a_scale_x,
-		const float a_scale_y,
-		const float a_offset_x,
-		const float a_offset_y,
-		const EntryKind icon_num,
-		const uint32_t a_alpha)
-	{
-		if (a_alpha == 0)
-		{
-			return;
-		}
-
-		constexpr auto angle = 0.f;
-
-		const auto center = ImVec2(a_x + a_offset_x, a_y + a_offset_y);
-
-		const auto [texture, width, height] = icon_struct[static_cast<int32_t>(icon_num)];
-
-		const auto size = ImVec2(static_cast<float>(width) * a_scale_x, static_cast<float>(height) * a_scale_y);
-
-		const ImU32 color = IM_COL32(draw_full, draw_full, draw_full, a_alpha);
-
-		draw_element(texture, center, size, angle, color);
-	}
-
-	void ui_renderer::draw_key_icon(const float a_x,
-		const float a_y,
-		const float a_scale_x,
-		const float a_scale_y,
-		const float a_offset_x,
-		const float a_offset_y,
-		const uint32_t a_key,
-		const uint32_t a_alpha)
-	{
-		if (a_alpha == 0)
-		{
-			return;
-		}
-
-		constexpr auto angle = 0.f;
-
-		const auto center = ImVec2(a_x + a_offset_x, a_y + a_offset_y);
-
-		const auto [texture, width, height] = get_key_icon(a_key);
-
-		const auto size = ImVec2(static_cast<float>(width) * a_scale_x, static_cast<float>(height) * a_scale_y);
-
-		const ImU32 color = IM_COL32(draw_full, draw_full, draw_full, a_alpha);
-
-		draw_element(texture, center, size, angle, color);
+		draw_animations_frame();
 	}
 
 	void ui_renderer::draw_ui()
@@ -751,21 +519,10 @@ namespace ui
 			return;
 		}
 
-		if (mcm::get_hide_outside_combat())
-		{
-			if (!RE::PlayerCharacter::GetSingleton()->IsInCombat())
-			{
-				fade_in = false;
-			}
-			else
-			{
-				fade_in = true;
-			}
-		}
-		else
-		{
-			fade_in = true;
-		}
+		const auto settings = user_settings();
+		const auto hide_out_of_combat = settings.fade();
+
+		fade_in = hide_out_of_combat ? RE::PlayerCharacter::GetSingleton()->IsInCombat() : true;
 
 		static constexpr ImGuiWindowFlags window_flag =
 			ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs;
@@ -779,64 +536,28 @@ namespace ui
 
 		ImGui::Begin(hud_name, nullptr, window_flag);
 
-		if (const auto settings = handle::page_handle::get_singleton()->get_active_page(); !settings.empty())
-		{
-			auto x             = mcm::get_hud_image_position_width();
-			auto y             = mcm::get_hud_image_position_height();
-			const auto scale_x = mcm::get_hud_image_scale_width();
-			const auto scale_y = mcm::get_hud_image_scale_height();
-			const auto alpha   = mcm::get_background_transparency();
-			if (screen_size_x < x || screen_size_y < y)
-			{
-				x = 0.f;
-				y = 0.f;
-			}
+		const auto* layout = layout();
 
-			draw_hud(x, y, scale_x, scale_y, alpha);
-			drawAllSlots(x, y, settings);
-			draw_keys(x, y, settings);
-			if (mcm::get_draw_current_items_text() || mcm::get_draw_current_shout_text())
-			{
-				if (mcm::get_draw_current_items_text())
-				{
-					draw_text(x,
-						y,
-						mcm::get_current_items_offset_x(),
-						mcm::get_current_items_offset_y(),
-						0.f,
-						0.f,
-						handle::name_handle::get_singleton()->get_item_name_string().c_str(),
-						mcm::get_current_items_transparency(),
-						mcm::get_current_items_red(),
-						mcm::get_current_items_green(),
-						mcm::get_current_items_blue(),
-						mcm::get_current_items_font_size());
-				}
-				if (mcm::get_draw_current_shout_text())
-				{
-					draw_text(x,
-						y,
-						mcm::get_current_shout_offset_x(),
-						mcm::get_current_shout_offset_y(),
-						0.f,
-						0.f,
-						handle::name_handle::get_singleton()->get_voice_name_string().c_str(),
-						mcm::get_current_shout_transparency(),
-						mcm::get_current_items_red(),
-						mcm::get_current_items_green(),
-						mcm::get_current_items_blue(),
-						mcm::get_current_shout_font_size());
-				}
-			}
+		// Draw the HUD background if requested.
+		if (layout.bg_color.a > 0)
+		{
+			constexpr auto angle                = 0.f;
+			const auto center                   = ImVec2(anchor.x, anchor.y);
+			const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::hud)];
+			const auto size                     = ImVec2(size.x, size.y);
+			drawElement(texture, center, size, angle, color);
 		}
+		drawAllSlots();
 
 		ImGui::End();
 
-		if (mcm::get_hide_outside_combat())
+		if (hide_out_of_combat)
 		{
 			if (fade_in && fade != 1.0f)
 			{
-				fade_out_timer = mcm::get_fade_timer_outside_combat();
+				// I'm not sure how long our ticks are, but I want the fade delay
+				// to be expressed in milliseconds in the UI. Let's guess a tick == 10ms.
+				fade_out_timer = static_cast<float>(settings->fade_delay()) / 100.0f; 
 				fade += 0.01f;
 				if (fade > 1.0f)
 				{
@@ -971,9 +692,10 @@ namespace ui
 	image ui_renderer::get_key_icon(const uint32_t a_key)
 	{
 		auto return_image = default_key_struct[static_cast<int32_t>(default_keys::key)];
+		// todo rework this logic at some point, no rush
 		if (a_key >= keycodes::k_gamepad_offset)
 		{
-			if (mcm::get_controller_set() == static_cast<uint32_t>(controller_set::playstation))
+			if (settings().controller() == static_cast<uint32_t>(controller_set::playstation))
 			{
 				return_image = ps_key_struct[a_key];
 			}
@@ -1006,7 +728,7 @@ namespace ui
 		fade    = a_value;
 		if (a_in)
 		{
-			fade_out_timer = mcm::get_fade_timer_outside_combat();
+			fade_out_timer = user_settings()->fade_delay();
 		}
 	}
 

@@ -18,13 +18,20 @@ pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
 /// Function for C++ to call to send a relevant menu button-event to us.
 ///
 /// We get a fully-filled out CycleEntry struct to use as we see fit.
-pub fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse {
+pub fn handle_menu_event(key: u32, menu_item: Box<CycleEntry>) -> MenuEventResponse {
     let action = Action::from(key);
-    CONTROLLER.lock().unwrap().toggle_item(action, *item)
+    CONTROLLER.lock().unwrap().toggle_item(action, *menu_item)
 }
 
 /// Get information about the item equipped in a specific slot.
-pub fn equipped_in_slot(slot: Action) -> Box<CycleEntry> {
+pub fn equipped_in_slot(element: HudElement) -> Box<CycleEntry> {
+    let slot = match element {
+        HudElement::Power => Action::Power,
+        HudElement::Utility => Action::Utility,
+        HudElement::Left => Action::Left,
+        HudElement::Right => Action::Right,
+        _ => Action::Irrelevant,
+    };
     CONTROLLER.lock().unwrap().equipped_in_slot(slot)
 }
 
@@ -45,6 +52,8 @@ impl From<u32> for Action {
             Action::Activate
         } else if value == settings.showhide {
             Action::ShowHide
+        } else if value == settings.refresh_layout {
+            Action::RefreshLayout
         } else {
             Action::Irrelevant
         }
@@ -171,6 +180,14 @@ impl Controller {
             Action::ShowHide => {
                 // handled by the C++ side for now
                 toggle_hud_visibility();
+                KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                }
+            }
+            Action::RefreshLayout => {
+                // TODO tell C++ to redraw
+                HudLayout::refresh();
                 KeyEventResponse {
                     handled: true,
                     ..Default::default()

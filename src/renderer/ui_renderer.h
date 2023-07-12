@@ -1,15 +1,18 @@
 ﻿#pragma once
+#include "../util/enums.h"
 #include "animation_handler.h"
-#include "enums.h"
-#include "handle/data/page/position_setting.h"
 #include "image_path.h"
 
 // TODO get rid of position setting; get this from Rust side
 // everything else will be fine. afaik.
 
+// Forward declarations of the types we're getting from Rust.
 enum class EntryKind : ::std::uint8_t;
-
-// #include "lib.rs.h"
+class HudLayout;
+class SlotLayout;
+class Point;
+class Color;
+class Action;
 
 namespace ui
 {
@@ -22,10 +25,6 @@ namespace ui
 
 	class ui_renderer
 	{
-		using page_setting  = handle::position_setting;
-		using slot_type     = enums::slot_type;
-		using position_type = enums::position_type;
-
 		struct wnd_proc_hook
 		{
 			static LRESULT thunk(HWND h_wnd, UINT u_msg, WPARAM w_param, LPARAM l_param);
@@ -59,13 +58,9 @@ namespace ui
 			float a_angle,
 			ImU32 a_color = IM_COL32_WHITE);
 
-		static void draw_hud(float a_x, float a_y, float a_scale_x, float a_scale_y, uint32_t a_alpha);
-
-		// new more compact functions (or so I hope)
-		// mostly I'm just getting my fingerprints on these to understand them.
-		static void drawAllSlots(const float anchor_x,
-			const float anchor_y,
-			const std::map<position_type, page_setting*>& slotLayoutMap);
+		// Oxidation section.
+		static std::vector<Action*> slotsToRender;
+		static void drawAllSlots();
 		static void drawSlotBackground(const float scale_width,
 			const float scale_height,
 			const ImVec2 center,
@@ -80,16 +75,13 @@ namespace ui
 			const ImVec2 center,
 			const ImU32 color,
 			uint32_t alpha);
+		static void drawElement(ID3D11ShaderResourceView* texture,
+			const ImVec2 center,
+			const ImVec2 size,
+			const float angle,
+			const Color color);
 
 		// older...
-		static void draw_slot(const float anchor_x,
-			const float anchor_y,
-			const float scale_width,
-			const float scale_height,
-			const float offset_x,
-			const float offset_y,
-			const uint32_t a_modify,
-			const uint32_t alpha);
 		static void init_animation(animation_type animation_type,
 			float a_screen_x,
 			float a_screen_y,
@@ -100,30 +92,6 @@ namespace ui
 			uint32_t a_modify,
 			uint32_t a_alpha,
 			float a_duration);
-		static void draw_key(float a_x,
-			float a_y,
-			float a_scale_x,
-			float a_scale_y,
-			float a_offset_x,
-			float a_offset_y,
-			uint32_t a_alpha = 255);
-		static void draw_keys(float a_x, float a_y, const std::map<position_type, page_setting*>& a_settings);
-		static void draw_icon(float a_x,
-			float a_y,
-			float a_scale_x,
-			float a_scale_y,
-			float a_offset_x,
-			float a_offset_y,
-			EntryKind a_type,
-			uint32_t a_alpha);
-		static void draw_key_icon(float a_x,
-			float a_y,
-			float a_scale_x,
-			float a_scale_y,
-			float a_offset_x,
-			float a_offset_y,
-			uint32_t a_key,
-			uint32_t a_alpha);
 		static void draw_ui();
 
 		static bool load_texture_from_file(const char* filename,
