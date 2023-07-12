@@ -74,20 +74,12 @@ namespace ui
 			const float scale_height,
 			const ImVec2 center,
 			const ImU32 color,
-			const EntryKind icon_num,
-			const uint32_t alpha);
-		static void initAnimation(animation_type type,
-			const float scale_width,
-			const float scale_height,
-			const ImVec2 center,
-			const ImU32 color,
-			uint32_t alpha,
-			float duration);
+			const EntryKind icon_num);
 		static void drawKey(const float scale_width,
 			const float scale_height,
 			const ImVec2 center,
 			const ImU32 color,
-			uint32_t alpha, );
+			uint32_t alpha);
 
 		// older...
 		static void draw_slot(const float anchor_x,

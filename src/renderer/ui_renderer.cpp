@@ -338,7 +338,7 @@ namespace ui
 		draw_element(texture, center, size, angle, color);
 	}
 
-	vvoid ui_renderer::drawSlotBackground(const float scale_width,
+	void ui_renderer::drawSlotBackground(const float scale_width,
 		const float scale_height,
 		const ImVec2 center,
 		const ImU32 color)
@@ -417,9 +417,6 @@ namespace ui
 		// map Slot -> slot layout
 
 		// First implementation draws one slot, just to see how.
-
-		auto slot  = Action::Power;
-		auto entry = equipped_in_slot(slot);
 		for (auto [position, page_setting] : slotLayoutMap)
 		{
 			if (!page_setting)
@@ -435,7 +432,7 @@ namespace ui
 
 			// map position to action for now
 			auto slot = Action::Irrelevant;
-			switch (slot)
+			switch (position)
 			{
 				case position_type::top:
 					slot = Action::Power;
@@ -447,7 +444,7 @@ namespace ui
 					slot = Action::Left;
 					break;
 				case position_type::right:
-					slow = Action::Right;
+					slot = Action::Right;
 					break;
 				default:
 					continue;
@@ -457,8 +454,10 @@ namespace ui
 			auto entry_name = entry->name();
 
 			// this should come from the layout
-			const auto* slot_layout = page_setting->slot_layout;
+			const auto* slot_layout = page_setting->draw_setting;
 			const auto color_mod    = page_setting->button_press_modify;
+			const auto offset_x     = slot_layout->offset_slot_x;
+			const auto offset_y     = slot_layout->offset_slot_y;
 			const auto center       = ImVec2(anchor_x + offset_x, anchor_y + offset_y);
 
 			if (slot_layout->background_icon_transparency > 0)
@@ -472,50 +471,49 @@ namespace ui
 			}
 
 			// now draw the icon over the background...
-			if (draw_ketting->icon_transparency > 0)
+			if (slot_layout->icon_transparency > 0)
 			{
-				const iconColor = IM_COL32(draw_full, draw_full, draw_full, slot_layout->icon_transparency);
-				drawIcon(slot_layout->icon_scale_width,
-					slot_layout->icon_scale_height,
-					center,
-					iconColor,
-					entry_kind, );
+				const auto iconColor = IM_COL32(draw_full, draw_full, draw_full, slot_layout->icon_transparency);
+				drawIcon(slot_layout->icon_scale_width, slot_layout->icon_scale_height, center, iconColor, entry_kind);
 			}
 
 			// If this item is highlighted, we draw an animation for it.
 			if (entry->highlighted())
 			{
-				const highlightColor = IM_COL32(draw_full, draw_full, draw_full, slot_layout->alpha_slot_animation);
-				initAnimation(animation_type::highlight,
+				init_animation(animation_type::highlight,
+					anchor_x,
+					anchor_y,
 					slot_layout->hud_image_scale_width,
 					slot_layout->hud_image_scale_height,
-					center,
-					color,
+					offset_x,
+					offset_y,
+					draw_full,
 					slot_layout->alpha_slot_animation,
 					slot_layout->duration_slot_animation);
 				// TODO turn highlight off
 			}
 
 			// Now decide if we should draw the text showing the item's name.
-			if (page_setting->item_name && !entry_name->empty()() > 0)
+			if (page_setting->item_name && !entry_name.empty())
 			{
+				auto name = std::string(entry_name).c_str();
 				auto center_text =
 					(page_setting->position == position_type::top || page_setting->position == position_type::bottom);
 				auto deduct_text_x = page_setting->position == position_type::left;
 				auto deduct_text_y = page_setting->position == position_type::bottom;
 				auto add_text_x    = false;
 				auto add_text_y    = page_setting->position == position_type::top;
-				draw_text(draw_setting->width_setting,
-					draw_setting->height_setting,
-					draw_setting->offset_slot_x,
-					draw_setting->offset_slot_y,
-					draw_setting->offset_name_text_x,
-					draw_setting->offset_name_text_y,
-					slot_name,
-					draw_setting->slot_item_name_transparency,
-					draw_setting->slot_item_red,
-					draw_setting->slot_item_green,
-					draw_setting->slot_item_blue,
+				draw_text(slot_layout->width_setting,
+					slot_layout->height_setting,
+					slot_layout->offset_slot_x,
+					slot_layout->offset_slot_y,
+					slot_layout->offset_name_text_x,
+					slot_layout->offset_name_text_y,
+					name,
+					slot_layout->slot_item_name_transparency,
+					slot_layout->slot_item_red,
+					slot_layout->slot_item_green,
+					slot_layout->slot_item_blue,
 					page_setting->item_name_font_size,
 					center_text,
 					deduct_text_x,
@@ -533,45 +531,45 @@ namespace ui
 				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
-					draw_text(draw_setting->width_setting,
-						draw_setting->height_setting,
-						draw_setting->offset_slot_x,
-						draw_setting->offset_slot_y,
-						draw_setting->offset_text_x,
-						draw_setting->offset_text_y,
+					draw_text(slot_layout->width_setting,
+						slot_layout->height_setting,
+						slot_layout->offset_slot_x,
+						slot_layout->offset_slot_y,
+						slot_layout->offset_text_x,
+						slot_layout->offset_text_y,
 						slot_text.c_str(),
-						draw_setting->slot_count_transparency,
-						draw_setting->slot_count_red,
-						draw_setting->slot_count_green,
-						draw_setting->slot_count_blue,
+						slot_layout->slot_count_transparency,
+						slot_layout->slot_count_red,
+						slot_layout->slot_count_green,
+						slot_layout->slot_count_blue,
 						page_setting->count_font_size);
 				}
 			}
-		} // end of loop through front items in the cycles
+		}  // end of loop through front items in the cycles
 
 		// Ammo! how many arrows can we shoot into somebody's knee?
 		// I'll need to understand and then rewrite this.
 		const auto* ammo_handle = handle::ammo_handle::get_singleton();
 		if (auto* current_ammo = ammo_handle->get_current(); current_ammo)
 		{
-			draw_slot(a_x,
-				a_y,
+			draw_slot(anchor_x,
+				anchor_y,
 				mcm::get_hud_arrow_image_scale_width(),
 				mcm::get_hud_arrow_image_scale_height(),
 				mcm::get_arrow_slot_offset_x(),
 				mcm::get_arrow_slot_offset_y(),
 				current_ammo->button_press_modify,
 				mcm::get_background_icon_transparency());
-			draw_icon(a_x,
-				a_y,
+			draw_icon(anchor_x,
+				anchor_y,
 				mcm::get_arrow_icon_scale_width(),
 				mcm::get_arrow_icon_scale_height(),
 				mcm::get_arrow_slot_offset_x(),
 				mcm::get_arrow_slot_offset_y(),
 				EntryKind::Arrow,
 				mcm::get_icon_transparency());
-			draw_text(a_x,
-				a_y,
+			draw_text(anchor_x,
+				anchor_y,
 				mcm::get_arrow_slot_offset_x(),
 				mcm::get_arrow_slot_offset_y(),
 				mcm::get_arrow_slot_count_text_offset(),
@@ -587,8 +585,8 @@ namespace ui
 			{
 				current_ammo->highlight_slot = false;
 				init_animation(animation_type::highlight,
-					a_x,
-					a_y,
+					anchor_x,
+					anchor_y,
 					mcm::get_hud_arrow_image_scale_width(),
 					mcm::get_hud_arrow_image_scale_height(),
 					mcm::get_arrow_slot_offset_x(),
