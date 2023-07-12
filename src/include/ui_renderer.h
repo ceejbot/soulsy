@@ -7,7 +7,7 @@
 // TODO get rid of position setting; get this from Rust side
 // everything else will be fine. afaik.
 
-enum class EntryIcon : ::std::uint8_t;
+enum class EntryKind : ::std::uint8_t;
 
 // #include "lib.rs.h"
 
@@ -91,7 +91,7 @@ namespace ui
 			float a_scale_y,
 			float a_offset_x,
 			float a_offset_y,
-			EntryIcon a_type,
+			EntryKind a_type,
 			uint32_t a_alpha);
 		static void draw_key_icon(float a_x,
 			float a_y,

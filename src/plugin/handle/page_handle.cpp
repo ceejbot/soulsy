@@ -93,7 +93,7 @@ namespace handle
 		page->slot_settings = *slots;
 
 		page->icon_type = equippable::get_icon_type(slots->front()->type, slots->front()->form);
-		if (slots->size() == 2 && page->icon_type == EntryIcon::IconDefault)
+		if (slots->size() == 2 && page->icon_type == EntryKind::IconDefault)
 		{
 			logger::debug("Could not find an Icon with first setting, try next");
 			page->icon_type = equippable::get_icon_type(slots->at(1)->type, slots->at(1)->form);

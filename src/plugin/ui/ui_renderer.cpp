@@ -600,7 +600,7 @@ namespace ui
 				mcm::get_arrow_icon_scale_height(),
 				mcm::get_arrow_slot_offset_x(),
 				mcm::get_arrow_slot_offset_y(),
-				EntryIcon::Arrow,
+				EntryKind::Arrow,
 				mcm::get_icon_transparency());
 			draw_text(a_x,
 				a_y,
@@ -705,7 +705,7 @@ namespace ui
 		const float a_scale_y,
 		const float a_offset_x,
 		const float a_offset_y,
-		const EntryIcon icon_num,
+		const EntryKind icon_num,
 		const uint32_t a_alpha)
 	{
 		if (a_alpha == 0)
@@ -888,12 +888,12 @@ namespace ui
 		const auto res_width  = get_resolution_scale_width();
 		const auto res_height = get_resolution_scale_height();
 
-		const auto start = static_cast<uint32_t>(EntryIcon::Alteration);
-		const auto end   = static_cast<uint32_t>(EntryIcon::Whip);
+		const auto start = static_cast<uint32_t>(EntryKind::Alteration);
+		const auto end   = static_cast<uint32_t>(EntryKind::Whip);
 
 		for (uint32_t idx = start; idx <= end; idx++)
 		{
-			EntryIcon icon       = static_cast<EntryIcon>(idx);
+			EntryKind icon       = static_cast<EntryKind>(idx);
 			const auto icon_file = get_icon_file(icon);
 			auto entry = std::filesystem::path(file_path);
 			entry /= std::string(icon_file);
