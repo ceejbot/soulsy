@@ -893,6 +893,10 @@ namespace ui
 
 		for (uint32_t idx = start; idx <= end; idx++)
 		{
+			// This implementation is the inverse of the one it replaces.
+			// The one below walks the directory and tries to match located
+			// files with the requested icons in the map. This one walks 
+			// all needed icons and tries to find matching files. 
 			EntryKind icon       = static_cast<EntryKind>(idx);
 			const auto icon_file = get_icon_file(icon);
 			auto entry = std::filesystem::path(file_path);
@@ -908,15 +912,15 @@ namespace ui
 					entry.filename().extension().string().c_str(),
 					a_struct[idx].width,
 					a_struct[idx].height);
+					
+					a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
+					a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
+
 			}
 			else
 			{
 				logger::error("failed to load texture {}"sv, entry.filename().string().c_str());
-				continue;
 			}
-
-			a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
-			a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
 		}
 	}
 
@@ -1105,11 +1109,13 @@ namespace ui
 	void ui_renderer::load_all_images()
 	{
 		load_images(image_type_name_map, image_struct, img_directory);
-		// load_images(icon_type_name_map, icon_struct, icon_directory);
 		load_images(key_icon_name_map, key_struct, key_directory);
 		load_images(default_key_icon_name_map, default_key_struct, key_directory);
 		load_images(gamepad_ps_icon_name_map, ps_key_struct, key_directory);
 		load_images(gamepad_xbox_icon_name_map, xbox_key_struct, key_directory);
+
+		// The controlling enum is shared with rust, and different from those other enums
+		load_icon_images(icon_struct, icon_directory);
 
 		load_animation_frames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());

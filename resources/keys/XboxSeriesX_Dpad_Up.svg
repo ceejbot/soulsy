@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100"
+   height="100"
+   viewBox="0 0 26.458333 26.458333"
+   version="1.1"
+   id="svg8816"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="XboxSeriesX_Dpad_Up.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview8818"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="7.319248"
+     inkscape:cx="104.45062"
+     inkscape:cy="60.183778"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="2391"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs8813">
+    <linearGradient
+       id="Gradient_26"
+       gradientUnits="userSpaceOnUse"
+       x1="49.5"
+       y1="34.9375"
+       x2="49.5"
+       y2="26.362499999999997"
+       spreadMethod="pad">
+      <stop
+         offset="0%"
+         stop-color="#313131"
+         id="stop26897" />
+      <stop
+         offset="100%"
+         stop-color="#D7D7D7"
+         id="stop26899" />
+    </linearGradient>
+    <linearGradient
+       id="Gradient_27"
+       gradientUnits="userSpaceOnUse"
+       x1="50.1"
+       y1="41.699999999999996"
+       x2="50.1"
+       y2="33.1"
+       spreadMethod="pad">
+      <stop
+         offset="0%"
+         stop-color="#4F4F4F"
+         id="stop26902" />
+      <stop
+         offset="100%"
+         stop-color="#F5F5F5"
+         id="stop26904" />
+    </linearGradient>
+    <linearGradient
+       id="Gradient_28"
+       gradientUnits="userSpaceOnUse"
+       x1="54.7"
+       y1="38.1375"
+       x2="54.7"
+       y2="31.8625"
+       spreadMethod="pad">
+      <stop
+         offset="0%"
+         stop-color="#626262"
+         id="stop26907" />
+      <stop
+         offset="100%"
+         stop-color="#FFFFFF"
+         id="stop26909" />
+    </linearGradient>
+    <linearGradient
+       id="Gradient_29"
+       gradientUnits="userSpaceOnUse"
+       x1="54.35"
+       y1="29.95"
+       x2="54.35"
+       y2="12.349999999999998"
+       spreadMethod="pad">
+      <stop
+         offset="0%"
+         stop-color="#1B1B1B"
+         id="stop26912" />
+      <stop
+         offset="100%"
+         stop-color="#404040"
+         id="stop26914" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#Gradient_29"
+       id="linearGradient9034"
+       gradientUnits="userSpaceOnUse"
+       x1="54.35"
+       y1="29.95"
+       x2="54.35"
+       y2="12.349999999999998"
+       spreadMethod="pad" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#Gradient_28"
+       id="linearGradient9040"
+       gradientUnits="userSpaceOnUse"
+       x1="54.7"
+       y1="38.1375"
+       x2="54.7"
+       y2="31.8625"
+       spreadMethod="pad" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#Gradient_26"
+       id="linearGradient9052"
+       gradientUnits="userSpaceOnUse"
+       x1="49.5"
+       y1="34.9375"
+       x2="49.5"
+       y2="26.362499999999997"
+       spreadMethod="pad" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#Gradient_27"
+       id="linearGradient9054"
+       gradientUnits="userSpaceOnUse"
+       x1="50.1"
+       y1="41.699999999999996"
+       x2="50.1"
+       y2="33.1"
+       spreadMethod="pad" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g27293"
+       style="display:inline"
+       transform="matrix(0.27763204,0,0,0.27763204,-0.6524353,-0.66631689)">
+      <g
+         id="use27285">
+        <path
+           fill="#1b1b1b"
+           stroke="none"
+           d="m 18.05,82 q 6.5,6.5 14.35,9.75 V 67.65 H 8.3 Q 11.55,75.5 18.05,82 M 28.9,86.1 Q 24.45,83.45 20.55,79.5 16.6,75.6 13.95,71.15 H 28.9 V 86.1 M 32.4,8.25 q -7.85,3.3 -14.35,9.8 Q 11.5,24.6 8.2,32.5 H 32.4 V 8.25 M 20.55,20.5 q 3.9,-3.9 8.35,-6.55 V 29 h -15 q 2.65,-4.5 6.65,-8.5 M 81.95,82 q 6.5,-6.5 9.8,-14.35 h -24.2 v 24.1 Q 75.45,88.5 81.95,82 m -10.9,4.1 V 71.15 h 15 Q 83.4,75.6 79.5,79.5 75.55,83.45 71.05,86.1 M 91.8,32.5 q -3.3,-7.9 -9.85,-14.45 -6.5,-6.5 -14.4,-9.8 V 32.5 H 91.8 M 71.05,29 V 13.95 q 4.5,2.65 8.45,6.55 3.95,4 6.65,8.5 z"
+           id="path9042" />
+        <path
+           fill="#282828"
+           stroke="none"
+           d="m 20.55,79.5 q 3.9,3.95 8.35,6.6 V 71.15 H 13.95 q 2.65,4.45 6.6,8.35 M 28.9,13.95 q -4.45,2.65 -8.35,6.55 -4,4 -6.65,8.5 h 15 V 13.95 m 42.15,57.2 V 86.1 q 4.5,-2.65 8.45,-6.6 3.9,-3.9 6.55,-8.35 h -15 m 0,-57.2 V 29 h 15.1 q -2.7,-4.5 -6.65,-8.5 -3.95,-3.9 -8.45,-6.55 z"
+           id="path9044" />
+        <path
+           fill="url(#Gradient_26)"
+           stroke="none"
+           d="m 91.75,67.65 q 3.4,-8.1 3.4,-17.65 0,-9.45 -3.35,-17.5 H 67.55 V 8.25 Q 59.5,4.9 50,4.9 40.5,4.9 32.4,8.25 V 32.5 H 8.2 Q 4.85,40.55 4.85,50 q 0,9.55 3.45,17.65 h 24.1 v 24.1 q 8.1,3.4 17.6,3.4 9.5,0 17.55,-3.4 v -24.1 h 24.2 M 87.65,50 q 0,5.35 -1.25,10.15 H 67.55 q -3.1,0 -5.3,2.2 -2.2,2.2 -2.2,5.3 V 86.4 Q 55.3,87.65 50,87.65 44.7,87.65 39.9,86.4 V 67.65 q 0,-3.1 -2.2,-5.3 -2.2,-2.2 -5.3,-2.2 H 13.6 Q 12.35,55.35 12.35,50 q 0,-5.25 1.25,-10 h 18.8 q 3.1,0 5.3,-2.2 2.2,-2.2 2.2,-5.3 V 13.65 Q 44.7,12.4 50,12.4 q 5.3,0 10.05,1.25 V 32.5 q 0,3.1 2.2,5.3 2.2,2.2 5.3,2.2 h 18.9 q 1.2,4.75 1.2,10 z"
+           id="path9046"
+           style="fill:url(#linearGradient9052)" />
+        <path
+           fill="url(#Gradient_27)"
+           stroke="none"
+           d="m 86.4,60.15 q 1.25,-4.8 1.25,-10.15 0,-5.25 -1.2,-10 h -18.9 q -3.1,0 -5.3,-2.2 -2.2,-2.2 -2.2,-5.3 V 13.65 Q 55.3,12.4 50,12.4 q -5.3,0 -10.1,1.25 V 32.5 q 0,3.1 -2.2,5.3 Q 35.5,40 32.4,40 H 13.6 q -1.25,4.75 -1.25,10 0,5.35 1.25,10.15 h 18.8 q 3.1,0 5.3,2.2 2.2,2.2 2.2,5.3 V 86.4 q 4.8,1.25 10.1,1.25 5.3,0 10.05,-1.25 V 67.65 q 0,-3.1 2.2,-5.3 2.2,-2.2 5.3,-2.2 z"
+           id="path9048"
+           style="fill:url(#linearGradient9054)" />
+      </g>
+      <path
+         id="use27287"
+         stroke="#1b1b1b"
+         stroke-width="5"
+         stroke-linejoin="round"
+         stroke-linecap="round"
+         fill="none"
+         d="m 67.55,8.25 q 7.9,3.3 14.4,9.8 6.55,6.55 9.85,14.45 3.35,8.05 3.35,17.5 0,9.55 -3.4,17.65 -3.3,7.85 -9.8,14.35 -6.5,6.5 -14.4,9.75 -8.05,3.4 -17.55,3.4 -9.5,0 -17.6,-3.4 Q 24.55,88.5 18.05,82 11.55,75.5 8.3,67.65 4.85,59.55 4.85,50 q 0,-9.45 3.35,-17.5 3.3,-7.9 9.85,-14.45 6.5,-6.5 14.35,-9.8 M 67.55,32.5 H 91.8 m -83.6,0 H 32.4 M 8.3,67.65 h 24.1 v 24.1 m 59.35,-24.1 h -24.2 v 24.1" />
+      <path
+         id="use27289"
+         stroke="url(#Gradient_28)"
+         stroke-width="4"
+         stroke-linejoin="round"
+         stroke-linecap="round"
+         fill="none"
+         d="m 87.65,50 q 0,5.35 -1.25,10.15 H 67.55 q -3.1,0 -5.3,2.2 -2.2,2.2 -2.2,5.3 V 86.4 Q 55.3,87.65 50,87.65 44.7,87.65 39.9,86.4 V 67.65 q 0,-3.1 -2.2,-5.3 -2.2,-2.2 -5.3,-2.2 H 13.6 Q 12.35,55.35 12.35,50 q 0,-5.25 1.25,-10 h 18.8 q 3.1,0 5.3,-2.2 2.2,-2.2 2.2,-5.3 V 13.65 Q 44.7,12.4 50,12.4 q 5.3,0 10.05,1.25 V 32.5 q 0,3.1 2.2,5.3 2.2,2.2 5.3,2.2 h 18.9 q 1.2,4.75 1.2,10 z"
+         style="stroke:url(#linearGradient9040)" />
+      <path
+         id="use27291"
+         stroke="url(#Gradient_29)"
+         stroke-width="5"
+         stroke-linejoin="round"
+         stroke-linecap="round"
+         fill="none"
+         d="M 32.4,8.25 Q 40.5,4.9 50,4.9 q 9.5,0 17.55,3.35 V 32.5 M 32.4,8.25 V 32.5"
+         style="stroke:url(#linearGradient9034)" />
+    </g>
+  </g>
+</svg>

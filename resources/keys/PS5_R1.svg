@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100"
+   height="100"
+   viewBox="0 0 26.458333 26.458333"
+   version="1.1"
+   id="svg1108"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="PS5_R1.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1110"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="7.319248"
+     inkscape:cx="70.567359"
+     inkscape:cy="62.233169"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="2391"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1105" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g16273"
+       style="display:inline"
+       transform="matrix(0.32148643,0,0,0.32148643,-3.4077562,-2.8449669)">
+      <g
+         id="use16267">
+        <path
+           fill="#313131"
+           stroke="none"
+           d="M 90.4,72.35 V 55.95 Q 89.9,32.3 64.3,27.7 38.6,23.15 26.25,21.6 13.8,20 13.1,31.2 v 36.2 q 0.3,10.7 12.45,11.2 h 58.6 Q 89.5,78 90.4,72.35 M 82.95,54 82.85,71.15 H 45.9 q -5.45,0.05 -5.6,-4.8 V 40.3 q 0.4,-7.05 8.2,-6.65 7.15,-0.2 20.2,3.95 13.05,4.05 14.25,16.4 z"
+           id="path1263" />
+        <path
+           fill="#4f4f4f"
+           stroke="none"
+           d="M 82.85,71.15 82.95,54 Q 81.75,41.65 68.7,37.6 55.65,33.45 48.5,33.65 40.7,33.25 40.3,40.3 v 26.05 q 0.15,4.85 5.6,4.8 h 36.95 m -19.3,-16.5 q 0,1.75 -0.85,2.95 -0.9,1.2 -2.6,1.5 l 4.1,6.85 h -4.3 l -3.35,-6.5 H 54.8 v 6.5 H 51.25 V 49.8 h 6.25 q 1.2,0 2.3,0.2 1.15,0.25 2,0.85 0.8,0.55 1.3,1.5 0.45,0.9 0.45,2.3 m 6.7,-1.05 -3.25,2.85 -1.9,-2.3 5.25,-4.4 3.2,0.05 v 16.15 h -3.3 V 53.6 m -12.1,-0.75 q -0.5,-0.05 -1,-0.05 H 54.8 v 3.65 h 2.1 q 0.45,0 1,0 0.55,-0.05 0.95,-0.25 0.45,-0.15 0.75,-0.55 0.25,-0.3 0.25,-1 0,-0.6 -0.2,-1 Q 59.35,53.3 59,53.1 58.6,52.95 58.15,52.85 Z"
+           id="path1265" />
+        <path
+           fill="#8f8f8f"
+           stroke="none"
+           d="m 67,56.45 3.25,-2.85 v 12.35 h 3.3 V 49.8 l -3.2,-0.05 -5.25,4.4 1.9,2.3 m -4.3,1.15 q 0.85,-1.2 0.85,-2.95 0,-1.4 -0.45,-2.3 -0.5,-0.95 -1.3,-1.5 -0.85,-0.6 -2,-0.85 -1.1,-0.2 -2.3,-0.2 h -6.25 v 16.15 h 3.55 v -6.5 h 1.75 l 3.35,6.5 h 4.3 L 60.1,59.1 q 1.7,-0.3 2.6,-1.5 m -5.55,-4.8 q 0.5,0 1,0.05 0.45,0.1 0.85,0.25 0.35,0.2 0.65,0.55 0.2,0.4 0.2,1 0,0.7 -0.25,1 -0.3,0.4 -0.75,0.55 -0.4,0.2 -0.95,0.25 -0.55,0 -1,0 H 54.8 V 52.8 Z"
+           id="path1267" />
+      </g>
+      <path
+         id="use16269"
+         stroke="#1b1b1b"
+         stroke-width="5"
+         stroke-linejoin="round"
+         stroke-linecap="round"
+         fill="none"
+         d="M 84.15,78.6 Q 89.5,78 90.4,72.35 V 55.95 Q 89.9,32.3 64.3,27.7 38.6,23.15 26.25,21.6 13.8,20 13.1,31.2 v 36.2 q 0.3,10.7 12.45,11.2 z" />
+      <path
+         id="use16271"
+         stroke="#626262"
+         stroke-width="4"
+         stroke-linejoin="round"
+         stroke-linecap="round"
+         fill="none"
+         d="m 82.95,54 -0.1,17.15 H 45.9 q -5.45,0.05 -5.6,-4.8 V 40.3 q 0.4,-7.05 8.2,-6.65 7.15,-0.2 20.2,3.95 13.05,4.05 14.25,16.4 z" />
+    </g>
+  </g>
+</svg>

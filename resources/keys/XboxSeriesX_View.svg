@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100"
+   height="100"
+   viewBox="0 0 26.458333 26.458333"
+   version="1.1"
+   id="svg5309"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="XboxSeriesX_View.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview5311"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="7.319248"
+     inkscape:cx="76.032401"
+     inkscape:cy="37.093975"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="2391"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs5306" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g21882"
+       style="display:inline"
+       transform="matrix(0.34631326,0,0,0.34631326,-4.0864965,-4.0864965)">
+      <g
+         id="use21872">
+        <path
+           fill="#313131"
+           stroke="none"
+           d="M 75.25,24.7 Q 64.85,14.3 50,14.3 35.2,14.3 24.75,24.7 14.3,35.15 14.3,50 14.3,64.8 24.75,75.25 35.2,85.7 50,85.7 64.85,85.7 75.25,75.25 85.7,64.8 85.7,50 85.7,35.15 75.25,24.7 M 50,22.8 q 11.3,0 19.25,7.95 Q 77.2,38.7 77.2,50 77.2,61.3 69.25,69.25 61.3,77.2 50,77.2 38.75,77.2 30.75,69.25 22.8,61.3 22.8,50 22.8,38.7 30.75,30.75 38.75,22.8 50,22.8 Z"
+           id="path5475" />
+        <path
+           fill="#4f4f4f"
+           stroke="none"
+           d="M 69.25,30.75 Q 61.3,22.8 50,22.8 38.75,22.8 30.75,30.75 22.8,38.7 22.8,50 q 0,11.3 7.95,19.25 8,7.95 19.25,7.95 11.3,0 19.25,-7.95 Q 77.2,61.3 77.2,50 77.2,38.7 69.25,30.75 M 54.35,38 V 41.1 38 H 34.85 V 52.4 H 38.3 34.85 V 38 h 19.5 m -10,9 h 19.5 V 61.4 H 44.35 V 47 m 19.5,0 h -19.5 v 14.4 h 19.5 z"
+           id="path5477" />
+      </g>
+      <path
+         id="use21874"
+         stroke="#1b1b1b"
+         stroke-width="5"
+         stroke-linejoin="round"
+         stroke-linecap="round"
+         fill="none"
+         d="m 50,14.3 q 14.85,0 25.25,10.4 Q 85.7,35.15 85.7,50 85.7,64.8 75.25,75.25 64.85,85.7 50,85.7 35.2,85.7 24.75,75.25 14.3,64.8 14.3,50 14.3,35.15 24.75,24.7 35.2,14.3 50,14.3 Z" />
+      <path
+         id="use21876"
+         stroke="#626262"
+         stroke-width="4"
+         stroke-linejoin="round"
+         stroke-linecap="round"
+         fill="none"
+         d="m 50,22.8 q 11.3,0 19.25,7.95 Q 77.2,38.7 77.2,50 77.2,61.3 69.25,69.25 61.3,77.2 50,77.2 38.75,77.2 30.75,69.25 22.8,61.3 22.8,50 22.8,38.7 30.75,30.75 38.75,22.8 50,22.8 Z" />
+      <path
+         id="use21878"
+         stroke="#999999"
+         stroke-width="4"
+         stroke-linejoin="miter"
+         stroke-linecap="round"
+         stroke-miterlimit="3"
+         fill="none"
+         d="m 44.35,47 h 19.5 v 14.4 h -19.5 z m -9.5,5.4 V 38 h 19.5" />
+      <path
+         id="use21880"
+         stroke="#999999"
+         stroke-width="4"
+         stroke-linejoin="miter"
+         stroke-linecap="square"
+         stroke-miterlimit="3"
+         fill="none"
+         d="m 54.35,38 v 3.1 m -19.5,11.3 h 3.45" />
+    </g>
+  </g>
+</svg>

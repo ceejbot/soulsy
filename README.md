@@ -51,7 +51,7 @@ The plugin requires the following vcpkg libraries, which will be installed for y
 
 - [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG)
 - [spdlog](https://github.com/gabime/spdlog)
-- [simpleini](https://github.com/brofield/simpleini)  <---- maybe not
+- [simpleini](https://github.com/brofield/simpleini)
 - [nanosvg](https://github.com/memononen/nanosvg) (for rastering the svgfiles)
 - [imgui](https://github.com/ocornut/imgui) (for displaying ui elements)
 
@@ -61,9 +61,9 @@ If you have [just](https://just.systems) installed, the justfile has recipes for
 
 All of the UI code is retained from [LamasTinyHud](https://www.nexusmods.com/skyrimspecialedition/mods/82545), so [mlthelama](https://github.com/mlthelama) gets all the props. I also learned a lot about how to make an SKSE plugin by reading their source. Give that HUD a try if you don't like the souls-game style, or want a UI you can edit in-game. The original has more features than this one does! It's also the only hotkeys hud mod I tried that worked well in my game, so that's a testimonial.
 
-The icons for the built-in theme are the usual SkyUI icons, plus the future book true-type font. The other layout data is adapted from the [Untarnished UI skin](https://www.nexusmods.com/skyrimspecialedition/mods/82545) for LamasTinyHUD by [MinhazMurks](https://www.nexusmods.com/skyrimspecialedition/users/26341279).
+The icons for the built-in theme are the usual SkyUI icons, plus the `futura-book-bt` true-type font. The other layout data is adapted from the [Untarnished UI skin](https://www.nexusmods.com/skyrimspecialedition/mods/82545) for LamasTinyHUD by [MinhazMurks](https://www.nexusmods.com/skyrimspecialedition/users/26341279).
 
-[cxx](https://cxx.rs/) made developing the C++/Rust bridge a snap. This crate unlocks Rust as a viable language for all of your modding needs. The only drawback is that async Rust is not yet supported. You can work around this using channels if you need to; see the docs.
+[cxx](https://cxx.rs/) made developing the C++/Rust bridge a snap. This crate unlocks Rust as a viable language for all of your modding needs. The only drawback is that async Rust is not yet supported, but there are workarounds described in the docs.
 
 ## TODO
 
