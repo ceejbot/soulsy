@@ -1,6 +1,6 @@
 ﻿#include "key_position_handle.h"
-#include "include/enums.h"
-#include "include/user_settings.h"
+#include "enums.h"
+#include "user_settings.h"
 
 namespace handle
 {

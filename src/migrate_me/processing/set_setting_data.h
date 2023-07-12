@@ -3,8 +3,8 @@
 #include "handle/data/page/slot_setting.h"
 #include "handle/key_position_handle.h"
 #include "handle/page_handle.h"
-#include "include/enums.h"
-#include "include/helper.h"
+#include "enums.h"
+#include "helpers.h"
 
 namespace processing
 {

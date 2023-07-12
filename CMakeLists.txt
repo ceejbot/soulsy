@@ -211,10 +211,13 @@ target_include_directories(
     PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/config
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/game
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/migrate_me
     ${CMAKE_CURRENT_SOURCE_DIR}/src/plugin
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/util
     ${CARGO_TARGET_DIR}/cxxbridge/soulsy/src/
-    ${CARGO_TARGET_DIR}/cxxbridge
     ${SIMPLEINI_INCLUDE_DIRS}
 )
 

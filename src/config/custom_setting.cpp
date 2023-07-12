@@ -1,7 +1,7 @@
-﻿#include "include/custom_setting.h"
-#include "include/constant.h"
-#include "include/file_setting.h"
-#include "include/user_settings.h"
+﻿#include "custom_setting.h"
+#include "constant.h"
+#include "file_setting.h"
+#include "user_settings.h"
 
 // These are item lists, aka what I'm calling cycle data. To be deleted later.
 

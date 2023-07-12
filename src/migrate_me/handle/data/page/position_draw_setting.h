@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "include/image_path.h"
+#include "image_path.h"
 
 namespace handle
 {

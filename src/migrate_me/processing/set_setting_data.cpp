@@ -4,7 +4,7 @@
 #include "custom_setting.h"
 #include "enums.h"
 #include "gear.h"
-#include "helper.h"
+#include "helpers.h"
 #include "equippable.h"
 #include "player.h"
 #include "setting_execute.h"

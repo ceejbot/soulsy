@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include "./data/page/position_setting.h"
 #include "./key_position_handle.h"
-#include "include/enums.h"
-#include "include/helper.h"
-#include "include/image_path.h"
+#include "enums.h"
+#include "helpers.h"
+#include "image_path.h"
 
 #include "lib.rs.h"
 

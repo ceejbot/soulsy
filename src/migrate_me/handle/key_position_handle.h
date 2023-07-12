@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "./data/page/position_setting.h"
-#include "include/enums.h"
+#include "enums.h"
 
 namespace handle
 {

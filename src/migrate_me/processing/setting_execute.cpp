@@ -3,13 +3,13 @@
 #include "handle/data/page/slot_setting.h"
 #include "handle/key_position_handle.h"
 #include "handle/page_handle.h"
-#include "include/constant.h"
-#include "include/enums.h"
-#include "include/gear.h"
-#include "include/magic.h"
-#include "include/string_util.h"
-#include "include/user_settings.h"
-#include "include/utility_items.h"
+#include "constant.h"
+#include "enums.h"
+#include "gear.h"
+#include "magic.h"
+#include "string_util.h"
+#include "user_settings.h"
+#include "utility_items.h"
 
 namespace processing
 {

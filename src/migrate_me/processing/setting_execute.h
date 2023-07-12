@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "include/enums.h"
+#include "enums.h"
 #include "handle/data/page/slot_setting.h"
 #include "handle/data/page/position_setting.h"
 

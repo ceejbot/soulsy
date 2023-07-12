@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include "handle/data/page/slot_setting.h"
-#include "include/custom_setting.h"
-#include "include/enums.h"
-#include "include/image_path.h"
+#include "custom_setting.h"
+#include "enums.h"
+#include "image_path.h"
 #include "position_draw_setting.h"
 
 #include "lib.rs.h"

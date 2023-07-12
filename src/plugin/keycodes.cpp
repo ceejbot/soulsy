@@ -1,4 +1,4 @@
-#include "include/keycodes.h"
+#include "keycodes.h"
 
 namespace keycodes
 {

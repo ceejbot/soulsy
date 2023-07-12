@@ -1,12 +1,12 @@
 
-#include "include/papyrus.h"
-#include "include/constant.h"
-#include "include/custom_setting.h"
-#include "include/enums.h"
-#include "include/file_setting.h"
-#include "include/helper.h"
-#include "include/ui_renderer.h"
-#include "include/user_settings.h"
+#include "papyrus.h"
+#include "constant.h"
+#include "custom_setting.h"
+#include "enums.h"
+#include "file_setting.h"
+#include "helpers.h"
+#include "ui_renderer.h"
+#include "user_settings.h"
 
 #include "processing/set_setting_data.h"
 

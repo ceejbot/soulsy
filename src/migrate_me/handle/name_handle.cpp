@@ -1,6 +1,6 @@
 ﻿#include "name_handle.h"
-#include "include/constant.h"
-#include "include/helper.h"
+#include "constant.h"
+#include "helpers.h"
 
 namespace handle
 {

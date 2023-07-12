@@ -1,13 +1,13 @@
-﻿#include "include/utility_items.h"
+﻿#include "utility_items.h"
 #include "handle/extra_data_holder.h"
-#include "include/constant.h"
-#include "include/enums.h"
-#include "include/gear.h"
-#include "include/helper.h"
-#include "include/perk_visitor.h"
-#include "include/player.h"
-#include "include/string_util.h"
-#include "include/user_settings.h"
+#include "constant.h"
+#include "enums.h"
+#include "gear.h"
+#include "helpers.h"
+#include "perk_visitor.h"
+#include "player.h"
+#include "string_util.h"
+#include "user_settings.h"
 
 namespace equip
 {

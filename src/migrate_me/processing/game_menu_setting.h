@@ -1,7 +1,7 @@
 #pragma once
 #include "../handle/data/page/position_setting.h"
-#include "include/enums.h"
-#include "include/helper.h"
+#include "enums.h"
+#include "helpers.h"
 
 namespace processing
 {

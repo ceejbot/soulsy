@@ -1,7 +1,7 @@
 #include "player.h"
 
 #include "enums.h"
-#include "helper.h"
+#include "helpers.h"
 #include "equippable.h"
 #include "offset.h"
 #include "string_util.h"

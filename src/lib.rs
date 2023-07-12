@@ -169,7 +169,7 @@ pub mod plugin {
         fn IsUp(self: &ButtonEvent) -> bool;
 
         // Selected helpers.
-        include!("include/helper.h");
+        include!("helpers.h");
         #[namespace = "helpers"]
         fn notify_player(message: &CxxString);
         #[namespace = "helpers"]
