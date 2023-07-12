@@ -3,13 +3,15 @@ pub mod cycles;
 pub mod layout;
 pub mod settings;
 
+// Everything pulled in here is available for lib.rs to use in the bridge.
 pub use control::{handle_key_event, handle_menu_event};
-pub use cycles::{get_icon_file, create_cycle_entry, CycleEntry};
+pub use cycles::{create_cycle_entry, get_icon_file, CycleEntry};
 pub use layout::layout;
 pub use settings::{user_settings, UserSettings}; // hmm, is this for settings? I'm confused...
 
 use crate::plugin::HudLayout;
 
+/// Wrapper for C++ convenience; logs errors but does no more
 pub fn refresh_user_settings() {
     match settings::UserSettings::refresh() {
         Ok(_) => {
@@ -21,6 +23,7 @@ pub fn refresh_user_settings() {
     }
 }
 
+/// Wrapper for C++ convenience.
 pub fn boxed_layout() -> Box<HudLayout> {
     let v = layout();
     Box::new(v.clone()) // grimacing emoji

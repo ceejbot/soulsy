@@ -1,3 +1,6 @@
+#![deny(future_incompatible)]
+#![warn(rust_2018_idioms, trivial_casts)]
+
 pub mod controller;
 use controller::*;
 
@@ -10,15 +13,15 @@ pub mod plugin {
     /// frequently refers to them. It is read-only for the C++ side. The values
     /// are filled out by lazily reading the layout toml file.
     #[derive(Deserialize, Serialize, Debug, Clone, Default)]
-    pub struct HudLayout {
+    struct HudLayout {
         /// Enable debug logging.
         debug: bool,
     }
-    
+
     /// Knowing the icon for the item tells us *almost* everything we need to know
     /// about how to use it.
     #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-    pub enum EntryIcon {
+    enum EntryKind {
         Alteration,
         ArmorClothing,
         ArmorHeavy,
@@ -72,7 +75,7 @@ pub mod plugin {
 
     /// Turning the key number into an enum is handy.
     #[derive(Debug, Clone)]
-    pub enum Action {
+    enum Action {
         /// We do not need to do anything, possibly because the key was not one of our hotkeys.
         Irrelevant,
         /// We're acting on the power/shouts hotkey.
@@ -91,7 +94,7 @@ pub mod plugin {
 
     /// I would rather not use exceptions for normal flow control.
     #[derive(Debug, Clone, PartialEq, Eq)]
-    pub enum MenuEventResponse {
+    enum MenuEventResponse {
         Okay,
         Unhandled,
         Error,
@@ -107,7 +110,7 @@ pub mod plugin {
     /// timers on the Rust side are impractical (they need to be async) and so I
     /// am doing them on the  C++ side. A better solution would be nice.
     #[derive(Debug, Clone, PartialEq, Eq)]
-    pub struct KeyEventResponse {
+    struct KeyEventResponse {
         /// Did we handle this keypress?
         handled: bool,
         /// Do we need to start a timer?
@@ -130,9 +133,9 @@ pub mod plugin {
 
         /// This is an entry in the cycle. The UI will ask questions of it.
         type CycleEntry;
-        fn get_icon_file(icon: &EntryIcon) -> String;
+        fn get_icon_file(icon: &EntryKind) -> String;
         fn create_cycle_entry(
-            kind: EntryIcon,
+            kind: EntryKind,
             two_handed: bool,
             has_count: bool,
             count: usize,
@@ -144,7 +147,7 @@ pub mod plugin {
         fn layout() -> &'static HudLayout;
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
-        /// Handle an incoming key press event from the game. Returns true if handled.
+        /// Handle an incoming key press event from the game. An enum encoding how it was handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
         fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse;
@@ -153,7 +156,6 @@ pub mod plugin {
     unsafe extern "C++" {
         // everything in the RE namespace is from CommonLibSE
         // I can imagine auto-generating a complete bridge at some point.
-
         include!("PCH.h");
         #[namespace = "RE"]
         type TESForm;
@@ -163,6 +165,7 @@ pub mod plugin {
         type ButtonEvent;
         #[namespace = "RE"]
         fn IsDown(self: &ButtonEvent) -> bool;
+        #[namespace = "RE"]
         fn IsUp(self: &ButtonEvent) -> bool;
 
         // Selected helpers.

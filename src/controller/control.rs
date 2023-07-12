@@ -9,17 +9,18 @@ use crate::plugin::*;
 /// There can be only one. Not public because we want access managed.
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
 
+/// Function for C++ to call to send a relevant button event to us.
 pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
     let action = Action::from(key);
     CONTROLLER.lock().unwrap().handle_key_event(action, button)
 }
 
+/// Function for C++ to call to send a relevant menu button-event to us.
+///
+/// We get a fully-filled out CycleEntry struct to use as we see fit.
 pub fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse {
     let action = Action::from(key);
-    CONTROLLER
-        .lock()
-        .unwrap()
-        .toggle_item(action, *item.clone())
+    CONTROLLER.lock().unwrap().toggle_item(action, *item)
 }
 
 impl From<u32> for Action {
@@ -45,18 +46,33 @@ impl From<u32> for Action {
     }
 }
 
+/// What, model/view/controller? In my UI application? oh no
 #[derive(Clone, Default, Debug)]
 pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
+    // speculative: I think this is how we'll handle tracking equipped thingies
+    _equipped_power: Option<CycleEntry>,
+    _equipped_utility: Option<CycleEntry>,
+    _equipped_left: Option<CycleEntry>,
+    _equipped_right: Option<CycleEntry>,
 }
 
 impl Controller {
+    /// Make a controller. Cycle data is read from disk. Currently-equipped
+    /// items are not handled yet.
     pub fn new() -> Self {
         let cycles = CycleData::read().unwrap_or_default();
-        Controller { cycles }
+        Controller {
+            cycles,
+            ..Default::default()
+        }
     }
 
+    /// Handle a key-press event that the event system decided we need to know about.
+    ///
+    /// Returns an enum indicating what we did in response, in case one of the calling
+    /// layers wants to show UI or play sounds in response.
     pub fn handle_key_event(&mut self, action: Action, button: &ButtonEvent) -> KeyEventResponse {
         // Sketching out what has to happen on fired timers
         // timer data should include the triggering action so we know what to do
@@ -65,7 +81,6 @@ impl Controller {
         // if left/right/power, equip the item
 
         // If we're faded out in any way, show ourselves again.
-        // The second param to set_fade() is the desired end alpha.
         if !matches!(action, Action::ShowHide) {
             let is_fading: bool = get_is_transitioning();
             if user_settings().fade() && !is_fading {
@@ -81,6 +96,7 @@ impl Controller {
         let _is_down: bool = button.IsDown();
         let _is_up: bool = button.IsUp();
 
+        // TODO implement!
         match action {
             Action::Power => {
                 let _next = self.cycles.advance(action, 1);
@@ -95,6 +111,7 @@ impl Controller {
             Action::Left => {
                 // cycle the left selection one forward; start the left timer
                 // highlight the button
+                let _next = self.cycles.advance(action, 1);
                 KeyEventResponse {
                     handled: true,
                     start_timer: Action::Left,
@@ -102,8 +119,9 @@ impl Controller {
                 }
             }
             Action::Right => {
-                // cycle the left selection one forward; start the left timer
-                // highlight the button
+                // start the ready delay timer for the right hand
+                // highlight the right hud slot
+                let _next = self.cycles.advance(action, 1);
                 KeyEventResponse {
                     handled: true,
                     start_timer: Action::Right,
@@ -111,8 +129,9 @@ impl Controller {
                 }
             }
             Action::Utility => {
-                // cycle the left selection one forward; start the left timer
-                // highlight the button
+                // start the ready delay timer for the utility slot
+                // highlight the utility hud slot
+                let _next = self.cycles.advance(action, 1);
                 KeyEventResponse {
                     handled: true,
                     start_timer: Action::Utility,
@@ -120,10 +139,11 @@ impl Controller {
                 }
             }
             Action::Activate => {
-                // stop any timers for the utility cycle
+                // TODO
+                // stop any timers for the utility slot;
+                // mark the current item as the top-of-cycle
                 // finalize the UI look (de-highlight)
                 // use the item
-                // TODO
                 KeyEventResponse {
                     handled: true,
                     start_timer: Action::Irrelevant,
@@ -131,9 +151,7 @@ impl Controller {
                 }
             }
             Action::ShowHide => {
-                // ask if we're visible now
-                // set val=0.0 if we are, 1.0 if we're not
-                // call set_fade(true, val)
+                // handled by the C++ side for now
                 toggle_hud_visibility();
                 KeyEventResponse {
                     handled: true,
@@ -154,14 +172,14 @@ impl Controller {
         let verb = match result {
             MenuEventResponse::ItemAdded => "added to",
             MenuEventResponse::ItemRemoved => "removed from",
-            _ => "not changed in"
+            _ => "not changed in",
         };
         let cyclename = match action {
             Action::Power => "powers",
             Action::Left => "left-hand",
             Action::Right => "right-hand",
             Action::Utility => "utility items",
-            _ => "any"
+            _ => "any",
         };
         let message = format!("{} {} {} cycle", item.name(), verb, cyclename);
         cxx::let_cxx_string!(msg = message);
@@ -176,13 +194,15 @@ impl Controller {
                 Ok(_) => log::info!("successfully wrote cycle data"),
                 Err(e) => {
                     log::warn!("failed to write cycle data, but gamely continuing; {e:?}");
-                },
+                }
             }
         }
 
         result
     }
 
+    /// TO BE CALLED when the player's equipped items change.
+    /// API surface tbd.
     pub fn on_equip_change(&self) {
         // this should be called by a top-level hook that also makes sure UI is updated
         // if item is any lists: rotate list so item is at front

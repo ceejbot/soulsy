@@ -2,6 +2,13 @@
 
 namespace file_setting
 {
+	// Notes from ceej:
+	// This is the old "file setting" aka a canned top-level config choice set for major
+	// mod behaviors. The only thing remaining from this that we care about is the debug
+	// setting, which affects log levels.
+
+	// Should be entirely replaced with the Rust-side `layout` 
+
 	void load_setting();
 
 	bool get_is_debug();
