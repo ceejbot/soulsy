@@ -133,7 +133,11 @@ pub mod plugin {
 
         /// This is an entry in the cycle. The UI will ask questions of it.
         type CycleEntry;
-        fn get_icon_file(icon: &EntryKind) -> String;
+        fn kind(self: &CycleEntry) -> EntryKind;
+        fn highlighted(self: &CycleEntry) -> bool;
+        fn name(self: &CycleEntry) -> String;
+        fn has_count(self: &CycleEntry) -> bool;
+        fn count(self: &CycleEntry) -> usize;
         fn create_cycle_entry(
             kind: EntryKind,
             two_handed: bool,
@@ -143,14 +147,19 @@ pub mod plugin {
             form_string: &str,
         ) -> Box<CycleEntry>;
 
+        fn get_icon_file(kind: &EntryKind) -> String;
+
         /// Managed access to the layout object, so we can lazy-load if necessary.
         fn layout() -> &'static HudLayout;
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
+
         /// Handle an incoming key press event from the game. An enum encoding how it was handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
         fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse;
+        /// Get the item readied in the given slot, if any.
+        fn equipped_in_slot(slot: Action) -> Box<CycleEntry>;
     }
 
     unsafe extern "C++" {

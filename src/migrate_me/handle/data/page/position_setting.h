@@ -11,9 +11,8 @@ namespace handle
 {
 	using position_type = enums::position_type;
 
-	class position_setting
+	struct position_setting
 	{
-	public:
 		std::vector<slot_setting*> slot_settings;
 		uint32_t page                       = 0;
 		position_type position              = position_type::total;

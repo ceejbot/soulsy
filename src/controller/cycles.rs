@@ -14,9 +14,6 @@ pub fn get_icon_file(kind: &EntryKind) -> String {
 }
 
 // CycleEntry, which is also exposed to C++.
-
-// Haven't yet figured out how to serialize this to toml or anything yet.
-// Still working on what data I want to track.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
 pub struct CycleEntry {
     /// Player-visible name.
@@ -31,6 +28,8 @@ pub struct CycleEntry {
     has_count: bool,
     /// Cached count from inventory data. Relies on hooks to be updated.
     count: usize,
+    /// is currently highlighted for some reason
+    highlighted: bool,
 }
 
 // Testing the formstring is sufficient for our needs, which is figuring out if
@@ -76,6 +75,7 @@ impl CycleEntry {
             two_handed,
             has_count,
             count,
+            highlighted: false,
         }
     }
 
@@ -89,11 +89,16 @@ impl CycleEntry {
         self.two_handed
     }
 
+    pub fn has_count(&self) -> bool {
+        self.has_count
+    }
+
     /// If this item has a count, e.g., is arrows, return how many the player has.
     pub fn count(&self) -> usize {
         self.count
     }
 
+    // TODO remove this; we only ever want to change this via local control
     /// If the player's inventory changes, we update the item count.
     pub fn set_count(&mut self, v: usize) {
         self.count = v;
@@ -108,6 +113,11 @@ impl CycleEntry {
     /// Get the enum representing this entry's kind (1-handed sword, dagger, health potion, etc.)
     pub fn kind(&self) -> EntryKind {
         self.kind
+    }
+
+    /// True if this entry should be drawn with a highlight.
+    pub fn highlighted(&self) -> bool {
+        self.highlighted
     }
 }
 
@@ -141,7 +151,7 @@ impl CycleData {
         Ok(layout)
     }
 
-    /// Advance the given cycle by one. Returns the newly-top item.
+    /// Advance the given cycle by one. Returns a copy of the newly-top item.
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
     /// This does not equip or try to use the item in any way. It's pure management.
@@ -158,6 +168,9 @@ impl CycleData {
         };
         if cycle.is_empty() {
             return None;
+        }
+        if let Some(previous) = cycle.first_mut() {
+            previous.highlighted = false;
         }
         cycle.rotate_left(amount);
         cycle.first().cloned()

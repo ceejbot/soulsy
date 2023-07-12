@@ -1,10 +1,10 @@
 ﻿#include "ui_renderer.h"
-#include "handle/ammo_handle.h"
-#include "handle/name_handle.h"
-#include "handle/page_handle.h"
 #include "animation_handler.h"
 #include "constant.h"
 #include "file_setting.h"
+#include "handle/ammo_handle.h"
+#include "handle/name_handle.h"
+#include "handle/page_handle.h"
 #include "image_path.h"
 #include "key_path.h"
 #include "keycodes.h"
@@ -338,21 +338,34 @@ namespace ui
 		draw_element(texture, center, size, angle, color);
 	}
 
-	void ui_renderer::draw_slot(const float a_screen_x,
-		const float a_screen_y,
-		const float a_scale_x,
-		const float a_scale_y,
-		const float a_offset_x,
-		const float a_offset_y,
-		const uint32_t a_modify,
-		const uint32_t a_alpha)
+	vvoid ui_renderer::drawSlotBackground(const float scale_width,
+		const float scale_height,
+		const ImVec2 center,
+		const ImU32 color)
 	{
 		constexpr auto angle = 0.f;
 
-		const auto center                   = ImVec2(a_screen_x + a_offset_x, a_screen_y + a_offset_y);
 		const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::round)];
-		const auto size   = ImVec2(static_cast<float>(width) * a_scale_x, static_cast<float>(height) * a_scale_y);
-		const ImU32 color = IM_COL32(a_modify, a_modify, a_modify, a_alpha);
+		const auto size = ImVec2(static_cast<float>(width) * scale_width, static_cast<float>(height) * scale_height);
+
+		draw_element(texture, center, size, angle, color);
+	}
+
+	void ui_renderer::draw_slot(const float anchor_x,
+		const float anchor_y,
+		const float scale_width,
+		const float scale_height,
+		const float offset_x,
+		const float offset_y,
+		const uint32_t a_modify,
+		const uint32_t alpha)
+	{
+		constexpr auto angle = 0.f;
+
+		const auto center                   = ImVec2(anchor_x + offset_x, anchor_y + offset_y);
+		const ImU32 color                   = IM_COL32(a_modify, a_modify, a_modify, alpha);
+		const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::round)];
+		const auto size = ImVec2(static_cast<float>(width) * scale_width, static_cast<float>(height) * scale_height);
 
 		draw_element(texture, center, size, angle, color);
 	}
@@ -394,178 +407,130 @@ namespace ui
 		logger::trace("done initializing animation. return.");
 	}
 
-	void ui_renderer::draw_slots(const float a_x,
-		const float a_y,
-		const std::map<position_type, page_setting*>& a_settings)
+	// starting with same function signature...
+	void ui_renderer::drawAllSlots(const float anchor_x,
+		const float anchor_y,
+		const std::map<position_type, page_setting*>& slotLayoutMap)
 	{
-		// This changes a lot. We have exactly four items to draw at any time,
-		// and to find out what they are, we ask the controller for the four currently-visible
-		// cycle entries.
-		// skip highlighting for first implementation
-		// might need to fill out cycle entry struct with more info;
-		// goal is to make this draw call only have to ask simple questions of one object
+		// Inputs are: loc to draw at
+		// map of Slot -> CycleEntry aka all info about the item to show
+		// map Slot -> slot layout
 
-		// draw settings need to come from the shared layout struct
-		// this is pretty complicated but do not simplify yet; just make it work you doofus
+		// First implementation draws one slot, just to see how.
 
-
-		auto draw_page = mcm::get_draw_page_id();
-		auto elden     = mcm::get_elden_demon_souls();
-		for (auto [position, page_setting] : a_settings)
+		auto slot  = Action::Power;
+		auto entry = equipped_in_slot(slot);
+		for (auto [position, page_setting] : slotLayoutMap)
 		{
 			if (!page_setting)
 			{
 				continue;
 			}
-			const auto* draw_setting = page_setting->draw_setting;
-			draw_slot(a_x,
-				a_y,
-				draw_setting->hud_image_scale_width,
-				draw_setting->hud_image_scale_height,
-				draw_setting->offset_slot_x,
-				draw_setting->offset_slot_y,
-				page_setting->button_press_modify,
-				draw_setting->background_icon_transparency);
-			draw_icon(a_x,
-				a_y,
-				page_setting->draw_setting->icon_scale_width,
-				page_setting->draw_setting->icon_scale_height,
-				draw_setting->offset_slot_x,
-				draw_setting->offset_slot_y,
-				page_setting->icon_type,
-				draw_setting->icon_transparency);
-			if (page_setting->highlight_slot)
+			// This changes a lot. We have exactly four items to draw at any time,
+			// and to find out what they are, we ask the controller for the four currently-visible
+			// cycle entries.
+			// skip highlighting for first implementation
+			// might need to fill out cycle entry struct with more info;
+			// goal is to make this draw call only have to ask simple questions of one object
+
+			// map position to action for now
+			auto slot = Action::Irrelevant;
+			switch (slot)
 			{
-				page_setting->highlight_slot = false;
-				init_animation(animation_type::highlight,
-					a_x,
-					a_y,
-					draw_setting->hud_image_scale_width,
-					draw_setting->hud_image_scale_height,
+				case position_type::top:
+					slot = Action::Power;
+					break;
+				case position_type::bottom:
+					slot = Action::Utility;
+					break;
+				case position_type::left:
+					slot = Action::Left;
+					break;
+				case position_type::right:
+					slow = Action::Right;
+					break;
+				default:
+					continue;
+			}
+			auto entry      = equipped_in_slot(slot);
+			auto entry_kind = entry->kind();
+			auto entry_name = entry->name();
+
+			// this should come from the layout
+			const auto* slot_layout = page_setting->slot_layout;
+			const auto color_mod    = page_setting->button_press_modify;
+			const auto center       = ImVec2(anchor_x + offset_x, anchor_y + offset_y);
+
+			if (slot_layout->background_icon_transparency > 0)
+			{
+				const ImU32 bgcolor =
+					IM_COL32(color_mod, color_mod, color_mod, slot_layout->background_icon_transparency);
+				drawSlotBackground(slot_layout->hud_image_scale_width,
+					slot_layout->hud_image_scale_height,
+					center,
+					bgcolor);
+			}
+
+			// now draw the icon over the background...
+			if (draw_ketting->icon_transparency > 0)
+			{
+				const iconColor = IM_COL32(draw_full, draw_full, draw_full, slot_layout->icon_transparency);
+				drawIcon(slot_layout->icon_scale_width,
+					slot_layout->icon_scale_height,
+					center,
+					iconColor,
+					entry_kind, );
+			}
+
+			// If this item is highlighted, we draw an animation for it.
+			if (entry->highlighted())
+			{
+				const highlightColor = IM_COL32(draw_full, draw_full, draw_full, slot_layout->alpha_slot_animation);
+				initAnimation(animation_type::highlight,
+					slot_layout->hud_image_scale_width,
+					slot_layout->hud_image_scale_height,
+					center,
+					color,
+					slot_layout->alpha_slot_animation,
+					slot_layout->duration_slot_animation);
+				// TODO turn highlight off
+			}
+
+			// Now decide if we should draw the text showing the item's name.
+			if (page_setting->item_name && !entry_name->empty()() > 0)
+			{
+				auto center_text =
+					(page_setting->position == position_type::top || page_setting->position == position_type::bottom);
+				auto deduct_text_x = page_setting->position == position_type::left;
+				auto deduct_text_y = page_setting->position == position_type::bottom;
+				auto add_text_x    = false;
+				auto add_text_y    = page_setting->position == position_type::top;
+				draw_text(draw_setting->width_setting,
+					draw_setting->height_setting,
 					draw_setting->offset_slot_x,
 					draw_setting->offset_slot_y,
-					draw_full,
-					draw_setting->alpha_slot_animation,
-					draw_setting->duration_slot_animation);
+					draw_setting->offset_name_text_x,
+					draw_setting->offset_name_text_y,
+					slot_name,
+					draw_setting->slot_item_name_transparency,
+					draw_setting->slot_item_red,
+					draw_setting->slot_item_green,
+					draw_setting->slot_item_blue,
+					page_setting->item_name_font_size,
+					center_text,
+					deduct_text_x,
+					deduct_text_y,
+					add_text_x,
+					add_text_y);
 			}
 
-			if (page_setting->item_name && !page_setting->slot_settings.empty())
+			// next up: do we have extra text to show on this puppy?
+			std::string slot_text;
+			if (entry->has_count())
 			{
-				auto* slot_setting = page_setting->slot_settings.front();
-				auto slot_name     = "";
-				if (slot_setting && slot_setting->form)
-				{
-					slot_name = page_setting->slot_settings.front()->form->GetName();
-				}
-				else if (slot_setting && slot_setting->actor_value != RE::ActorValue::kNone &&
-						 slot_setting->type == slot_type::consumable &&
-						 util::actor_value_to_base_potion_map_.contains(slot_setting->actor_value))
-				{
-					auto* potion_form =
-						RE::TESForm::LookupByID(util::actor_value_to_base_potion_map_[slot_setting->actor_value]);
-					if (potion_form->Is(RE::FormType::AlchemyItem))
-					{
-						slot_name = potion_form->GetName();
-					}
-				}
-
-				if (slot_name)
-				{
-					auto center_text   = (page_setting->position == position_type::top ||
-                                        page_setting->position == position_type::bottom);
-					auto deduct_text_x = page_setting->position == position_type::left;
-					auto deduct_text_y = page_setting->position == position_type::bottom;
-					auto add_text_x    = false;
-					auto add_text_y    = page_setting->position == position_type::top;
-					draw_text(draw_setting->width_setting,
-						draw_setting->height_setting,
-						draw_setting->offset_slot_x,
-						draw_setting->offset_slot_y,
-						draw_setting->offset_name_text_x,
-						draw_setting->offset_name_text_y,
-						slot_name,
-						draw_setting->slot_item_name_transparency,
-						draw_setting->slot_item_red,
-						draw_setting->slot_item_green,
-						draw_setting->slot_item_blue,
-						page_setting->item_name_font_size,
-						center_text,
-						deduct_text_x,
-						deduct_text_y,
-						add_text_x,
-						add_text_y);
-				}
-			}
-
-			if (auto slot_settings = page_setting->slot_settings; !slot_settings.empty())
-			{
-				const auto first_type = slot_settings.front()->type;
-				std::string slot_text;
-				switch (first_type)
-				{
-					case slot_type::scroll:
-					case slot_type::consumable:
-						if (slot_settings.front()->display_item_count)
-						{
-							slot_text = std::to_string(slot_settings.front()->item_count);
-						}
-						break;
-					case slot_type::shout:
-					case slot_type::power:
-						slot_text = slot_settings.front()->action == enums::action_type::instant ? "I" : "E";
-						break;
-					case slot_type::magic:
-						if ((position == position_type::top && elden) || !elden)
-						{
-							slot_text = slot_settings.front()->action == enums::action_type::instant ? "I" : "E";
-						}
-						else if (draw_page)
-						{
-							slot_text = std::to_string(page_setting->page);
-						}
-						break;
-					case slot_type::weapon:
-					case slot_type::shield:
-					case slot_type::light:
-						if (draw_page)
-						{
-							slot_text = std::to_string(page_setting->page);
-						}
-						break;
-					case slot_type::armor:
-					case slot_type::empty:
-					case slot_type::misc:
-					case slot_type::lantern:
-					case slot_type::mask:
-						//Nothing, for now
-						break;
-				}
-
-				if (draw_page && elden && position == position_type::left && slot_settings.size() == 2)
-				{
-					const auto second_type = slot_settings[1]->type;
-					switch (second_type)
-					{
-						case slot_type::magic:
-						case slot_type::weapon:
-						case slot_type::shield:
-						case slot_type::light:
-							slot_text = std::to_string(page_setting->page);
-							break;
-						case slot_type::scroll:
-						case slot_type::consumable:
-						case slot_type::shout:
-						case slot_type::power:
-						case slot_type::armor:
-						case slot_type::empty:
-						case slot_type::misc:
-						case slot_type::lantern:
-						case slot_type::mask:
-							//Nothing, for now
-							break;
-					}
-				}
-
+				auto count = entry->count();
+				slot_text  = std::to_string(count);
+				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
 					draw_text(draw_setting->width_setting,
@@ -582,9 +547,12 @@ namespace ui
 						page_setting->count_font_size);
 				}
 			}
-		}
+		} // end of loop through front items in the cycles
+
+		// Ammo! how many arrows can we shoot into somebody's knee?
+		// I'll need to understand and then rewrite this.
 		const auto* ammo_handle = handle::ammo_handle::get_singleton();
-		if (auto* current_ammo = ammo_handle->get_current(); current_ammo && mcm::get_elden_demon_souls())
+		if (auto* current_ammo = ammo_handle->get_current(); current_ammo)
 		{
 			draw_slot(a_x,
 				a_y,
@@ -629,8 +597,8 @@ namespace ui
 					mcm::get_alpha_slot_animation(),
 					mcm::get_duration_slot_animation());
 			}
+			draw_animations_frame();
 		}
-		draw_animations_frame();
 	}
 
 	void ui_renderer::draw_key(const float a_x,
@@ -697,6 +665,19 @@ namespace ui
 				mcm::get_toggle_key(),
 				mcm::get_key_transparency());
 		}
+	}
+
+	void ui_renderer::drawIcon(const float scale_width,
+		const float scale_height,
+		const ImVec2 center,
+		const ImU32 color,
+		const EntryKind icon_num)
+	{
+		constexpr auto angle                = 0.f;
+		const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(icon_num)];
+		const auto size = ImVec2(static_cast<float>(width) * scale_width, static_cast<float>(height) * scale_height);
+
+		draw_element(texture, center, size, angle, color);
 	}
 
 	void ui_renderer::draw_icon(const float a_x,
@@ -814,7 +795,7 @@ namespace ui
 			}
 
 			draw_hud(x, y, scale_x, scale_y, alpha);
-			draw_slots(x, y, settings);
+			drawAllSlots(x, y, settings);
 			draw_keys(x, y, settings);
 			if (mcm::get_draw_current_items_text() || mcm::get_draw_current_shout_text())
 			{
@@ -895,11 +876,11 @@ namespace ui
 		{
 			// This implementation is the inverse of the one it replaces.
 			// The one below walks the directory and tries to match located
-			// files with the requested icons in the map. This one walks 
-			// all needed icons and tries to find matching files. 
+			// files with the requested icons in the map. This one walks
+			// all needed icons and tries to find matching files.
 			EntryKind icon       = static_cast<EntryKind>(idx);
 			const auto icon_file = get_icon_file(icon);
-			auto entry = std::filesystem::path(file_path);
+			auto entry           = std::filesystem::path(file_path);
 			entry /= std::string(icon_file);
 
 			if (load_texture_from_file(entry.string().c_str(),
@@ -912,10 +893,9 @@ namespace ui
 					entry.filename().extension().string().c_str(),
 					a_struct[idx].width,
 					a_struct[idx].height);
-					
-					a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
-					a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
 
+				a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
+				a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
 			}
 			else
 			{

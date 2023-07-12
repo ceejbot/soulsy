@@ -52,20 +52,52 @@ namespace ui
 			bool a_deduct_text_y = false,
 			bool a_add_text_x    = false,
 			bool a_add_text_y    = false);
+
 		static void draw_element(ID3D11ShaderResourceView* a_texture,
 			ImVec2 a_center,
 			ImVec2 a_size,
 			float a_angle,
 			ImU32 a_color = IM_COL32_WHITE);
+
 		static void draw_hud(float a_x, float a_y, float a_scale_x, float a_scale_y, uint32_t a_alpha);
-		static void draw_slot(float a_screen_x,
-			float a_screen_y,
-			float a_scale_x,
-			float a_scale_y,
-			float a_offset_x,
-			float a_offset_y,
-			uint32_t a_modify,
-			uint32_t a_alpha);
+
+		// new more compact functions (or so I hope)
+		// mostly I'm just getting my fingerprints on these to understand them.
+		static void drawAllSlots(const float anchor_x,
+			const float anchor_y,
+			const std::map<position_type, page_setting*>& slotLayoutMap);
+		static void drawSlotBackground(const float scale_width,
+			const float scale_height,
+			const ImVec2 center,
+			const ImU32 color);
+		static void drawIcon(const float scale_width,
+			const float scale_height,
+			const ImVec2 center,
+			const ImU32 color,
+			const EntryKind icon_num,
+			const uint32_t alpha);
+		static void initAnimation(animation_type type,
+			const float scale_width,
+			const float scale_height,
+			const ImVec2 center,
+			const ImU32 color,
+			uint32_t alpha,
+			float duration);
+		static void drawKey(const float scale_width,
+			const float scale_height,
+			const ImVec2 center,
+			const ImU32 color,
+			uint32_t alpha, );
+
+		// older...
+		static void draw_slot(const float anchor_x,
+			const float anchor_y,
+			const float scale_width,
+			const float scale_height,
+			const float offset_x,
+			const float offset_y,
+			const uint32_t a_modify,
+			const uint32_t alpha);
 		static void init_animation(animation_type animation_type,
 			float a_screen_x,
 			float a_screen_y,
@@ -76,7 +108,6 @@ namespace ui
 			uint32_t a_modify,
 			uint32_t a_alpha,
 			float a_duration);
-		static void draw_slots(float a_x, float a_y, const std::map<position_type, page_setting*>& a_settings);
 		static void draw_key(float a_x,
 			float a_y,
 			float a_scale_x,

@@ -4,7 +4,7 @@ pub mod layout;
 pub mod settings;
 
 // Everything pulled in here is available for lib.rs to use in the bridge.
-pub use control::{handle_key_event, handle_menu_event};
+pub use control::{equipped_in_slot, handle_key_event, handle_menu_event};
 pub use cycles::{create_cycle_entry, get_icon_file, CycleEntry};
 pub use layout::layout;
 pub use settings::{user_settings, UserSettings}; // hmm, is this for settings? I'm confused...

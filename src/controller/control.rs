@@ -23,6 +23,11 @@ pub fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse {
     CONTROLLER.lock().unwrap().toggle_item(action, *item)
 }
 
+/// Get information about the item equipped in a specific slot.
+pub fn equipped_in_slot(slot: Action) -> Box<CycleEntry> {
+    CONTROLLER.lock().unwrap().equipped_in_slot(slot)
+}
+
 impl From<u32> for Action {
     /// Turn the key code into an enum for easier processing.
     fn from(value: u32) -> Self {
@@ -52,10 +57,10 @@ pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
     // speculative: I think this is how we'll handle tracking equipped thingies
-    _equipped_power: Option<CycleEntry>,
-    _equipped_utility: Option<CycleEntry>,
-    _equipped_left: Option<CycleEntry>,
-    _equipped_right: Option<CycleEntry>,
+    equipped_power: Option<CycleEntry>,
+    equipped_utility: Option<CycleEntry>,
+    equipped_left: Option<CycleEntry>,
+    equipped_right: Option<CycleEntry>,
 }
 
 impl Controller {
@@ -67,6 +72,19 @@ impl Controller {
             cycles,
             ..Default::default()
         }
+    }
+
+    // TODO refs instead of cloning
+    /// Get the item equipped in a specific slot. I'd like to return an option but I can't.
+    pub fn equipped_in_slot(&self, slot: Action) -> Box<CycleEntry> {
+        let candidate = match slot {
+            Action::Power => self.equipped_power.clone().unwrap_or_default(),
+            Action::Utility => self.equipped_utility.clone().unwrap_or_default(),
+            Action::Left => self.equipped_left.clone().unwrap_or_default(),
+            Action::Right => self.equipped_right.clone().unwrap_or_default(),
+            _ => CycleEntry::default(),
+        };
+        Box::new(candidate)
     }
 
     /// Handle a key-press event that the event system decided we need to know about.
