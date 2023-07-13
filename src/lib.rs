@@ -216,6 +216,9 @@ pub mod plugin {
     }
 
     extern "Rust" {
+        /// Trigger the rust side to start logging.
+        fn initialize_rust_logging(logdir: &CxxString);
+
         /// Give access to the settings to the C++ side.
         type UserSettings;
         fn equip_delay(self: &UserSettings) -> u32;
@@ -283,10 +286,6 @@ pub mod plugin {
         #[namespace = "RE"]
         fn IsUp(self: &ButtonEvent) -> bool;
 
-        // This is from SKSE. Get the directory where it wants log output.
-        #[namespace = "logger"]
-        fn log_directory() -> &'static CxxString;
-
         // Selected helpers.
         include!("helpers.h");
         /// Display a debug notification on the screen. Used as hacky action confirmation.
@@ -301,26 +300,5 @@ pub mod plugin {
         /// Show or hide the HUD widget.
         #[namespace = "helpers"]
         fn toggle_hud_visibility();
-    }
-}
-
-// We don't have much logging setup code, so just shove it in here.
-use std::fs::File;
-use std::path::PathBuf;
-
-use simplelog::*;
-
-pub fn initialize_rust_logging() {
-    // TODO: read from config
-    let level = LevelFilter::Info;
-
-    let logdir = plugin::log_directory().to_string();
-    let mut pathbuf = PathBuf::from(logdir);
-    pathbuf.set_file_name("SoulsyHUD_rust.log");
-
-    if let Ok(logfile) = File::create(pathbuf) {
-        if let Err(_e) = WriteLogger::init(level, Config::default(), logfile) {
-            // Welp, we failed and I have nowhere to write the darn error. Ha ha.
-        }
     }
 }

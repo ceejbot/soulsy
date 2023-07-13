@@ -40,6 +40,9 @@ void init_logger()
 		spdlog::set_pattern("[%H:%M:%S.%f][%s(%#)][%!][%l] %v"s);
 
 		logger::info("{} v{}"sv, Version::PROJECT, Version::NAME);
+
+		initialize_rust_logging(path->string());
+
 	}
 	catch (const std::exception& e)
 	{

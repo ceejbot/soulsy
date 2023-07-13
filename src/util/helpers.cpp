@@ -3,13 +3,14 @@
 #include "constant.h"
 #include "custom_setting.h"
 #include "enums.h"
-#include "gear.h"
 #include "equippable.h"
+#include "gear.h"
 #include "player.h"
 #include "string_util.h"
-#include "user_settings.h"
 #include "ui_renderer.h"
+#include "user_settings.h"
 
+#include "lib.rs.h"
 namespace helpers
 {
 	using string_util = util::string_util;
@@ -17,20 +18,14 @@ namespace helpers
 	void notify_player(const std::string& message)
 	{
 		auto* msg = message.c_str();
-		 RE::DebugNotification(msg);
+		RE::DebugNotification(msg);
 	}
 
-	void set_alpha_transition(const bool shift, const float target) {
-		ui::ui_renderer::set_fade(shift, target);
-	}
+	void set_alpha_transition(const bool shift, const float target) { ui::ui_renderer::set_fade(shift, target); }
 
-    bool get_is_transitioning() {
-		return ui::ui_renderer::get_fade();
-	}
+	bool get_is_transitioning() { return ui::ui_renderer::get_fade(); }
 
-	void toggle_hud_visibility() {
-		ui::ui_renderer::toggle_show_ui();
-	}
+	void toggle_hud_visibility() { ui::ui_renderer::toggle_show_ui(); }
 
 	data_helper* get_extra_data(RE::TESForm*& form)
 	{
@@ -49,7 +44,8 @@ namespace helpers
 	{
 		std::string form_string;
 		logger::trace("entering get_form_spec()"sv);
-		if (!form) {
+		if (!form)
+		{
 			return form_string;
 		}
 

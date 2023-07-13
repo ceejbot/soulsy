@@ -2,7 +2,9 @@
 
 #include "enums.h"
 
-// This namespace must never use a Rust type.
+// This namespace must never use a type from the crate,
+// but it can use bridge types.
+#include "rust/cxx.h"
 
 namespace helpers
 {
@@ -52,5 +54,4 @@ namespace helpers
 	void set_alpha_transition(const bool shift, const float target);
     bool get_is_transitioning();
 	void toggle_hud_visibility();
-
 }

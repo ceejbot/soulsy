@@ -217,7 +217,8 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/plugin
     ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer
     ${CMAKE_CURRENT_SOURCE_DIR}/src/util
-    ${CARGO_TARGET_DIR}/cxxbridge/soulsy/src/
+    ${CARGO_TARGET_DIR}/cxxbridge/soulsy/src
+    ${CARGO_TARGET_DIR}/cxxbridge
     ${SIMPLEINI_INCLUDE_DIRS}
 )
 

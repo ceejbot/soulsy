@@ -70,6 +70,12 @@ tag VERSION:
     git tag "v{{VERSION}}"
     echo "Release tagged for version v{{VERSION}}"
 
+# Rebuild the archive for testing. What I wouldn't give for rm -f
+@rebuild: clean-win
+    cargo build --release
+    cmake --build --preset vs2022-windows --config Release
+    just archive
+
 # Build a full mod archive
 archive:
     #!{{shbang}}
@@ -110,3 +116,23 @@ archive:
         sevenz_rust::compress_to_path("archive/", "archive.7z").expect("7zip compression failed");
         println!("Archive created! `archive.7z` ready to be uploaded or tested.")
     }
+
+# The traditional
+@clean:
+    rm archive.7z
+    rm -rf archive/
+
+# A little niche, but still handy
+spotless: clean
+    cargo clean
+    rm -rf build
+
+# Powershell vrsion of the timeless classic.
+@clean-win:
+    if (test-path archive.7z) { remove-item archive.7z }
+    if (test-path archive) { rm archive -r -force }
+
+# powershell version
+@spotless-win: clean-win
+    cargo clean
+    rm -rf build
