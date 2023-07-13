@@ -3,10 +3,10 @@
 #include "constant.h"
 #include "file_setting.h"
 #include "handle/ammo_handle.h"
+#include "helpers.h"
 #include "image_path.h"
 #include "key_path.h"
 #include "keycodes.h"
-#include "helpers.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4702)
@@ -373,9 +373,9 @@ namespace ui
 
 	void ui_renderer::drawAllSlots()
 	{
-		const auto top_layout   = layout();
-		const auto settings = user_settings();
-		const auto anchor       = top_layout.anchor;
+		const auto top_layout = layout();
+		const auto settings   = user_settings();
+		const auto anchor     = top_layout.anchor;
 
 		for (auto slot_layout : top_layout.layouts)
 		{
@@ -383,17 +383,22 @@ namespace ui
 			if (slot_layout.element == HudElement::Ammo)
 			{
 				// We're going to fake up an entry. We *should* track this.
-				const std::string        tmpname = "ammo";
-				const auto* ammo_handle  = handle::ammo_handle::get_singleton();
-				auto* current_ammo = ammo_handle->get_current();
-				const auto formspec = helpers::get_form_spec(current_ammo->form);
+				const std::string tmpname = "ammo";
+				const auto* ammo_handle   = handle::ammo_handle::get_singleton();
+				auto* current_ammo        = ammo_handle->get_current();
+				const auto formspec       = helpers::get_form_spec(current_ammo->form);
 
-				entry = create_cycle_entry(EntryKind::Arrow, false, true, current_ammo->item_count, std::to_string(0), formspec);
+				entry = create_cycle_entry(EntryKind::Arrow,
+					false,
+					true,
+					current_ammo->item_count,
+					std::to_string(0),
+					formspec);
 			}
-			
-			const auto entry_kind = entry->kind();
-			const auto entry_name = entry->name();
-			const auto hotkey     = settings->hotkey_for(slot_layout.element);
+
+			const auto entry_kind  = entry->kind();
+			const auto entry_name  = entry->name();
+			const auto hotkey      = settings->hotkey_for(slot_layout.element);
 			const auto slot_center = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
 
 			if (slot_layout.bg_color.a > 0)
@@ -491,7 +496,7 @@ namespace ui
 				}
 
 				const auto [texture, width, height] = get_key_icon(hotkey);
-				const auto size = ImVec2(static_cast<float>(width) * slot_layout.hotkey_scale,
+				const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.hotkey_scale,
                     static_cast<float>(height) * slot_layout.hotkey_scale);
 				drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_color);
 			}
@@ -519,7 +524,7 @@ namespace ui
 			return;
 		}
 
-		const auto settings = user_settings();
+		const auto settings           = user_settings();
 		const auto hide_out_of_combat = settings->fade();
 
 		fade_in = hide_out_of_combat ? RE::PlayerCharacter::GetSingleton()->IsInCombat() : true;
@@ -559,7 +564,7 @@ namespace ui
 			{
 				// I'm not sure how long our ticks are, but I want the fade delay
 				// to be expressed in milliseconds in the UI. Let's guess a tick == 10ms.
-				fade_out_timer = static_cast<float>(settings->fade_delay()) / 100.0f; 
+				fade_out_timer = static_cast<float>(settings->fade_delay()) / 100.0f;
 				fade += 0.01f;
 				if (fade > 1.0f)
 				{
@@ -601,26 +606,30 @@ namespace ui
 			// all needed icons and tries to find matching files.
 			EntryKind icon       = static_cast<EntryKind>(idx);
 			const auto icon_file = get_icon_file(icon);
-			auto entry           = std::filesystem::path(file_path);
-			entry /= std::string(icon_file);
+			auto entrypath       = std::filesystem::path(file_path);
+			entrypath /= std::string(icon_file);
 
-			if (load_texture_from_file(entry.string().c_str(),
-					&a_struct[idx].texture,
-					a_struct[idx].width,
-					a_struct[idx].height))
+			std::error_code ec;
+			if (std::filesystem::exists(entrypath, ec))
 			{
-				logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
-					entry.filename().string().c_str(),
-					entry.filename().extension().string().c_str(),
-					a_struct[idx].width,
-					a_struct[idx].height);
+				if (load_texture_from_file(entrypath.string().c_str(),
+						&a_struct[idx].texture,
+						a_struct[idx].width,
+						a_struct[idx].height))
+				{
+					logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
+						entrypath.filename().string().c_str(),
+						entrypath.filename().extension().string().c_str(),
+						a_struct[idx].width,
+						a_struct[idx].height);
 
-				a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
-				a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
+					a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
+					a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
+				}
 			}
 			else
 			{
-				logger::error("failed to load texture {}"sv, entry.filename().string().c_str());
+				logger::error("failed to load {}"sv, entrypath.filename().string().c_str());
 			}
 		}
 	}
@@ -694,7 +703,7 @@ namespace ui
 	image ui_renderer::get_key_icon(const uint32_t a_key)
 	{
 		const auto settings = user_settings();
-		auto return_image = default_key_struct[static_cast<int32_t>(default_keys::key)];
+		auto return_image   = default_key_struct[static_cast<int32_t>(default_keys::key)];
 		// todo rework this logic at some point, no rush
 		if (a_key >= keycodes::k_gamepad_offset)
 		{
@@ -731,8 +740,8 @@ namespace ui
 		fade    = a_value;
 		if (a_in)
 		{
-			float delay =  static_cast<float>(user_settings()->fade_delay());
-			fade_out_timer = delay / 10.0f; // assuming 10ms per tick, which is an unverified assumption
+			float delay    = static_cast<float>(user_settings()->fade_delay());
+			fade_out_timer = delay / 10.0f;  // assuming 10ms per tick, which is an unverified assumption
 		}
 	}
 

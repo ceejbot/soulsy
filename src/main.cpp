@@ -61,8 +61,11 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 					ui::ui_renderer::get_resolution_scale_height());
 
 				ui::ui_renderer::load_all_images();
+				logger::info("about to register sinks"sv);
 				register_all_sinks();
+				logger::info("about to install all hooks"sv);
 				hooks::install_hooks();
+				logger::info("about to register papyrus functions");
 				papyrus::register_papyrus_functions();
 				logger::info("done with data loaded"sv);
 			}

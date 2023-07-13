@@ -1,17 +1,17 @@
 ScriptName SoulsyHUD_MCM Extends MCM_ConfigBase
 
-; bool property uPowerCycleKey Auto
-; bool property uUtilityCycleKey Auto
-; bool property uLeftCycleKey Auto
-; bool property uRightCycleKey Auto
-; bool property uUtilityActivateKey Auto
-; bool property uRefreshLayoutKey Auto
-; bool property uShowHideKey Auto
-; bool property uMaxCycleLength Auto
-; bool property uEquipDelay Auto
-; bool property bFade Auto
-; bool property uFadeDelay Auto
-; bool property uControllerKind Auto
+int property uPowerCycleKey = 3 Auto
+int property uUtilityCycleKey = 6 Auto
+int property uLeftCycleKey = 5 Auto
+int property uRightCycleKey = 7 Auto
+int property uUtilityActivateKey = 4 Auto
+int property uRefreshLayoutKey = 2 Auto
+int property uShowHideKey = 8 Auto
+int property uMaxCycleLength = 10 Auto
+int property uEquipDelay = 500 Auto
+bool property bFade Auto
+int property uFadeDelay = 2000 Auto
+int property uControllerKind = 0 Auto
 
 Event OnConfigClose() native
 string function GetResolutionWidth() native
@@ -26,17 +26,17 @@ Event OnSettingChange(String changedId)
 EndEvent
 
 Event OnConfigOpen()
-    ; uPowerCycleKey = GetModSettingInt("uPowerCycleKey:Controls")
-    ; uUtilityCycleKey = GetModSettingInt("uUtilityCycleKey:Controls")
-    ; uLeftCycleKey = GetModSettingInt("uLeftCycleKey:Controls")
-    ; uRightCycleKey = GetModSettingInt("uRightCycleKey:Controls")
-    ; uUtilityActivateKey = GetModSettingInt("uUtilityActivateKey:Controls")
-    ; uRefreshLayoutKey = GetModSettingInt("uRefreshLayoutKey:Controls")
-    ; uShowHideKey = GetModSettingInt("uShowHideKey:Controls")
+    uPowerCycleKey = GetModSettingInt("uPowerCycleKey:Controls")
+    uUtilityCycleKey = GetModSettingInt("uUtilityCycleKey:Controls")
+    uLeftCycleKey = GetModSettingInt("uLeftCycleKey:Controls")
+    uRightCycleKey = GetModSettingInt("uRightCycleKey:Controls")
+    uUtilityActivateKey = GetModSettingInt("uUtilityActivateKey:Controls")
+    uRefreshLayoutKey = GetModSettingInt("uRefreshLayoutKey:Controls")
+    uShowHideKey = GetModSettingInt("uShowHideKey:Controls")
     
-    ; uMaxCycleLength = GetModSettingInt("uMaxCycleLength:Options")
-    ; uEquipDelay = GetModSettingInt("uEquipDelay:Controls")
-    ; bFade = GetModSettingBool("bFade:Options")
-    ; uFadeDelay = GetModSettingInt("fFadeDelay:Options")
-    ; uControllerKind = GetModSettingInt("uControllerKind::Options")
+    uMaxCycleLength = GetModSettingInt("uMaxCycleLength:Options")
+    uEquipDelay = GetModSettingInt("uEquipDelay:Controls")
+    bFade = GetModSettingBool("bFade:Options")
+    uFadeDelay = GetModSettingInt("fFadeDelay:Options")
+    uControllerKind = GetModSettingInt("uControllerKind::Options")
 EndEvent

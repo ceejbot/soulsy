@@ -48,14 +48,20 @@ namespace helpers
 	std::string get_form_spec(RE::TESForm*& form)
 	{
 		std::string form_string;
+		logger::trace("entering get_form_spec()"sv);
+		if (!form) {
+			return form_string;
+		}
 
 		if (form->IsDynamicForm())
 		{
+			logger::trace("it is dynamic"sv);
 			form_string =
 				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, string_util::int_to_hex(form->GetFormID()));
 		}
 		else
 		{
+			logger::trace("doing file search for form source"sv);
 			//it is not, search for the file it is from
 			auto* source_file = form->sourceFiles.array->front()->fileName;
 			auto local_form   = form->GetLocalFormID();

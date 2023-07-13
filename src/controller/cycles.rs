@@ -378,7 +378,7 @@ impl EntryKind {
             EntryKind::PotionShockResist => "potion_shock_resist.svg".to_string(),
             EntryKind::PotionStamina => "potion_stamina.svg".to_string(),
             EntryKind::Power => "power.svg".to_string(),
-            EntryKind::QuarterStaff => "quarterStaff.svg".to_string(),
+            EntryKind::QuarterStaff => "quarterstaff.svg".to_string(),
             EntryKind::Rapier => "rapier.svg".to_string(),
             EntryKind::Restoration => "restoration.svg".to_string(),
             EntryKind::Scroll => "scroll.svg".to_string(),
