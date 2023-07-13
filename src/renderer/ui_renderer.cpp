@@ -6,6 +6,7 @@
 #include "image_path.h"
 #include "key_path.h"
 #include "keycodes.h"
+#include "helpers.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4702)
@@ -352,16 +353,16 @@ namespace ui
 		const ImVec2 center,
 		const ImVec2 size,
 		const float angle,
-		const Color color, )
+		const Color color)
 	{
 		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a);
 
 		const float cos_a   = cosf(angle);
 		const float sin_a   = sinf(angle);
-		const ImVec2 pos[4] = { a_center + ImRotate(ImVec2(-a_size.x * 0.5f, -a_size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(+size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(+size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(-size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a)
+		const ImVec2 pos[4] = { center + ImRotate(ImVec2(-size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+			center + ImRotate(ImVec2(+size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+			center + ImRotate(ImVec2(+size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a),
+			center + ImRotate(ImVec2(-size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a)
 
 		};
 		constexpr ImVec2 uvs[4] = { ImVec2(0.0f, 0.0f), ImVec2(1.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec2(0.0f, 1.0f) };
@@ -372,32 +373,30 @@ namespace ui
 
 	void ui_renderer::drawAllSlots()
 	{
-		const layout   = layout();
-		const settings = user_settings();
+		const auto top_layout   = layout();
+		const auto settings = user_settings();
+		const auto anchor       = top_layout.anchor;
 
-		for (auto slot : layout.layouts)
+		for (auto slot_layout : top_layout.layouts)
 		{
-			rust::Box<CycleEntry> entry;
-			if (slot.element == HudElement::Ammo)
+			rust::Box<CycleEntry> entry = equipped_in_slot(slot_layout.element);
+			if (slot_layout.element == HudElement::Ammo)
 			{
 				// We're going to fake up an entry. We *should* track this.
+				const std::string        tmpname = "ammo";
 				const auto* ammo_handle  = handle::ammo_handle::get_singleton();
-				const auto* current_ammo = ammo_handle->get_current();
-				entry = create_cycle_entry(EnryKind::Arrow, false, count, count, std::to_string(count), std::to_string("");
-			}
-			else
-			{
-				entry = equipped_in_slot(slot.element);
-			}
+				auto* current_ammo = ammo_handle->get_current();
+				const auto formspec = helpers::get_form_spec(current_ammo->form);
 
+				entry = create_cycle_entry(EntryKind::Arrow, false, true, current_ammo->item_count, std::to_string(0), formspec);
+			}
+			
 			const auto entry_kind = entry->kind();
 			const auto entry_name = entry->name();
-			const auto hotkey     = settings.hotkey_for(slot.element);
+			const auto hotkey     = settings->hotkey_for(slot_layout.element);
+			const auto slot_center = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
 
-			const auto center      = layout.anchor.offset_by(slot_layout.offset);
-			const auto slot_center = ImVec2(center.x, center.y);
-
-			if (slot_layout.bg_color.alpha > 0)
+			if (slot_layout.bg_color.a > 0)
 			{
 				const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::round)];
 				const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.bg_scale,
@@ -406,7 +405,7 @@ namespace ui
 			}
 
 			// now draw the icon over the background...
-			if (slot_layout.icon_color.alpha > 0)
+			if (slot_layout.icon_color.a > 0)
 			{
 				const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(entry_kind)];
 				const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.icon_scale,
@@ -426,21 +425,22 @@ namespace ui
 					slot_layout.offset.x,
 					slot_layout.offset.y,
 					draw_full,
-					layout.animation_alpha,
-					layout.animation_duration);
+					top_layout.animation_alpha,
+					top_layout.animation_duration);
 				// TODO turn highlight off on the entry
 			}
 
 			// Now decide if we should draw the text showing the item's name.
-			if (slot_layout.item_name.color.a > 0 && !entry_name.empty())
+			if (slot_layout.name_color.a > 0 && !entry_name.empty())
 			{
 				auto name = std::string(entry_name).c_str();
 				// TODO this should be an alignment setting on the layout
-				auto center_text = (slot == Action::Power || slot == Action::Utility);
+				auto center_text =
+					(slot_layout.element == HudElement::Power || slot_layout.element == HudElement::Utility);
 
 				// TODO simplify this signature after old code is gone
-				draw_text(slot_layout.dimensions.x,
-					slot_layout.dimensions.y,
+				draw_text(slot_layout.size.x,
+					slot_layout.size.y,
 					slot_layout.offset.x,
 					slot_layout.offset.y,
 					0,
@@ -451,7 +451,7 @@ namespace ui
 					slot_layout.name_color.g,
 					slot_layout.name_color.b,
 					slot_layout.name_font_size,
-					center_text, );
+					center_text);
 			}
 
 			// next up: do we have extra text to show on this puppy?
@@ -462,8 +462,8 @@ namespace ui
 				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
-					draw_text(slot_layout.dimensions.x,
-						slot_layout.dimensions.y,
+					draw_text(slot_layout.size.x,
+						slot_layout.size.y,
 						slot_layout.offset.x,
 						slot_layout.offset.y,
 						0,
@@ -473,26 +473,26 @@ namespace ui
 						slot_layout.count_color.r,
 						slot_layout.count_color.g,
 						slot_layout.count_color.b,
-						slot_layout.count_font_size;
+						slot_layout.count_font_size);
 				}
 			}
 
-			if (entry_kind != EnryKind::Arrow && slot_layout.hotkey_color.a > 0)
+			if (entry_kind != EntryKind::Arrow && slot_layout.hotkey_color.a > 0)
 			{
-				const auto hotkey_center = center.offset_by(slot_layout.hotkey_offset);
-				const auto hk_im_center  = ImVec2(hotkey_center.x, hotkey_center.y);
+				const auto hk_im_center =
+					ImVec2(slot_center.x + slot_layout.hotkey_offset.x, slot_center.y + slot_layout.hotkey_offset.y);
 
 				if (slot_layout.hotkey_bg_color.a > 0)
 				{
 					const auto [texture, width, height] = image_struct[static_cast<uint32_t>(image_type::key)];
-					const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.hotkeyscale,
-                        static_cast<float>(height) * slot_layout.hotkeyscale);
+					const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.hotkey_scale,
+                        static_cast<float>(height) * slot_layout.hotkey_scale);
 					drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_bg_color);
 				}
 
 				const auto [texture, width, height] = get_key_icon(hotkey);
-				const auto size =
-					ImVec2(static_cast<float>(width) * hotkey_scale, static_cast<float>(height) * hotkey_scale);
+				const auto size = ImVec2(static_cast<float>(width) * slot_layout.hotkey_scale,
+                    static_cast<float>(height) * slot_layout.hotkey_scale);
 				drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_color);
 			}
 		}
@@ -520,7 +520,7 @@ namespace ui
 		}
 
 		const auto settings = user_settings();
-		const auto hide_out_of_combat = settings.fade();
+		const auto hide_out_of_combat = settings->fade();
 
 		fade_in = hide_out_of_combat ? RE::PlayerCharacter::GetSingleton()->IsInCombat() : true;
 
@@ -536,16 +536,18 @@ namespace ui
 
 		ImGui::Begin(hud_name, nullptr, window_flag);
 
-		const auto* layout = layout();
+		const HudLayout hudl = layout();
+		const auto anchor    = hudl.anchor;
+		const auto hudsize   = hudl.size;
 
 		// Draw the HUD background if requested.
-		if (layout.bg_color.a > 0)
+		if (hudl.bg_color.a > 0)
 		{
 			constexpr auto angle                = 0.f;
 			const auto center                   = ImVec2(anchor.x, anchor.y);
 			const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::hud)];
-			const auto size                     = ImVec2(size.x, size.y);
-			drawElement(texture, center, size, angle, color);
+			const auto size                     = ImVec2(hudsize.x, hudsize.y);
+			drawElement(texture, center, size, angle, hudl.bg_color);
 		}
 		drawAllSlots();
 
@@ -691,11 +693,12 @@ namespace ui
 
 	image ui_renderer::get_key_icon(const uint32_t a_key)
 	{
+		const auto settings = user_settings();
 		auto return_image = default_key_struct[static_cast<int32_t>(default_keys::key)];
 		// todo rework this logic at some point, no rush
 		if (a_key >= keycodes::k_gamepad_offset)
 		{
-			if (settings().controller() == static_cast<uint32_t>(controller_set::playstation))
+			if (settings->controller_kind() == static_cast<uint32_t>(controller_set::playstation))
 			{
 				return_image = ps_key_struct[a_key];
 			}
@@ -728,7 +731,8 @@ namespace ui
 		fade    = a_value;
 		if (a_in)
 		{
-			fade_out_timer = user_settings()->fade_delay();
+			float delay =  static_cast<float>(user_settings()->fade_delay());
+			fade_out_timer = delay / 10.0f; // assuming 10ms per tick, which is an unverified assumption
 		}
 	}
 

@@ -8,11 +8,11 @@
 
 // Forward declarations of the types we're getting from Rust.
 enum class EntryKind : ::std::uint8_t;
-class HudLayout;
-class SlotLayout;
-class Point;
-class Color;
-class Action;
+enum class Action : ::std::uint8_t;
+struct HudLayout;
+struct SlotLayout;
+struct Point;
+struct Color;
 
 namespace ui
 {

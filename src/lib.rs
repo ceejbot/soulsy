@@ -227,6 +227,7 @@ pub mod plugin {
         fn is_cycle_button(self: &UserSettings, key: u32) -> bool;
         fn maxlen(self: &UserSettings) -> u32;
         fn hotkey_for(self: &UserSettings, action: HudElement) -> u32;
+        fn controller_kind(self: &UserSettings) -> u32;
 
         /// Managed access to the settings object, so we can lazy-load if necessary.
         fn user_settings() -> Box<UserSettings>;
@@ -234,8 +235,6 @@ pub mod plugin {
         fn refresh_user_settings();
         /// Fetch a read-only copy of our current layout();
         fn layout() -> HudLayout;
-        /// Offset convenience, lest I type it 500 times
-        fn offset_by(self: &Point, offset: Point) -> Point;
         /// Make a color
         fn create_color(r: u8, g: u8, b: u8, a: u8) -> Color;
 
