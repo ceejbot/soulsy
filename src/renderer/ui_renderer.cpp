@@ -740,7 +740,7 @@ namespace ui
 
 	void ui_renderer::load_font()
 	{
-		std::string path = R"(Data\SKSE\Plugins\resources\font\)" + file_setting::get_font_file_name();
+		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + file_setting::get_font_file_name();
 		auto file_path   = std::filesystem::path(path);
 		logger::trace("Need to load font {} from file {}"sv, file_setting::get_font_load(), path);
 		tried_font_load = true;

@@ -11,6 +11,7 @@ help:
     rustup install nightly
     cargo install nextest
     cargo install tomato
+    cargo install rustscript
 
 # Run initial cmake step.
 setup:
@@ -66,3 +67,38 @@ tag VERSION:
     git commit Cargo.toml Cargo.lock -m "v{{VERSION}}"
     git tag "v{{VERSION}}"
     echo "Release tagged for version v{{VERSION}}"
+
+# Build a full mod archive
+archive:
+    #!/usr/bin/env rust-script
+    //! I would write this in bash, but I cannot do that from pwsh.
+    //! So I inflict this on the world instead.
+    //!
+    //! ```cargo
+    //! [dependencies]
+    //! fs_extra="1.3.0"
+    //! sevenz-rust={version="0.4.3", features=["compress"]}
+    //! ```
+    fn main() {
+        if std::path::Path::new("archive").exists() {
+            println!("Existing archive directory found. Bailing.");
+            std::process::exit(1);
+        }
+        let options = fs_extra::dir::CopyOptions::new();
+
+        std::fs::create_dir_all("archive/SKSE/plugins/resources").expect("couldn't create archive directory");
+        // recursive copy into a deeper location
+        fs_extra::dir::copy("resources", "archive/SKSE/plugins", &options).expect("fail");
+        std::fs::rename("archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml", 
+            "archive/SKSE/plugins/SoulsyHUD_Layout.toml")
+            .expect("don't make lemonade");
+
+        // recursive copy stripping off the first path segment
+        fs_extra::copy_items(vec!["plugin"], "archive", &options).expect("make life take the lemons back");
+
+        fs::copy("build/Release/SoulsyHUD.dll", "archive/SKSE/plugins/SoulsyHUD.dll").expect("couldn't copy DLL");
+        fs::copy("build/Release/SoulsyHUD.pdb", "archive/SKSE/plugins/SoulsyHUD.pdb").expect("couldn't copy PDB");
+
+        sevenz_rust::compress_to_path("archive/", "archive.7z").expect("7zip compression failed");
+        println!("Archive created! `archive.7z` ready to be uploaded or tested.")
+    }

@@ -2,7 +2,7 @@
 
 namespace ui
 {
-	static std::string key_directory = R"(.\Data\SKSE\Plugins\resources\keys)";
+	static std::string key_directory = R"(.\Data\SKSE\Plugins\resources\buttons)";
 
 	enum class default_keys : uint32_t
 	{

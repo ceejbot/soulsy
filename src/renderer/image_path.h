@@ -6,8 +6,8 @@ namespace ui
 	constexpr auto draw_full = 255;
 
 	static std::string icon_directory                = R"(.\Data\SKSE\Plugins\resources\icons)";
-	static std::string img_directory                 = R"(.\Data\SKSE\Plugins\resources\img)";
-	static std::string highlight_animation_directory = R"(.\Data\SKSE\Plugins\resources\animation\highlight)";
+	static std::string img_directory                 = R"(.\Data\SKSE\Plugins\resources\backgrounds)";
+	static std::string highlight_animation_directory = R"(.\Data\SKSE\Plugins\resources\animations\highlight)";
 
 	enum class image_type
 	{
@@ -18,8 +18,8 @@ namespace ui
 	};
 
 	inline static std::map<std::string, image_type> image_type_name_map = {
-		{ R"(hud.svg)", image_type::hud },
-		{ R"(round.svg)", image_type::round },
-		{ R"(key.svg)", image_type::key }
+		{ R"(hud_bg.svg)", image_type::hud },
+		{ R"(slot_bg.svg)", image_type::round },
+		{ R"(key_bg.svg)", image_type::key }
 	};
 }
