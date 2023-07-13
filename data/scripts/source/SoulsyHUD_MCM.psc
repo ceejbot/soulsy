@@ -38,6 +38,6 @@ Event OnConfigOpen()
     uMaxCycleLength = GetModSettingInt("uMaxCycleLength:Options")
     uEquipDelay = GetModSettingInt("uEquipDelay:Controls")
     bFade = GetModSettingBool("bFade:Options")
-    uFadeDelay = GetModSettingInt("fFadeDelay:Options")
+    uFadeDelay = GetModSettingInt("uFadeDelay:Options")
     uControllerKind = GetModSettingInt("uControllerKind::Options")
 EndEvent
