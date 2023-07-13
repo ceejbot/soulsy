@@ -36,7 +36,7 @@ namespace papyrus
 
 	void on_config_close(RE::TESQuest*)
 	{
-		logger::info("on config close"sv);
+		logger::info("on_config_close() start"sv);
 		rust::Box<UserSettings> old_settings = user_settings();
 		refresh_user_settings();
 		rust::Box<UserSettings> new_settings = user_settings();
@@ -49,7 +49,7 @@ namespace papyrus
 		// force a redraw if the settings changed
 		ui::ui_renderer::set_fade(true, 1.f);
 
-		logger::debug("on config close done. return."sv);
+		logger::debug("on_config_close() done"sv);
 	}
 
 	RE::BSFixedString get_resolution_width(RE::TESQuest*)

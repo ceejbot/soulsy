@@ -76,6 +76,7 @@ Ceej's bringup to-do list:
 - [ ] Inform rust about inventory changes. aka call to rust from the inventory hooks. Related: validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
 - [ ] Wire up the equip-item functions.
 - [ ] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
+- [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
 - [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
 - [x] Figure out how to compile papyrus scripts. Answer: PCA.
 - [x] Edit the `.esp`` if necessary. Check it in.

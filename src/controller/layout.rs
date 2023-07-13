@@ -3,6 +3,8 @@
 //! toml; the C++ side uses the data in layout. The majority of the implementation
 //! is filing in defaults.
 
+use std::fs;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
@@ -26,9 +28,25 @@ pub fn layout() -> HudLayout {
 impl HudLayout {
     /// Read a settings object from a toml file.
     pub fn read_from_file() -> Result<Self> {
-        let buf = std::fs::read_to_string(PathBuf::from(LAYOUT_PATH))?;
-        let layout = toml::from_str::<HudLayout>(&buf)?;
-        Ok(layout)
+        let path = std::path::Path::new(LAYOUT_PATH);
+        if !path.exists() {
+            // No file? We write out defaults.
+            let layout = HudLayout::default();
+            let buf = toml::to_string(&layout)?;
+            let mut fp = fs::File::create(path)?;
+            write!(fp, "{buf}")?;
+            Ok(HudLayout::default())
+        } else if let Ok(buf) = fs::read_to_string(PathBuf::from(LAYOUT_PATH)) {
+            let layout = toml::from_str::<HudLayout>(&buf)?;
+            Ok(layout)
+        } else {
+            // We are *not* overwriting a bad TOML file, but we are logging it.
+            log::warn!(
+                "unable to parse the toml in {}! falling back to defaults",
+                LAYOUT_PATH
+            );
+            Ok(HudLayout::default())
+        }
     }
 
     /// Refresh the layout from the file, to take an out-of-band update and apply it in-game.
@@ -104,10 +122,6 @@ impl Default for SlotLayout {
             name_color: Color::default(),
         }
     }
-}
-
-pub fn create_color(r: u8, g: u8, b: u8, a: u8) -> Color {
-    Color { r, g, b, a }
 }
 
 impl Default for Color {

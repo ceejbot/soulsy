@@ -73,11 +73,11 @@ impl Default for UserSettings {
             activate: 4,
             refresh_layout: 8,
             showhide: 2,
-            maxlen: 10, // this not a key code but an int
+            maxlen: 10,       // this not a key code but an int
             equip_delay: 500, // in milliseconds
             fade: true,
-            fade_delay: 1000, // in milliseconds
-            controller_kind: 0 // PC
+            fade_delay: 1000,   // in milliseconds
+            controller_kind: 0, // PC
         }
     }
 }
@@ -124,15 +124,31 @@ impl UserSettings {
         } else {
             &empty
         };
-        self.maxlen = clamp(read_int_from(options, "uMaxCycleLength", self.maxlen), 2, 15);
-        self.equip_delay = clamp(read_int_from(options, "uEquipDelay", self.equip_delay), 0, 2500);
-        self.fade_delay = clamp(read_int_from(options, "uFadeDelay", self.fade_delay), 0, 10000);
+        self.maxlen = clamp(
+            read_int_from(options, "uMaxCycleLength", self.maxlen),
+            2,
+            15,
+        );
+        self.equip_delay = clamp(
+            read_int_from(options, "uEquipDelay", self.equip_delay),
+            0,
+            2500,
+        );
+        self.fade_delay = clamp(
+            read_int_from(options, "uFadeDelay", self.fade_delay),
+            0,
+            10000,
+        );
         self.fade = if let Some(str_val) = options.get("bFade") {
             str_val != "0"
         } else {
             self.fade
         };
-        self.controller_kind = clamp(read_int_from(options, "uControllerKind", self.controller_kind), 0, 2);
+        self.controller_kind = clamp(
+            read_int_from(options, "uControllerKind", self.controller_kind),
+            0,
+            2,
+        );
 
         Ok(())
     }
@@ -148,7 +164,7 @@ impl UserSettings {
             HudElement::Left => self.left,
             HudElement::Right => self.right,
             HudElement::Ammo => self.activate, // objectively wrong, but ignored
-            _ => self.refresh_layout // programmer error; should be unreachable!()
+            _ => self.refresh_layout,          // programmer error; should be unreachable!()
         }
     }
 
@@ -197,6 +213,6 @@ fn clamp(num: u32, min: u32, max: u32) -> u32 {
     } else if num < min {
         min
     } else {
-       num 
+        num
     }
 }

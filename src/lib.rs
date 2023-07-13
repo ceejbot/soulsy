@@ -216,9 +216,6 @@ pub mod plugin {
     }
 
     extern "Rust" {
-        // Zero or more opaque types which both languages can pass around
-        // but only Rust can see the fields.
-
         /// Give access to the settings to the C++ side.
         type UserSettings;
         fn equip_delay(self: &UserSettings) -> u32;
@@ -233,10 +230,8 @@ pub mod plugin {
         fn user_settings() -> Box<UserSettings>;
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
-        /// Fetch a read-only copy of our current layout();
+        /// Fetch a read-only copy of our current layout;
         fn layout() -> HudLayout;
-        /// Make a color
-        fn create_color(r: u8, g: u8, b: u8, a: u8) -> Color;
 
         /// This is an entry in the cycle. The UI will ask questions of it.
         type CycleEntry;
@@ -288,6 +283,10 @@ pub mod plugin {
         #[namespace = "RE"]
         fn IsUp(self: &ButtonEvent) -> bool;
 
+        // This is from SKSE. Get the directory where it wants log output.
+        #[namespace = "logger"]
+        fn log_directory() -> &'static CxxString;
+
         // Selected helpers.
         include!("helpers.h");
         /// Display a debug notification on the screen. Used as hacky action confirmation.
@@ -302,5 +301,26 @@ pub mod plugin {
         /// Show or hide the HUD widget.
         #[namespace = "helpers"]
         fn toggle_hud_visibility();
+    }
+}
+
+// We don't have much logging setup code, so just shove it in here.
+use std::fs::File;
+use std::path::PathBuf;
+
+use simplelog::*;
+
+pub fn initialize_rust_logging() {
+    // TODO: read from config
+    let level = LevelFilter::Info;
+
+    let logdir = plugin::log_directory().to_string();
+    let mut pathbuf = PathBuf::from(logdir);
+    pathbuf.set_file_name("SoulsyHUD_rust.log");
+
+    if let Ok(logfile) = File::create(pathbuf) {
+        if let Err(_e) = WriteLogger::init(level, Config::default(), logfile) {
+            // Welp, we failed and I have nowhere to write the darn error. Ha ha.
+        }
     }
 }
