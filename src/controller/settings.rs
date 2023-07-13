@@ -117,6 +117,7 @@ impl UserSettings {
         self.utility = read_int_from(controls, "uUtilityCycleKey", self.utility);
         self.activate = read_int_from(controls, "uUtilityActivateKey", self.activate);
         self.showhide = read_int_from(controls, "uShowHideKey", self.showhide);
+        self.refresh_layout = read_int_from(controls, "uRefreshKey", self.refresh_layout);
 
         let options = if let Some(s) = conf.section(Some("Options")) {
             s

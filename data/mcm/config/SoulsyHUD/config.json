@@ -73,6 +73,16 @@
           }
         },
         {
+          "id": "uRefreshKey:Controls",
+          "text": "$SoulsyHUD_Controls_RefreshKey_OptionText",
+          "type": "keymap",
+          "help": "$SoulsyHUD_Controls_RefreshKey_InfoText",
+          "ignoreConflicts": false,
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "text": "$SoulsyHUD_Options_Options_HeaderText",
           "type": "header"
         },
@@ -114,9 +124,9 @@
         },
         {
           "id": "uFadeDelay:Options",
-          "text": "$SoulsyHUD_Controls_ShowHideKey_OptionText",
+          "text": "$SoulsyHUD_Options_FadeDelay_OptionText",
           "type": "keymap",
-          "help": "$SoulsyHUD_Controls_ShowHideKey_InfoText",
+          "help": "$SoulsyHUD_Options_FadeDelay_InfoText",
           "ignoreConflicts": false,
           "valueOptions": {
             "min": 0,
@@ -124,6 +134,21 @@
             "step": 100,
             "formatString": "{0}",
             "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "uControllerKind:Options",
+          "text": "$SoulsyHUD_Options_Controller_OptionText",
+          "type": "enum",
+          "help": "$SoulsyHUD_Options_Controller_InfoText",
+          "valueOptions": {
+            "options": [
+              "$SoulsyHUD_Controls_PC",
+              "$SoulsyHUD_Controls_PS",
+              "$SoulsyHUD_Controls_Xbox"
+            ],
+            "sourceType": "ModSettingInt",
+            "defaultValue": 0
           }
         }
       ]

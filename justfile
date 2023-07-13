@@ -2,6 +2,8 @@ set windows-shell := ["pwsh.exe", "-Command"]
 set shell := ["bash", "-uc"]
 set dotenv-load := true
 
+shbang := if os_family() == "windows" { "rust-script.exe" } else { "/usr/bin/env rust-script" } 
+
 # List available recipes.
 help:
     just -l
@@ -11,7 +13,7 @@ help:
     rustup install nightly
     cargo install nextest
     cargo install tomato
-    cargo install rustscript
+    cargo install rust-script
 
 # Run initial cmake step.
 setup:
@@ -70,7 +72,7 @@ tag VERSION:
 
 # Build a full mod archive
 archive:
-    #!/usr/bin/env rust-script
+    #!{{shbang}}
     //! I would write this in bash, but I cannot do that from pwsh.
     //! So I inflict this on the world instead.
     //!
@@ -84,6 +86,7 @@ archive:
             println!("Existing archive directory found. Bailing.");
             std::process::exit(1);
         }
+        println!("Copying source files to `./archive`...");
         let options = fs_extra::dir::CopyOptions::new();
 
         std::fs::create_dir_all("archive/SKSE/plugins/resources").expect("couldn't create archive directory");
@@ -94,10 +97,15 @@ archive:
             .expect("don't make lemonade");
 
         // recursive copy stripping off the first path segment
-        fs_extra::copy_items(vec!["plugin"], "archive", &options).expect("make life take the lemons back");
+        let mut sources = Vec::new();
+        sources.push("data/Interface");
+        sources.push("data/mcm");
+        sources.push("data/scripts");
+        fs_extra::copy_items(&sources, "archive", &options).expect("make life take the lemons back");
 
-        fs::copy("build/Release/SoulsyHUD.dll", "archive/SKSE/plugins/SoulsyHUD.dll").expect("couldn't copy DLL");
-        fs::copy("build/Release/SoulsyHUD.pdb", "archive/SKSE/plugins/SoulsyHUD.pdb").expect("couldn't copy PDB");
+        std::fs::copy("data/SoulsyHUD.esl", "archive/SoulsyHUD.esl").expect("couldn't copy plugin file");
+        std::fs::copy("build/Release/SoulsyHUD.dll", "archive/SKSE/plugins/SoulsyHUD.dll").expect("couldn't copy DLL");
+        std::fs::copy("build/Release/SoulsyHUD.pdb", "archive/SKSE/plugins/SoulsyHUD.pdb").expect("couldn't copy PDB");
 
         sevenz_rust::compress_to_path("archive/", "archive.7z").expect("7zip compression failed");
         println!("Archive created! `archive.7z` ready to be uploaded or tested.")
