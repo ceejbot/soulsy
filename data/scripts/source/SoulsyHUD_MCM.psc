@@ -9,7 +9,7 @@ int property uRefreshLayoutKey = 2 Auto
 int property uShowHideKey = 8 Auto
 int property uMaxCycleLength = 10 Auto
 int property uEquipDelay = 500 Auto
-bool property bFade Auto
+bool property bFade = false Auto
 int property uFadeDelay = 2000 Auto
 int property uControllerKind = 0 Auto
 
@@ -22,7 +22,8 @@ event onPageReset(string page)
 endEvent
 
 Event OnSettingChange(String changedId)
-    ; thh I'm not sure why we're doing this
+    ; not sure what I would need to do here
+    ; I think the UX refresh is handled already?
 EndEvent
 
 Event OnConfigOpen()

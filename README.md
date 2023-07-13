@@ -71,17 +71,18 @@ The icons for the built-in theme are the usual SkyUI icons, plus the `futura-boo
 
 Ceej's bringup to-do list:
 
-- [ ] Finish up the icon data loading function. Possibly rewrite all the icon data loading in Rust, if sharing slices of u8 across the bridge is easy enough.
-- [ ] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
+- [x] Finish up the icon data loading function. Possibly rewrite all the icon data loading in Rust, if sharing slices of u8 across the bridge is easy enough.
+- [x] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
 - [ ] Track highlight status in the controller to support drawing.
 - [ ] Inform rust about inventory changes. aka call to rust from the inventory hooks. Related: validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
 - [ ] Wire up the equip-item functions.
 - [ ] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
-- [ ] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
-- [ ] Figure out how to compile papyrus scripts. (Can this be done by CMake?)
-- [ ] Edit the `.esp`` if necessary. Check it in.
-- [ ] Rewrite or merely just tweak the script that builds the mod archive itself, with correctly-placed files.
-- [ ] Test to see if the mod loads at all into the game. Fix whatever's broken.
+- [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
+- [x] Figure out how to compile papyrus scripts. Answer: PCA.
+- [x] Edit the `.esp`` if necessary. Check it in.
+- [x] Rewrite or merely just tweak the script that builds the mod archive itself, with correctly-placed files.
+- [x] Test to see if the mod loads at all into the game. Fix whatever's broken.
+- [ ] Wire up the mod to MCM to show its config & write user settings.
 - [ ] Fix whatever looks bad, repeat.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Update to CommonLibSE-NG.
