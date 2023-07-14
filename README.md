@@ -6,7 +6,7 @@ Soulsy is a minimal-features Souls-style HUD for Skyrim SE and AE. It is inspire
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project is still in development. See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLib and the UI framework.
+This project is still in development, though it does in fact run and do stuff when loaded into a game! See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLib and the UI framework.
 
 The project I forked from uses CommonLibSE, but I also intend to migrate to CommonLibSE-NG.
 
@@ -54,7 +54,7 @@ The plugin requires the following vcpkg libraries, which will be installed for y
 - [nanosvg](https://github.com/memononen/nanosvg) (for rastering the svgfiles)
 - [imgui](https://github.com/ocornut/imgui) (for displaying ui elements)
 
-If you have [just](https://just.systems) installed, the justfile has recipes for convenient setup and builds. `cargo install just` if you do not have it.
+There are a number of development conveniences in the [justfile](https://just.systems), including build and archive recipes for Powershell. `cargo install just` if you do not have it.
 
 `cargo --doc open` displays programmer documentation for the Rust side of the plugin. The C++ side is commented, but not to the same degree. (It's a lot more code right now, and most of it is forked code!)
 
@@ -68,14 +68,16 @@ The icons for the built-in theme are the usual SkyUI icons, plus the `futura-boo
 
 ## TODO
 
-Ceej's bringup to-do list:
+Ceej's development to-do list:
 
-- [x] Finish up the icon data loading function. Possibly rewrite all the icon data loading in Rust, if sharing slices of u8 across the bridge is easy enough.
+- [x] Finish up the icon data loading function. 
 - [x] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
+- [ ] Figure out what I'm doing wrong with MCM config settings.
 - [ ] Track highlight status in the controller to support drawing.
-- [ ] Inform rust about inventory changes. aka call to rust from the inventory hooks. Related: validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
-- [ ] Wire up the equip-item functions.
 - [ ] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
+- [ ] Inform rust about inventory changes. aka call to rust from the inventory hooks.
+- [ ] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
+- [ ] Wire up the equip-item functions as well as the equip delay. I'll probably be forced to implement a timer using the tick in the imgui rendering code.
 - [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
 - [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
 - [x] Figure out how to compile papyrus scripts. Answer: PCA.
@@ -83,10 +85,11 @@ Ceej's bringup to-do list:
 - [x] Rewrite or merely just tweak the script that builds the mod archive itself, with correctly-placed files.
 - [x] Test to see if the mod loads at all into the game. Fix whatever's broken.
 - [ ] Wire up the mod to MCM to show its config & write user settings.
-- [ ] Fix whatever looks bad, repeat.
+- [ ] Fix whatever looks bad; repeat.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Update to CommonLibSE-NG.
-- [ ] Get Rust logging to the same file as SKSE? Or at least log to a file in the same directory.
+- [x] Make Rust log to a second file in the same directory as SKSE.
+- [ ] Make Rust log to the same file as SKSE, if this is even possible. Might not be worth it.
 - [ ] Add more Rust logging for happy-path cases, not just error cases.
 - [ ] Consider getting more testers.
 
