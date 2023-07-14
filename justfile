@@ -119,7 +119,7 @@ archive:
 
 # The traditional
 @clean:
-    rm archive.7z
+    rm -f archive.7z
     rm -rf archive/
 
 # A little niche, but still handy
@@ -136,3 +136,12 @@ spotless: clean
 @spotless-win: clean-win
     cargo clean
     rm -rf build
+
+# Bash version of archive creation.
+@archive-bash: 
+    mkdir -p archive/SKSE/plugins
+    cp -rp resources archive/SKSE/plugins
+    cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
+    cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
+    cp -rp data/* archive/
+    cp -p data/SoulsyHUD.esl archive/

@@ -59,29 +59,26 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 		case SKSE::MessagingInterface::kDataLoaded:
 			if (ui::ui_renderer::d_3d_init_hook::initialized)
 			{
+				logger::debug("SKSE data loaded callback; UI is initialized."sv);
 				logger::trace("Added Callback for UI. Now load Images, scale values width {}, height {}"sv,
 					ui::ui_renderer::get_resolution_scale_width(),
 					ui::ui_renderer::get_resolution_scale_height());
 
 				ui::ui_renderer::load_all_images();
-				logger::info("about to register sinks"sv);
 				register_all_sinks();
-				logger::info("about to install all hooks"sv);
 				hooks::install_hooks();
-				logger::info("about to register papyrus functions");
 				papyrus::register_papyrus_functions();
-				logger::info("done with data loaded"sv);
 			}
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
 		case SKSE::MessagingInterface::kNewGame:
-			logger::info("Running checks for data and hud settings after {}"sv, static_cast<uint32_t>(msg->type));
+			logger::debug("SKSE post load-game / new game calleback; type={}"sv, static_cast<uint32_t>(msg->type));
 			// TODO: replace with whatever it is we need to do in Rust.
 			// processing::set_setting_data::read_and_set_data();
 			// processing::set_setting_data::get_actives_and_equip();
 			// processing::set_setting_data::check_config_data();
 			ui::ui_renderer::set_show_ui(true);
-			logger::info("Done running after {}"sv, static_cast<uint32_t>(msg->type));
+			logger::info("SKSE post-hook done: type={}"sv, static_cast<uint32_t>(msg->type));
 			break;
 		default:
 			break;
