@@ -24,6 +24,8 @@ namespace ui
 	static std::map<animation_type, std::vector<image>> animation_frame_map = {};
 	static std::vector<std::pair<animation_type, std::unique_ptr<animation>>> animation_list;
 
+	static std::map<Action, float> cycle_timers = {};
+
 	static std::map<uint32_t, image> image_struct;
 	static std::map<uint32_t, image> icon_struct;
 	static std::map<uint32_t, image> key_struct;
@@ -384,7 +386,7 @@ namespace ui
 			const auto entry_name       = entry->name();
 			const auto hotkey           = settings->hotkey_for(slot_layout.element);
 			const auto slot_center      = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
-			// logger::info("drawing slot {} at x={}; y={}",
+			// logger::trace("drawing slot {} at x={}; y={}",
 			// 	static_cast<uint8_t>(slot_layout.element),
 			// 	(anchor.x + slot_layout.offset.x),
 			// 	(anchor.y + slot_layout.offset.y));
@@ -441,7 +443,7 @@ namespace ui
 					slot_layout.name_color.r,
 					slot_layout.name_color.g,
 					slot_layout.name_color.b,
-					slot_layout.name_font_size,
+					top_layout.font_size,
 					center_text);
 			}
 
@@ -542,6 +544,8 @@ namespace ui
 		drawAllSlots();
 
 		ImGui::End();
+
+		advanceTimers(ImGui::GetIO().DeltaTime);
 
 		if (hide_out_of_combat)
 		{
@@ -734,55 +738,33 @@ namespace ui
 
 	void ui_renderer::load_font()
 	{
-		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + file_setting::get_font_file_name();
+		auto hud = layout();
+		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + hud.font_file();
 		auto file_path   = std::filesystem::path(path);
-		logger::trace("Need to load font {} from file {}"sv, file_setting::get_font_load(), path);
+
+		logger::trace("about to try to load font; path={}"sv, path);
 		tried_font_load = true;
-		if (file_setting::get_font_load() && std::filesystem::is_regular_file(file_path) &&
+		if (std::filesystem::is_regular_file(file_path) &&
 			((file_path.extension() == ".ttf") || (file_path.extension() == ".otf")))
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			ImVector<ImWchar> ranges;
 			ImFontGlyphRangesBuilder builder;
 			builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
-			if (file_setting::get_font_chinese_full())
-			{
-				builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull());
-			}
-			if (file_setting::get_font_chinese_simplified_common())
-			{
-				builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-			}
-			if (file_setting::get_font_cyrillic())
-			{
-				builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
-			}
-			if (file_setting::get_font_japanese())
-			{
-				builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
-			}
-			if (file_setting::get_font_korean())
-			{
-				builder.AddRanges(io.Fonts->GetGlyphRangesKorean());
-			}
-			if (file_setting::get_font_thai())
-			{
-				builder.AddRanges(io.Fonts->GetGlyphRangesThai());
-			}
-			if (file_setting::get_font_vietnamese())
-			{
-				builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese());
-			}
+
+			// TODO. I have ripped out a lot of localization here that I'll eventually
+			// need to restore.
+
 			builder.BuildRanges(&ranges);
 
 			loaded_font = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(),
-				file_setting::get_font_size(),
+				layout.fon,
 				nullptr,
 				ranges.Data);
 			if (io.Fonts->Build())
 			{
 				ImGui_ImplDX11_CreateDeviceObjects();
-				logger::info("Custom Font {} loaded."sv, path);
+				logger::info("font loaded; path={}"sv, path);
 				return;
 			}
 		}
@@ -790,20 +772,18 @@ namespace ui
 
 	void ui_renderer::toggle_show_ui()
 	{
-		if (show_ui_)
-		{
-			show_ui_ = false;
-		}
-		else
-		{
-			show_ui_ = true;
-		}
+		show_ui_ = !show_ui_;
 		file_setting::set_show_ui(show_ui_);
-		logger::trace("Show UI is now {}"sv, show_ui_);
+		logger::trace("ui visibility set; show_ui_={}"sv, show_ui_);
 	}
 
-	void ui_renderer::set_show_ui(bool a_show) { show_ui_ = a_show; }
+	void ui_renderer::set_show_ui(bool visible)
+	{
+		show_ui_ = visible;
+		logger::trace("ui visibility set; show_ui_={}"sv, show_ui_);
+	}
 
+	// TODO ceej: rewrite in rust
 	void ui_renderer::load_all_images()
 	{
 		load_images(image_type_name_map, image_struct, img_directory);
@@ -818,4 +798,32 @@ namespace ui
 		load_animation_frames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
 	}
+
+	void ui_renderer::advanceTimers(float delta)
+	{
+		(const auto& [timer, remaining] : cycle_timers)
+		{
+			remaining -= delta;
+			if (remaining < 0.0f)
+			{
+				cycle_timers.erase(which);
+				timer_expired(which);
+			}
+			else
+			{
+				cycle_timers[timer] = remaining;
+			}
+		}
+	}
+
+	void ui_renderer::startTimer(Action which)
+	{
+		// We replace any existing timer for this slot.
+		auto duration = user_settings().equip_delay();
+		cycle_timers.insert_or_assign(which, duration);
+	}
+
+	// remove timer from the map if it exists
+	void ui_renderer::stopTimer(Action which) { cycle_timers.erase(which); }
+
 }

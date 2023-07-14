@@ -8,7 +8,7 @@ use crate::plugin::EntryKind;
 /// We cannot derive default for shared enums, so we define it here.
 impl Default for EntryKind {
     fn default() -> Self {
-        EntryKind::IconDefault
+        EntryKind::Empty
     }
 }
 
@@ -62,16 +62,23 @@ impl EntryKind {
         )
     }
 
+    /// Check if this item is wearable armor.
+    pub fn is_armor(&self) -> bool {
+        matches!(
+            *self,
+            EntryKind::ArmorClothing
+                | EntryKind::ArmorHeavy
+                | EntryKind::ArmorLight
+                | EntryKind::Lantern
+                | EntryKind::Mask
+        )
+    }
+
     /// Check if this entry can be equipped in the left hand.
     ///
     /// Returns true for weapons, magic, lights, and shields.
     pub fn left_hand_ok(&self) -> bool {
-        self.is_weapon()
-            || self.is_magic()
-            || matches!(
-                *self,
-                EntryKind::Shield | EntryKind::Torch | EntryKind::Lantern
-            )
+        self.is_weapon() || self.is_magic() || matches!(*self, EntryKind::Shield | EntryKind::Torch)
     }
 
     /// Check if this entry can be equipped in the right hand.
@@ -112,6 +119,7 @@ impl EntryKind {
 }
 
 static ICON_MAP: Lazy<HashMap<EntryKind, String>> = Lazy::new(|| {
+    // TODO EntryKind::Empty
     HashMap::from([
         (EntryKind::Alteration, "alteration.svg".to_string()),
         (EntryKind::ArmorClothing, "armor_clothing.svg".to_string()),

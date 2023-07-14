@@ -6,7 +6,7 @@ use once_cell::sync::Lazy;
 
 use crate::plugin::HudElement;
 
-/// This is the path to user settings.
+/// This is the path to players's modified settings.
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
 
 /// This is the path to the mod settings definition file.

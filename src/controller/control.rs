@@ -4,7 +4,6 @@ use std::sync::Mutex;
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
-use super::layout::layout;
 use super::settings::user_settings;
 use crate::plugin::*;
 
@@ -12,40 +11,73 @@ use crate::plugin::*;
 // Does this really need to be a mutex? I think we're single-threaded...
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
 
-/// C++ tells us when it's safe to start pulling together the data we need.
-pub fn initialize_hud() {
-    let mut ctrl = CONTROLLER.lock().unwrap();
-    let _settings = user_settings();
-    let _layout = layout();
+/// This mod bundles up the public-facing interface of the controller for ease
+/// of import into the bridge. I do not want to give the C++ side this object.
+pub mod public {
+    use super::*;
+    use crate::layout::*;
 
-    // here we should validate all four cycle entries which might refer to now-missing items
-    // player::has_item_or_spell(form) is the function to call
+    /// C++ tells us when it's safe to start pulling together the data we need.
+    pub fn initialize_hud() {
+        let mut ctrl = CONTROLLER.lock().unwrap();
+        let _settings = user_settings();
+        let _layout = layout();
 
-    // now walk through what we should be showing in each slot, whether in the cycle or not
-    let _refresh = ctrl.update_equipped();
-    // The readied utility item is purely in our control, so we can use whatever we have
-    // top-of-cycle for that one.
+        // here we should validate all four cycle entries which might refer to now-missing items
+        // player::has_item_or_spell(form) is the function to call
 
-    // TODO
-}
+        // now walk through what we should be showing in each slot, whether in the cycle or not
+        let _refresh = ctrl.update_equipped();
+        // The readied utility item is purely in our control, so we can use whatever we have
+        // top-of-cycle for that one.
 
-/// Function for C++ to call to send a relevant button event to us.
-pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
-    let action = Action::from(key);
-    CONTROLLER.lock().unwrap().handle_key_event(action, button)
-}
+        // TODO
+    }
 
-/// Function for C++ to call to send a relevant menu button-event to us.
-///
-/// We get a fully-filled out CycleEntry struct to use as we see fit.
-pub fn handle_menu_event(key: u32, menu_item: Box<CycleEntry>) -> MenuEventResponse {
-    let action = Action::from(key);
-    CONTROLLER.lock().unwrap().toggle_item(action, *menu_item)
-}
+    /// Function for C++ to call to send a relevant button event to us.
+    pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
+        let action = Action::from(key);
+        log::info!("incoming key event; key={key}; ");
+        CONTROLLER.lock().unwrap().handle_key_event(action, button)
+    }
 
-/// Get information about the item equipped in a specific slot.
-pub fn equipped_in_slot(element: HudElement) -> Box<CycleEntry> {
-    CONTROLLER.lock().unwrap().equipped_in_slot(element)
+    /// Function for C++ to call to send a relevant menu button-event to us.
+    ///
+    /// We get a fully-filled out CycleEntry struct to use as we see fit.
+    pub fn handle_menu_event(key: u32, menu_item: Box<CycleEntry>) -> MenuEventResponse {
+        let action = Action::from(key);
+        CONTROLLER.lock().unwrap().toggle_item(action, *menu_item)
+    }
+
+    /// Get information about the item equipped in a specific slot.
+    pub fn equipped_in_slot(element: HudElement) -> Box<CycleEntry> {
+        CONTROLLER.lock().unwrap().equipped_in_slot(element)
+    }
+
+    // Handle an equip delay timer expiring.
+    pub fn timer_expired(slot: Action) {
+        // Fun time! We get to equip an item now!
+        let ctrl = CONTROLLER.lock().unwrap();
+        ctrl.timer_expired(slot);
+    }
+
+    /// Update our view of the player's equipment.
+    pub fn update_equipped() -> bool {
+        let mut ctrl = CONTROLLER.lock().unwrap();
+        ctrl.update_equipped()
+    }
+
+    /// We know for sure the player just equipped this item.
+    pub fn handle_item_equipped(form: &TESForm) -> bool {
+        let mut ctrl = CONTROLLER.lock().unwrap();
+        ctrl.handle_item_equipped(form)
+    }
+
+    /// A consumable's count changed. Record if relevant.
+    pub fn handle_inventory_changed(form: &TESForm, count: u32) {
+        let mut ctrl = CONTROLLER.lock().unwrap();
+        ctrl.handle_inventory_changed(form, count);
+    }
 }
 
 impl From<u32> for Action {
@@ -78,8 +110,12 @@ impl From<u32> for Action {
 pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
-    // speculative: I think this is how we'll handle tracking equipped thingies
+    // The items that the player has equipped right now.
     equipped: HashMap<HudElement, CycleEntry>,
+    /// True if we've got a two-handed weapon equipped right now.
+    two_hander_equipped: bool,
+    /// The item that was in the left hand when we equipped a two-hander.
+    left_hand_cached: Option<CycleEntry>,
 }
 
 impl Controller {
@@ -93,29 +129,95 @@ impl Controller {
         }
     }
 
+    /// The player's inventory changed! Act on it if we need to.
+    fn handle_inventory_changed(&mut self, _form: &TESForm, _count: u32) {
+        // TODO handle consumable item count change
+        todo!()
+    }
+
+    /// When the equip delay for a cycle expires, equip the item at the top.
+    /// 
+    /// This function implements a critical function in the mod: equipping
+    /// items. When the delay timer expires, we're notified to act on the
+    /// player's changes to the cycle rotation. The delay exists to let the
+    /// player tap a hotkey repeatedly to look at the items in a cycle without
+    /// equipping each one of them as they go. Instead we wait for a little bit,
+    /// and if we've had no more hotkey events, we act. 
+    /// 
+    /// We do not act here on cascading changes. Instead, we let the equipped-change
+    /// callback decide what to do when, e.g., a two-handed item is equipped. 
+    fn timer_expired(&self, which: Action) {
+        if matches!(which, Action::Left) && self.two_hander_equipped {
+            // The left hand is blocked because the right hand is equipping a two-hander.
+            // TODO honk
+            return;
+        }
+
+        let Some(item) = &self.cycles.get_top(which) else {
+            return;
+        };
+
+        let kind = item.kind();
+        if matches!(kind, EntryKind::Empty) && which != Action::Utility {
+            unequipSlot(which);
+            return;
+        }
+
+        if matches!(which, Action::Power) {
+            // Equip that fus-ro-dah, dovahkin!
+            cxx::let_cxx_string!(form_spec = item.form_string());
+            equipShout(&form_spec);
+            return;
+        }
+
+        if matches!(which, Action::Right) && self.two_hander_equipped && !item.two_handed() {
+            let cached_left = self.left_hand_cached.clone();
+            self.equip_item(item, which);
+            if let Some(left) = cached_left {
+                self.equip_item(&left, Action::Left);
+            }
+            return;
+        }
+
+        self.equip_item(item, which);
+    }
+
+    /// Convenience function for equipping any equippable.
+    fn equip_item(&self, item: &CycleEntry, which: Action) {
+        if !matches!(which, Action::Right | Action::Left | Action::Utility) {
+            return;
+        }
+        let kind = item.kind();
+        cxx::let_cxx_string!(form_spec = item.form_string());
+
+        // These are all different because the game API is a bit of an evolved thing.
+        if kind.is_magic() {
+            // My name is John Wellington Wells / I'm a dealer in...
+            equipMagic(&form_spec, which);
+        } else if kind.is_weapon() {
+            equipWeapon(&form_spec, which);
+        } else if kind.is_armor() {
+            equipArmor(&form_spec);
+        } else {
+            log::info!("we did nothing with item name={}; kind={kind:?};", item.name());
+        }
+    }
+
     // TODO refs instead of cloning
     /// Get the item equipped in a specific slot. I'd like to return an option but I can't.
-    pub fn equipped_in_slot(&self, slot: HudElement) -> Box<CycleEntry> {
+    fn equipped_in_slot(&self, slot: HudElement) -> Box<CycleEntry> {
         let Some(candidate) = self.equipped.get(&slot) else {
-            return Box::new(CycleEntry::default());
+            return Box::<CycleEntry>::default();
         };
 
         Box::new(candidate.clone())
     }
 
     /// Returns true if our view of the player changed.
-    pub fn update_equipped(&mut self) -> bool {
+    fn update_equipped(&mut self) -> bool {
         let mut changed = false;
 
-        let left_entry = equipped_left_hand();
-        log::info!(
-            "left hand: {} {}",
-            left_entry.name(),
-            left_entry.form_string()
-        );
-        changed = changed || self.update_slot(HudElement::Left, &left_entry);
-
-        let right_entry = equipped_right_hand();
+        let right_entry = equippedRightHand();
         log::info!(
             "right hand: {} {}",
             right_entry.name(),
@@ -123,11 +225,33 @@ impl Controller {
         );
         changed = changed || self.update_slot(HudElement::Right, &right_entry);
 
-        let power = equipped_power();
+        let left_entry = if right_entry.two_handed() {
+            self.two_hander_equipped = true;
+            self.left_hand_cached = self.equipped.get(&HudElement::Left).cloned();
+            // We show an empty entry in the left hand if we're holding a bow or other 2-hander
+            Box::<CycleEntry>::default()
+        } else {
+            self.two_hander_equipped = false;
+            if let Some(left) = &self.left_hand_cached.clone() {
+                self.equip_item(left, Action::Left);
+                self.left_hand_cached = None;
+                Box::new(left.clone())
+            } else {
+                equippedLeftHand()
+            }
+        };
+        log::info!(
+            "left hand: {} {}",
+            left_entry.name(),
+            left_entry.form_string()
+        );
+        changed = changed || self.update_slot(HudElement::Left, &left_entry);
+
+        let power = equippedPower();
         log::info!("power: {} {}", power.name(), power.form_string());
         changed = changed || self.update_slot(HudElement::Power, &power);
 
-        let ammo = equipped_ammo();
+        let ammo = equippedAmmo();
         log::info!(
             "ammo: {} {} {}",
             ammo.count(),
@@ -137,6 +261,12 @@ impl Controller {
         changed = changed || self.update_slot(HudElement::Ammo, &ammo);
 
         changed
+    }
+
+    fn handle_item_equipped(&mut self, _form: &TESForm) -> bool {
+        // TODO implement a tighter pass; for now we just brute-force it
+        // remember to mark if we've equipped a two-hander in the shorter impl
+        self.update_equipped()
     }
 
     fn update_slot(&mut self, slot: HudElement, new_item: &CycleEntry) -> bool {
@@ -151,13 +281,7 @@ impl Controller {
     ///
     /// Returns an enum indicating what we did in response, in case one of the calling
     /// layers wants to show UI or play sounds in response.
-    pub fn handle_key_event(&mut self, action: Action, button: &ButtonEvent) -> KeyEventResponse {
-        // Sketching out what has to happen on fired timers
-        // timer data should include the triggering action so we know what to do
-        // de-highlight the button if necessary
-        // if utility slot, nothing further to do
-        // if left/right/power, equip the item
-
+    fn handle_key_event(&mut self, action: Action, button: &ButtonEvent) -> KeyEventResponse {
         // If we're faded out in any way, show ourselves again.
         if !matches!(action, Action::ShowHide) {
             let is_fading: bool = get_is_transitioning();
@@ -170,7 +294,7 @@ impl Controller {
             }
         }
 
-        // will clippy complain about the C++ method names?
+        // TODO do I need this data?
         let _is_down: bool = button.IsDown();
         let _is_up: bool = button.IsUp();
 
@@ -178,8 +302,6 @@ impl Controller {
         match action {
             Action::Power => {
                 let _next = self.cycles.advance(action, 1);
-                // tell the ui to show this and highlight this button
-                // start or restart the relevant timer
                 KeyEventResponse {
                     handled: true,
                     start_timer: Action::Power,
@@ -187,8 +309,6 @@ impl Controller {
                 }
             }
             Action::Left => {
-                // cycle the left selection one forward; start the left timer
-                // highlight the button
                 let _next = self.cycles.advance(action, 1);
                 KeyEventResponse {
                     handled: true,
@@ -197,8 +317,6 @@ impl Controller {
                 }
             }
             Action::Right => {
-                // start the ready delay timer for the right hand
-                // highlight the right hud slot
                 let _next = self.cycles.advance(action, 1);
                 KeyEventResponse {
                     handled: true,
@@ -207,8 +325,6 @@ impl Controller {
                 }
             }
             Action::Utility => {
-                // start the ready delay timer for the utility slot
-                // highlight the utility hud slot
                 let _next = self.cycles.advance(action, 1);
                 KeyEventResponse {
                     handled: true,
@@ -216,20 +332,9 @@ impl Controller {
                     stop_timer: Action::Irrelevant,
                 }
             }
-            Action::Activate => {
-                // TODO
-                // stop any timers for the utility slot;
-                // mark the current item as the top-of-cycle
-                // finalize the UI look (de-highlight)
-                // use the item
-                KeyEventResponse {
-                    handled: true,
-                    start_timer: Action::Irrelevant,
-                    stop_timer: Action::Utility,
-                }
-            }
+            Action::Activate => self.use_utility_item(),
             Action::ShowHide => {
-                // handled by the C++ side for now
+                log::debug!("toggling hud visibility");
                 toggle_hud_visibility();
                 KeyEventResponse {
                     handled: true,
@@ -237,7 +342,6 @@ impl Controller {
                 }
             }
             Action::RefreshLayout => {
-                // TODO tell C++ to redraw
                 HudLayout::refresh();
                 KeyEventResponse {
                     handled: true,
@@ -248,10 +352,27 @@ impl Controller {
         }
     }
 
-    /// This function is called when the user has pressed a hot key while hovering over an
+    /// Activate whatever we have in the utility slot.
+    fn use_utility_item(&mut self) -> KeyEventResponse {
+        if let Some(item) = self.cycles.get_top(Action::Utility) {
+            if item.kind() != EntryKind::Empty {
+                // TODO use it
+                // poison, potion, food, armor, lantern
+            }
+        }
+
+        // No matter what we did, we stop the timer.
+        KeyEventResponse {
+            handled: true,
+            start_timer: Action::Irrelevant,
+            stop_timer: Action::Utility,
+        }
+    }
+
+    /// This function is called when the player has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    pub fn toggle_item(&mut self, action: Action, item: CycleEntry) -> MenuEventResponse {
+    fn toggle_item(&mut self, action: Action, item: CycleEntry) -> MenuEventResponse {
         let result = self.cycles.toggle(action, item.clone());
 
         // notify the player what happened...
@@ -277,24 +398,18 @@ impl Controller {
         ) {
             // the data changed. flush it to disk with char name in it or something
             match self.cycles.write() {
-                Ok(_) => log::info!("successfully wrote cycle data"),
+                Ok(_) => log::info!(
+                    "persisted cycle data after change; verb='{}'; item='{}';",
+                    verb,
+                    item.name()
+                ),
                 Err(e) => {
-                    log::warn!("failed to write cycle data, but gamely continuing; {e:?}");
+                    log::warn!("failed to persist cycle data, but gamely continuing; {e:?}");
                 }
             }
         }
 
         result
-    }
-
-    /// TO BE CALLED when the player's equipped items change.
-    /// API surface tbd.
-    pub fn on_equip_change(&self) {
-        // this should be called by a top-level hook that also makes sure UI is updated
-        // if item is any lists: rotate list so item is at front
-        // else do nothing
-        // we have another hook set up for inventory changes that will also need a handler
-        todo!();
     }
 }
 

@@ -1,10 +1,7 @@
 ﻿#pragma once
-#include "../util/enums.h"
+
 #include "animation_handler.h"
 #include "image_path.h"
-
-// TODO get rid of position setting; get this from Rust side
-// everything else will be fine. afaik.
 
 // Forward declarations of the types we're getting from Rust.
 enum class EntryKind : ::std::uint8_t;
@@ -128,6 +125,21 @@ namespace ui
 		static void set_show_ui(bool a_show);
 
 		static void load_all_images();
+
+		static void startTimer(Action which);
+		static void stopTimer(Action which);
+		static void advanceTimers(float delta);
+
+		inline static f32 clamp(f32 input, f32 min, f32 max)
+		{
+			// I do like a good ternary.
+			return input > max ? max : (input < min ? min : input);
+		}
+
+		inline static uint32_t clamp(uint32_t input, uint32_t min, uint32_t max)
+		{
+			return input > max ? max : (input < min ? min : input);
+		}
 
 		struct d_3d_init_hook
 		{

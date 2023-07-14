@@ -17,7 +17,7 @@ pub mod settings;
 use std::fs::File;
 use std::path::PathBuf;
 
-pub use control::{equipped_in_slot, handle_key_event, handle_menu_event, initialize_hud};
+pub use control::public::*;
 pub use cycles::{create_cycle_entry, default_cycle_entry, get_icon_file, CycleEntry};
 pub use layout::layout;
 pub use settings::{refresh_user_settings, user_settings, UserSettings}; // hmm, is this for settings? I'm confused...

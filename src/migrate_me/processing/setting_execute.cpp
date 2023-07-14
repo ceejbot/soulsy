@@ -1,4 +1,5 @@
 ﻿#include "setting_execute.h"
+
 #include "handle/data/page/position_setting.h"
 #include "handle/data/page/slot_setting.h"
 #include "handle/key_position_handle.h"
@@ -59,7 +60,7 @@ namespace processing
 			{
 				logger::trace("form {} does not need equip, skipping"sv,
 					slot->form ? util::string_util::int_to_hex(slot->form->GetFormID()) : "null");
-				equip::un_equip_shout_slot(player);
+				magic::unequipShoutSlot(player);
 				continue;
 			}
 
@@ -164,13 +165,13 @@ namespace processing
 				}
 				break;
 			case slot_type::magic:
-				equip::magic::magic::cast_magic(a_slot->form, a_slot->action, a_slot->equip_slot, a_player);
+				magic::magic::cast_magic(a_slot->form, a_slot->action, a_slot->equip_slot, a_player);
 				break;
 			case slot_type::shout:
-				equip::magic::equip_shout(a_slot->form, a_player);
+				magic::equipShout(a_slot->form, a_player);
 				break;
 			case slot_type::power:
-				equip::magic::equip_or_cast_power(a_slot->form, a_slot->action, a_player);
+				magic::equip_or_cast_power(a_slot->form, a_slot->action, a_player);
 				break;
 			case slot_type::weapon:
 			case slot_type::shield:
@@ -183,7 +184,7 @@ namespace processing
 				equip::equip_armor(a_slot->form, a_player);
 				break;
 			case slot_type::scroll:
-				equip::magic::cast_scroll(a_slot->form, a_slot->action, a_player);
+				magic::cast_scroll(a_slot->form, a_slot->action, a_player);
 				break;
 			case slot_type::misc:
 				//TODO

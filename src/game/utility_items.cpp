@@ -1,28 +1,30 @@
 ﻿#include "utility_items.h"
-#include "handle/extra_data_holder.h"
 #include "constant.h"
 #include "enums.h"
 #include "gear.h"
+#include "handle/extra_data_holder.h"
 #include "helpers.h"
 #include "perk_visitor.h"
 #include "player.h"
 #include "string_util.h"
 #include "user_settings.h"
 
+#include "lib.rs.h"
+
 namespace equip
 {
-	void equip_item(const RE::TESForm* a_form,
-		RE::BGSEquipSlot*& a_slot,
-		RE::PlayerCharacter*& a_player,
-		enums::slot_type a_type)
+	void equip_item(const RE::TESForm* a_form, RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& player, EntryKind kind)
 	{
 		auto left = a_slot == equip::left_hand_equip_slot();
-		logger::trace("try to equip {}, left {}, type {}"sv, a_form->GetName(), left, static_cast<uint32_t>(a_type));
+		logger::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
+			a_form->GetName(),
+			left,
+			static_cast<uint32_t>(kind));
 
 		if (a_form->formID == util::unarmed)
 		{
 			logger::trace("Got unarmed, try to call un equip"sv);
-			equip::unequip_slot(a_slot, a_player, enums::action_type::un_equip);
+			equip::unequip_slot(a_slot, player, enums::action_type::un_equip);
 			return;
 		}
 
@@ -30,33 +32,19 @@ namespace equip
 		RE::ExtraDataList* extra = nullptr;
 		std::vector<RE::ExtraDataList*> extra_vector;
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> potential_items;
-		if (a_type == enums::slot_type::weapon)
+		if (a_form->Is(RE::FormType::Weapon))
 		{
-			if (!a_form->Is(RE::FormType::Weapon))
-			{
-				logger::warn("object {} is not a weapon. return."sv, a_form->GetName());
-				return;
-			}
-			potential_items = player::get_inventory(a_player, RE::FormType::Weapon);
+			potential_items = player::get_inventory(player, RE::FormType::Weapon);
 		}
-		else if (a_type == enums::slot_type::shield)
+		else if (a_form->Is(RE::FormType::Armor))
 		{
-			if (!a_form->Is(RE::FormType::Armor))
-			{
-				logger::warn("object {} is not an armor. return."sv, a_form->GetName());
-				return;
-			}
-			potential_items = player::get_inventory(a_player, RE::FormType::Armor);
+			potential_items = player::get_inventory(player, RE::FormType::Armor);
 		}
-		else if (a_type == enums::slot_type::light)
+		else if (a_form->Is(RE::FormType::Light))
 		{
-			if (!a_form->Is(RE::FormType::Light))
-			{
-				logger::warn("object {} is not a light. return."sv, a_form->GetName());
-				return;
-			}
-			potential_items = player::get_inventory(a_player, RE::FormType::Light);
+			potential_items = player::get_inventory(player, RE::FormType::Light);
 		}
+
 
 		auto item_count = 0;
 		for (const auto& [item, inv_data] : potential_items)
@@ -115,8 +103,8 @@ namespace equip
 			}
 		}
 
-		const auto* obj_right = a_player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = a_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
 		if (left && obj_left && obj_left->formID == obj->formID)
 		{
 			logger::debug("Object Left {} is already where it should be already equipped. return."sv, obj->GetName());
@@ -151,7 +139,7 @@ namespace equip
 			//all we have are already equipped
 			logger::warn("All Items we have of {} are equipped, return."sv, obj->GetName());
 			//try to prevent the game to equip something else
-			equip::unequip_slot(a_slot, a_player, enums::action_type::un_equip);
+			equip::unequip_slot(a_slot, player, enums::action_type::un_equip);
 			return;
 		}
 
@@ -159,19 +147,18 @@ namespace equip
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
-			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(a_player, obj, extra, 1, a_slot); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, obj, extra, 1, a_slot); });
 		}
 		logger::trace("equipped weapon/shield/light {}, left {}. return."sv, a_form->GetName(), left);
 	}
 
-	void equip_armor(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
+	void equip_armor(const RE::TESForm* a_form, RE::PlayerCharacter*& player)
 	{
 		logger::trace("try to equip {}"sv, a_form->GetName());
 
 		RE::TESBoundObject* obj = nullptr;
 		auto item_count         = 0;
-		for (const auto& [item, inv_data] : player::get_inventory(a_player, RE::FormType::Armor))
+		for (const auto& [item, inv_data] : player::get_inventory(player, RE::FormType::Armor))
 		{
 			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
 			{
@@ -190,9 +177,9 @@ namespace equip
 		logger::trace("try to equip armor/clothing {}"sv, a_form->GetName());
 
 		if (auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-			!equip::unequip_armor(obj, a_player, equip_manager))
+			!equip::unequipArmor(obj, player, equip_manager))
 		{
-			equip_manager->EquipObject(a_player, obj);
+			equip_manager->EquipObject(player, obj);
 			logger::trace("equipped armor {}. return."sv, a_form->GetName());
 		}
 	}

@@ -59,7 +59,7 @@ pub fn create_cycle_entry(
 }
 
 pub fn default_cycle_entry() -> Box<CycleEntry> {
-    Box::new(CycleEntry::default())
+    Box::<CycleEntry>::default()
 }
 
 impl CycleEntry {
@@ -186,7 +186,24 @@ impl CycleData {
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
     pub fn set_top(&mut self, _which: Action, _form_spec: String) -> Option<CycleEntry> {
+        // TODO do I need this at all?
         todo!()
+    }
+
+    // the programmer error is annoying, but it's a shared struct...
+    pub fn get_top(&self, which: Action) -> Option<CycleEntry> {
+        let cycle = match which {
+            Action::Power => &self.power,
+            Action::Left => &self.left,
+            Action::Right => &self.right,
+            Action::Utility => &self.utility,
+            _ => {
+                log::warn!("It is a programmer error to call get_top() with {which:?}");
+                return None;
+            }
+        };
+
+        cycle.first().cloned()
     }
 
     /// Toggle the presence of the given item in the given cycle.

@@ -1,5 +1,4 @@
 
-#include "file_setting.h"
 #include "hooks.h"
 #include "sinks.h"
 #include "ui_renderer.h"
@@ -39,14 +38,14 @@ void init_logger()
 		spdlog::set_default_logger(std::move(log));
 		spdlog::set_pattern("[%H:%M:%S.%f][%s(%#)][%!][%l] %v"s);
 
-		logger::info("{} v{}"sv, Version::PROJECT, Version::NAME);
+		logger::info("starting up {} @ v{}"sv, Version::PROJECT, Version::NAME);
 
 		initialize_rust_logging(path->string());
 
 	}
 	catch (const std::exception& e)
 	{
-		logger::critical("failed, cause {}"sv, e.what());
+		logger::critical("failed, what={}"sv, e.what());
 	}
 }
 
@@ -60,7 +59,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			if (ui::ui_renderer::d_3d_init_hook::initialized)
 			{
 				logger::debug("SKSE data loaded callback; UI is initialized."sv);
-				logger::trace("Added Callback for UI. Now load Images, scale values width {}, height {}"sv,
+				logger::trace("Loading images with scale values width={}; height={};"sv,
 					ui::ui_renderer::get_resolution_scale_width(),
 					ui::ui_renderer::get_resolution_scale_height());
 

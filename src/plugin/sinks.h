@@ -7,6 +7,7 @@
 
 #include "handle/data/page/position_setting.h"
 
+
 void register_all_sinks();
 
 class EquipEventSink final : public RE::BSTEventSink<RE::TESEquipEvent>
@@ -54,9 +55,4 @@ protected:
 private:
 	KeyEventSink()           = default;
 	~KeyEventSink() override = default;
-
-	// I think this means highlight relevant slot on button down.
-	uint32_t button_press_modify_ = ui::draw_full;
-
-	// void handleCycleSlotKey(uint32_t a_key, control::binding*& a_binding) const;
 };

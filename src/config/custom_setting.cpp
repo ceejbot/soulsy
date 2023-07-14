@@ -3,7 +3,7 @@
 #include "file_setting.h"
 #include "user_settings.h"
 
-// These are item lists, aka what I'm calling cycle data. To be deleted later.
+// To be deleted.
 
 namespace config
 {

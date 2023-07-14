@@ -32,12 +32,17 @@ pub mod plugin {
         size: Point,
         /// The color to draw the HUD bg image with; if zero will not be drawn.
         bg_color: Color,
-        /// One slot layout for each element
+        /// One slot layout for each element. This wants to be map, not a vec,
+        /// but the map types are not shareable.
         layouts: Vec<SlotLayout>,
         /// How intense the slot-change animation is.
         animation_alpha: u8,
         /// How long the slot-change animation runs.
         animation_duration: f32,
+        /// The font file to load to use for all text.
+        font: String,
+        /// The font size for most things.
+        font_size: f32,
 
         /// Enable debug logging for the plugin.
         debug: bool,
@@ -104,8 +109,6 @@ pub mod plugin {
         name_color: Color,
         /// Where to draw the item name.
         name_offset: Point,
-        /// The font size to use for the item name.
-        name_font_size: f32,
     }
 
     /// The type of an item stored in a cycle.
@@ -114,6 +117,7 @@ pub mod plugin {
     /// be added to.
     #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
     enum EntryKind {
+        Empty,
         Alteration,
         ArmorClothing,
         ArmorHeavy,
@@ -268,6 +272,12 @@ pub mod plugin {
         fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse;
         /// Get the item readied in the given slot, if any.
         fn equipped_in_slot(slot: HudElement) -> Box<CycleEntry>;
+        /// A cycle delay timer has expired. Time to equip!
+        fn timer_expired(slot: Action);
+        /// Update the HUD without any hints about what just changed.
+        fn update_equipped() -> bool;
+        /// Update the HUD with info about an item the player just equipped.
+        fn handle_item_equipped(form: &TESForm) -> bool;
     }
 
     unsafe extern "C++" {
@@ -290,31 +300,38 @@ pub mod plugin {
         /// Exposes to Rust the is-up method on the button event object.
         #[namespace = "RE"]
         fn IsUp(self: &ButtonEvent) -> bool;
+    }
 
-        // Selected helpers.
+    // Selected helpers.
+    #[namespace = "helpers"]
+    unsafe extern "C++" {
         include!("helpers.h");
+
         /// Display a debug notification on the screen. Used as hacky action confirmation.
-        #[namespace = "helpers"]
         fn notify_player(message: &CxxString);
         /// Start the HUD widget fading in or out to the goal transparency.
-        #[namespace = "helpers"]
         fn set_alpha_transition(do_fade: bool, alpha: f32);
         /// Check if the HUD widget is in the middle of a fade in or out.
-        #[namespace = "helpers"]
         fn get_is_transitioning() -> bool;
         /// Show or hide the HUD widget.
-        #[namespace = "helpers"]
         fn toggle_hud_visibility();
+    }
 
-        // Selected player data fetchers.
+    // Selected player data fetchers.
+    #[namespace = "player"]
+    unsafe extern "C++" {
         include!("player.h");
-        #[namespace = "player"]
-        fn equipped_left_hand() -> Box<CycleEntry>;
-        #[namespace = "player"]
-        fn equipped_right_hand() -> Box<CycleEntry>;
-        #[namespace = "player"]
-        fn equipped_power() -> Box<CycleEntry>;
-        #[namespace = "player"]
-        fn equipped_ammo() -> Box<CycleEntry>;
+
+        fn equippedLeftHand() -> Box<CycleEntry>;
+        fn equippedRightHand() -> Box<CycleEntry>;
+        fn equippedPower() -> Box<CycleEntry>;
+        fn equippedAmmo() -> Box<CycleEntry>;
+
+        fn unequipSlot(which: Action);
+        
+        fn equipShout(form_spec: &CxxString);
+        fn equipMagic(form_spec: &CxxString, which: Action);
+        fn equipWeapon(form_spec: &CxxString, which: Action);
+        fn equipArmor(form_spec: &CxxString);
     }
 }

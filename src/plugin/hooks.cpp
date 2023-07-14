@@ -108,6 +108,7 @@ namespace hooks
 		int32_t count,
 		RE::TESObjectREFR* a_from_refr)
 	{
+		// TODO update counts for consumables if we need to, or otherwise update the controller
 		add_object_to_container_(a_this, object, extraDataList, count, a_from_refr);
 
 		if (object->IsInventoryObject())
@@ -123,6 +124,7 @@ namespace hooks
 		bool a_play_sound)
 	{
 		pick_up_object_(a_this, object, count, a_arg3, a_play_sound);
+		// TODO update counts for consumables if we need to, or otherwise update the controller
 
 		if (object->GetBaseObject()->IsInventoryObject())
 		{
@@ -132,7 +134,7 @@ namespace hooks
 	}
 
 	RE::ObjectRefHandle PlayerHook::remove_item(RE::Actor* a_this,
-		RE::TESBoundObject* a_item,
+		RE::TESBoundObject* removed_item,
 		std::int32_t count,
 		RE::ITEM_REMOVE_REASON a_reason,
 		RE::ExtraDataList* extraDataList,
@@ -140,12 +142,13 @@ namespace hooks
 		const RE::NiPoint3* a_drop_loc,
 		const RE::NiPoint3* a_rotate)
 	{
-		if (a_item->IsInventoryObject())
+		if (removed_item->IsInventoryObject())
 		{
-			processing::set_setting_data::set_new_item_count_if_needed(a_item, -count);
+			// TODO update counts for consumables if we need to, or otherwise update the controller
+			processing::set_setting_data::set_new_item_count_if_needed(removed_item, -count);
 		}
 
-		return remove_item_(a_this, a_item, count, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
+		return remove_item_(a_this, removed_item, count, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
 	}
 
 	void PlayerHook::add_item_functor(RE::TESObjectREFR* a_this,

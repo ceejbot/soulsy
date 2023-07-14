@@ -2,11 +2,14 @@
 
 #include "enums.h"
 #include "equippable.h"
+#include "gear.h"
+#include "magic.h"
+#include "utility_items.h"
+
 #include "handle/ammo_handle.h"
 #include "helpers.h"
 #include "offset.h"
 #include "string_util.h"
-#include "user_settings.h"
 
 #include "lib.rs.h"
 
@@ -17,10 +20,10 @@ namespace player
 	using action_type = enums::action_type;
 	using data_helper = helpers::data_helper;
 
-	rust::Box<CycleEntry> equipped_left_hand()
+	rust::Box<CycleEntry> equippedLeftHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
-		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto obj = player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
 		if (!obj)
 			return default_cycle_entry();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
@@ -29,7 +32,7 @@ namespace player
 		return equippable::cycle_entry_from_form(item_form);
 	}
 
-	rust::Box<CycleEntry> equipped_right_hand()
+	rust::Box<CycleEntry> equippedRightHand()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
@@ -42,7 +45,7 @@ namespace player
 		return equippable::cycle_entry_from_form(item_form);
 	}
 
-	rust::Box<CycleEntry> equipped_power()
+	rust::Box<CycleEntry> equippedPower()
 	{
 		auto* player    = RE::PlayerCharacter::GetSingleton();
 		const auto* obj = player->GetActorRuntimeData().selectedPower;
@@ -54,7 +57,7 @@ namespace player
 		return equippable::cycle_entry_from_form(item_form);
 	}
 
-	rust::Box<CycleEntry> equipped_ammo()
+	rust::Box<CycleEntry> equippedAmmo()
 	{
 		const auto* ammo_handle = handle::ammo_handle::get_singleton();
 		auto* current_ammo      = ammo_handle->get_current();
@@ -74,6 +77,59 @@ namespace player
 			current_ammo->form->GetName(),
 			formspec);
 	}
+
+	void unequipSlot(Action which) {
+		auto* player = RE::PlayerCharacter::GetSingleton();
+
+		if (which == Action::Power) {
+			magic::unequipShoutSlot(player);
+		} else if (which == Action::Right || which == Action::Left) {
+			gear::unequipHand(player, which);
+		} else {
+			logger::debug("somebody called unequipSlot() with slot={};"sv, which);
+		}
+	}
+
+	void unequipShout() {
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		magic::unequipShoutSlot(player);
+	}
+
+	void equipShout(const std::string& form_spec) {
+		auto RE::TESForm* shout_form = helpers::get_form_from_mod_id_string(form_spec);
+		if (!shout_form)
+		{
+			return;
+		}
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		magic::equipShout(shout_form, player);
+	}
+
+
+	void equipMagic(const std::string& form_spec, Action slot)
+	{
+		// TODO
+	}
+
+	void equipWeapon(const std::string& form_spec, Action slot)
+	{
+		auto RE::TESForm* form = helpers::get_form_from_mod_id_string(form_spec);
+		if (!form)
+		{
+			return;
+		}
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		auto* equip_slot = (slot == Action::left ?  equip::left_hand_equip_slot() : equip::right_hand_equip_slot() );
+		equip::equip_item(form, equip_slot, player, slot_type);
+	}
+
+/*
+equip_item(const RE::TESForm* a_form,
+		RE::BGSEquipSlot*& a_slot,
+		RE::PlayerCharacter*& a_player,
+		enums::slot_type a_type)
+*/
+
 
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
 		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)
@@ -104,12 +160,13 @@ namespace player
 		return count;
 	}
 
+	// TODO remove this and its caller
 	std::vector<data_helper*> get_hand_assignment(bool a_two_handed)
 	{
 		std::vector<data_helper*> data;
 		const auto* player = RE::PlayerCharacter::GetSingleton();
 		auto right_obj     = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		auto left_obj      = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		auto left_obj      = player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
 
 		const auto empty_handle = config::mcm_setting::get_empty_hand_setting();
 

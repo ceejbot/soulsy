@@ -32,7 +32,7 @@ impl HudLayout {
         if !path.exists() {
             // No file? We write out defaults.
             let layout = HudLayout::default();
-            let buf = toml::to_string(&layout)?;
+            let buf = toml::to_string_pretty(&layout)?;
             let mut fp = fs::File::create(path)?;
             write!(fp, "{buf}")?;
             Ok(HudLayout::default())
@@ -44,6 +44,7 @@ impl HudLayout {
                 }
                 Err(e) => {
                     // We are *not* overwriting a bad TOML file, but we are logging it.
+                    // The player might be editing it and experimenting.
                     log::warn!("bad toml in hud layout; {e:?}");
                     Ok(HudLayout::default())
                 }
@@ -97,7 +98,6 @@ impl Default for HudLayout {
             count_color: Color::default(),
             name_color: Color::default(),
             name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 30.0,
         };
         let utility_default = SlotLayout {
             element: HudElement::Utility,
@@ -121,7 +121,6 @@ impl Default for HudLayout {
             count_color: Color::default(),
             name_color: Color::default(),
             name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 30.0,
         };
         let left_default = SlotLayout {
             element: HudElement::Left,
@@ -145,7 +144,6 @@ impl Default for HudLayout {
             count_color: Color::default(),
             name_color: Color::default(),
             name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 30.0,
         };
         let right_default = SlotLayout {
             element: HudElement::Right,
@@ -169,7 +167,6 @@ impl Default for HudLayout {
             count_color: Color::default(),
             name_color: Color::default(),
             name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 30.0,
         };
         let ammo_default = SlotLayout {
             element: HudElement::Ammo,
@@ -193,7 +190,6 @@ impl Default for HudLayout {
             count_color: Color::default(),
             name_color: Color::default(),
             name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 30.0,
         };
 
         let layouts = vec![
@@ -214,6 +210,8 @@ impl Default for HudLayout {
             debug: false,
             animation_alpha: 51,
             animation_duration: 0.1,
+            font: "futura-book-bt.ttf".to_string(),
+            font_size: 30.0,
         }
     }
 }
@@ -251,7 +249,6 @@ impl Default for SlotLayout {
             count_font_size: 20.0,
             count_color: Color::default(),
             name_offset: Point::default(),
-            name_font_size: 20.0,
             name_color: Color::default(),
         }
     }

@@ -9,7 +9,7 @@ namespace offset
 	//constexpr REL::RelocationID get_potion_slot(23154, 23611);
 	constexpr REL::RelocationID get_flash_hud_meter(51907, 52845);
 	constexpr REL::RelocationID get_un_equip_spell(227784, 54669);
-	constexpr REL::RelocationID get_un_equip_shout(53863, 54664);
+	constexpr REL::RelocationID get_un_equipShout(53863, 54664);
 	constexpr REL::RelocationID has_shout(37829, 38783);
 	constexpr REL::RelocationID send_spell_casting_sound_alert(33668, 34448);
 }

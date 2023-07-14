@@ -4,10 +4,10 @@
 #include "player.h"
 #include "user_settings.h"
 
-namespace equip
+namespace magic
 {
 	//add toggle mcm if equip or cast
-	void magic::cast_magic(RE::TESForm* a_form,
+	void cast_magic(RE::TESForm* a_form,
 		action_type a_action,
 		const RE::BGSEquipSlot* a_slot,
 		RE::PlayerCharacter*& a_player)
@@ -125,7 +125,7 @@ namespace equip
 		else
 		{
 			const auto* obj_right = a_player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-			const auto* obj_left  = a_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+			const auto* obj_left  = a_player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
 			if (left && obj_left && obj_left->formID == spell->formID)
 			{
 				logger::debug("Object Left {} is already where it should be already equipped. return."sv,
@@ -150,7 +150,7 @@ namespace equip
 		logger::trace("worked spell {}, action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
-	void magic::cast_scroll(const RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& a_player)
+	void cast_scroll(const RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& a_player)
 	{
 		logger::trace("try to work scroll {}, action {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 
@@ -199,7 +199,7 @@ namespace equip
 		logger::trace("worked scroll {}, action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
-	void magic::equip_or_cast_power(RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& a_player)
+	void equip_or_cast_power(RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& a_player)
 	{
 		logger::trace("try to work power {}, action {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 
@@ -230,47 +230,12 @@ namespace equip
 			return;
 		}
 
-		if (a_action == enums::action_type::instant)
-		{
-			if (config::mcm_setting::get_elden_demon_souls())
-			{
-				logger::warn("form {}, will only not instant cast power in elden mode. return."sv, spell->GetName());
-				return;
-			}
-			//might not consider daily cool downs
-			auto* actor         = a_player->As<RE::Actor>();
-			auto* caster        = actor->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant);
-			auto is_self_target = spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf;
-			auto* target        = is_self_target ? actor : actor->GetActorRuntimeData().currentCombatTarget.get().get();
-
-			auto magnitude     = 1.f;
-			auto effectiveness = 1.f;
-			if (auto* effect = spell->GetCostliestEffectItem())
-			{
-				magnitude = effect->GetMagnitude();
-			}
-			logger::trace("casting spell {}, magnitude {}, effectiveness {}"sv,
-				spell->GetName(),
-				fmt::format(FMT_STRING("{:.2f}"), magnitude),
-				fmt::format(FMT_STRING("{:.2f}"), effectiveness));
-
-			caster->CastSpellImmediate(spell,
-				false,
-				target,
-				effectiveness,
-				false,
-				magnitude,
-				is_self_target ? nullptr : actor);
-			send_spell_casting_sound_alert(caster, spell);
-		}
-		else
-		{
-			RE::ActorEquipManager::GetSingleton()->EquipSpell(a_player, spell);
-		}
+		
+		RE::ActorEquipManager::GetSingleton()->EquipSpell(a_player, spell);
 		logger::trace("worked power {} action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
-	void magic::equip_shout(RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
+	void equipShout(RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
 	{
 		logger::trace("try to equip shout {}"sv, a_form->GetName());
 
@@ -304,7 +269,7 @@ namespace equip
 		logger::trace("equipped shout {}. return."sv, a_form->GetName());
 	}
 
-	RE::MagicSystem::CastingSource magic::get_casting_source(const RE::BGSEquipSlot* a_slot)
+	RE::MagicSystem::CastingSource get_casting_source(const RE::BGSEquipSlot* a_slot)
 	{
 		if (a_slot == equip::right_hand_equip_slot())
 		{
@@ -317,7 +282,7 @@ namespace equip
 		return RE::MagicSystem::CastingSource::kOther;
 	}
 
-	bool magic::can_dual_cast(float a_cost, float a_magicka, float a_multiplier)
+	bool can_dual_cast(float a_cost, float a_magicka, float a_multiplier)
 	{
 		if ((a_cost * a_multiplier) < a_magicka)
 		{
@@ -326,17 +291,63 @@ namespace equip
 		return false;
 	}
 
-	void magic::flash_hud_meter(RE::ActorValue a_actor_value)
+	void flash_hud_meter(RE::ActorValue a_actor_value)
 	{
-		static REL::Relocation<decltype(magic::flash_hud_meter)> flash_hud_meter{ REL::ID(
+		static REL::Relocation<decltype(flash_hud_meter)> flash_hud_meter{ REL::ID(
 			offset::get_flash_hud_meter) };
 		return flash_hud_meter(a_actor_value);
 	}
 
-	void magic::send_spell_casting_sound_alert(RE::MagicCaster* a_magic_caster, RE::SpellItem* a_spell_item)
+	void send_spell_casting_sound_alert(RE::MagicCaster* a_magic_caster, RE::SpellItem* a_spell_item)
 	{
-		static REL::Relocation<decltype(magic::send_spell_casting_sound_alert)> send_spell_casting_sound_alert{ REL::ID(
+		static REL::Relocation<decltype(send_spell_casting_sound_alert)> send_spell_casting_sound_alert{ REL::ID(
 			offset::send_spell_casting_sound_alert) };
 		return send_spell_casting_sound_alert(a_magic_caster, a_spell_item);
 	}
+
+	// ---------- Spells.
+
+	void unequip_spell(RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stack_id,
+		RE::Actor* a_actor,
+		RE::SpellItem* a_spell,
+		uint32_t slot)
+	{
+		using func_t = decltype(&unequip_spell);
+		const REL::Relocation<func_t> func{ REL::ID(offset::get_un_equip_spell) };
+		func(a_vm, a_stack_id, a_actor, a_spell, slot);
+	}
+
+	// ---------- Shouts.
+
+	void unequipShout(RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stack_id,
+		RE::Actor* a_actor,
+		RE::TESShout* a_shout)
+	{
+		using func_t = decltype(&unequip_shout);
+		const REL::Relocation<func_t> func{ REL::ID(offset::get_un_equip_shout) };
+		func(a_vm, a_stack_id, a_actor, a_shout);
+	}
+
+	void unequipShoutSlot(RE::PlayerCharacter*& player)
+	{
+		auto* selected_power = player->GetActorRuntimeData().selectedPower;
+		if (selected_power)
+		{
+			logger::trace("Equipped form is {}, try to un equip"sv,
+				util::string_util::int_to_hex(selected_power->formID));
+			if (selected_power->Is(RE::FormType::Shout))
+			{
+				unequipShout(nullptr, 0, player, selected_power->As<RE::TESShout>());
+			}
+			else if (selected_power->Is(RE::FormType::Spell))
+			{
+				//power
+				//2=other
+				unequip_spell(nullptr, 0, player, selected_power->As<RE::SpellItem>(), 2);
+			}
+		}
+	}
+
 }

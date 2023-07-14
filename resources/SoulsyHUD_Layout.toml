@@ -1,6 +1,8 @@
 animation_alpha = 51
 animation_duration = 0.10000000149011612
-debug = false
+debug = true
+font = "futura-book-bt.ttf"
+font_size = 30.0
 
 [anchor]
 x = 1000.0
@@ -19,7 +21,6 @@ a = 255
 [[layouts]]
 name = "Shouts/Powers"
 count_font_size = 20.0
-name_font_size = 30.0
 
 [layouts.element]
 repr = 0
@@ -91,7 +92,6 @@ y = 20.0
 [[layouts]]
 name = "Consumables"
 count_font_size = 20.0
-name_font_size = 30.0
 
 [layouts.element]
 repr = 1
@@ -163,7 +163,6 @@ y = 20.0
 [[layouts]]
 name = "Left Hand"
 count_font_size = 20.0
-name_font_size = 30.0
 
 [layouts.element]
 repr = 2
@@ -235,7 +234,6 @@ y = 20.0
 [[layouts]]
 name = "Right Hand"
 count_font_size = 20.0
-name_font_size = 30.0
 
 [layouts.element]
 repr = 3
@@ -307,7 +305,6 @@ y = 20.0
 [[layouts]]
 name = "Ammo"
 count_font_size = 20.0
-name_font_size = 30.0
 
 [layouts.element]
 repr = 4

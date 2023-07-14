@@ -3,7 +3,6 @@
 #include "constant.h"
 #include "custom_setting.h"
 #include "enums.h"
-#include "file_setting.h"
 #include "helpers.h"
 #include "ui_renderer.h"
 #include "user_settings.h"
