@@ -78,24 +78,32 @@ namespace player
 			formspec);
 	}
 
-	void unequipSlot(Action which) {
+	void unequipSlot(Action which)
+	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
-		if (which == Action::Power) {
+		if (which == Action::Power)
+		{
 			magic::unequipShoutSlot(player);
-		} else if (which == Action::Right || which == Action::Left) {
+		}
+		else if (which == Action::Right || which == Action::Left)
+		{
 			gear::unequipHand(player, which);
-		} else {
+		}
+		else
+		{
 			logger::debug("somebody called unequipSlot() with slot={};"sv, which);
 		}
 	}
 
-	void unequipShout() {
+	void unequipShout()
+	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		magic::unequipShoutSlot(player);
 	}
 
-	void equipShout(const std::string& form_spec) {
+	void equipShout(const std::string& form_spec)
+	{
 		auto RE::TESForm* shout_form = helpers::get_form_from_mod_id_string(form_spec);
 		if (!shout_form)
 		{
@@ -118,12 +126,12 @@ namespace player
 		{
 			return;
 		}
-		auto* player = RE::PlayerCharacter::GetSingleton();
-		auto* equip_slot = (slot == Action::left ?  equip::left_hand_equip_slot() : equip::right_hand_equip_slot() );
+		auto* player     = RE::PlayerCharacter::GetSingleton();
+		auto* equip_slot = (slot == Action::left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot());
 		equip::equip_item(form, equip_slot, player, slot_type);
 	}
 
-/*
+	/*
 equip_item(const RE::TESForm* a_form,
 		RE::BGSEquipSlot*& a_slot,
 		RE::PlayerCharacter*& a_player,

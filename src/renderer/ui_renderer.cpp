@@ -738,7 +738,7 @@ namespace ui
 
 	void ui_renderer::load_font()
 	{
-		auto hud = layout();
+		auto hud         = layout();
 		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + hud.font_file();
 		auto file_path   = std::filesystem::path(path);
 
@@ -757,10 +757,7 @@ namespace ui
 
 			builder.BuildRanges(&ranges);
 
-			loaded_font = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(),
-				layout.fon,
-				nullptr,
-				ranges.Data);
+			loaded_font = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(), layout.fon, nullptr, ranges.Data);
 			if (io.Fonts->Build())
 			{
 				ImGui_ImplDX11_CreateDeviceObjects();

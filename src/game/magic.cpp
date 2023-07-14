@@ -230,7 +230,7 @@ namespace magic
 			return;
 		}
 
-		
+
 		RE::ActorEquipManager::GetSingleton()->EquipSpell(a_player, spell);
 		logger::trace("worked power {} action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
@@ -293,8 +293,7 @@ namespace magic
 
 	void flash_hud_meter(RE::ActorValue a_actor_value)
 	{
-		static REL::Relocation<decltype(flash_hud_meter)> flash_hud_meter{ REL::ID(
-			offset::get_flash_hud_meter) };
+		static REL::Relocation<decltype(flash_hud_meter)> flash_hud_meter{ REL::ID(offset::get_flash_hud_meter) };
 		return flash_hud_meter(a_actor_value);
 	}
 

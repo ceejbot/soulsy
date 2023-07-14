@@ -5,9 +5,9 @@
 
 #include "constant.h"
 #include "enums.h"
+#include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
-#include "equippable.h"
 #include "player.h"
 #include "string_util.h"
 #include "user_settings.h"
@@ -102,7 +102,7 @@ namespace handle
 		//we set the icon type according to the actor value
 		if (slots->front()->actor_value != RE::ActorValue::kNone && slots->front()->type == slot_type::consumable)
 		{
-			page->icon_type  = equippable::get_consumable_icon_by_actor_value(slots->front()->actor_value);
+			page->icon_type = equippable::get_consumable_icon_by_actor_value(slots->front()->actor_value);
 		}
 
 		auto* draw                         = new position_draw_setting();

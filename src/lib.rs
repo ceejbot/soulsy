@@ -328,7 +328,7 @@ pub mod plugin {
         fn equippedAmmo() -> Box<CycleEntry>;
 
         fn unequipSlot(which: Action);
-        
+
         fn equipShout(form_spec: &CxxString);
         fn equipMagic(form_spec: &CxxString, which: Action);
         fn equipWeapon(form_spec: &CxxString, which: Action);

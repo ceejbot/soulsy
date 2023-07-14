@@ -7,7 +7,7 @@ namespace file_setting
 	// mod behaviors. The only thing remaining from this that we care about is the debug
 	// setting, which affects log levels.
 
-	// Should be entirely replaced with the Rust-side `layout` 
+	// Should be entirely replaced with the Rust-side `layout`
 
 	void load_setting();
 

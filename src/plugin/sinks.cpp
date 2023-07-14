@@ -1,7 +1,7 @@
 #include "sinks.h"
 
-#include "helpers.h"
 #include "equippable.h"
+#include "helpers.h"
 #include "keycodes.h"
 #include "player.h"
 #include "ui_renderer.h"
@@ -46,7 +46,7 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	}
 
 	auto changed = handle_item_equipped(form);
-	// TODO trigger UI redraw? or just wait for next tick? 
+	// TODO trigger UI redraw? or just wait for next tick?
 
 	return event_result::kContinue;
 }
@@ -137,8 +137,11 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		}
 
 		const KeyEventResponse response = handle_key_event(key, *button);
-		logger::info("controller responded to button event; key={}; handled={}; start={}; stop={}"sv, key, 
-			response.handled, response.start_timer, response.stop_timer);
+		logger::info("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
+			key,
+			response.handled,
+			response.start_timer,
+			response.stop_timer);
 		if (!response.handled)
 		{
 			continue;
@@ -148,7 +151,6 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		{
 			logger::info("hysteresis timer STOP; slot={}"sv, response.start_timer);
 			ui::ui_renderer::stopTimer(response.stop_timer);
-
 		}
 
 		if (response.start_timer != Action::Irrelevant)

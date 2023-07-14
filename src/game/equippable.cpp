@@ -1,7 +1,7 @@
 #include "equippable.h"
 
-#include "player.h"
 #include "lib.rs.h"
+#include "player.h"
 
 namespace equippable
 {

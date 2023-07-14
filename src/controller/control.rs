@@ -136,16 +136,16 @@ impl Controller {
     }
 
     /// When the equip delay for a cycle expires, equip the item at the top.
-    /// 
+    ///
     /// This function implements a critical function in the mod: equipping
     /// items. When the delay timer expires, we're notified to act on the
     /// player's changes to the cycle rotation. The delay exists to let the
     /// player tap a hotkey repeatedly to look at the items in a cycle without
     /// equipping each one of them as they go. Instead we wait for a little bit,
-    /// and if we've had no more hotkey events, we act. 
-    /// 
+    /// and if we've had no more hotkey events, we act.
+    ///
     /// We do not act here on cascading changes. Instead, we let the equipped-change
-    /// callback decide what to do when, e.g., a two-handed item is equipped. 
+    /// callback decide what to do when, e.g., a two-handed item is equipped.
     fn timer_expired(&self, which: Action) {
         if matches!(which, Action::Left) && self.two_hander_equipped {
             // The left hand is blocked because the right hand is equipping a two-hander.
@@ -199,7 +199,10 @@ impl Controller {
         } else if kind.is_armor() {
             equipArmor(&form_spec);
         } else {
-            log::info!("we did nothing with item name={}; kind={kind:?};", item.name());
+            log::info!(
+                "we did nothing with item name={}; kind={kind:?};",
+                item.name()
+            );
         }
     }
 

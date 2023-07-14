@@ -1,11 +1,11 @@
 
 #include "hooks.h"
+#include "papyrus.h"
 #include "sinks.h"
 #include "ui_renderer.h"
-#include "papyrus.h"
 
-#include "processing/set_setting_data.h" // to be deleted eventually
-#include "user_settings.h" // same
+#include "processing/set_setting_data.h"  // to be deleted eventually
+#include "user_settings.h"                // same
 
 #include "lib.rs.h"
 
@@ -41,7 +41,6 @@ void init_logger()
 		logger::info("starting up {} @ v{}"sv, Version::PROJECT, Version::NAME);
 
 		initialize_rust_logging(path->string());
-
 	}
 	catch (const std::exception& e)
 	{
