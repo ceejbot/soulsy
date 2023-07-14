@@ -112,7 +112,7 @@ pub mod plugin {
     ///
     /// This lets us determine the icon as well as which cycle slot an item can
     /// be added to.
-    #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+    #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
     enum EntryKind {
         Alteration,
         ArmorClothing,
@@ -166,7 +166,7 @@ pub mod plugin {
     }
 
     /// Turning the key number into an enum is handy.
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, Hash)]
     enum Action {
         /// We do not need to do anything, possibly because the key was not one of our hotkeys.
         Irrelevant,
@@ -218,6 +218,9 @@ pub mod plugin {
     extern "Rust" {
         /// Trigger the rust side to start logging.
         fn initialize_rust_logging(logdir: &CxxString);
+        /// Trigger rust to read config, figure out what the player has equipped,
+        /// and figure out what it should draw.
+        fn initialize_hud();
 
         /// Give access to the settings to the C++ side.
         type UserSettings;
@@ -253,6 +256,8 @@ pub mod plugin {
             name: &str,
             form_string: &str,
         ) -> Box<CycleEntry>;
+        /// Snag a default cycle entry.
+        fn default_cycle_entry() -> Box<CycleEntry>;
 
         /// Get the svg icon matching this item. Not a full path.
         fn get_icon_file(kind: &EntryKind) -> String;

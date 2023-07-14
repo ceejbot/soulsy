@@ -2,6 +2,9 @@
 
 #include "helpers.h"
 
+#include "lib.rs.h"
+
+class CycleEntry;
 namespace player
 {
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
@@ -13,4 +16,9 @@ namespace player
 	void play_sound(RE::BGSSoundDescriptor* a_sound_descriptor_form, RE::PlayerCharacter*& a_player);
 
 	uint32_t get_inventory_count(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player);
+
+	rust::Box<CycleEntry> equipped_left_hand();
+	rust::Box<CycleEntry> equipped_right_hand();
+	rust::Box<CycleEntry> equipped_power();
+	rust::Box<CycleEntry> equipped_ammo();
 }

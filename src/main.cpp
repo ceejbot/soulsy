@@ -73,10 +73,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 		case SKSE::MessagingInterface::kPostLoadGame:
 		case SKSE::MessagingInterface::kNewGame:
 			logger::debug("SKSE post load-game / new game calleback; type={}"sv, static_cast<uint32_t>(msg->type));
-			// TODO: replace with whatever it is we need to do in Rust.
-			// processing::set_setting_data::read_and_set_data();
-			// processing::set_setting_data::get_actives_and_equip();
-			// processing::set_setting_data::check_config_data();
+			initialize_hud();
 			ui::ui_renderer::set_show_ui(true);
 			logger::info("SKSE post-hook done: type={}"sv, static_cast<uint32_t>(msg->type));
 			break;

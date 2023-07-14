@@ -1,8 +1,9 @@
 #include "player.h"
 
+#include "ammo_handle.h"
 #include "enums.h"
-#include "helpers.h"
 #include "equippable.h"
+#include "helpers.h"
 #include "offset.h"
 #include "string_util.h"
 #include "user_settings.h"
@@ -13,6 +14,65 @@ namespace player
 	using slot_type   = enums::slot_type;
 	using action_type = enums::action_type;
 	using data_helper = helpers::data_helper;
+
+	rust::Box<CycleEntry> equipped_left_hand()
+	{
+		// TODO what if it can't be found? return null I guess?
+		const obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		if (!obj)
+			return default_cycle_entry();
+		const auto* item_form = RE::TESForm::LookupByID(obj->formID);
+		if (!item_form)
+			return default_cycle_entry();
+		const auto entry = cycle_entry_from_form(item_form);
+		return entry;
+	}
+
+	rust::Box<CycleEntry> equipped_right_hand()
+	{
+		const obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		if (!obj)
+			return default_cycle_entry();
+		const auto* item_form = RE::TESForm::LookupByID(obj->formID);
+		if (!item_form)
+			return default_cycle_entry();
+		const auto entry = cycle_entry_from_form(item_form);
+		return entry;
+	}
+
+	rust::Box<CycleEntry> equipped_power()
+	{
+		// what do you bet it's not this easy?
+		const auto* obj = a_player->GetActorRuntimeData().selectedPower;
+		if (!obj)
+			return default_cycle_entry();
+		const auto* item_form = RE::TESForm::LookupByID(power->formID);
+		if (!item_form)
+			return default_cycle_entry();
+		const auto entry = cycle_entry_from_form(item_form);
+		return entry;
+	}
+
+	rust::Box<CycleEntry> equipped_ammo()
+	{
+		const auto* ammo_handle = handle::ammo_handle::get_singleton();
+		auto* current_ammo      = ammo_handle->get_current();
+
+		if (current_ammo)
+		{
+			const auto formspec       = helpers::get_form_spec(current_ammo->form);
+			const std::string tmpname = current_ammo->form->GetName();
+
+			return create_cycle_entry(EntryKind::Arrow,
+				false,
+				true,
+				current_ammo->item_count,
+				std::to_string(form->GetName()),
+				formspec);
+		}
+		
+		return default_cycle_entry();
+	}
 
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
 		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)

@@ -1,13 +1,37 @@
 use std::sync::Mutex;
+use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
+use super::layout::layout;
 use super::settings::user_settings;
 use crate::plugin::*;
 
-/// There can be only one. Not public because we want access managed.
+
+/// There can be only one. Not public because we want access managed. 
+// Does this really need to be a mutex? I think we're single-threaded...
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
+
+/// C++ tells us when it's safe to start pulling together the data we need.
+pub fn initialize_hud() {
+    let _ctrl = CONTROLLER.lock().unwrap();
+    let _settings = user_settings();
+    let _layout = layout();
+
+    // here we should validate all four cycle entries which might refer to now-missing items
+    // player::has_item_or_spell(form) is the function to call
+
+    // now walk through what we should be showing in each slot, whether in the cycle or not
+    // These functions are mostly implemented:
+	// rust::Box<CycleEntry> equipped_left_hand();
+	// rust::Box<CycleEntry> equipped_right_hand();
+	// rust::Box<CycleEntry> equipped_power();
+	// rust::Box<CycleEntry> equipped_ammo();
+    
+    // The readied utility item is purely in our control, so we can use whatever we have 
+    // top-of-cycle for that one.
+}
 
 /// Function for C++ to call to send a relevant button event to us.
 pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
@@ -66,10 +90,7 @@ pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
     // speculative: I think this is how we'll handle tracking equipped thingies
-    equipped_power: Option<CycleEntry>,
-    equipped_utility: Option<CycleEntry>,
-    equipped_left: Option<CycleEntry>,
-    equipped_right: Option<CycleEntry>,
+    equipped: HashMap<Action, CycleEntry>,
 }
 
 impl Controller {
@@ -86,14 +107,11 @@ impl Controller {
     // TODO refs instead of cloning
     /// Get the item equipped in a specific slot. I'd like to return an option but I can't.
     pub fn equipped_in_slot(&self, slot: Action) -> Box<CycleEntry> {
-        let candidate = match slot {
-            Action::Power => self.equipped_power.clone().unwrap_or_default(),
-            Action::Utility => self.equipped_utility.clone().unwrap_or_default(),
-            Action::Left => self.equipped_left.clone().unwrap_or_default(),
-            Action::Right => self.equipped_right.clone().unwrap_or_default(),
-            _ => CycleEntry::default(),
+        let Some(candidate) = self.equipped.get(&slot) else {
+            return Box::new(CycleEntry::default());
         };
-        Box::new(candidate)
+
+        Box::new(candidate.clone())
     }
 
     /// Handle a key-press event that the event system decided we need to know about.
