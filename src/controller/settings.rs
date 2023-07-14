@@ -6,7 +6,11 @@ use once_cell::sync::Lazy;
 
 use crate::plugin::HudElement;
 
+/// This is the path to user settings. 
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
+
+/// This is the path to the mod settings definition file.
+/// static INI_PATH: &str = "./data/MCM/Config/SoulsyHUD/settings.ini";
 
 /// There can be only one. Not public because we want access managed.
 static SETTINGS: Lazy<Mutex<UserSettings>> = Lazy::new(|| Mutex::new(UserSettings::default()));

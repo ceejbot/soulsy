@@ -4,8 +4,8 @@
   "minMcmVersion": 11,
   "pages": [
     {
-      "pageDisplayName": "Soulsy HUD",
-      "content": [{ "text": "A tiny low-maintenance equip cycler." }]
+      "pageDisplayName": "$SoulsyHUD",
+      "content": [{ "text": "$SoulsyHUD_MainPage_Text" }]
     },
     {
       "pageDisplayName": "$SoulsyHUD_MainPage_Title",
@@ -17,8 +17,8 @@
         {
           "id": "uPowerCycleKey:Controls",
           "text": "$SoulsyHUD_Controls_PowerCycleKey_OptionText",
-          "type": "keymap",
           "help": "$SoulsyHUD_Controls_PowerCycleKey_InfoText",
+          "type": "keymap",
           "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
@@ -27,8 +27,8 @@
         {
           "id": "uUtilityCycleKey:Controls",
           "text": "$SoulsyHUD_Controls_UtilityCycleKey_OptionText",
-          "type": "keymap",
           "help": "$SoulsyHUD_Controls_UtilityCycleKey_InfoText",
+          "type": "keymap",
           "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
@@ -36,9 +36,9 @@
         },
         {
           "id": "uLeftCycleKey:Controls",
+          "help": "$SoulsyHUD_Controls_LeftCycleKey_InfoText",
           "text": "$SoulsyHUD_Controls_LeftCycleKey_OptionText",
           "type": "keymap",
-          "help": "$SoulsyHUD_Controls_LeftCycleKey_InfoText",
           "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
@@ -47,8 +47,8 @@
         {
           "id": "uRightCycleKey:Controls",
           "text": "$SoulsyHUD_Controls_RightCycleKey_OptionText",
-          "type": "keymap",
           "help": "$SoulsyHUD_Controls_RightCycleKey_InfoText",
+          "type": "keymap",
           "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
@@ -155,7 +155,6 @@
               "$SoulsyHUD_Controls_Xbox"
             ],
             "sourceType": "ModSettingInt",
-            "propertyName": "uControllerKind",
             "defaultValue": 0
           }
         }
