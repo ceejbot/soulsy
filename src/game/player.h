@@ -1,10 +1,10 @@
 #pragma once
 
 #include "helpers.h"
+#include "rust/cxx.h"
 
-#include "lib.rs.h"
+struct CycleEntry;
 
-class CycleEntry;
 namespace player
 {
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>

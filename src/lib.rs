@@ -12,7 +12,7 @@ use controller::*;
 pub mod plugin {
 
     /// Hud elements to draw.
-    #[derive(Deserialize, Serialize, Debug, Clone)]
+    #[derive(Deserialize, Serialize, Debug, Clone, Hash)]
     enum HudElement {
         Power,
         Utility,
@@ -305,5 +305,16 @@ pub mod plugin {
         /// Show or hide the HUD widget.
         #[namespace = "helpers"]
         fn toggle_hud_visibility();
+
+        // Selected player data fetchers.
+        include!("player.h");
+        #[namespace = "player"]
+        fn equipped_left_hand() -> Box<CycleEntry>;
+        #[namespace = "player"]
+        fn equipped_right_hand() -> Box<CycleEntry>;
+        #[namespace = "player"]
+        fn equipped_power() -> Box<CycleEntry>;
+        #[namespace = "player"]
+        fn equipped_ammo() -> Box<CycleEntry>;
     }
 }

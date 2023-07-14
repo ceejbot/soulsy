@@ -10,14 +10,14 @@ namespace equippable
 	rust::Box<CycleEntry> cycle_entry_from_form(RE::TESForm*& item_form)
 	{
 		auto item_type          = equippable::get_type(item_form);
-		[[ maybe_unused ]] bool has_count          = (item_type == slot_type::consumable || item_type == slot_type::scroll);
+		bool has_count          = (item_type == slot_type::consumable || item_type == slot_type::scroll);
 		auto count              = player::get_inventory_count(item_form);
 		bool two_handed         = equippable::is_two_handed(item_form);
 		std::string form_string = helpers::get_form_spec(item_form);
 		auto kind               = equippable::get_icon_type(item_type, item_form);
 		std::string name        = item_form->GetName();
 
-		auto entry = create_cycle_entry(kind, two_handed, count, count, name, form_string);
+		auto entry = create_cycle_entry(kind, two_handed, has_count, count, name, form_string);
 		return entry;
 	}
 

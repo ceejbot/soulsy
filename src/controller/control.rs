@@ -1,5 +1,5 @@
-use std::sync::Mutex;
 use std::collections::HashMap;
+use std::sync::Mutex;
 
 use once_cell::sync::Lazy;
 
@@ -8,14 +8,13 @@ use super::layout::layout;
 use super::settings::user_settings;
 use crate::plugin::*;
 
-
-/// There can be only one. Not public because we want access managed. 
+/// There can be only one. Not public because we want access managed.
 // Does this really need to be a mutex? I think we're single-threaded...
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
 
 /// C++ tells us when it's safe to start pulling together the data we need.
 pub fn initialize_hud() {
-    let _ctrl = CONTROLLER.lock().unwrap();
+    let mut ctrl = CONTROLLER.lock().unwrap();
     let _settings = user_settings();
     let _layout = layout();
 
@@ -23,14 +22,11 @@ pub fn initialize_hud() {
     // player::has_item_or_spell(form) is the function to call
 
     // now walk through what we should be showing in each slot, whether in the cycle or not
-    // These functions are mostly implemented:
-	// rust::Box<CycleEntry> equipped_left_hand();
-	// rust::Box<CycleEntry> equipped_right_hand();
-	// rust::Box<CycleEntry> equipped_power();
-	// rust::Box<CycleEntry> equipped_ammo();
-    
-    // The readied utility item is purely in our control, so we can use whatever we have 
+    let _refresh = ctrl.update_equipped();
+    // The readied utility item is purely in our control, so we can use whatever we have
     // top-of-cycle for that one.
+
+    // TODO
 }
 
 /// Function for C++ to call to send a relevant button event to us.
@@ -49,14 +45,7 @@ pub fn handle_menu_event(key: u32, menu_item: Box<CycleEntry>) -> MenuEventRespo
 
 /// Get information about the item equipped in a specific slot.
 pub fn equipped_in_slot(element: HudElement) -> Box<CycleEntry> {
-    let slot = match element {
-        HudElement::Power => Action::Power,
-        HudElement::Utility => Action::Utility,
-        HudElement::Left => Action::Left,
-        HudElement::Right => Action::Right,
-        _ => Action::Irrelevant,
-    };
-    CONTROLLER.lock().unwrap().equipped_in_slot(slot)
+    CONTROLLER.lock().unwrap().equipped_in_slot(element)
 }
 
 impl From<u32> for Action {
@@ -90,7 +79,7 @@ pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
     // speculative: I think this is how we'll handle tracking equipped thingies
-    equipped: HashMap<Action, CycleEntry>,
+    equipped: HashMap<HudElement, CycleEntry>,
 }
 
 impl Controller {
@@ -106,12 +95,56 @@ impl Controller {
 
     // TODO refs instead of cloning
     /// Get the item equipped in a specific slot. I'd like to return an option but I can't.
-    pub fn equipped_in_slot(&self, slot: Action) -> Box<CycleEntry> {
+    pub fn equipped_in_slot(&self, slot: HudElement) -> Box<CycleEntry> {
         let Some(candidate) = self.equipped.get(&slot) else {
             return Box::new(CycleEntry::default());
         };
 
         Box::new(candidate.clone())
+    }
+
+    /// Returns true if our view of the player changed.
+    pub fn update_equipped(&mut self) -> bool {
+        let mut changed = false;
+
+        let left_entry = equipped_left_hand();
+        log::info!(
+            "left hand: {} {}",
+            left_entry.name(),
+            left_entry.form_string()
+        );
+        changed = changed || self.update_slot(HudElement::Left, &left_entry);
+
+        let right_entry = equipped_right_hand();
+        log::info!(
+            "right hand: {} {}",
+            right_entry.name(),
+            right_entry.form_string()
+        );
+        changed = changed || self.update_slot(HudElement::Right, &right_entry);
+
+        let power = equipped_power();
+        log::info!("power: {} {}", power.name(), power.form_string());
+        changed = changed || self.update_slot(HudElement::Power, &power);
+
+        let ammo = equipped_ammo();
+        log::info!(
+            "ammo: {} {} {}",
+            ammo.count(),
+            ammo.name(),
+            ammo.form_string()
+        );
+        changed = changed || self.update_slot(HudElement::Ammo, &ammo);
+
+        changed
+    }
+
+    fn update_slot(&mut self, slot: HudElement, new_item: &CycleEntry) -> bool {
+        if let Some(replaced) = self.equipped.insert(slot, new_item.clone()) {
+            replaced != *new_item
+        } else {
+            false
+        }
     }
 
     /// Handle a key-press event that the event system decided we need to know about.
