@@ -85,10 +85,10 @@ namespace ui
 		static void init_animation(animation_type animation_type,
 			float a_screen_x,
 			float a_screen_y,
-			float a_scale_x,
-			float a_scale_y,
 			float a_offset_x,
 			float a_offset_y,
+			float width,
+			float height,
 			uint32_t a_modify,
 			uint32_t a_alpha,
 			float a_duration);

@@ -13,7 +13,7 @@ use once_cell::sync::Lazy;
 
 use crate::plugin::{Color, HudElement, HudLayout, Point, SlotLayout};
 
-static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_HudLayout.toml";
+static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
 /// There can be only one. Not public because we want access managed.
 static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::refresh()));
@@ -37,12 +37,20 @@ impl HudLayout {
             write!(fp, "{buf}")?;
             Ok(HudLayout::default())
         } else if let Ok(buf) = fs::read_to_string(PathBuf::from(LAYOUT_PATH)) {
-            let layout = toml::from_str::<HudLayout>(&buf)?;
-            Ok(layout)
+            match toml::from_str::<HudLayout>(&buf) {
+                Ok(v) => {
+                    log::info!("successfully read a hud layout file");
+                    Ok(v)
+                }
+                Err(e) => {
+                    // We are *not* overwriting a bad TOML file, but we are logging it.
+                    log::warn!("bad toml in hud layout; {e:?}");
+                    Ok(HudLayout::default())
+                }
+            }
         } else {
-            // We are *not* overwriting a bad TOML file, but we are logging it.
             log::warn!(
-                "unable to parse the toml in {}! falling back to defaults",
+                "unable to read any data from {}! falling back to defaults",
                 LAYOUT_PATH
             );
             Ok(HudLayout::default())
@@ -66,17 +74,141 @@ impl HudLayout {
 
 impl Default for HudLayout {
     fn default() -> Self {
-        let layouts = vec![
-            SlotLayout::default_for_element(HudElement::Power),
-            SlotLayout::default_for_element(HudElement::Utility),
-            SlotLayout::default_for_element(HudElement::Left),
-            SlotLayout::default_for_element(HudElement::Right),
-            SlotLayout::default_for_element(HudElement::Ammo),
-        ];
+        // Yes, this is annoyingly complex. Obviously this solution is wrong.
+        let power_default = SlotLayout {
+            element: HudElement::Power,
+            name: "Shouts/Powers".to_string(),
+            offset: Point { x: 0.0, y: -125.0 },
+            size: Point { x: 125.0, y: 125.0 },
+            bg_color: Color::default(),
+            icon_color: Color {
+                r: 255,
+                g: 255,
+                b: 120,
+                a: 255,
+            },
+            icon_size: Point { x: 125.0, y: 125.0 },
+            hotkey_color: Color::default(),
+            hotkey_offset: Point { x: 10.0, y: 0.0 },
+            hotkey_size: Point { x: 30.0, y: 30.0 },
+            hotkey_bg_color: Color::default(),
+            text_offset: Point { x: 0.0, y: 0.0 },
+            count_font_size: 20.0,
+            count_color: Color::default(),
+            name_color: Color::default(),
+            name_offset: Point { x: 0.0, y: 20.0 },
+            name_font_size: 30.0,
+        };
+        let utility_default = SlotLayout {
+            element: HudElement::Utility,
+            name: "Consumables".to_string(),
+            offset: Point { x: 0.0, y: 125.0 },
+            size: Point { x: 125.0, y: 125.0 },
+            bg_color: Color::default(),
+            icon_color: Color {
+                r: 255,
+                g: 120,
+                b: 120,
+                a: 255,
+            },
+            icon_size: Point { x: 125.0, y: 125.0 },
+            hotkey_color: Color::default(),
+            hotkey_offset: Point { x: 10.0, y: 0.0 },
+            hotkey_size: Point { x: 30.0, y: 30.0 },
+            hotkey_bg_color: Color::default(),
+            text_offset: Point { x: 0.0, y: 0.0 },
+            count_font_size: 20.0,
+            count_color: Color::default(),
+            name_color: Color::default(),
+            name_offset: Point { x: 0.0, y: 20.0 },
+            name_font_size: 30.0,
+        };
+        let left_default = SlotLayout {
+            element: HudElement::Left,
+            name: "Left Hand".to_string(),
+            offset: Point { x: -125.0, y: 0.0 },
+            size: Point { x: 125.0, y: 125.0 },
+            bg_color: Color::default(),
+            icon_color: Color {
+                r: 120,
+                g: 255,
+                b: 120,
+                a: 255,
+            },
+            icon_size: Point { x: 125.0, y: 125.0 },
+            hotkey_color: Color::default(),
+            hotkey_offset: Point { x: 10.0, y: 0.0 },
+            hotkey_size: Point { x: 30.0, y: 30.0 },
+            hotkey_bg_color: Color::default(),
+            text_offset: Point { x: 0.0, y: 0.0 },
+            count_font_size: 20.0,
+            count_color: Color::default(),
+            name_color: Color::default(),
+            name_offset: Point { x: 0.0, y: 20.0 },
+            name_font_size: 30.0,
+        };
+        let right_default = SlotLayout {
+            element: HudElement::Right,
+            name: "Right Hand".to_string(),
+            offset: Point { x: 125.0, y: 0.0 },
+            size: Point { x: 125.0, y: 125.0 },
+            bg_color: Color::default(),
+            icon_color: Color {
+                r: 0,
+                g: 255,
+                b: 255,
+                a: 255,
+            },
+            icon_size: Point { x: 125.0, y: 125.0 },
+            hotkey_color: Color::default(),
+            hotkey_offset: Point { x: 10.0, y: 0.0 },
+            hotkey_size: Point { x: 30.0, y: 30.0 },
+            hotkey_bg_color: Color::default(),
+            text_offset: Point { x: 0.0, y: 0.0 },
+            count_font_size: 20.0,
+            count_color: Color::default(),
+            name_color: Color::default(),
+            name_offset: Point { x: 0.0, y: 20.0 },
+            name_font_size: 30.0,
+        };
+        let ammo_default = SlotLayout {
+            element: HudElement::Ammo,
+            name: "Ammo".to_string(),
+            offset: Point { x: 62.0, y: 62.0 },
+            size: Point { x: 62.0, y: 62.0 },
+            bg_color: Color::default(),
+            icon_color: Color {
+                r: 255,
+                g: 0,
+                b: 255,
+                a: 255,
+            },
+            icon_size: Point { x: 62.0, y: 62.0 },
+            hotkey_color: Color::default(),
+            hotkey_offset: Point { x: 10.0, y: 0.0 },
+            hotkey_size: Point { x: 30.0, y: 30.0 },
+            hotkey_bg_color: Color::default(),
+            text_offset: Point { x: 0.0, y: 0.0 },
+            count_font_size: 20.0,
+            count_color: Color::default(),
+            name_color: Color::default(),
+            name_offset: Point { x: 0.0, y: 20.0 },
+            name_font_size: 30.0,
+        };
 
+        let layouts = vec![
+            power_default,
+            utility_default,
+            left_default,
+            right_default,
+            ammo_default,
+        ];
         Self {
-            anchor: Point { x: 105.0, y: 105.0 },
-            size: Point { x: 450.0, y: 450.0 },
+            anchor: Point {
+                x: 200.0,
+                y: 1300.0,
+            },
+            size: Point { x: 300.0, y: 300.0 },
             bg_color: Color::default(),
             layouts,
             debug: false,
@@ -87,9 +219,10 @@ impl Default for HudLayout {
 }
 
 impl SlotLayout {
-    pub fn default_for_element(element: HudElement) -> Self {
+    pub fn default_for_element(element: HudElement, name: &str) -> Self {
         Self {
             element,
+            name: name.to_string(),
             ..Default::default()
         }
     }
@@ -99,11 +232,11 @@ impl Default for SlotLayout {
     fn default() -> Self {
         Self {
             element: HudElement { repr: 1 },
+            name: "unknown".to_string(),
             offset: Point::default(),
             size: Point { x: 150.0, y: 150.0 },
-            bg_scale: 1.0,
             bg_color: Color::default(),
-            icon_scale: 1.0,
+            icon_size: Point { x: 150.0, y: 150.0 },
             icon_color: Color {
                 r: 255,
                 g: 255,
@@ -112,7 +245,7 @@ impl Default for SlotLayout {
             },
             hotkey_color: Color::default(),
             hotkey_offset: Point { x: 20.0, y: 0.0 },
-            hotkey_scale: 1.0,
+            hotkey_size: Point { x: 30.0, y: 30.0 },
             hotkey_bg_color: Color::default(),
             text_offset: Point::default(),
             count_font_size: 20.0,

@@ -109,87 +109,88 @@ impl EntryKind {
                 | EntryKind::PotionStamina
         )
     }
-
 }
 
-static ICON_MAP: Lazy<HashMap<EntryKind, String>> = Lazy::new(|| HashMap::from([
-    (EntryKind::Alteration, "alteration.svg".to_string()),
-    (EntryKind::ArmorClothing, "armor_clothing.svg".to_string()),
-    (EntryKind::ArmorHeavy, "armor_heavy.svg".to_string()),
-    (EntryKind::ArmorLight, "armor_light.svg".to_string()),
-    (EntryKind::Arrow, "arrow.svg".to_string()),
-    (EntryKind::AxeOneHanded, "axe_one_handed.svg".to_string()),
-    (EntryKind::AxeTwoHanded, "axe_two_handed.svg".to_string()),
-    (EntryKind::Bow, "bow.svg".to_string()),
-    (EntryKind::Claw, "claw.svg".to_string()),
-    (EntryKind::Conjuration, "conjuration.svg".to_string()),
-    (EntryKind::Crossbow, "crossbow.svg".to_string()),
-    (EntryKind::Dagger, "dagger.svg".to_string()),
-    (
-        EntryKind::DestructionFire,
-        "destruction_fire.svg".to_string(),
-    ),
-    (
-        EntryKind::DestructionFrost,
-        "destruction_frost.svg".to_string(),
-    ),
-    (
-        EntryKind::DestructionShock,
-        "destruction_shock.svg".to_string(),
-    ),
-    (EntryKind::Destruction, "destruction.svg".to_string()),
-    (EntryKind::Food, "food.svg".to_string()),
-    (EntryKind::Halberd, "halberd.svg".to_string()),
-    (EntryKind::HandToHand, "hand_to_hand.svg".to_string()),
-    (EntryKind::IconDefault, "icon_default.svg".to_string()),
-    (EntryKind::Illusion, "illusion.svg".to_string()),
-    (EntryKind::Katana, "katana.svg".to_string()),
-    (EntryKind::Lantern, "lantern.svg".to_string()),
-    (EntryKind::Mace, "mace.svg".to_string()),
-    (EntryKind::Mask, "mask.svg".to_string()),
-    (EntryKind::Pike, "pike.svg".to_string()),
-    (EntryKind::PoisonDefault, "poison_default.svg".to_string()),
-    (EntryKind::PotionDefault, "default_potion.svg".to_string()),
-    (
-        EntryKind::PotionFireResist,
-        "potion_fire_resist.svg".to_string(),
-    ),
-    (
-        EntryKind::PotionFrostResist,
-        "potion_frost_resist.svg".to_string(),
-    ),
-    (EntryKind::PotionHealth, "potion_health.svg".to_string()),
-    (EntryKind::PotionMagicka, "potion_magicka.svg".to_string()),
-    (
-        EntryKind::PotionMagicResist,
-        "potion_magic_resist.svg".to_string(),
-    ),
-    (
-        EntryKind::PotionShockResist,
-        "potion_shock_resist.svg".to_string(),
-    ),
-    (EntryKind::PotionStamina, "potion_stamina.svg".to_string()),
-    (EntryKind::Power, "power.svg".to_string()),
-    (EntryKind::QuarterStaff, "quarterstaff.svg".to_string()),
-    (EntryKind::Rapier, "rapier.svg".to_string()),
-    (EntryKind::Restoration, "restoration.svg".to_string()),
-    (EntryKind::Scroll, "scroll.svg".to_string()),
-    (EntryKind::Shield, "shield.svg".to_string()),
-    (EntryKind::Shout, "shout.svg".to_string()),
-    (EntryKind::SpellDefault, "spell_default.svg".to_string()),
-    (EntryKind::Staff, "staff.svg".to_string()),
-    (
-        EntryKind::SwordOneHanded,
-        "sword_one_handed.svg".to_string(),
-    ),
-    (
-        EntryKind::SwordTwoHanded,
-        "sword_two_handed.svg".to_string(),
-    ),
-    (EntryKind::Torch, "torch.svg".to_string()),
-    (EntryKind::WeaponDefault, "sword_one_handed.svg".to_string()),
-    (EntryKind::Whip, "whip.svg".to_string()),
-]));
+static ICON_MAP: Lazy<HashMap<EntryKind, String>> = Lazy::new(|| {
+    HashMap::from([
+        (EntryKind::Alteration, "alteration.svg".to_string()),
+        (EntryKind::ArmorClothing, "armor_clothing.svg".to_string()),
+        (EntryKind::ArmorHeavy, "armor_heavy.svg".to_string()),
+        (EntryKind::ArmorLight, "armor_light.svg".to_string()),
+        (EntryKind::Arrow, "arrow.svg".to_string()),
+        (EntryKind::AxeOneHanded, "axe_one_handed.svg".to_string()),
+        (EntryKind::AxeTwoHanded, "axe_two_handed.svg".to_string()),
+        (EntryKind::Bow, "bow.svg".to_string()),
+        (EntryKind::Claw, "claw.svg".to_string()),
+        (EntryKind::Conjuration, "conjuration.svg".to_string()),
+        (EntryKind::Crossbow, "crossbow.svg".to_string()),
+        (EntryKind::Dagger, "dagger.svg".to_string()),
+        (
+            EntryKind::DestructionFire,
+            "destruction_fire.svg".to_string(),
+        ),
+        (
+            EntryKind::DestructionFrost,
+            "destruction_frost.svg".to_string(),
+        ),
+        (
+            EntryKind::DestructionShock,
+            "destruction_shock.svg".to_string(),
+        ),
+        (EntryKind::Destruction, "destruction.svg".to_string()),
+        (EntryKind::Food, "food.svg".to_string()),
+        (EntryKind::Halberd, "halberd.svg".to_string()),
+        (EntryKind::HandToHand, "hand_to_hand.svg".to_string()),
+        (EntryKind::IconDefault, "icon_default.svg".to_string()),
+        (EntryKind::Illusion, "illusion.svg".to_string()),
+        (EntryKind::Katana, "katana.svg".to_string()),
+        (EntryKind::Lantern, "lantern.svg".to_string()),
+        (EntryKind::Mace, "mace.svg".to_string()),
+        (EntryKind::Mask, "mask.svg".to_string()),
+        (EntryKind::Pike, "pike.svg".to_string()),
+        (EntryKind::PoisonDefault, "poison_default.svg".to_string()),
+        (EntryKind::PotionDefault, "default_potion.svg".to_string()),
+        (
+            EntryKind::PotionFireResist,
+            "potion_fire_resist.svg".to_string(),
+        ),
+        (
+            EntryKind::PotionFrostResist,
+            "potion_frost_resist.svg".to_string(),
+        ),
+        (EntryKind::PotionHealth, "potion_health.svg".to_string()),
+        (EntryKind::PotionMagicka, "potion_magicka.svg".to_string()),
+        (
+            EntryKind::PotionMagicResist,
+            "potion_magic_resist.svg".to_string(),
+        ),
+        (
+            EntryKind::PotionShockResist,
+            "potion_shock_resist.svg".to_string(),
+        ),
+        (EntryKind::PotionStamina, "potion_stamina.svg".to_string()),
+        (EntryKind::Power, "power.svg".to_string()),
+        (EntryKind::QuarterStaff, "quarterstaff.svg".to_string()),
+        (EntryKind::Rapier, "rapier.svg".to_string()),
+        (EntryKind::Restoration, "restoration.svg".to_string()),
+        (EntryKind::Scroll, "scroll.svg".to_string()),
+        (EntryKind::Shield, "shield.svg".to_string()),
+        (EntryKind::Shout, "shout.svg".to_string()),
+        (EntryKind::SpellDefault, "spell_default.svg".to_string()),
+        (EntryKind::Staff, "staff.svg".to_string()),
+        (
+            EntryKind::SwordOneHanded,
+            "sword_one_handed.svg".to_string(),
+        ),
+        (
+            EntryKind::SwordTwoHanded,
+            "sword_two_handed.svg".to_string(),
+        ),
+        (EntryKind::Torch, "torch.svg".to_string()),
+        (EntryKind::WeaponDefault, "sword_one_handed.svg".to_string()),
+        (EntryKind::Whip, "whip.svg".to_string()),
+    ])
+});
 
 // Sketching out what moving image data management to rust would look like.
 // - we need to rasterize svgs

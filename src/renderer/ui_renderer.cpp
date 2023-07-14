@@ -315,10 +315,10 @@ namespace ui
 	void ui_renderer::init_animation(const animation_type animation_type,
 		const float a_screen_x,
 		const float a_screen_y,
-		const float a_scale_x,
-		const float a_scale_y,
 		const float a_offset_x,
 		const float a_offset_y,
+		const float width,
+		const float height,
 		const uint32_t a_modify,
 		const uint32_t a_alpha,
 		float a_duration)
@@ -331,13 +331,13 @@ namespace ui
 		logger::trace("starting inited animation");
 		constexpr auto angle = 0.0f;
 
-		const auto size   = static_cast<uint32_t>(animation_frame_map[animation_type].size());
-		const auto width  = static_cast<uint32_t>(animation_frame_map[animation_type][0].width);
-		const auto height = static_cast<uint32_t>(animation_frame_map[animation_type][0].height);
+		const auto size = static_cast<uint32_t>(animation_frame_map[animation_type].size());
+		// const auto width  = static_cast<uint32_t>(animation_frame_map[animation_type][0].width);
+		// const auto height = static_cast<uint32_t>(animation_frame_map[animation_type][0].height);
 
 		std::unique_ptr<animation> anim =
 			std::make_unique<fade_framed_out_animation>(ImVec2(a_screen_x + a_offset_x, a_screen_y + a_offset_y),
-				ImVec2(static_cast<float>(width) * a_scale_x, static_cast<float>(height) * a_scale_y),
+				ImVec2(width, height),
 				angle,
 				a_alpha,
 				a_modify,
@@ -380,32 +380,19 @@ namespace ui
 		for (auto slot_layout : top_layout.layouts)
 		{
 			rust::Box<CycleEntry> entry = equipped_in_slot(slot_layout.element);
-			if (slot_layout.element == HudElement::Ammo)
-			{
-				// We're going to fake up an entry. We *should* track this.
-				const std::string tmpname = "ammo";
-				const auto* ammo_handle   = handle::ammo_handle::get_singleton();
-				auto* current_ammo        = ammo_handle->get_current();
-				const auto formspec       = helpers::get_form_spec(current_ammo->form);
-
-				entry = create_cycle_entry(EntryKind::Arrow,
-					false,
-					true,
-					current_ammo->item_count,
-					std::to_string(0),
-					formspec);
-			}
-
-			const auto entry_kind  = entry->kind();
-			const auto entry_name  = entry->name();
-			const auto hotkey      = settings->hotkey_for(slot_layout.element);
-			const auto slot_center = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
+			const auto entry_kind       = entry->kind();
+			const auto entry_name       = entry->name();
+			const auto hotkey           = settings->hotkey_for(slot_layout.element);
+			const auto slot_center      = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
+			// logger::info("drawing slot {} at x={}; y={}",
+			// 	static_cast<uint8_t>(slot_layout.element),
+			// 	(anchor.x + slot_layout.offset.x),
+			// 	(anchor.y + slot_layout.offset.y));
 
 			if (slot_layout.bg_color.a > 0)
 			{
 				const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::round)];
-				const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.bg_scale,
-                    static_cast<float>(height) * slot_layout.bg_scale);
+				const auto size                     = ImVec2(slot_layout.size.x, slot_layout.size.y);
 				drawElement(texture, slot_center, size, 0.f, slot_layout.bg_color);
 			}
 
@@ -413,8 +400,7 @@ namespace ui
 			if (slot_layout.icon_color.a > 0)
 			{
 				const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(entry_kind)];
-				const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.icon_scale,
-                    static_cast<float>(height) * slot_layout.icon_scale);
+				const auto size                     = ImVec2(slot_layout.icon_size.x, slot_layout.icon_size.y);
 				drawElement(texture, slot_center, size, 0.f, slot_layout.icon_color);
 			}
 
@@ -425,10 +411,10 @@ namespace ui
 				init_animation(animation_type::highlight,
 					anchor.x,
 					anchor.y,
-					slot_layout.bg_scale,
-					slot_layout.bg_scale,
 					slot_layout.offset.x,
 					slot_layout.offset.y,
+					slot_layout.size.x,
+					slot_layout.size.y,
 					draw_full,
 					top_layout.animation_alpha,
 					top_layout.animation_duration);
@@ -490,14 +476,13 @@ namespace ui
 				if (slot_layout.hotkey_bg_color.a > 0)
 				{
 					const auto [texture, width, height] = image_struct[static_cast<uint32_t>(image_type::key)];
-					const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.hotkey_scale,
-                        static_cast<float>(height) * slot_layout.hotkey_scale);
+					const auto size                     = ImVec2(slot_layout.hotkey_size.x, slot_layout.hotkey_size.y);
 					drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_bg_color);
 				}
 
 				const auto [texture, width, height] = get_key_icon(hotkey);
-				const auto size                     = ImVec2(static_cast<float>(width) * slot_layout.hotkey_scale,
-                    static_cast<float>(height) * slot_layout.hotkey_scale);
+				const auto size                     = ImVec2(static_cast<float>(slot_layout.hotkey_size.x - 2.0),
+                    static_cast<float>(slot_layout.hotkey_size.y - 2.0));
 				drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_color);
 			}
 		}

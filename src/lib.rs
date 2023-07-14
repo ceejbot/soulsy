@@ -71,25 +71,25 @@ pub mod plugin {
     struct SlotLayout {
         /// The hud element this layout is for.
         element: HudElement,
+        /// The name of the hud element this layout is for. For humans.
+        name: String,
         /// An offset from the overall hud anchor point to draw this element at.
         offset: Point,
-        /// The size of this element, to scale everything to. partially TODO
+        /// The size of this element, to scale everything to. Partially TODO.
         size: Point,
         /// The color of any background for this element. If its alpha is 0, the bg is not drawn.
         bg_color: Color,
-        /// A scale value applied to the texture for this background image.
-        bg_scale: f32,
         /// The color of any icon for this element. If its alpha is 0, the icon is not drawn.
         icon_color: Color,
-        /// A scale value applied to the texture for this icon.
-        icon_scale: f32,
+        /// The size of the icon to draw in this slot.
+        icon_size: Point,
 
         /// The color to use for this element's hotkey, if it has one. If alpha is zero, it's not drawn.
         hotkey_color: Color,
         /// Where to draw this hotkey, relative to the anchor point.
         hotkey_offset: Point,
         /// Scale for any hotkey icon.
-        hotkey_scale: f32,
+        hotkey_size: Point,
         /// The color to use to draw the key. Not drawn if the alpha is zero.
         hotkey_bg_color: Color,
 

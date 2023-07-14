@@ -71,10 +71,10 @@ tag VERSION:
     echo "Release tagged for version v{{VERSION}}"
 
 # Rebuild the archive for testing. What I wouldn't give for rm -f
-@rebuild: clean-win
+@rebuild: 
+    rm build/Release/SoulsyHUD.dll
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
-    just archive
 
 # Build a full mod archive
 archive:
@@ -141,6 +141,7 @@ spotless: clean
 @archive-bash: 
     mkdir -p archive/SKSE/plugins
     cp -rp resources archive/SKSE/plugins
+    mv archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml archive/SKSE/plugins/
     cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
     cp -rp data/* archive/

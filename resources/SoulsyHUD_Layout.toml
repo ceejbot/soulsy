@@ -1,83 +1,377 @@
-bIsDebug = false
+animation_alpha = 51
+animation_duration = 0.10000000149011612
+debug = false
 
-[Font]
-bLoad = true
-sName = "futura-book-bt.ttf"
-fSize = 20
-bChineseFull = 0
-bChineseSimplifiedCommon = 0
-bCyrillic = 0
-bJapanese = 0
-bKorean = 0
-bThai = 0
-bVietnamese = 0
+[anchor]
+x = 1000.0
+y = 1000.0
 
-[HudSetting]
-sDisplayResolutionWidth = 0
-sDisplayResolutionHeight = 0
-fHudImageScaleWidth = 0.16
-fHudImageScaleHeight = 0.16
-fHudImagePositionWidth = 200
-fHudImagePositionHeight = 775
-fHudSlotPositionOffsetX = 105
-fHudSlotPositionOffsetY = 105
-fHudKeyPositionOffset = 38
-fKeyIconScaleWidth = 0.28
-fKeyIconScaleHeight = 0.28
-fIconScaleWidth = 0.1
-fIconScaleHeight = 0.1
-fSlotCountTextOffset = 20
-fToggleKeyOffsetX = 115
-fToggleKeyOffsetY = 115
-fCurrentItemsOffsetX = -15
-fCurrentItemsOffsetY = 200
-fSlotItemNameOffsetHorizontalX = -15
-fSlotItemNameOffsetHorizontalY = 100
-fSlotItemNameOffsetVerticalX = 10
-fSlotItemNameOffsetVerticalY = 65
-fArrowSlotOffsetX = -125
-fArrowSlotOffsetY = 125
-fHudArrowImageScaleWidth = 0.09
-fHudArrowImageScaleHeight = 0.09
-fArrowIconScaleWidth = 0.05
-fArrowIconScaleHeight = 0.05
-fArrowSlotCountTextOffset = 12
-fMasterScale = 1
-fCurrentShoutOffsetX = -10
-fCurrentShoutOffsetY = -225
+[size]
+x = 300.0
+y = 300.0
 
-[GraphicSetting]
-bDrawKeyBackground = 0
-uBackgroundTransparency = 255
-uBackgroundIconTransparency = 255
-uIconTransparency = 125
-uKeyTransparency = 255
-uCurrentItemsTransparency = 255
-uCurrentShoutTransparency = 255
-uSlotCountTransparency = 255
-uSlotItemNameTransparency = 255
-uIconTransparencyBlocked = 50
-uCurrentItemsRed = 255
-uCurrentItemsGreen = 255
-uCurrentItemsBlue = 255
-uSlotCountRed = 255
-uSlotCountGreen = 255
-uSlotCountBlue = 255
-uSlotItemRed = 255
-uSlotItemGreen = 255
-uSlotItemBlue = 255
-fSlotCountTextFontSize = 20
-fCurrentItemsFontSize = 20
-uSlotButtonFeedback = 175
-bDrawCurrentItemsText = 1
-fArrowCountFontSize = 20
-bDrawItemNameText = 1
-bDrawToggleButton = 1
-bDrawCurrentShoutText = 0
-fCurrentShoutFontSize = 20
-fItemNameTextFontSize = 20
-bDrawPageId = 0
+[bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
 
-[AnimationSetting]
-uAlphaSlotAnimation = 51
-fDurationSlotAnimation = 0.1
+[[layouts]]
+name = "Shouts/Powers"
+count_font_size = 20.0
+name_font_size = 30.0
+
+[layouts.element]
+repr = 0
+
+[layouts.offset]
+x = 0.0
+y = -125.0
+
+[layouts.size]
+x = 125.0
+y = 125.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.icon_color]
+r = 255
+g = 255
+b = 120
+a = 255
+
+[layouts.icon_size]
+x = 125.0
+y = 125.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = 10.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.text_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 0.0
+y = 20.0
+
+[[layouts]]
+name = "Consumables"
+count_font_size = 20.0
+name_font_size = 30.0
+
+[layouts.element]
+repr = 1
+
+[layouts.offset]
+x = 0.0
+y = 125.0
+
+[layouts.size]
+x = 125.0
+y = 125.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.icon_color]
+r = 255
+g = 255
+b = 120
+a = 255
+
+[layouts.icon_size]
+x = 125.0
+y = 125.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = 10.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.text_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 0.0
+y = 20.0
+
+[[layouts]]
+name = "Left Hand"
+count_font_size = 20.0
+name_font_size = 30.0
+
+[layouts.element]
+repr = 2
+
+[layouts.offset]
+x = -125.0
+y = 0.0
+
+[layouts.size]
+x = 125.0
+y = 125.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.icon_color]
+r = 255
+g = 255
+b = 120
+a = 255
+
+[layouts.icon_size]
+x = 125.0
+y = 125.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = 10.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.text_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 0.0
+y = 20.0
+
+[[layouts]]
+name = "Right Hand"
+count_font_size = 20.0
+name_font_size = 30.0
+
+[layouts.element]
+repr = 3
+
+[layouts.offset]
+x = 125.0
+y = 0.0
+
+[layouts.size]
+x = 125.0
+y = 125.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.icon_color]
+r = 255
+g = 255
+b = 120
+a = 255
+
+[layouts.icon_size]
+x = 125.0
+y = 125.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = 10.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.text_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 0.0
+y = 20.0
+
+[[layouts]]
+name = "Ammo"
+count_font_size = 20.0
+name_font_size = 30.0
+
+[layouts.element]
+repr = 4
+
+[layouts.offset]
+x = 62.0
+y = 62.0
+
+[layouts.size]
+x = 62.0
+y = 62.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.icon_color]
+r = 255
+g = 255
+b = 120
+a = 255
+
+[layouts.icon_size]
+x = 62.0
+y = 62.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = 10.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.text_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 0.0
+y = 20.0
