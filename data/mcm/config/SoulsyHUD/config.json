@@ -102,7 +102,6 @@
             "min": 2,
             "max": 15,
             "step": 1,
-            "formatString": "{0}",
             "sourceType": "ModSettingInt"
           }
         },
@@ -116,7 +115,6 @@
             "min": 0,
             "max": 2500,
             "step": 50,
-            "formatString": "{0}",
             "sourceType": "ModSettingInt"
           }
         },
@@ -139,7 +137,6 @@
             "min": 0,
             "max": 5000,
             "step": 100,
-            "formatString": "{0}",
             "sourceType": "ModSettingInt"
           }
         },
