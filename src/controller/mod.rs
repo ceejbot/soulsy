@@ -24,8 +24,12 @@ pub use settings::{refresh_user_settings, user_settings, UserSettings}; // hmm, 
 use simplelog::*;
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
-    // TODO: read from config
-    let level = LevelFilter::Debug;
+    let hudl = layout(); // yeah, it's in here
+    let level = if hudl.debug {
+        LevelFilter::Debug
+    } else {
+        LevelFilter::Info
+    };
 
     let mut pathbuf = PathBuf::from(logdir.to_string());
     pathbuf.set_file_name("SoulsyHUD_rust.log");

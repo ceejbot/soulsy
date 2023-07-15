@@ -6,7 +6,6 @@ use once_cell::sync::Lazy;
 use super::cycles::*;
 use super::settings::user_settings;
 use crate::plugin::*;
-use super::layout::*;
 
 /// There can be only one. Not public because we want access managed.
 // Does this really need to be a mutex? I think we're single-threaded...
@@ -20,8 +19,10 @@ pub mod public {
     /// C++ tells us when it's safe to start pulling together the data we need.
     pub fn initialize_hud() {
         let mut ctrl = CONTROLLER.lock().unwrap();
-        let _settings = user_settings();
-        let _layout = layout();
+        let settings = user_settings();
+        log::debug!("---------- have a settings dump");
+        log::debug!("{settings:?}");
+        log::debug!("---------- end settings dump");
 
         // here we should validate all four cycle entries which might refer to now-missing items
         // player::has_item_or_spell(form) is the function to call
@@ -37,11 +38,11 @@ pub mod public {
     /// Function for C++ to call to send a relevant button event to us.
     pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
         let action = Action::from(key);
-        log::info!("incoming key event; key={key}; action={action:?}");
         if matches!(action, Action::Irrelevant) {
             KeyEventResponse::default()
         } else {
-        CONTROLLER.lock().unwrap().handle_key_event(action, button)
+            log::debug!("incoming key event; key={key}; action={action:?}");
+            CONTROLLER.lock().unwrap().handle_key_event(action, button)
         }
     }
 
