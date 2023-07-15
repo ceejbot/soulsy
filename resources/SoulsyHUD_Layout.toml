@@ -1,16 +1,16 @@
 animation_alpha = 51
-animation_duration = 0.10000000149011612
+animation_duration = 0.2
 font = "futura-book-bt.ttf"
-font_size = 30.0
+font_size = 20.0
 debug = false
 
 [anchor]
 x = 150.0
-y = 1300.0
+y = 1350.0
 
 [size]
-x = 250.0
-y = 250.0
+x = 400.0
+y = 400.0
 
 [bg_color]
 r = 255
@@ -20,14 +20,14 @@ a = 128
 
 [[layouts]]
 name = "Shouts/Powers"
-count_font_size = 20.0
+count_font_size = 15.0
 
 [layouts.element]
 repr = 0
 
 [layouts.offset]
 x = 0.0
-y = -62.0
+y = -111.0
 
 [layouts.size]
 x = 125.0
@@ -46,8 +46,8 @@ b = 200
 a = 255
 
 [layouts.icon_size]
-x = 62.0
-y = 62.0
+x = 81.0
+y = 81.0
 
 [layouts.hotkey_color]
 r = 255
@@ -56,8 +56,8 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 10.0
-y = 0.0
+x = 0.0
+y = 225.0
 
 [layouts.hotkey_size]
 x = 30.0
@@ -98,7 +98,7 @@ repr = 1
 
 [layouts.offset]
 x = 0.0
-y = 62.0
+y = 446.0
 
 [layouts.size]
 x = 125.0
@@ -117,8 +117,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 62.0
-y = 62.0
+x = 81.0
+y = 81.0
 
 [layouts.hotkey_color]
 r = 255
@@ -127,8 +127,8 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 10.0
-y = 0.0
+x = 0.0
+y = -225.0
 
 [layouts.hotkey_size]
 x = 30.0
@@ -168,7 +168,7 @@ count_font_size = 20.0
 repr = 2
 
 [layouts.offset]
-x = -62.0
+x = -446.0
 y = 0.0
 
 [layouts.size]
@@ -188,8 +188,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 62.0
-y = 62.0
+x = 81.0
+y = 81.0
 
 [layouts.hotkey_color]
 r = 255
@@ -198,8 +198,8 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 10.0
-y = 0.0
+x = 0.0
+y = 225.0
 
 [layouts.hotkey_size]
 x = 30.0
@@ -239,7 +239,7 @@ count_font_size = 20.0
 repr = 3
 
 [layouts.offset]
-x = 62.0
+x = 446.0
 y = 0.0
 
 [layouts.size]
@@ -259,8 +259,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 62.0
-y = 62.0
+x = 81.0
+y = 81.0
 
 [layouts.hotkey_color]
 r = 255
@@ -269,8 +269,8 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 10.0
-y = 0.0
+x = 0.0
+y = -225.0
 
 [layouts.hotkey_size]
 x = 30.0
@@ -330,8 +330,8 @@ b = 255
 a = 255
 
 [layouts.icon_size]
-x = 50.0
-y = 50.0
+x = 35.0
+y = 35.0
 
 [layouts.hotkey_color]
 r = 255
@@ -340,12 +340,12 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 10.0
+x = 0.0
 y = 0.0
 
 [layouts.hotkey_size]
-x = 30.0
-y = 30.0
+x = 20.0
+y = 20.0
 
 [layouts.hotkey_bg_color]
 r = 255

@@ -229,6 +229,29 @@ namespace ui
 		}
 	}
 
+	void ui_renderer::drawText(const char* text,
+		const ImVec2 center,
+		const float font_size,
+		const float angle,
+		const Color color,)
+	{
+		if (!text || !*text || color.a == 0)
+		{
+			return;
+		}
+
+		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a);
+		const ImVec2 text_bounds = ImGui::CalcTextSize(text);
+		auto* font               = loaded_font;
+		if (!font)
+		{
+			font = ImGui::GetDefaultFont();
+		}
+
+		ImGui::GetWindowDrawList()->AddText(font, font_size, center, text_color, text, nullptr, 0.0f, nullptr);
+	}
+
+
 	void ui_renderer::draw_text(const float a_x,
 		const float a_y,
 		const float a_offset_x,
@@ -430,21 +453,9 @@ namespace ui
 				// TODO this should be an alignment setting on the layout
 				auto center_text =
 					(slot_layout.element == HudElement::Power || slot_layout.element == HudElement::Utility);
+				const text_pos = ImVec2(slot_center.x + slot_layout.text_offset.x, slot_center.y + slot_layout.text_offset.y);
 
-				// TODO simplify this signature after old code is gone
-				draw_text(slot_layout.size.x,
-					slot_layout.size.y,
-					slot_layout.offset.x,
-					slot_layout.offset.y,
-					0,
-					0,
-					name,
-					slot_layout.name_color.a,
-					slot_layout.name_color.r,
-					slot_layout.name_color.g,
-					slot_layout.name_color.b,
-					top_layout.font_size,
-					center_text);
+				drawText(name, text_pos, top_layout.font_size, 0.0f, slot_layout.name_color);
 			}
 
 			// next up: do we have extra text to show on this puppy?
@@ -452,21 +463,12 @@ namespace ui
 			{
 				auto count     = entry->count();
 				auto slot_text = std::to_string(count);
+				const text_pos = ImVec2(slot_center.x + slot_layout.text_offset.x, slot_center.y + slot_layout.text_offset.y);
+
 				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
-					draw_text(slot_layout.size.x,
-						slot_layout.size.y,
-						slot_layout.offset.x,
-						slot_layout.offset.y,
-						0,
-						0,
-						slot_text.c_str(),
-						slot_layout.count_color.a,
-						slot_layout.count_color.r,
-						slot_layout.count_color.g,
-						slot_layout.count_color.b,
-						slot_layout.count_font_size);
+					drawText(slot_text.c_str(), text_pos, slot_layout.count_font_size, 0.0f, slot_layout.count_color);
 				}
 			}
 
