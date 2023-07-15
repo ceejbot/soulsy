@@ -2,7 +2,10 @@
 
 #include "enums.h"
 
-#include "lib.rs.h"
+#include "rust/cxx.h"
+
+struct CycleEntry;
+enum class EntryKind : ::std::uint8_t;
 
 namespace equippable
 {

@@ -1,8 +1,10 @@
 ﻿#include "magic.h"
+
 #include "gear.h"
 #include "offset.h"
 #include "player.h"
 #include "user_settings.h"
+#include "string_util.h"
 
 namespace magic
 {
@@ -125,7 +127,7 @@ namespace magic
 		else
 		{
 			const auto* obj_right = a_player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-			const auto* obj_left  = a_player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
+			const auto* obj_left  = a_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 			if (left && obj_left && obj_left->formID == spell->formID)
 			{
 				logger::debug("Object Left {} is already where it should be already equipped. return."sv,
@@ -319,13 +321,13 @@ namespace magic
 
 	// ---------- Shouts.
 
-	void unequipShout(RE::BSScript::IVirtualMachine* a_vm,
+	void un_equip_shout(RE::BSScript::IVirtualMachine* a_vm,
 		RE::VMStackID a_stack_id,
 		RE::Actor* a_actor,
 		RE::TESShout* a_shout)
 	{
-		using func_t = decltype(&unequip_shout);
-		const REL::Relocation<func_t> func{ REL::ID(offset::get_un_equip_shout) };
+		using func_t = decltype(&un_equip_shout);
+		const REL::Relocation<func_t> func{ REL::ID(offset::un_equip_shout) };
 		func(a_vm, a_stack_id, a_actor, a_shout);
 	}
 
@@ -338,7 +340,7 @@ namespace magic
 				util::string_util::int_to_hex(selected_power->formID));
 			if (selected_power->Is(RE::FormType::Shout))
 			{
-				unequipShout(nullptr, 0, player, selected_power->As<RE::TESShout>());
+				un_equip_shout(nullptr, 0, player, selected_power->As<RE::TESShout>());
 			}
 			else if (selected_power->Is(RE::FormType::Spell))
 			{

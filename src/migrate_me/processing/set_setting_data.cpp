@@ -27,6 +27,7 @@ namespace processing
 	void set_setting_data::read_and_set_data()
 	{
 		logger::trace("Setting handlers, elden demon souls {} ..."sv, mcm::get_elden_demon_souls());
+		/*
 
 		handle::key_position_handle::get_singleton()->init_key_position_map();
 
@@ -37,6 +38,7 @@ namespace processing
 		logger::trace("continue with overwriting data from configuration ..."sv);
 
 		process_config_data();
+		*/
 
 		logger::trace("done executing. return."sv);
 	}

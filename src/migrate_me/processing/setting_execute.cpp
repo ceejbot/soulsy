@@ -149,7 +149,7 @@ namespace processing
 			processing::setting_execute::activate(a_setting->slot_settings);
 		}
 	}
-
+/*
 	void setting_execute::execute_setting(handle::slot_setting*& a_slot, RE::PlayerCharacter*& a_player)
 	{
 		switch (a_slot->type)
@@ -165,7 +165,7 @@ namespace processing
 				}
 				break;
 			case slot_type::magic:
-				magic::magic::cast_magic(a_slot->form, a_slot->action, a_slot->equip_slot, a_player);
+				magic::cast_magic(a_slot->form, a_slot->action, a_slot->equip_slot, a_player);
 				break;
 			case slot_type::shout:
 				magic::equipShout(a_slot->form, a_player);
@@ -195,4 +195,5 @@ namespace processing
 				break;
 		}
 	}
+	*/
 }

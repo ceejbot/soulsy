@@ -104,7 +104,7 @@ namespace equip
 		}
 
 		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
+		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 		if (left && obj_left && obj_left->formID == obj->formID)
 		{
 			logger::debug("Object Left {} is already where it should be already equipped. return."sv, obj->GetName());

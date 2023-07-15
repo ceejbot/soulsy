@@ -130,7 +130,7 @@ namespace ui
 		static void stopTimer(Action which);
 		static void advanceTimers(float delta);
 
-		inline static f32 clamp(f32 input, f32 min, f32 max)
+		inline static float clamp(float input, float min, float max)
 		{
 			// I do like a good ternary.
 			return input > max ? max : (input < min ? min : input);

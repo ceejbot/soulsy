@@ -45,7 +45,9 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 		return event_result::kContinue;
 	}
 
-	auto changed = handle_item_equipped(form);
+	auto item = equippable::cycle_entry_from_form(form);
+	auto changed = handle_item_equipped(std::move(item));
+	logger::info("handled inventory change; changed={}; item='{}';"sv, changed, form->GetName());
 	// TODO trigger UI redraw? or just wait for next tick?
 
 	return event_result::kContinue;

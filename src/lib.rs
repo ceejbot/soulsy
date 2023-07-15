@@ -277,7 +277,7 @@ pub mod plugin {
         /// Update the HUD without any hints about what just changed.
         fn update_equipped() -> bool;
         /// Update the HUD with info about an item the player just equipped.
-        fn handle_item_equipped(form: &TESForm) -> bool;
+        fn handle_item_equipped(item: Box<CycleEntry>) -> bool;
     }
 
     unsafe extern "C++" {
@@ -330,8 +330,8 @@ pub mod plugin {
         fn unequipSlot(which: Action);
 
         fn equipShout(form_spec: &CxxString);
-        fn equipMagic(form_spec: &CxxString, which: Action);
-        fn equipWeapon(form_spec: &CxxString, which: Action);
+        fn equipMagic(form_spec: &CxxString, which: Action, kind: EntryKind);
+        fn equipWeapon(form_spec: &CxxString, which: Action, kind: EntryKind);
         fn equipArmor(form_spec: &CxxString);
     }
 }

@@ -29,7 +29,7 @@ namespace magic
 		RE::Actor* a_actor,
 		RE::SpellItem* a_spell,
 		uint32_t a_slot);
-	void unequipShout(RE::BSScript::IVirtualMachine* a_vm,
+	void un_equip_shout(RE::BSScript::IVirtualMachine* a_vm,
 		RE::VMStackID a_stack_id,
 		RE::Actor* a_actor,
 		RE::TESShout* a_shout);

@@ -68,9 +68,9 @@ pub mod public {
     }
 
     /// We know for sure the player just equipped this item.
-    pub fn handle_item_equipped(form: &TESForm) -> bool {
+    pub fn handle_item_equipped(item: Box<CycleEntry>) -> bool {
         let mut ctrl = CONTROLLER.lock().unwrap();
-        ctrl.handle_item_equipped(form)
+        ctrl.handle_item_equipped(item)
     }
 
     /// A consumable's count changed. Record if relevant.
@@ -193,9 +193,9 @@ impl Controller {
         // These are all different because the game API is a bit of an evolved thing.
         if kind.is_magic() {
             // My name is John Wellington Wells / I'm a dealer in...
-            equipMagic(&form_spec, which);
+            equipMagic(&form_spec, which, kind);
         } else if kind.is_weapon() {
-            equipWeapon(&form_spec, which);
+            equipWeapon(&form_spec, which, kind);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
         } else {
@@ -266,7 +266,7 @@ impl Controller {
         changed
     }
 
-    fn handle_item_equipped(&mut self, _form: &TESForm) -> bool {
+    fn handle_item_equipped(&mut self, _item: Box<CycleEntry>) -> bool {
         // TODO implement a tighter pass; for now we just brute-force it
         // remember to mark if we've equipped a two-hander in the shorter impl
         self.update_equipped()

@@ -739,7 +739,8 @@ namespace ui
 	void ui_renderer::load_font()
 	{
 		auto hud         = layout();
-		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + hud.font_file();
+		auto fontfile = std::string(hud.font);
+		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + fontfile;
 		auto file_path   = std::filesystem::path(path);
 
 		logger::trace("about to try to load font; path={}"sv, path);
@@ -757,7 +758,7 @@ namespace ui
 
 			builder.BuildRanges(&ranges);
 
-			loaded_font = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(), layout.fon, nullptr, ranges.Data);
+			loaded_font = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(), hud.font_size, nullptr, ranges.Data);
 			if (io.Fonts->Build())
 			{
 				ImGui_ImplDX11_CreateDeviceObjects();
@@ -798,8 +799,12 @@ namespace ui
 
 	void ui_renderer::advanceTimers(float delta)
 	{
-		(const auto& [timer, remaining] : cycle_timers)
+		std::map<Action, float>::iterator iter;
+		for (iter = cycle_timers.begin(); iter != cycle_timers.end(); ++iter)
 		{
+			auto which = iter->first;
+			auto remaining = iter->second;
+
 			remaining -= delta;
 			if (remaining < 0.0f)
 			{
@@ -808,7 +813,7 @@ namespace ui
 			}
 			else
 			{
-				cycle_timers[timer] = remaining;
+				cycle_timers[which] = remaining;
 			}
 		}
 	}
@@ -816,7 +821,7 @@ namespace ui
 	void ui_renderer::startTimer(Action which)
 	{
 		// We replace any existing timer for this slot.
-		auto duration = user_settings().equip_delay();
+		auto duration = user_settings()->equip_delay();
 		cycle_timers.insert_or_assign(which, duration);
 	}
 

@@ -43,7 +43,7 @@ namespace equip
 
 	void equipArmor(const std::string& form_spec)
 	{
-		auto RE::TESForm* form = helpers::get_form_from_mod_id_string(form_spec);
+		auto* form = helpers::get_form_from_mod_id_string(form_spec);
 		if (!form)
 		{
 			return;
@@ -55,9 +55,9 @@ namespace equip
 
 		RE::TESBoundObject* obj = nullptr;
 		auto item_count         = 0;
-		for (const auto& [item, inv_data] : player::get_inventory(a_player, RE::FormType::Armor))
+		for (const auto& [item, inv_data] : player::get_inventory(player, RE::FormType::Armor))
 		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
+			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
 			{
 				obj        = entry->object;
 				item_count = num_items;
@@ -75,7 +75,7 @@ namespace equip
 		if (auto* equip_manager = RE::ActorEquipManager::GetSingleton(); !unequipArmor(obj, player, equip_manager))
 		{
 			equip_manager->EquipObject(player, obj);
-			logger::trace("successfully equipped armor; name='{}';"sv, a_form->GetName());
+			logger::trace("successfully equipped armor; name='{}';"sv, form->GetName());
 		}
 	}
 
@@ -104,16 +104,16 @@ namespace equip
 		if (which == Action::Right)
 		{
 			slot            = left_hand_equip_slot();
-			equipped_object = player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
+			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 		}
 		else if (which == Action::Left)
 		{
-			auto slot       = right_hand_equip_slot();
+			slot            = right_hand_equip_slot();
 			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 		}
 		else
 		{
-			logger::debug("somebody called unequipHand() with slot={};"sv, which);
+			logger::debug("somebody called unequipHand() with slot={};"sv, static_cast<uint8_t>(which));
 			return;
 		}
 
@@ -150,9 +150,9 @@ namespace equip
 			did_call = true;
 		}
 
-		loger::trace("unequippd item from slot; item={}; slot={}; did_call={};"sv,
+		logger::trace("unequippd item from slot; item={}; slot={}; did_call={};"sv,
 			equipped_object->GetName(),
-			which,
+			static_cast<uint8_t>(which),
 			did_call);
 	}
 
@@ -167,7 +167,7 @@ namespace equip
 		RE::TESForm* equipped_object = nullptr;
 		if (slot == left_hand_equip_slot())
 		{
-			equipped_object = player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
+			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 		}
 
 		if (slot == right_hand_equip_slot())

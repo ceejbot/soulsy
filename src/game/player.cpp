@@ -23,7 +23,7 @@ namespace player
 	rust::Box<CycleEntry> equippedLeftHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
-		const auto obj = player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
+		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 		if (!obj)
 			return default_cycle_entry();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
@@ -88,11 +88,11 @@ namespace player
 		}
 		else if (which == Action::Right || which == Action::Left)
 		{
-			gear::unequipHand(player, which);
+			equip::unequipHand(player, which);
 		}
 		else
 		{
-			logger::debug("somebody called unequipSlot() with slot={};"sv, which);
+			logger::debug("somebody called unequipSlot() with slot={};"sv, static_cast<uint8_t>(which));
 		}
 	}
 
@@ -104,7 +104,7 @@ namespace player
 
 	void equipShout(const std::string& form_spec)
 	{
-		auto RE::TESForm* shout_form = helpers::get_form_from_mod_id_string(form_spec);
+		auto* shout_form = helpers::get_form_from_mod_id_string(form_spec);
 		if (!shout_form)
 		{
 			return;
@@ -113,31 +113,29 @@ namespace player
 		magic::equipShout(shout_form, player);
 	}
 
-
-	void equipMagic(const std::string& form_spec, Action slot)
+	void equipMagic(const std::string& form_spec, Action slot, EntryKind kind)
 	{
-		// TODO
-	}
-
-	void equipWeapon(const std::string& form_spec, Action slot)
-	{
-		auto RE::TESForm* form = helpers::get_form_from_mod_id_string(form_spec);
+		auto* form = helpers::get_form_from_mod_id_string(form_spec);
 		if (!form)
 		{
 			return;
 		}
 		auto* player     = RE::PlayerCharacter::GetSingleton();
-		auto* equip_slot = (slot == Action::left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot());
-		equip::equip_item(form, equip_slot, player, slot_type);
+		auto* equip_slot = (slot == Action::Left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot());
+		equip::equip_item(form, equip_slot, player, kind);
 	}
 
-	/*
-equip_item(const RE::TESForm* a_form,
-		RE::BGSEquipSlot*& a_slot,
-		RE::PlayerCharacter*& a_player,
-		enums::slot_type a_type)
-*/
-
+	void equipWeapon(const std::string& form_spec, Action slot, EntryKind kind)
+	{
+		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+		if (!form)
+		{
+			return;
+		}
+		auto* player     = RE::PlayerCharacter::GetSingleton();
+		auto* equip_slot = (slot == Action::Left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot());
+		equip::equip_item(form, equip_slot, player, kind);
+	}
 
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
 		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)
@@ -166,72 +164,6 @@ equip_item(const RE::TESForm* a_form,
 		logger::trace("got {} in inventory for item {}"sv, count, a_form->GetName());
 
 		return count;
-	}
-
-	// TODO remove this and its caller
-	std::vector<data_helper*> get_hand_assignment(bool a_two_handed)
-	{
-		std::vector<data_helper*> data;
-		const auto* player = RE::PlayerCharacter::GetSingleton();
-		auto right_obj     = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		auto left_obj      = player->GetActorRuntimeData().currentProcess->GetequippedLeftHand();
-
-		const auto empty_handle = config::mcm_setting::get_empty_hand_setting();
-
-		const auto item   = new data_helper();
-		item->form        = nullptr;
-		item->left        = false;
-		item->type        = slot_type::empty;
-		item->action_type = empty_handle ? action_type::un_equip : action_type::default_action;
-		data.push_back(item);
-
-		const auto item2   = new data_helper();
-		item2->form        = nullptr;
-		item2->left        = true;
-		item2->type        = slot_type::empty;
-		item2->action_type = empty_handle ? action_type::un_equip : action_type::default_action;
-		data.push_back(item2);
-
-		if (!a_two_handed)
-		{
-			a_two_handed = right_obj && equippable::is_two_handed(right_obj);
-		}
-
-		logger::trace("got form {}, name {} on both/right hand"sv,
-			right_obj ? string_util::int_to_hex(right_obj->GetFormID()) : "null",
-			right_obj ? right_obj->GetName() : "null");
-
-		logger::trace("got form {}, name {} on left hand"sv,
-			left_obj ? string_util::int_to_hex(left_obj->GetFormID()) : "null",
-			left_obj ? left_obj->GetName() : "null");
-
-		if (a_two_handed && right_obj && left_obj && right_obj->formID == left_obj->formID)
-		{
-			data[0]->form        = right_obj;
-			data[0]->left        = false;
-			data[0]->type        = equippable::get_type(right_obj);
-			data[0]->action_type = action_type::default_action;
-			data.erase(data.begin() + 1);
-		}
-
-		if (right_obj)
-		{
-			data[0]->form        = right_obj;
-			data[0]->left        = false;
-			data[0]->type        = equippable::get_type(right_obj);
-			data[0]->action_type = action_type::default_action;
-		}
-
-		if (left_obj)
-		{
-			data[1]->form        = left_obj;
-			data[1]->left        = true;
-			data[1]->type        = equippable::get_type(left_obj);
-			data[1]->action_type = action_type::default_action;
-		}
-
-		logger::trace("got {} items in List now. return."sv, data.size());
-		return data;
 	}
 
 	bool has_item_or_spell(RE::TESForm* a_form)
