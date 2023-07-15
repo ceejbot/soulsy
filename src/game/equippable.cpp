@@ -11,7 +11,7 @@ namespace equippable
 	{
 		auto item_type          = equippable::get_type(item_form);
 		bool has_count          = (item_type == slot_type::consumable || item_type == slot_type::scroll);
-		auto count              = player::get_inventory_count(item_form);
+		auto count              = player::getInventoryCountByForm(item_form);
 		bool two_handed         = equippable::is_two_handed(item_form);
 		std::string form_string = helpers::get_form_spec(item_form);
 		auto kind               = equippable::get_icon_type(item_type, item_form);

@@ -72,7 +72,7 @@ tag VERSION:
 
 # Rebuild the archive for testing. What I wouldn't give for rm -f
 @rebuild: 
-    rm build/Release/SoulsyHUD.dll
+    if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
 

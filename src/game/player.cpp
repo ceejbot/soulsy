@@ -154,7 +154,7 @@ namespace player
 		return a_player->GetInventory([a_type](const RE::TESBoundObject& a_object) { return a_object.Is(a_type); });
 	}
 
-	uint32_t get_inventory_count(const RE::TESForm* a_form)
+	uint32_t getInventoryCountByForm(const RE::TESForm* a_form)
 	{
 		uint32_t count = 0;
 		if (!a_form)

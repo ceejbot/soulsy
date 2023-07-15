@@ -1,7 +1,6 @@
 
 #include "papyrus.h"
 #include "constant.h"
-#include "custom_setting.h"
 #include "enums.h"
 #include "helpers.h"
 #include "ui_renderer.h"

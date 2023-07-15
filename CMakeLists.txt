@@ -59,7 +59,7 @@ set(SOULSY_LIB ${CARGO_TARGET_DIR}/debug/${CMAKE_STATIC_LIBRARY_PREFIX}soulsy${C
 # Add a custom command that builds the rust crate and generates C++ bridge code
 add_custom_command(
     OUTPUT ${SOULSY_BRIDGE_CPP} ${SOULSY_LIB}
-    COMMAND cargo build --manifest-path ${CARGO_MANIFEST}
+    COMMAND cargo build --manifest-path ${CARGO_MANIFEST} --release
     DEPENDS ${SOULSY_SOURCE_FILE}
     USES_TERMINAL
     COMMENT "Running cargo..."

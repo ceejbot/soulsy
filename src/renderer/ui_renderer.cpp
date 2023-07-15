@@ -1,7 +1,6 @@
 ﻿#include "ui_renderer.h"
 #include "animation_handler.h"
 #include "constant.h"
-#include "file_setting.h"
 #include "handle/ammo_handle.h"
 #include "helpers.h"
 #include "image_path.h"
@@ -606,11 +605,13 @@ namespace ui
 						a_struct[idx].width,
 						a_struct[idx].height))
 				{
+					/*
 					logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
 						entrypath.filename().string().c_str(),
 						entrypath.filename().extension().string().c_str(),
 						a_struct[idx].width,
 						a_struct[idx].height);
+					*/
 
 					a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
 					a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
@@ -771,7 +772,8 @@ namespace ui
 	void ui_renderer::toggle_show_ui()
 	{
 		show_ui_ = !show_ui_;
-		file_setting::set_show_ui(show_ui_);
+		// todo cache this ourselves
+		// file_setting::set_show_ui(show_ui_);
 		logger::trace("ui visibility set; show_ui_={}"sv, show_ui_);
 	}
 

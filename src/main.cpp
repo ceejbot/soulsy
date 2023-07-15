@@ -4,8 +4,6 @@
 #include "sinks.h"
 #include "ui_renderer.h"
 
-#include "user_settings.h"                // same
-
 #include "lib.rs.h"
 
 void init_logger()
@@ -69,10 +67,10 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
 		case SKSE::MessagingInterface::kNewGame:
-			logger::debug("SKSE post load-game / new game calleback; type={}"sv, static_cast<uint32_t>(msg->type));
+			logger::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
 			initialize_hud();
 			ui::ui_renderer::set_show_ui(true);
-			logger::info("SKSE post-hook done: type={}"sv, static_cast<uint32_t>(msg->type));
+			logger::info("SKSE post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
 			break;
 		default:
 			break;

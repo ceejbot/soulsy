@@ -25,7 +25,7 @@ use simplelog::*;
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
     let hudl = layout(); // yeah, it's in here
-    let level = if hudl.debug {
+    let _level = if hudl.debug {
         LevelFilter::Debug
     } else {
         LevelFilter::Info
@@ -35,7 +35,8 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
     pathbuf.set_file_name("SoulsyHUD_rust.log");
 
     if let Ok(logfile) = File::create(&pathbuf) {
-        let _ = WriteLogger::init(level, Config::default(), logfile);
+        let _ = WriteLogger::init(LevelFilter::Debug, Config::default(), logfile);
+        log::info!("rust side logging standing by");
     } else {
         // Welp, we failed and I have nowhere to write the darn error. Ha ha.
         panic!(

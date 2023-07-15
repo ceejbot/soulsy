@@ -18,11 +18,12 @@ pub mod public {
 
     /// C++ tells us when it's safe to start pulling together the data we need.
     pub fn initialize_hud() {
+        log::info!("initializing hud");
         let mut ctrl = CONTROLLER.lock().unwrap();
         let settings = user_settings();
-        log::debug!("---------- have a settings dump");
-        log::debug!("{settings:?}");
-        log::debug!("---------- end settings dump");
+        log::info!("---------- have a settings dump");
+        log::info!("{settings:?}");
+        log::info!("---------- end settings dump");
 
         // here we should validate all four cycle entries which might refer to now-missing items
         // player::has_item_or_spell(form) is the function to call
