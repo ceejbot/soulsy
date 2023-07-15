@@ -1,7 +1,6 @@
 ﻿#include "helpers.h"
 
 #include "constant.h"
-#include "custom_setting.h"
 #include "enums.h"
 #include "equippable.h"
 #include "gear.h"
@@ -109,29 +108,6 @@ namespace helpers
 		return form_string;
 	}
 
-	std::vector<std::string> get_configured_section_page_names(uint32_t a_position)
-	{
-		//4 is all
-		std::vector<std::string> names;
-		for (const auto entries = config::custom_setting::get_sections(); const auto& entry : entries)
-		{
-			if (a_position == static_cast<uint32_t>(helpers::position_type::total))
-			{
-				names.emplace_back(entry.pItem);
-			}
-			else
-			{
-				auto section_position = config::custom_setting::get_position_by_section(entry.pItem);
-				if (section_position == a_position)
-				{
-					names.emplace_back(entry.pItem);
-				}
-			}
-		}
-		logger::trace("got {} sections, for position {}"sv, names.size(), a_position);
-		return names;
-	}
-
 	RE::TESForm* get_form_from_mod_id_string(const std::string& a_str)
 	{
 		if (!a_str.find(util::delimiter))
@@ -226,65 +202,6 @@ namespace helpers
 		return menu_form;
 	}
 
-	void rewrite_settings()
-	{
-		logger::trace("rewriting config ..."sv);
-		std::map<uint32_t, uint32_t> next_page_for_position;
-
-		for (auto i = 0; i < static_cast<int>(enums::position_type::total); ++i)
-		{
-			next_page_for_position[i] = 0;
-		}
-		std::vector<helpers::config_writer_helper*> configs;
-		const auto sections = get_configured_section_page_names();
-		logger::trace("got {} sections, rewrite that they are in consecutive pages"sv, sections.size());
-		for (const auto& section : sections)
-		{
-			auto position        = config::custom_setting::get_position_by_section(section);
-			const auto next_page = next_page_for_position[position];
-
-			auto* config        = new helpers::config_writer_helper();
-			config->section     = section;
-			config->page        = next_page;
-			config->position    = position;
-			config->form        = config::custom_setting::get_item_form_by_section(section);
-			config->type        = config::custom_setting::get_type_by_section(section);
-			config->hand        = config::custom_setting::get_hand_selection_by_section(section);
-			config->action      = config::custom_setting::get_slot_action_by_section(section);
-			config->form_left   = config::custom_setting::get_item_form_left_by_section(section);
-			config->type_left   = config::custom_setting::get_type_left_by_section(section);
-			config->action_left = config::custom_setting::get_slot_action_left_by_section(section);
-			config->actor_value = config::custom_setting::get_effect_actor_value(section);
-
-			configs.push_back(config);
-			next_page_for_position[position] = next_page + 1;
-		}
-
-		logger::trace("start writing config, got {} items"sv, configs.size());
-
-		for (const auto config : configs)
-		{
-			config::custom_setting::reset_section(config->section);
-			const auto section = get_section_name_for_page_position(config->page, config->position);
-
-			config::custom_setting::write_section_setting(section,
-				config->page,
-				config->position,
-				config->type,
-				config->form,
-				config->action,
-				config->hand,
-				config->type_left,
-				config->form_left,
-				config->action_left,
-				config->actor_value);
-		}
-
-		next_page_for_position.clear();
-		configs.clear();
-		logger::trace("done rewriting."sv);
-	}
-
 	std::string get_section_name_for_page_position(const uint32_t a_page, const uint32_t a_position)
 	{
 		//for now, I will just generate it
@@ -326,105 +243,4 @@ namespace helpers
 		return RE::ActorValue::kNone;
 	}
 
-	void write_setting_to_file(const uint32_t a_page,
-		const uint32_t a_position,
-		const std::vector<data_helper*>& a_data,
-		const uint32_t a_hand)
-	{
-		const auto section = get_section_name_for_page_position(a_page, a_position);
-		auto type          = static_cast<uint32_t>(slot_type::empty);
-		std::string form_string;
-		uint32_t action            = 0;
-		RE::ActorValue actor_value = RE::ActorValue::kNone;
-
-		auto type_left = static_cast<uint32_t>(slot_type::empty);
-		std::string form_string_left;
-		uint32_t action_left = 0;
-
-		if (a_data.empty())
-		{
-			return;
-		}
-
-		if (config::mcm_setting::get_elden_demon_souls())
-		{
-			if (!a_data.empty())
-			{
-				if (a_data[0]->left)
-				{
-					type_left = static_cast<uint32_t>(a_data[0]->type);
-					if (a_data[0]->form)
-					{
-						form_string_left = get_mod_and_form(a_data[0]->form->formID);
-					}
-					else
-					{
-						form_string_left = "";
-					}
-					action_left = static_cast<uint32_t>(a_data[0]->action_type);
-				}
-				else
-				{
-					type = static_cast<uint32_t>(a_data[0]->type);
-					if (a_data[0]->form)
-					{
-						form_string = get_mod_and_form(a_data[0]->form->formID);
-					}
-					else
-					{
-						form_string = "";
-					}
-					action = static_cast<uint32_t>(a_data[0]->action_type);
-				}
-				actor_value = a_data[0]->actor_value;
-			}
-		}
-		else
-		{
-			if (!a_data.empty())
-			{
-				type = static_cast<uint32_t>(a_data[0]->type);
-				if (a_data[0]->form)
-				{
-					form_string = get_mod_and_form(a_data[0]->form->formID);
-				}
-				else
-				{
-					form_string = "";
-				}
-				action      = static_cast<uint32_t>(a_data[0]->action_type);
-				actor_value = a_data[0]->actor_value;
-			}
-
-
-			if (a_data.size() == 2)
-			{
-				type_left = static_cast<uint32_t>(a_data[1]->type);
-				if (a_data[1]->form)
-				{
-					form_string_left = get_mod_and_form(a_data[1]->form->formID);
-				}
-				else
-				{
-					form_string_left = "";
-				}
-				action_left = static_cast<uint32_t>(a_data[1]->action_type);
-				actor_value = a_data[1]->actor_value;
-			}
-		}
-		config::mcm_setting::read_setting();
-
-		config::custom_setting::write_section_setting(section,
-			a_page,
-			a_position,
-			type,
-			form_string,
-			action,
-			a_hand,
-			type_left,
-			form_string_left,
-			action_left,
-			static_cast<int>(actor_value));
-		config::custom_setting::read_setting();
-	}
 }

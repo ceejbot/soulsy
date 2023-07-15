@@ -42,7 +42,6 @@ namespace helpers
 	std::vector<std::string> get_configured_section_page_names(
 		uint32_t a_position = static_cast<uint32_t>(position_type::total));
 	RE::TESForm* get_form_from_mod_id_string(const std::string& a_str);
-	void rewrite_settings();
 	std::string get_section_name_for_page_position(uint32_t a_page, uint32_t a_position);
 	RE::ActorValue get_actor_value_effect_from_potion(RE::TESForm* a_form, bool a_check = true);
 	void write_setting_to_file(uint32_t a_page,

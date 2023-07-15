@@ -1,7 +1,6 @@
 ﻿#include "ui_renderer.h"
 #include "animation_handler.h"
 #include "constant.h"
-#include "handle/ammo_handle.h"
 #include "helpers.h"
 #include "image_path.h"
 #include "key_path.h"

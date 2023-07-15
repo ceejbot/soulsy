@@ -5,8 +5,6 @@
 // with CommonLibSSE's events and do initial processing in the callbacks.
 // All heavy application-level logic happens on the Rust side.
 
-#include "handle/data/page/position_setting.h"
-
 
 void register_all_sinks();
 
