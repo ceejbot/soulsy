@@ -32,7 +32,7 @@ namespace player
 	void equipArmor(const std::string& form_spec);
 	void equipMagic(const std::string& form_spec, Action slot, EntryKind kind);
 	void equipWeapon(const std::string& form_spec, Action slot, EntryKind kind);
-
+	void equipAmmo(const std::string& form_spec);
 
 	void equip_item(const RE::TESForm* a_form,
 		RE::BGSEquipSlot*& a_slot,

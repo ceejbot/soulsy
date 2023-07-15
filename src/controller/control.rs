@@ -29,9 +29,9 @@ pub mod public {
         // player::has_item_or_spell(form) is the function to call
 
         // now walk through what we should be showing in each slot, whether in the cycle or not
-        let _refresh = ctrl.update_equipped();
-        // The readied utility item is purely in our control, so we can use whatever we have
-        // top-of-cycle for that one.
+        if ctrl.update_equipped() {
+            redraw_hud();
+        }
 
         // TODO
     }
@@ -56,8 +56,8 @@ pub mod public {
     }
 
     /// Get information about the item equipped in a specific slot.
-    pub fn equipped_in_slot(element: HudElement) -> Box<CycleEntry> {
-        CONTROLLER.lock().unwrap().equipped_in_slot(element)
+    pub fn entry_to_show_in_slot(element: HudElement) -> Box<CycleEntry> {
+        CONTROLLER.lock().unwrap().entry_to_show_in_slot(element)
     }
 
     // Handle an equip delay timer expiring.
@@ -84,30 +84,14 @@ pub mod public {
         let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.handle_inventory_changed(form, count);
     }
+
 }
 
-impl From<u32> for Action {
-    /// Turn the key code into an enum for easier processing.
-    fn from(value: u32) -> Self {
-        let settings = user_settings();
-
-        if value == settings.left {
-            Action::Left
-        } else if value == settings.right {
-            Action::Right
-        } else if value == settings.power {
-            Action::Power
-        } else if value == settings.utility {
-            Action::Utility
-        } else if value == settings.activate {
-            Action::Activate
-        } else if value == settings.showhide {
-            Action::ShowHide
-        } else if value == settings.refresh_layout {
-            Action::RefreshLayout
-        } else {
-            Action::Irrelevant
-        }
+/// Call this if the HUD changed in a way that merits stopping a fadeout.
+/// This will not show a fully hidden HUD, however.
+pub fn redraw_hud() {
+    if get_is_transitioning() {
+        set_alpha_transition(true, 1.0);
     }
 }
 
@@ -116,8 +100,8 @@ impl From<u32> for Action {
 pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
-    // The items that the player has equipped right now.
-    equipped: HashMap<HudElement, CycleEntry>,
+    /// The items the HUD should show right now.
+    visible: HashMap<HudElement, CycleEntry>,
     /// True if we've got a two-handed weapon equipped right now.
     two_hander_equipped: bool,
     /// The item that was in the left hand when we equipped a two-hander.
@@ -153,13 +137,16 @@ impl Controller {
     /// We do not act here on cascading changes. Instead, we let the equipped-change
     /// callback decide what to do when, e.g., a two-handed item is equipped.
     fn timer_expired(&self, which: Action) {
+        let hud = HudElement::from(which);
+
         if matches!(which, Action::Left) && self.two_hander_equipped {
             // The left hand is blocked because the right hand is equipping a two-hander.
             // TODO honk
             return;
         }
 
-        let Some(item) = &self.cycles.get_top(which) else {
+        // We equip whatever the HUD is showing right now.
+        let Some(item) = &self.visible.get(&hud) else {
             return;
         };
 
@@ -176,6 +163,7 @@ impl Controller {
             return;
         }
 
+        // If we're equipping a 1-hander after having used a 2-hander, restore our left hand.
         if matches!(which, Action::Right) && self.two_hander_equipped && !item.two_handed() {
             let cached_left = self.left_hand_cached.clone();
             self.equip_item(item, which);
@@ -204,6 +192,8 @@ impl Controller {
             equipWeapon(&form_spec, which, kind);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
+        } else if kind == EntryKind::Arrow {
+            equipAmmo(&form_spec);
         } else {
             log::info!(
                 "we did nothing with item name={}; kind={kind:?};",
@@ -214,8 +204,8 @@ impl Controller {
 
     // TODO refs instead of cloning
     /// Get the item equipped in a specific slot. I'd like to return an option but I can't.
-    fn equipped_in_slot(&self, slot: HudElement) -> Box<CycleEntry> {
-        let Some(candidate) = self.equipped.get(&slot) else {
+    fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<CycleEntry> {
+        let Some(candidate) = self.visible.get(&slot) else {
             return Box::<CycleEntry>::default();
         };
 
@@ -236,7 +226,7 @@ impl Controller {
 
         let left_entry = if right_entry.two_handed() {
             self.two_hander_equipped = true;
-            self.left_hand_cached = self.equipped.get(&HudElement::Left).cloned();
+            self.left_hand_cached = self.visible.get(&HudElement::Left).cloned();
             // We show an empty entry in the left hand if we're holding a bow or other 2-hander
             Box::<CycleEntry>::default()
         } else {
@@ -283,7 +273,7 @@ impl Controller {
     }
 
     fn update_slot(&mut self, slot: HudElement, new_item: &CycleEntry) -> bool {
-        if let Some(replaced) = self.equipped.insert(slot, new_item.clone()) {
+        if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
         } else {
             false
@@ -296,13 +286,13 @@ impl Controller {
     /// layers wants to show UI or play sounds in response.
     fn handle_key_event(&mut self, which: Action, _button: &ButtonEvent) -> KeyEventResponse {
         // If we're faded out in any way, show ourselves again.
-        log::info!("entering handle_key_event(); action={which:?}");
+        log::debug!("entering handle_key_event(); action={which:?}");
 
         if !matches!(which, Action::ShowHide) {
             log::debug!("doing Action:ShowHide");
             let is_fading: bool = get_is_transitioning();
             if user_settings().fade() && !is_fading {
-                set_alpha_transition(true, 1.0);
+                redraw_hud();
                 return KeyEventResponse {
                     handled: true,
                     ..Default::default()
@@ -311,10 +301,11 @@ impl Controller {
         }
 
         if matches!(which, Action::Power | Action::Utility | Action::Left | Action::Right) {
+            let hud = HudElement::from(which);
             if self.cycles.cycle_len(which) > 1 {
-                let _next = self.cycles.advance(which, 1);
-                if which == Action::Utility {
-                    // 
+                if let Some(next) = self.cycles.advance(which, 1) {
+                    self.update_slot(hud, &next);
+                    redraw_hud();
                 }
                 return KeyEventResponse {
                     handled: true,
@@ -339,6 +330,7 @@ impl Controller {
             }
             Action::RefreshLayout => {
                 HudLayout::refresh();
+                redraw_hud();
                 KeyEventResponse {
                     handled: true,
                     ..Default::default()
@@ -415,6 +407,48 @@ impl Default for KeyEventResponse {
             handled: false,
             stop_timer: Action::Irrelevant,
             start_timer: Action::Irrelevant,
+        }
+    }
+}
+
+/// All this converting makes me suspect the abstraction is wrong.
+impl From<Action> for HudElement {
+    fn from(value: Action) -> Self {
+        if value == Action::Power {
+            HudElement::Power
+        } else if value == Action::Utility {
+            HudElement::Utility
+        }  else if value == Action::Left {
+            HudElement::Left
+        } else if value == Action::Right {
+            HudElement::Right
+        } else {
+            HudElement::Ammo
+        }
+    }
+}
+
+impl From<u32> for Action {
+    /// Turn the key code into an enum for easier processing.
+    fn from(value: u32) -> Self {
+        let settings = user_settings();
+
+        if value == settings.left {
+            Action::Left
+        } else if value == settings.right {
+            Action::Right
+        } else if value == settings.power {
+            Action::Power
+        } else if value == settings.utility {
+            Action::Utility
+        } else if value == settings.activate {
+            Action::Activate
+        } else if value == settings.showhide {
+            Action::ShowHide
+        } else if value == settings.refresh_layout {
+            Action::RefreshLayout
+        } else {
+            Action::Irrelevant
         }
     }
 }

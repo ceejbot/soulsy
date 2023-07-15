@@ -6,7 +6,6 @@
 #include "magic.h"
 #include "utility_items.h"
 
-#include "handle/ammo_handle.h"
 #include "helpers.h"
 #include "offset.h"
 #include "string_util.h"
@@ -59,22 +58,21 @@ namespace player
 
 	rust::Box<CycleEntry> equippedAmmo()
 	{
-		const auto* ammo_handle = handle::ammo_handle::get_singleton();
-		auto* current_ammo      = ammo_handle->get_current();
-
-		if (!current_ammo || !current_ammo->form)
+		auto player = RE::PlayerCharacter::GetSingleton();
+		auto* current_ammo = player->GetCurrentAmmo();
+		if (!current_ammo || !current_ammo->IsAmmo())
 		{
 			return default_cycle_entry();
 		}
 
-		const auto formspec       = helpers::get_form_spec(current_ammo->form);
-		const std::string tmpname = current_ammo->form->GetName();
-
+		auto* ammo = obj->As<RE::TESAmmo>();
+		const auto formspec       = helpers::get_form_spec(current_ammo);
+		auto count = get_inventory_count(current_ammo, RE::FormType::Ammo, player);
 		return create_cycle_entry(EntryKind::Arrow,
 			false,
 			true,
-			current_ammo->item_count,
-			current_ammo->form->GetName(),
+			count,
+			current_ammo->GetName(),
 			formspec);
 	}
 
@@ -146,6 +144,17 @@ namespace player
 		}
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		equip::equipArmorByForm(form, player);
+	}
+	
+	void equipAmmo(const std::string& form_spec)
+	{
+		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+		if (!form)
+		{
+			return;
+		}
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		equip::equip_ammo(form, player);
 	}
 
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>

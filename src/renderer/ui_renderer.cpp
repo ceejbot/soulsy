@@ -381,7 +381,7 @@ namespace ui
 
 		for (auto slot_layout : top_layout.layouts)
 		{
-			rust::Box<CycleEntry> entry = equipped_in_slot(slot_layout.element);
+			rust::Box<CycleEntry> entry = entry_to_show_in_slot(slot_layout.element);
 			const auto entry_kind       = entry->kind();
 			const auto entry_name       = entry->name();
 			const auto hotkey           = settings->hotkey_for(slot_layout.element);

@@ -271,7 +271,7 @@ pub mod plugin {
         /// Handle an in-menu event (which adds/removes items) from the game.
         fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse;
         /// Get the item readied in the given slot, if any.
-        fn equipped_in_slot(slot: HudElement) -> Box<CycleEntry>;
+        fn entry_to_show_in_slot(slot: HudElement) -> Box<CycleEntry>;
         /// A cycle delay timer has expired. Time to equip!
         fn timer_expired(slot: Action);
         /// Update the HUD without any hints about what just changed.
@@ -333,5 +333,6 @@ pub mod plugin {
         fn equipMagic(form_spec: &CxxString, which: Action, kind: EntryKind);
         fn equipWeapon(form_spec: &CxxString, which: Action, kind: EntryKind);
         fn equipArmor(form_spec: &CxxString);
+        fn equipAmmo(form_spec: &CxxString);
     }
 }
