@@ -315,6 +315,8 @@ pub mod plugin {
         fn get_is_transitioning() -> bool;
         /// Show or hide the HUD widget.
         fn toggle_hud_visibility();
+        /// Show the hude no matter what;
+        fn show_hud();
     }
 
     // Selected player data fetchers.

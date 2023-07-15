@@ -5,6 +5,7 @@ use once_cell::sync::Lazy;
 
 use super::cycles::*;
 use super::settings::user_settings;
+use crate::layout;
 use crate::plugin::*;
 
 /// There can be only one. Not public because we want access managed.
@@ -24,13 +25,21 @@ pub mod public {
         log::info!("---------- have a settings dump");
         log::info!("{settings:?}");
         log::info!("---------- end settings dump");
+        let hud = layout();
+        log::info!(
+            "hud layout: loc={},{}; size={},{}",
+            hud.anchor.x,
+            hud.anchor.y,
+            hud.size.x,
+            hud.size.y
+        );
 
         // here we should validate all four cycle entries which might refer to now-missing items
         // player::has_item_or_spell(form) is the function to call
 
         // now walk through what we should be showing in each slot, whether in the cycle or not
         if ctrl.update_equipped() {
-            redraw_hud();
+            show_hud();
         }
 
         // TODO
@@ -83,14 +92,6 @@ pub mod public {
     pub fn handle_inventory_changed(form: &TESForm, count: u32) {
         let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.handle_inventory_changed(form, count);
-    }
-}
-
-/// Call this if the HUD changed in a way that merits stopping a fadeout.
-/// This will not show a fully hidden HUD, however.
-pub fn redraw_hud() {
-    if get_is_transitioning() {
-        set_alpha_transition(true, 1.0);
     }
 }
 
@@ -162,16 +163,6 @@ impl Controller {
             return;
         }
 
-        // If we're equipping a 1-hander after having used a 2-hander, restore our left hand.
-        if matches!(which, Action::Right) && self.two_hander_equipped && !item.two_handed() {
-            let cached_left = self.left_hand_cached.clone();
-            self.equip_item(item, which);
-            if let Some(left) = cached_left {
-                self.equip_item(&left, Action::Left);
-            }
-            return;
-        }
-
         self.equip_item(item, which);
     }
 
@@ -187,7 +178,7 @@ impl Controller {
         if kind.is_magic() {
             // My name is John Wellington Wells / I'm a dealer in...
             equipMagic(&form_spec, which, kind);
-        } else if kind.is_weapon() {
+        } else if kind.left_hand_ok() || kind.right_hand_ok() {
             equipWeapon(&form_spec, which, kind);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
@@ -215,6 +206,9 @@ impl Controller {
     fn update_equipped(&mut self) -> bool {
         let mut changed = false;
 
+        let previously_visible = self.visible.clone();
+        let left_previous = previously_visible.get(&HudElement::Left).clone();
+
         let right_entry = equippedRightHand();
         log::info!(
             "right hand: {} {}",
@@ -223,21 +217,32 @@ impl Controller {
         );
         changed = changed || self.update_slot(HudElement::Right, &right_entry);
 
-        let left_entry = if right_entry.two_handed() {
-            self.two_hander_equipped = true;
-            self.left_hand_cached = self.visible.get(&HudElement::Left).cloned();
-            // We show an empty entry in the left hand if we're holding a bow or other 2-hander
-            Box::<CycleEntry>::default()
-        } else {
-            self.two_hander_equipped = false;
-            if let Some(left) = &self.left_hand_cached.clone() {
-                self.equip_item(left, Action::Left);
-                self.left_hand_cached = None;
-                Box::new(left.clone())
-            } else {
-                equippedLeftHand()
+        if right_entry.two_handed() && !self.two_hander_equipped {
+            // We've switched from a singled-handed weapon to a two-hander.
+            // Remember what we had equipped in the left.
+            if self.left_hand_cached.is_none() {
+                self.left_hand_cached = left_previous.cloned();
             }
-        };
+            self.two_hander_equipped = true;
+        }
+
+        if !right_entry.two_handed() && self.two_hander_equipped {
+            // We've switched from a two-hander to a one-hander.
+            // Re-equip what we had in the left. This schedules the task, so it
+            // won't be re-entrant AFAIK.
+            log::debug!(
+                "maybe re-equipping left hand item; item='{:?}';",
+                self.left_hand_cached
+            );
+            if let Some(leftie) = &self.left_hand_cached {
+                self.equip_item(&leftie, Action::Left);
+                self.left_hand_cached = None;
+            }
+            self.two_hander_equipped = false;
+        }
+
+        // Whatever we did earlier, update so we show what we have now.
+        let left_entry = equippedLeftHand();
         log::info!(
             "left hand: {} {}",
             left_entry.name(),
@@ -262,6 +267,11 @@ impl Controller {
             changed = changed || self.update_slot(HudElement::Utility, &utility);
         }
 
+        if changed {
+            log::info!("visible items changed: power='{}'; Sleft='{}'; right='{}'; ammo='{}';", 
+            power.name(), left_entry.name(), right_entry.name(), ammo.name());
+        }
+
         changed
     }
 
@@ -284,34 +294,43 @@ impl Controller {
     /// Returns an enum indicating what we did in response, in case one of the calling
     /// layers wants to show UI or play sounds in response.
     fn handle_key_event(&mut self, which: Action, _button: &ButtonEvent) -> KeyEventResponse {
-        // If we're faded out in any way, show ourselves again.
         log::debug!("entering handle_key_event(); action={which:?}");
 
-        if !matches!(which, Action::ShowHide) {
+        // It's not really tidier rewritten as a match.
+
+        if matches!(which, Action::ShowHide) {
             log::debug!("doing Action:ShowHide");
+            toggle_hud_visibility();
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
+        } else {
+            // If we're faded out in any way, show ourselves again.
             let is_fading: bool = get_is_transitioning();
-            if user_settings().fade() && !is_fading {
-                redraw_hud();
-                return KeyEventResponse {
-                    handled: true,
-                    ..Default::default()
-                };
+            if user_settings().fade() && is_fading {
+                log::debug!("interrupting fade-out");
+                show_hud();
             }
         }
 
         if matches!(
             which,
-            Action::Power | Action::Utility | Action::Left | Action::Right
+            Action::Power | Action::Left | Action::Right | Action::Utility
         ) {
             let hud = HudElement::from(which);
             if self.cycles.cycle_len(which) > 1 {
                 if let Some(next) = self.cycles.advance(which, 1) {
                     self.update_slot(hud, &next);
-                    redraw_hud();
+                    show_hud();
                 }
                 return KeyEventResponse {
                     handled: true,
-                    start_timer: which,
+                    start_timer: if !matches!(which, Action::Utility) {
+                        which
+                    } else {
+                        Action::Irrelevant
+                    },
                     stop_timer: Action::Irrelevant,
                 };
             } else {
@@ -321,18 +340,12 @@ impl Controller {
                 };
             }
         }
+
         match which {
             Action::Activate => self.use_utility_item(),
-            Action::ShowHide => {
-                toggle_hud_visibility();
-                KeyEventResponse {
-                    handled: true,
-                    ..Default::default()
-                }
-            }
             Action::RefreshLayout => {
                 HudLayout::refresh();
-                redraw_hud();
+                show_hud();
                 KeyEventResponse {
                     handled: true,
                     ..Default::default()
@@ -344,6 +357,7 @@ impl Controller {
 
     /// Activate whatever we have in the utility slot.
     fn use_utility_item(&mut self) -> KeyEventResponse {
+        log::debug!("using utility item (unimplemented)");
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind() != EntryKind::Empty {
                 // TODO activate the utility item

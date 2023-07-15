@@ -129,12 +129,15 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		// event. This appears to be so that we can directly compare it to the hotkey numbers
 		// we have snagged from the MCM settings. ??
 		const uint32_t key = keycodes::get_key_id(button);
-		logger::info("handling button event; idcode={}; after offset key={}"sv, button->idCode, key);
 		if (key == -1)
 		{
 			continue;
 		}
 
+		if (button->IsPressed() || button->IsDown() || button->IsHeld()) {
+			continue;
+		}
+		logger::info("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
 		const KeyEventResponse response = handle_key_event(key, *button);
 		logger::info("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
 			key,

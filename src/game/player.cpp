@@ -65,7 +65,6 @@ namespace player
 			return default_cycle_entry();
 		}
 
-		auto* ammo          = obj->As<RE::TESAmmo>();
 		const auto formspec = helpers::get_form_spec(current_ammo);
 		auto count          = get_inventory_count(current_ammo, RE::FormType::Ammo, player);
 		return create_cycle_entry(EntryKind::Arrow, false, true, count, current_ammo->GetName(), formspec);

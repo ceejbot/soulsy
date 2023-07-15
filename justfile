@@ -19,13 +19,16 @@ help:
 setup:
     cmake --preset vs2022-windows
 
-# Build for debugging.
-@debug:
-    cmake --build --preset vs2022-windows --config Debug
-
-# Build for release.
-@release:
+# Rebuild the archive for testing. Build requires a windows toolchain & cmake.
+@rebuild: 
+    if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
+    cargo build --release
     cmake --build --preset vs2022-windows --config Release
+
+# Build for debugging. The CMake build needs work before this will be good.
+@debug:
+    cargo build
+    cmake --build --preset vs2022-windows --config Debug
 
 # Run the same tests we run in CI.
 @ci:
@@ -70,17 +73,21 @@ tag VERSION:
     git tag "v{{VERSION}}"
     echo "Release tagged for version v{{VERSION}}"
 
-# Rebuild the archive for testing. What I wouldn't give for rm -f
-@rebuild: 
-    if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
-    cargo build --release
-    cmake --build --preset vs2022-windows --config Release
+# Bash version of archive creation, sans 7zip step for now.
+@archive: 
+    mkdir -p archive/SKSE/plugins
+    cp -rp resources archive/SKSE/plugins
+    mv archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml archive/SKSE/plugins/
+    cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
+    cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
+    cp -rp data/* archive/
+    cp -p data/SoulsyHUD.esl archive/
 
 # Build a full mod archive
-archive:
+archive-win:
     #!{{shbang}}
     //! I would write this in bash, but I cannot do that from pwsh.
-    //! So I inflict this on the world instead.
+    //! So I inflict a rust-script on the world instead.
     //!
     //! ```cargo
     //! [dependencies]
@@ -132,17 +139,7 @@ spotless: clean
     if (test-path archive.7z) { remove-item archive.7z }
     if (test-path archive) { rm archive -r -force }
 
-# powershell version
+# powershell version of the recipe for the ultra-tidy
 @spotless-win: clean-win
     cargo clean
     rm -rf build
-
-# Bash version of archive creation.
-@archive-bash: 
-    mkdir -p archive/SKSE/plugins
-    cp -rp resources archive/SKSE/plugins
-    mv archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml archive/SKSE/plugins/
-    cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
-    cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
-    cp -rp data/* archive/
-    cp -p data/SoulsyHUD.esl archive/

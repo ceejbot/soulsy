@@ -231,8 +231,7 @@ namespace ui
 	void ui_renderer::drawText(const char* text,
 		const ImVec2 center,
 		const float font_size,
-		const float angle,
-		const Color color,)
+		const Color color)
 	{
 		if (!text || !*text || color.a == 0)
 		{
@@ -449,12 +448,10 @@ namespace ui
 			if (slot_layout.name_color.a > 0 && !entry_name.empty())
 			{
 				auto name = std::string(entry_name).c_str();
-				// TODO this should be an alignment setting on the layout
-				auto center_text =
-					(slot_layout.element == HudElement::Power || slot_layout.element == HudElement::Utility);
-				const text_pos = ImVec2(slot_center.x + slot_layout.text_offset.x, slot_center.y + slot_layout.text_offset.y);
+				const auto text_pos =
+					ImVec2(slot_center.x + slot_layout.text_offset.x, slot_center.y + slot_layout.text_offset.y);
 
-				drawText(name, text_pos, top_layout.font_size, 0.0f, slot_layout.name_color);
+				drawText(name, text_pos, top_layout.font_size, slot_layout.name_color);
 			}
 
 			// next up: do we have extra text to show on this puppy?
@@ -462,12 +459,13 @@ namespace ui
 			{
 				auto count     = entry->count();
 				auto slot_text = std::to_string(count);
-				const text_pos = ImVec2(slot_center.x + slot_layout.text_offset.x, slot_center.y + slot_layout.text_offset.y);
+				const auto text_pos =
+					ImVec2(slot_center.x + slot_layout.text_offset.x, slot_center.y + slot_layout.text_offset.y);
 
 				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
-					drawText(slot_text.c_str(), text_pos, slot_layout.count_font_size, 0.0f, slot_layout.count_color);
+					drawText(slot_text.c_str(), text_pos, slot_layout.count_font_size, slot_layout.count_color);
 				}
 			}
 
@@ -495,6 +493,8 @@ namespace ui
 
 	void ui_renderer::draw_ui()
 	{
+		advanceTimers(ImGui::GetIO().DeltaTime);
+
 		if (!show_ui_)
 			return;
 
@@ -514,8 +514,11 @@ namespace ui
 
 		const auto settings           = user_settings();
 		const auto hide_out_of_combat = settings->fade();
+		const auto player = RE::PlayerCharacter::GetSingleton();
+		const bool inCombat = player->IsInCombat();
+		const auto weaponsDrawn = player->AsActorState()->IsWeaponDrawn();
 
-		fade_in = hide_out_of_combat ? RE::PlayerCharacter::GetSingleton()->IsInCombat() : true;
+		fade_in = hide_out_of_combat ? (inCombat || weaponsDrawn)  : true;
 
 		static constexpr ImGuiWindowFlags window_flag =
 			ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs;
@@ -545,8 +548,6 @@ namespace ui
 		drawAllSlots();
 
 		ImGui::End();
-
-		advanceTimers(ImGui::GetIO().DeltaTime);
 
 		if (hide_out_of_combat)
 		{

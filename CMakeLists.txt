@@ -54,7 +54,7 @@ set(CARGO_TARGET_DIR ${CMAKE_SOURCE_DIR}/target)
 
 set(SOULSY_SOURCE_FILE ${CMAKE_SOURCE_DIR}/src/lib.rs)
 set(SOULSY_BRIDGE_CPP ${CARGO_TARGET_DIR}/cxxbridge/soulsy/src/lib.rs.cc)
-set(SOULSY_LIB ${CARGO_TARGET_DIR}/debug/${CMAKE_STATIC_LIBRARY_PREFIX}soulsy${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(SOULSY_LIB ${CARGO_TARGET_DIR}/release/${CMAKE_STATIC_LIBRARY_PREFIX}soulsy${CMAKE_STATIC_LIBRARY_SUFFIX})
 
 # Add a custom command that builds the rust crate and generates C++ bridge code
 add_custom_command(

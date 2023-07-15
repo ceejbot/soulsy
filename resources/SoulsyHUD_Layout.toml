@@ -5,12 +5,12 @@ font_size = 20.0
 debug = false
 
 [anchor]
-x = 150.0
-y = 1350.0
+x = 170.0
+y = 1225.0
 
 [size]
-x = 400.0
-y = 400.0
+x = 300.0
+y = 300.0
 
 [bg_color]
 r = 255
@@ -27,17 +27,17 @@ repr = 0
 
 [layouts.offset]
 x = 0.0
-y = -111.0
+y = -83.0
 
 [layouts.size]
-x = 125.0
-y = 125.0
+x = 94.0
+y = 94.0
 
 [layouts.bg_color]
 r = 255
 g = 255
 b = 255
-a = 0
+a = 128
 
 [layouts.icon_color]
 r = 200
@@ -46,8 +46,8 @@ b = 200
 a = 255
 
 [layouts.icon_size]
-x = 81.0
-y = 81.0
+x = 50.0
+y = 50.0
 
 [layouts.hotkey_color]
 r = 255
@@ -56,8 +56,8 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 0.0
-y = 225.0
+x = -41.0
+y = 41.0
 
 [layouts.hotkey_size]
 x = 30.0
@@ -67,7 +67,7 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 100
+a = 0
 
 [layouts.text_offset]
 x = 0.0
@@ -98,17 +98,17 @@ repr = 1
 
 [layouts.offset]
 x = 0.0
-y = 446.0
+y = 83.0
 
 [layouts.size]
-x = 125.0
-y = 125.0
+x = 94.0
+y = 94.0
 
 [layouts.bg_color]
 r = 255
 g = 255
 b = 255
-a = 0
+a = 128
 
 [layouts.icon_color]
 r = 200
@@ -117,8 +117,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 81.0
-y = 81.0
+x = 50.0
+y = 50.0
 
 [layouts.hotkey_color]
 r = 255
@@ -127,8 +127,8 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 0.0
-y = -225.0
+x = 41.0
+y = -41.0
 
 [layouts.hotkey_size]
 x = 30.0
@@ -138,7 +138,7 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 100
+a = 0
 
 [layouts.text_offset]
 x = 0.0
@@ -157,7 +157,7 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 0.0
+x = 20.0
 y = 20.0
 
 [[layouts]]
@@ -168,18 +168,18 @@ count_font_size = 20.0
 repr = 2
 
 [layouts.offset]
-x = -446.0
+x = -83.0
 y = 0.0
 
 [layouts.size]
-x = 125.0
-y = 125.0
+x = 94.0
+y = 94.0
 
 [layouts.bg_color]
 r = 255
 g = 255
 b = 255
-a = 100
+a = 128
 
 [layouts.icon_color]
 r = 200
@@ -188,8 +188,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 81.0
-y = 81.0
+x = 50.0
+y = 50.0
 
 [layouts.hotkey_color]
 r = 255
@@ -198,8 +198,8 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 0.0
-y = 225.0
+x = 41.0
+y = 41.0
 
 [layouts.hotkey_size]
 x = 30.0
@@ -239,18 +239,18 @@ count_font_size = 20.0
 repr = 3
 
 [layouts.offset]
-x = 446.0
+x = 83.0
 y = 0.0
 
 [layouts.size]
-x = 125.0
-y = 125.0
+x = 94.0
+y = 94.0
 
 [layouts.bg_color]
 r = 255
 g = 255
 b = 255
-a = 0
+a = 128
 
 [layouts.icon_color]
 r = 200
@@ -259,8 +259,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 81.0
-y = 81.0
+x = 50.0
+y = 50.0
 
 [layouts.hotkey_color]
 r = 255
@@ -269,8 +269,8 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 0.0
-y = -225.0
+x = -41.0
+y = -41.0
 
 [layouts.hotkey_size]
 x = 30.0
@@ -280,7 +280,7 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 100
+a = 0
 
 [layouts.text_offset]
 x = 0.0
@@ -314,8 +314,8 @@ x = 0.0
 y = 0.0
 
 [layouts.size]
-x = 62.0
-y = 62.0
+x = 50.0
+y = 50.0
 
 [layouts.bg_color]
 r = 255
@@ -337,7 +337,7 @@ y = 35.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 [layouts.hotkey_offset]
 x = 0.0
@@ -351,11 +351,11 @@ y = 20.0
 r = 255
 g = 255
 b = 255
-a = 100
+a = 0
 
 [layouts.text_offset]
-x = 0.0
-y = 0.0
+x = 50.0
+y = 50.0
 
 [layouts.count_color]
 r = 255
@@ -370,5 +370,5 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 0.0
+x = 10.0
 y = 20.0

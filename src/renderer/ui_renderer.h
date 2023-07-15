@@ -62,7 +62,10 @@ namespace ui
 			const ImVec2 size,
 			const float angle,
 			const Color color);
-
+		static void drawText(const char* text,
+			const ImVec2 center,
+			const float font_size,
+			const Color color);
 		// older...
 		static void init_animation(animation_type animation_type,
 			float a_screen_x,
@@ -114,17 +117,6 @@ namespace ui
 		static void startTimer(Action which);
 		static void stopTimer(Action which);
 		static void advanceTimers(float delta);
-
-		inline static float clamp(float input, float min, float max)
-		{
-			// I do like a good ternary.
-			return input > max ? max : (input < min ? min : input);
-		}
-
-		inline static uint32_t clamp(uint32_t input, uint32_t min, uint32_t max)
-		{
-			return input > max ? max : (input < min ? min : input);
-		}
 
 		struct d_3d_init_hook
 		{

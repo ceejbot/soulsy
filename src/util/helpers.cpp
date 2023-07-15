@@ -26,6 +26,8 @@ namespace helpers
 
 	void toggle_hud_visibility() { ui::ui_renderer::toggle_show_ui(); }
 
+	void show_hud() { ui::ui_renderer::set_show_ui(true); }
+
 	data_helper* get_extra_data(RE::TESForm*& form)
 	{
 		const auto item       = new data_helper();
@@ -39,7 +41,7 @@ namespace helpers
 		return item;
 	}
 
-	std::string get_form_spec(RE::TESForm*& form)
+	std::string get_form_spec(RE::TESForm* form)
 	{
 		std::string form_string;
 		logger::trace("entering get_form_spec()"sv);
