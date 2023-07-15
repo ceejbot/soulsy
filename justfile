@@ -78,10 +78,10 @@ tag VERSION:
     mkdir -p archive/SKSE/plugins
     cp -rp resources archive/SKSE/plugins
     mv archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml archive/SKSE/plugins/
-    cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
-    cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
     cp -rp data/* archive/
     cp -p data/SoulsyHUD.esl archive/
+    cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
+    cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
 
 # Build a full mod archive
 archive-win:

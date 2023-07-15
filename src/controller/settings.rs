@@ -78,7 +78,7 @@ impl Default for UserSettings {
             refresh_layout: 8,
             showhide: 2,
             maxlen: 10,       // this not a key code but an int
-            equip_delay: 500, // in milliseconds
+            equip_delay: 750, // in milliseconds
             fade: true,
             fade_delay: 1000,   // in milliseconds
             controller_kind: 0, // PC

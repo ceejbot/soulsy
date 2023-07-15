@@ -37,6 +37,28 @@ TKTK: screenshot of MCM, explanation of defaults, etc
 
 TKTKTK
 
+The HUD look can be changed by modifying files in `SKSE/plugins`.
+
+```
+SoulsyHUD/SKSE/plugins
+├── resources
+│  ├── animations
+│  ├── backgrounds
+│  ├── buttons
+│  ├── fonts
+│  └── icons
+└── SoulsyHUD_Layout.toml
+```
+
+- `SoulsyHud_Layout.toml` - The HUD layout, in TOML format. Set text colors and locations.
+- `backgrounds/hud_bg.svg` - The background for the entire HUD.
+- `backgrounds/slot_bg.svg` - The background for a single cycle element (left hand, power, etc).
+- `backgrounds/key_bg.svg` - The background for hotkey hints.
+- `animations/highlight` - An animation to play on a highlighted slot. NOT YET FUNCTIONAL.
+- `SKSE/plugins/resources/buttons` - Xbox and Playstation button art. 
+- `SKSE/plugins/resources/fonts` - A TrueType font to use for display. The HUD comes with `futura-book-bt` to match Untarnished UI.
+- `SKSE/plugins/resources/icons` - Icon files in SVG format, each named for the item. The HUD comes with the usual SkyUI icons.
+
 ## Building
 
 Soulsy is a Rust and C++ project, using CMake to drive Cargo to build the Rust parts. The application logic is implemented in Rust, with a bridge to the C++ libraries required to implement an SKSE plugin. I have not attempted to build it anywhere other than on Windows. (The Rust side builds anywhere, but the C++ side does not.)

@@ -230,6 +230,7 @@ impl Controller {
             // We've switched from a two-hander to a one-hander.
             // Re-equip what we had in the left. This schedules the task, so it
             // won't be re-entrant AFAIK.
+            self.two_hander_equipped = false;
             log::debug!(
                 "maybe re-equipping left hand item; item='{:?}';",
                 self.left_hand_cached
@@ -238,7 +239,6 @@ impl Controller {
                 self.equip_item(&leftie, Action::Left);
                 self.left_hand_cached = None;
             }
-            self.two_hander_equipped = false;
         }
 
         // Whatever we did earlier, update so we show what we have now.
