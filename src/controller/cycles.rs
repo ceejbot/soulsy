@@ -13,9 +13,9 @@ pub fn get_icon_file(kind: &EntryKind) -> String {
     kind.icon_file()
 }
 
-// CycleEntry, which is also exposed to C++.
+// TesItemData, which is also exposed to C++.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
-pub struct CycleEntry {
+pub struct TesItemData {
     /// Player-visible name.
     name: String,
     /// A string that can be turned back into form data; for serializing.
@@ -34,21 +34,21 @@ pub struct CycleEntry {
 
 // Testing the formstring is sufficient for our needs, which is figuring out if
 // this form item is in a cycle already.
-impl PartialEq for CycleEntry {
+impl PartialEq for TesItemData {
     fn eq(&self, other: &Self) -> bool {
         self.form_string == other.form_string
     }
 }
 
-pub fn create_cycle_entry(
+pub fn create_tesitem_shim(
     icon_kind: EntryKind,
     two_handed: bool,
     has_count: bool,
     count: usize,
     name: &str,
     form_string: &str,
-) -> Box<CycleEntry> {
-    Box::new(CycleEntry::new(
+) -> Box<TesItemData> {
+    Box::new(TesItemData::new(
         icon_kind,
         two_handed,
         has_count,
@@ -58,11 +58,11 @@ pub fn create_cycle_entry(
     ))
 }
 
-pub fn default_cycle_entry() -> Box<CycleEntry> {
-    Box::<CycleEntry>::default()
+pub fn default_cycle_entry() -> Box<TesItemData> {
+    Box::<TesItemData>::default()
 }
 
-impl CycleEntry {
+impl TesItemData {
     /// This is called from C++ when handing us a new item.
     pub fn new(
         icon_kind: EntryKind,
@@ -72,7 +72,7 @@ impl CycleEntry {
         name: &str,
         form_string: &str,
     ) -> Self {
-        CycleEntry {
+        TesItemData {
             name: name.to_string(),
             form_string: form_string.to_string(),
             kind: icon_kind,
@@ -129,10 +129,10 @@ impl CycleEntry {
 /// files, and advance the cycle when the player presses a cycle button.
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct CycleData {
-    left: Vec<CycleEntry>,
-    right: Vec<CycleEntry>,
-    power: Vec<CycleEntry>,
-    utility: Vec<CycleEntry>,
+    left: Vec<TesItemData>,
+    right: Vec<TesItemData>,
+    power: Vec<TesItemData>,
+    utility: Vec<TesItemData>,
 }
 
 // where to persist
@@ -159,7 +159,7 @@ impl CycleData {
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
     /// This does not equip or try to use the item in any way. It's pure management.
-    pub fn advance(&mut self, which: Action, amount: usize) -> Option<CycleEntry> {
+    pub fn advance(&mut self, which: Action, amount: usize) -> Option<TesItemData> {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -195,13 +195,13 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, _which: Action, _form_spec: String) -> Option<CycleEntry> {
+    pub fn set_top(&mut self, _which: Action, _form_spec: String) -> Option<TesItemData> {
         // TODO do I need this at all?
         todo!()
     }
 
     // the programmer error is annoying, but it's a shared struct...
-    pub fn get_top(&self, which: Action) -> Option<CycleEntry> {
+    pub fn get_top(&self, which: Action) -> Option<TesItemData> {
         let cycle = match which {
             Action::Power => &self.power,
             Action::Left => &self.left,
@@ -225,7 +225,7 @@ impl CycleData {
     ///
     /// Does not change the current item in the cycle, unless the current item is
     /// the one removed. Adds at the end.
-    pub fn toggle(&mut self, which: Action, item: CycleEntry) -> MenuEventResponse {
+    pub fn toggle(&mut self, which: Action, item: TesItemData) -> MenuEventResponse {
         let cycle = match which {
             Action::Power => {
                 if !item.kind.is_power() {
@@ -269,4 +269,14 @@ impl CycleData {
             MenuEventResponse::ItemAdded
         }
     }
+
+    pub fn update_count(&mut self, item: TesItemData, count: usize) {
+        if item.kind().is_utility() {
+            if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
+                log::debug!("updating count for tracked item; formid={}; count={count}", item.form_string());
+                candidate.set_count(count);
+            }
+        }
+    }
+
 }

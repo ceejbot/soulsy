@@ -4,14 +4,14 @@
 
 #include "rust/cxx.h"
 
-struct CycleEntry;
+struct TesItemData;
 enum class EntryKind : ::std::uint8_t;
 
 namespace equippable
 {
 	using slot_type = enums::slot_type;
 
-	rust::Box<CycleEntry> cycle_entry_from_form(RE::TESForm*& item_form);
+	rust::Box<TesItemData> makeTESItemDataFromForm(RE::TESForm* item_form);
 
 	slot_type get_type(RE::TESForm*& item_form);
 	bool is_two_handed(RE::TESForm*& item_form);

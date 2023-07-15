@@ -244,24 +244,24 @@ pub mod plugin {
         fn layout() -> HudLayout;
 
         /// This is an entry in the cycle. The UI will ask questions of it.
-        type CycleEntry;
-        fn kind(self: &CycleEntry) -> EntryKind;
-        fn highlighted(self: &CycleEntry) -> bool;
-        fn name(self: &CycleEntry) -> String;
-        fn has_count(self: &CycleEntry) -> bool;
-        fn count(self: &CycleEntry) -> usize;
+        type TesItemData;
+        fn kind(self: &TesItemData) -> EntryKind;
+        fn highlighted(self: &TesItemData) -> bool;
+        fn name(self: &TesItemData) -> String;
+        fn has_count(self: &TesItemData) -> bool;
+        fn count(self: &TesItemData) -> usize;
         /// Call to create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
-        fn create_cycle_entry(
+        fn create_tesitem_shim(
             kind: EntryKind,
             two_handed: bool,
             has_count: bool,
             count: usize,
             name: &str,
             form_string: &str,
-        ) -> Box<CycleEntry>;
+        ) -> Box<TesItemData>;
         /// Snag a default cycle entry.
-        fn default_cycle_entry() -> Box<CycleEntry>;
+        fn default_cycle_entry() -> Box<TesItemData>;
 
         /// Get the svg icon matching this item. Not a full path.
         fn get_icon_file(kind: &EntryKind) -> String;
@@ -269,15 +269,17 @@ pub mod plugin {
         /// Handle an incoming key press event from the game. An enum encoding how it was handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
-        fn handle_menu_event(key: u32, item: Box<CycleEntry>) -> MenuEventResponse;
+        fn handle_menu_event(key: u32, item: Box<TesItemData>) -> MenuEventResponse;
         /// Get the item readied in the given slot, if any.
-        fn entry_to_show_in_slot(slot: HudElement) -> Box<CycleEntry>;
+        fn entry_to_show_in_slot(slot: HudElement) -> Box<TesItemData>;
         /// A cycle delay timer has expired. Time to equip!
         fn timer_expired(slot: Action);
         /// Update the HUD without any hints about what just changed.
         fn update_equipped() -> bool;
         /// Update the HUD with info about an item the player just equipped.
-        fn handle_item_equipped(item: Box<CycleEntry>) -> bool;
+        fn handle_item_equipped(item: Box<TesItemData>) -> bool;
+        /// The player's inventory changed. Update if necessary.
+        fn handle_inventory_changed(item: Box<TesItemData>, count: usize);
     }
 
     unsafe extern "C++" {
@@ -285,9 +287,12 @@ pub mod plugin {
         // I can imagine auto-generating a complete bridge at some point.
         include!("PCH.h");
 
-        /// The form object. The equip slot for an item.
+        /// The form object: the source of all data! We expose selected methods.
         #[namespace = "RE"]
         type TESForm;
+        #[namespace = "RE"]
+        fn GetFormID(self: &TESForm) -> u32;
+        
         /// The equip slot for an item. Imported from CommonLibSE.
         #[namespace = "RE"]
         type BGSEquipSlot;
@@ -324,10 +329,10 @@ pub mod plugin {
     unsafe extern "C++" {
         include!("player.h");
 
-        fn equippedLeftHand() -> Box<CycleEntry>;
-        fn equippedRightHand() -> Box<CycleEntry>;
-        fn equippedPower() -> Box<CycleEntry>;
-        fn equippedAmmo() -> Box<CycleEntry>;
+        fn equippedLeftHand() -> Box<TesItemData>;
+        fn equippedRightHand() -> Box<TesItemData>;
+        fn equippedPower() -> Box<TesItemData>;
+        fn equippedAmmo() -> Box<TesItemData>;
 
         fn unequipSlot(which: Action);
 

@@ -19,7 +19,7 @@ namespace player
 	using action_type = enums::action_type;
 	using data_helper = helpers::data_helper;
 
-	rust::Box<CycleEntry> equippedLeftHand()
+	rust::Box<TesItemData> equippedLeftHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
@@ -28,10 +28,10 @@ namespace player
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
 		if (!item_form)
 			return default_cycle_entry();
-		return equippable::cycle_entry_from_form(item_form);
+		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
-	rust::Box<CycleEntry> equippedRightHand()
+	rust::Box<TesItemData> equippedRightHand()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
@@ -41,10 +41,10 @@ namespace player
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
 		if (!item_form)
 			return default_cycle_entry();
-		return equippable::cycle_entry_from_form(item_form);
+		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
-	rust::Box<CycleEntry> equippedPower()
+	rust::Box<TesItemData> equippedPower()
 	{
 		auto* player    = RE::PlayerCharacter::GetSingleton();
 		const auto* obj = player->GetActorRuntimeData().selectedPower;
@@ -53,10 +53,10 @@ namespace player
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
 		if (!item_form)
 			return default_cycle_entry();
-		return equippable::cycle_entry_from_form(item_form);
+		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
-	rust::Box<CycleEntry> equippedAmmo()
+	rust::Box<TesItemData> equippedAmmo()
 	{
 		auto player        = RE::PlayerCharacter::GetSingleton();
 		auto* current_ammo = player->GetCurrentAmmo();
@@ -67,7 +67,7 @@ namespace player
 
 		const auto formspec = helpers::get_form_spec(current_ammo);
 		auto count          = get_inventory_count(current_ammo, RE::FormType::Ammo, player);
-		return create_cycle_entry(EntryKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
+		return create_tesitem_shim(EntryKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
 	}
 
 	void unequipSlot(Action which)

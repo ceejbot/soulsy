@@ -43,10 +43,8 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 		return event_result::kContinue;
 	}
 
-	auto item    = equippable::cycle_entry_from_form(form);
-	auto changed = handle_item_equipped(std::move(item));
-	logger::info("handled inventory change; changed={}; item='{}';"sv, changed, form->GetName());
-	// TODO trigger UI redraw? or just wait for next tick?
+	auto item    = equippable::makeTESItemDataFromForm(form);
+	handle_item_equipped(std::move(item));
 
 	return event_result::kContinue;
 }
@@ -137,9 +135,9 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		if (button->IsPressed() || button->IsDown() || button->IsHeld()) {
 			continue;
 		}
-		logger::info("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
+		logger::debug("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
 		const KeyEventResponse response = handle_key_event(key, *button);
-		logger::info("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
+		logger::trace("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
 			key,
 			response.handled,
 			static_cast<uint8_t>(response.start_timer),

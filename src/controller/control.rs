@@ -58,14 +58,14 @@ pub mod public {
 
     /// Function for C++ to call to send a relevant menu button-event to us.
     ///
-    /// We get a fully-filled out CycleEntry struct to use as we see fit.
-    pub fn handle_menu_event(key: u32, menu_item: Box<CycleEntry>) -> MenuEventResponse {
+    /// We get a fully-filled out TesItemData struct to use as we see fit.
+    pub fn handle_menu_event(key: u32, menu_item: Box<TesItemData>) -> MenuEventResponse {
         let action = Action::from(key);
         CONTROLLER.lock().unwrap().toggle_item(action, *menu_item)
     }
 
     /// Get information about the item equipped in a specific slot.
-    pub fn entry_to_show_in_slot(element: HudElement) -> Box<CycleEntry> {
+    pub fn entry_to_show_in_slot(element: HudElement) -> Box<TesItemData> {
         CONTROLLER.lock().unwrap().entry_to_show_in_slot(element)
     }
 
@@ -83,15 +83,15 @@ pub mod public {
     }
 
     /// We know for sure the player just equipped this item.
-    pub fn handle_item_equipped(item: Box<CycleEntry>) -> bool {
+    pub fn handle_item_equipped(item: Box<TesItemData>) -> bool {
         let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.handle_item_equipped(item)
     }
 
     /// A consumable's count changed. Record if relevant.
-    pub fn handle_inventory_changed(form: &TESForm, count: u32) {
+    pub fn handle_inventory_changed(item: Box<TesItemData>, count: usize) {
         let mut ctrl = CONTROLLER.lock().unwrap();
-        ctrl.handle_inventory_changed(form, count);
+        ctrl.handle_inventory_changed(item, count);
     }
 }
 
@@ -101,11 +101,11 @@ pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
     /// The items the HUD should show right now.
-    visible: HashMap<HudElement, CycleEntry>,
+    visible: HashMap<HudElement, TesItemData>,
     /// True if we've got a two-handed weapon equipped right now.
     two_hander_equipped: bool,
     /// The item that was in the left hand when we equipped a two-hander.
-    left_hand_cached: Option<CycleEntry>,
+    left_hand_cached: Option<TesItemData>,
 }
 
 impl Controller {
@@ -120,9 +120,18 @@ impl Controller {
     }
 
     /// The player's inventory changed! Act on it if we need to.
-    fn handle_inventory_changed(&mut self, _form: &TESForm, _count: u32) {
-        // TODO handle consumable item count change
-        todo!()
+    fn handle_inventory_changed(&mut self, item: Box<TesItemData>, count: usize) {
+        log::info!("inventory count changed; formid={}; count={count}", item.form_string());
+
+        if item.kind() == EntryKind::Arrow {
+            if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
+                if *candidate == *item {
+                    candidate.set_count(item.count());
+                }
+            }  
+        } else {
+            self.cycles.update_count(*item, count);
+        }
     }
 
     /// When the equip delay for a cycle expires, equip the item at the top.
@@ -167,7 +176,7 @@ impl Controller {
     }
 
     /// Convenience function for equipping any equippable.
-    fn equip_item(&self, item: &CycleEntry, which: Action) {
+    fn equip_item(&self, item: &TesItemData, which: Action) {
         if !matches!(which, Action::Right | Action::Left | Action::Utility) {
             return;
         }
@@ -194,9 +203,9 @@ impl Controller {
 
     // TODO refs instead of cloning
     /// Get the item equipped in a specific slot. I'd like to return an option but I can't.
-    fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<CycleEntry> {
+    fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<TesItemData> {
         let Some(candidate) = self.visible.get(&slot) else {
-            return Box::<CycleEntry>::default();
+            return Box::<TesItemData>::default();
         };
 
         Box::new(candidate.clone())
@@ -210,11 +219,6 @@ impl Controller {
         let left_previous = previously_visible.get(&HudElement::Left).clone();
 
         let right_entry = equippedRightHand();
-        log::info!(
-            "right hand: {} {}",
-            right_entry.name(),
-            right_entry.form_string()
-        );
         changed = changed || self.update_slot(HudElement::Right, &right_entry);
 
         if right_entry.two_handed() && !self.two_hander_equipped {
@@ -227,10 +231,9 @@ impl Controller {
         }
 
         if !right_entry.two_handed() && self.two_hander_equipped {
-            // We've switched from a two-hander to a one-hander.
-            // Re-equip what we had in the left. This schedules the task, so it
-            // won't be re-entrant AFAIK.
-            self.two_hander_equipped = false;
+            // We've switched from a two-hander to a one-hander. Re-equip what
+            // we had in the left. This schedules an SKSE task, so it won't be
+            // re-entrant AFAIK.
             log::debug!(
                 "maybe re-equipping left hand item; item='{:?}';",
                 self.left_hand_cached
@@ -243,11 +246,6 @@ impl Controller {
 
         // Whatever we did earlier, update so we show what we have now.
         let left_entry = equippedLeftHand();
-        log::info!(
-            "left hand: {} {}",
-            left_entry.name(),
-            left_entry.form_string()
-        );
         changed = changed || self.update_slot(HudElement::Left, &left_entry);
 
         let power = equippedPower();
@@ -255,12 +253,6 @@ impl Controller {
         changed = changed || self.update_slot(HudElement::Power, &power);
 
         let ammo = equippedAmmo();
-        log::info!(
-            "ammo: {} {} {}",
-            ammo.count(),
-            ammo.name(),
-            ammo.form_string()
-        );
         changed = changed || self.update_slot(HudElement::Ammo, &ammo);
 
         if let Some(utility) = self.cycles.get_top(Action::Utility) {
@@ -268,20 +260,28 @@ impl Controller {
         }
 
         if changed {
-            log::info!("visible items changed: power='{}'; Sleft='{}'; right='{}'; ammo='{}';", 
-            power.name(), left_entry.name(), right_entry.name(), ammo.name());
+            log::info!(
+                "visible items changed: power='{}'; left='{}'; right='{}'; ammo='{}';",
+                power.name(),
+                left_entry.name(),
+                right_entry.name(),
+                ammo.name()
+            );
         }
 
         changed
     }
 
-    fn handle_item_equipped(&mut self, _item: Box<CycleEntry>) -> bool {
+    fn handle_item_equipped(&mut self, _item: Box<TesItemData>) -> bool {
         // TODO implement a tighter pass; for now we just brute-force it
         // remember to mark if we've equipped a two-hander in the shorter impl
+
+        // Would be nice to know which slot
+
         self.update_equipped()
     }
 
-    fn update_slot(&mut self, slot: HudElement, new_item: &CycleEntry) -> bool {
+    fn update_slot(&mut self, slot: HudElement, new_item: &TesItemData) -> bool {
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
         } else {
@@ -294,6 +294,9 @@ impl Controller {
     /// Returns an enum indicating what we did in response, in case one of the calling
     /// layers wants to show UI or play sounds in response.
     fn handle_key_event(&mut self, which: Action, _button: &ButtonEvent) -> KeyEventResponse {
+        if matches!(which, Action::Irrelevant) {
+            return KeyEventResponse::default();
+        }
         log::debug!("entering handle_key_event(); action={which:?}");
 
         // It's not really tidier rewritten as a match.
@@ -306,10 +309,8 @@ impl Controller {
                 ..Default::default()
             };
         } else {
-            // If we're faded out in any way, show ourselves again.
-            let is_fading: bool = get_is_transitioning();
-            if user_settings().fade() && is_fading {
-                log::debug!("interrupting fade-out");
+            // If we're faded out in any way, show ourselves again, because we're about to do something.
+            if user_settings().fade() && get_is_transitioning() {
                 show_hud();
             }
         }
@@ -339,20 +340,19 @@ impl Controller {
                     ..Default::default()
                 };
             }
+        } else if matches!(which, Action::Activate) {
+            return self.use_utility_item();
+        } else if matches!(which, Action::RefreshLayout) {
+            HudLayout::refresh();
+            show_hud();
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
         }
 
-        match which {
-            Action::Activate => self.use_utility_item(),
-            Action::RefreshLayout => {
-                HudLayout::refresh();
-                show_hud();
-                KeyEventResponse {
-                    handled: true,
-                    ..Default::default()
-                }
-            }
-            _ => KeyEventResponse::default(),
-        }
+        // unreachable tbh
+        return KeyEventResponse::default();
     }
 
     /// Activate whatever we have in the utility slot.
@@ -376,7 +376,7 @@ impl Controller {
     /// This function is called when the player has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    fn toggle_item(&mut self, action: Action, item: CycleEntry) -> MenuEventResponse {
+    fn toggle_item(&mut self, action: Action, item: TesItemData) -> MenuEventResponse {
         let result = self.cycles.toggle(action, item.clone());
 
         // notify the player what happened...

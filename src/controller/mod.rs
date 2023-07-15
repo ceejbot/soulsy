@@ -18,14 +18,14 @@ use std::fs::File;
 use std::path::PathBuf;
 
 pub use control::public::*;
-pub use cycles::{create_cycle_entry, default_cycle_entry, get_icon_file, CycleEntry};
+pub use cycles::{create_tesitem_shim, default_cycle_entry, get_icon_file, TesItemData};
 pub use layout::layout;
 pub use settings::{refresh_user_settings, user_settings, UserSettings}; // hmm, is this for settings? I'm confused...
 use simplelog::*;
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
-    let hudl = layout(); // yeah, it's in here
-    let _level = if hudl.debug {
+    let hudl = layout(); // yeah, it's in here, sorry. we can reload this at runtime.
+    let log_level = if hudl.debug {
         LevelFilter::Debug
     } else {
         LevelFilter::Info
@@ -35,7 +35,7 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
     pathbuf.set_file_name("SoulsyHUD_rust.log");
 
     if let Ok(logfile) = File::create(&pathbuf) {
-        let _ = WriteLogger::init(LevelFilter::Debug, Config::default(), logfile);
+        let _ = WriteLogger::init(log_level, Config::default(), logfile);
         log::info!("rust side logging standing by");
     } else {
         // Welp, we failed and I have nowhere to write the darn error. Ha ha.

@@ -72,7 +72,7 @@ namespace hooks
 					if (!item_form)
 						continue;
 
-					auto entry                 = equippable::cycle_entry_from_form(item_form);
+					auto entry                 = equippable::makeTESItemDataFromForm(item_form);
 					MenuEventResponse response = handle_menu_event(key, std::move(entry));
 					logger::info("got result code {} from menu event for {}"sv, static_cast<uint32_t>(response), key);
 				}
@@ -96,8 +96,6 @@ namespace hooks
 		auto& trampoline = SKSE::GetTrampoline();
 		REL::Relocation<std::uintptr_t> add_item_functor_hook{ RELOCATION_ID(55946, 56490) };
 		add_item_functor_ = trampoline.write_call<5>(add_item_functor_hook.address() + 0x15D, add_item_functor);
-
-		logger::info("Hooked."sv);
 	}
 
 	void PlayerHook::add_object_to_container(RE::Actor* a_this,
@@ -111,30 +109,36 @@ namespace hooks
 
 		if (object->IsInventoryObject())
 		{
-			// TODO!!
-			// processing::set_setting_data::set_new_item_count_if_needed(object, count);
+			auto item_form = RE::TESForm::LookupByID(object->formID);
+			if (item_form)
+			{
+				auto shim = equippable::makeTESItemDataFromForm(item_form);
+				handle_inventory_changed(std::move(shim), count);
+			}
 		}
 	}
 
-	void PlayerHook::pick_up_object(RE::Actor* a_this,
+	void PlayerHook::pick_up_object(RE::Actor* actor,
 		RE::TESObjectREFR* object,
 		uint32_t count,
 		bool a_arg3,
 		bool a_play_sound)
 	{
-		pick_up_object_(a_this, object, count, a_arg3, a_play_sound);
-		// TODO update counts for consumables if we need to, or otherwise update the controller
-
+		pick_up_object_(actor, object, count, a_arg3, a_play_sound);
 		if (object->GetBaseObject()->IsInventoryObject())
 		{
-			// TODO!
-			/* processing::set_setting_data::set_new_item_count_if_needed(object->GetBaseObject(),
-				static_cast<int32_t>(count)); */
+			auto item_form = RE::TESForm::LookupByID(object->formID);
+			if (!item_form)
+			{
+				return;
+			}
+			auto shim = equippable::makeTESItemDataFromForm(item_form);
+			handle_inventory_changed(std::move(shim), count);
 		}
 	}
 
-	RE::ObjectRefHandle PlayerHook::remove_item(RE::Actor* a_this,
-		RE::TESBoundObject* removed_item,
+	RE::ObjectRefHandle PlayerHook::remove_item(RE::Actor* actor,
+		RE::TESBoundObject* object,
 		std::int32_t count,
 		RE::ITEM_REMOVE_REASON a_reason,
 		RE::ExtraDataList* extraDataList,
@@ -142,13 +146,17 @@ namespace hooks
 		const RE::NiPoint3* a_drop_loc,
 		const RE::NiPoint3* a_rotate)
 	{
-		if (removed_item->IsInventoryObject())
+		if (object->IsInventoryObject())
 		{
-			// TODO update counts for consumables if we need to, or otherwise update the controller
-			// processing::set_setting_data::set_new_item_count_if_needed(removed_item, -count);
+			auto* item_form = RE::TESForm::LookupByID(object->formID);
+			if (item_form)
+			{
+				auto shim = equippable::makeTESItemDataFromForm(item_form);
+				handle_inventory_changed(std::move(shim), -count);
+			}
 		}
 
-		return remove_item_(a_this, removed_item, count, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
+		return remove_item_(actor, object, count, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
 	}
 
 	void PlayerHook::add_item_functor(RE::TESObjectREFR* a_this,
@@ -161,9 +169,12 @@ namespace hooks
 
 		if (object->GetBaseObject()->IsInventoryObject())
 		{
-			// TODO
-			/* processing::set_setting_data::set_new_item_count_if_needed(object->GetBaseObject(),
-				static_cast<int32_t>(count)); */
+			auto item_form = RE::TESForm::LookupByID(object->GetBaseObject()->formID);
+			if (item_form)
+			{
+				auto item = equippable::makeTESItemDataFromForm(item_form);
+				handle_inventory_changed(std::move(item), count);
+			}
 		}
 	}
 

@@ -3,7 +3,7 @@
 #include "helpers.h"
 #include "rust/cxx.h"
 
-struct CycleEntry;
+struct TesItemData;
 enum class Action : ::std::uint8_t;
 enum class EntryKind : ::std::uint8_t;
 
@@ -21,10 +21,10 @@ namespace player
 	// Here I start carving out an API that the rust controller can call to
 	// manipulate things about the player, as well as ask questions of it.
 
-	rust::Box<CycleEntry> equippedLeftHand();
-	rust::Box<CycleEntry> equippedRightHand();
-	rust::Box<CycleEntry> equippedPower();
-	rust::Box<CycleEntry> equippedAmmo();
+	rust::Box<TesItemData> equippedLeftHand();
+	rust::Box<TesItemData> equippedRightHand();
+	rust::Box<TesItemData> equippedPower();
+	rust::Box<TesItemData> equippedAmmo();
 
 	void unequipSlot(Action slot);
 	void unequipShout();
