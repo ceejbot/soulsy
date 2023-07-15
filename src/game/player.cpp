@@ -84,7 +84,7 @@ namespace player
 
 		if (which == Action::Power)
 		{
-			magic::unequipShoutSlot(player);
+			equippable::unequipShoutSlot(player);
 		}
 		else if (which == Action::Right || which == Action::Left)
 		{
@@ -99,7 +99,7 @@ namespace player
 	void unequipShout()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		magic::unequipShoutSlot(player);
+		equippable::unequipShoutSlot(player);
 	}
 
 	void equipShout(const std::string& form_spec)
@@ -110,7 +110,7 @@ namespace player
 			return;
 		}
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		magic::equipShout(shout_form, player);
+		equippable::equipShout(shout_form, player);
 	}
 
 	void equipMagic(const std::string& form_spec, Action slot, EntryKind kind)

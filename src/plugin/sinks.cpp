@@ -9,8 +9,6 @@
 
 #include "handle/extra_data_holder.h"
 #include "handle/name_handle.h"
-#include "processing/set_setting_data.h"
-#include "processing/setting_execute.h"
 
 #include "lib.rs.h"
 
@@ -55,7 +53,6 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 
 using event_result    = RE::BSEventNotifyControl;
 using position_type   = enums::position_type;
-using setting_execute = processing::setting_execute;
 
 KeyEventSink* KeyEventSink::get_singleton()
 {

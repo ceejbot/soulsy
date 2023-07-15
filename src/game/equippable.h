@@ -24,4 +24,5 @@ namespace equippable
 	EntryKind get_consumable_icon(RE::TESForm*& form);
 	EntryKind get_armor_icon(RE::TESForm*& form);
 	EntryKind get_consumable_icon_by_actor_value(RE::ActorValue& actor_value);
+
 }

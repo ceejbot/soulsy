@@ -28,63 +28,6 @@ namespace equip
 		return func();
 	}
 
-	// ---------- armor
-
-	bool unequipArmor(RE::TESBoundObject*& item, RE::PlayerCharacter*& player, RE::ActorEquipManager*& equip_manager)
-	{
-		const auto is_worn = is_item_worn(item, player);
-		if (is_worn)
-		{
-			equip_manager->UnequipObject(player, item);
-			logger::trace("unequipped {} armor"sv, item->GetName());
-		}
-		return is_worn;
-	}
-
-	void equipArmor(const RE::TESForm* form, RE::PlayerCharacter*& player)
-	{
-		logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
-
-		RE::TESBoundObject* obj = nullptr;
-		auto item_count         = 0;
-		for (const auto& [item, inv_data] : player::get_inventory(player, RE::FormType::Armor))
-		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
-			{
-				obj        = entry->object;
-				item_count = num_items;
-				break;
-			}
-		}
-
-		if (!obj || item_count == 0)
-		{
-			logger::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
-			// TODO the armor is gone! inform the controller
-			return;
-		}
-
-		if (auto* equip_manager = RE::ActorEquipManager::GetSingleton(); !unequipArmor(obj, player, equip_manager))
-		{
-			equip_manager->EquipObject(player, obj);
-			logger::trace("successfully equipped armor; name='{}';"sv, form->GetName());
-		}
-	}
-
-	bool is_item_worn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& player)
-	{
-		auto worn = false;
-		for (const auto& [item, inv_data] : player::get_inventory(player, RE::FormType::Armor))
-		{
-			if (const auto& [count, entry] = inv_data; entry->object->formID == bound_obj->formID && entry->IsWorn())
-			{
-				worn = true;
-				break;
-			}
-		}
-		return worn;
-	}
-
 	// ---------- right and left hands
 
 	void unequipHand(RE::PlayerCharacter*& player, Action which)
@@ -148,7 +91,7 @@ namespace equip
 			did_call);
 	}
 
-	// TODO remove
+	// used by utility_items.cpp -- still relevant?
 	void unequip_slot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player, const action_type action)
 	{
 		if (action != action_type::un_equip)
@@ -217,6 +160,84 @@ namespace equip
 		//sound false, queue false, force true
 		equip_manager->EquipObject(player, dummy, nullptr, 1, slot, false, true, false);
 		equip_manager->UnequipObject(player, dummy, nullptr, 1, slot, false, true, false);
+	}
+
+
+	// ---------- Shouts & spells.
+
+	void unequip_spell(RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stack_id,
+		RE::Actor* a_actor,
+		RE::SpellItem* a_spell,
+		uint32_t slot)
+	{
+		using func_t = decltype(&unequip_spell);
+		const REL::Relocation<func_t> func{ REL::ID(offset::get_un_equip_spell) };
+		func(a_vm, a_stack_id, a_actor, a_spell, slot);
+	}
+
+	void un_equip_shout(RE::BSScript::IVirtualMachine* a_vm,
+		RE::VMStackID a_stack_id,
+		RE::Actor* a_actor,
+		RE::TESShout* a_shout)
+	{
+		using func_t = decltype(&un_equip_shout);
+		const REL::Relocation<func_t> func{ REL::ID(offset::get_un_equipShout) };
+		func(a_vm, a_stack_id, a_actor, a_shout);
+	}
+
+	void unequipShoutSlot(RE::PlayerCharacter*& player)
+	{
+		auto* selected_power = player->GetActorRuntimeData().selectedPower;
+		if (selected_power)
+		{
+			logger::trace("Equipped form is {}, try to un equip"sv,
+				util::string_util::int_to_hex(selected_power->formID));
+			if (selected_power->Is(RE::FormType::Shout))
+			{
+				un_equip_shout(nullptr, 0, player, selected_power->As<RE::TESShout>());
+			}
+			else if (selected_power->Is(RE::FormType::Spell))
+			{
+				//power
+				//2=other
+				unequip_spell(nullptr, 0, player, selected_power->As<RE::SpellItem>(), 2);
+			}
+		}
+	}
+
+	void equipShoutByForm(RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
+	{
+		logger::trace("try to equip shout {}"sv, a_form->GetName());
+
+		if (!a_form->Is(RE::FormType::Shout))
+		{
+			logger::warn("object {} is not a shout. return."sv, a_form->GetName());
+			return;
+		}
+
+		if (const auto selected_power = a_player->GetActorRuntimeData().selectedPower; selected_power)
+		{
+			logger::trace("current selected power is {}, is shout {}, is spell {}"sv,
+				selected_power->GetName(),
+				selected_power->Is(RE::FormType::Shout),
+				selected_power->Is(RE::FormType::Spell));
+			if (selected_power->formID == a_form->formID)
+			{
+				logger::debug("no need to equip shout {}, it is already equipped. return."sv, a_form->GetName());
+				return;
+			}
+		}
+
+		auto* shout = a_form->As<RE::TESShout>();
+		if (!player::has_shout(a_player, shout))
+		{
+			logger::warn("player does not have spell {}. return."sv, shout->GetName());
+			return;
+		}
+
+		RE::ActorEquipManager::GetSingleton()->EquipShout(a_player, shout);
+		logger::trace("equipped shout {}. return."sv, a_form->GetName());
 	}
 
 }

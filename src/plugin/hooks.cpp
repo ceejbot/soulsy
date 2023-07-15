@@ -1,8 +1,6 @@
 #include "hooks.h"
 #include "enums.h"
 #include "equippable.h"
-#include "processing/game_menu_setting.h"
-#include "processing/set_setting_data.h"
 
 #include "lib.rs.h"
 
@@ -66,7 +64,7 @@ namespace hooks
 
 				if (button->IsPressed() && hotkeys->is_cycle_button(key))
 				{
-					auto menu_form = processing::game_menu_setting::get_selected_form(ui);
+					auto menu_form = helpers::get_selected_form(ui);
 					if (!menu_form)
 						continue;
 
@@ -113,7 +111,8 @@ namespace hooks
 
 		if (object->IsInventoryObject())
 		{
-			processing::set_setting_data::set_new_item_count_if_needed(object, count);
+			// TODO!!
+			// processing::set_setting_data::set_new_item_count_if_needed(object, count);
 		}
 	}
 
@@ -128,8 +127,9 @@ namespace hooks
 
 		if (object->GetBaseObject()->IsInventoryObject())
 		{
-			processing::set_setting_data::set_new_item_count_if_needed(object->GetBaseObject(),
-				static_cast<int32_t>(count));
+			// TODO!
+			/* processing::set_setting_data::set_new_item_count_if_needed(object->GetBaseObject(),
+				static_cast<int32_t>(count)); */
 		}
 	}
 
@@ -145,7 +145,7 @@ namespace hooks
 		if (removed_item->IsInventoryObject())
 		{
 			// TODO update counts for consumables if we need to, or otherwise update the controller
-			processing::set_setting_data::set_new_item_count_if_needed(removed_item, -count);
+			// processing::set_setting_data::set_new_item_count_if_needed(removed_item, -count);
 		}
 
 		return remove_item_(a_this, removed_item, count, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
@@ -161,8 +161,9 @@ namespace hooks
 
 		if (object->GetBaseObject()->IsInventoryObject())
 		{
-			processing::set_setting_data::set_new_item_count_if_needed(object->GetBaseObject(),
-				static_cast<int32_t>(count));
+			// TODO
+			/* processing::set_setting_data::set_new_item_count_if_needed(object->GetBaseObject(),
+				static_cast<int32_t>(count)); */
 		}
 	}
 

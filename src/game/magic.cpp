@@ -8,7 +8,7 @@
 
 namespace magic
 {
-	//add toggle mcm if equip or cast
+	// TODO remove entirely
 	void cast_magic(RE::TESForm* a_form,
 		action_type a_action,
 		const RE::BGSEquipSlot* a_slot,
@@ -237,40 +237,6 @@ namespace magic
 		logger::trace("worked power {} action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
-	void equipShout(RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
-	{
-		logger::trace("try to equip shout {}"sv, a_form->GetName());
-
-		if (!a_form->Is(RE::FormType::Shout))
-		{
-			logger::warn("object {} is not a shout. return."sv, a_form->GetName());
-			return;
-		}
-
-		if (const auto selected_power = a_player->GetActorRuntimeData().selectedPower; selected_power)
-		{
-			logger::trace("current selected power is {}, is shout {}, is spell {}"sv,
-				selected_power->GetName(),
-				selected_power->Is(RE::FormType::Shout),
-				selected_power->Is(RE::FormType::Spell));
-			if (selected_power->formID == a_form->formID)
-			{
-				logger::debug("no need to equip shout {}, it is already equipped. return."sv, a_form->GetName());
-				return;
-			}
-		}
-
-		auto* shout = a_form->As<RE::TESShout>();
-		if (!player::has_shout(a_player, shout))
-		{
-			logger::warn("player does not have spell {}. return."sv, shout->GetName());
-			return;
-		}
-
-		RE::ActorEquipManager::GetSingleton()->EquipShout(a_player, shout);
-		logger::trace("equipped shout {}. return."sv, a_form->GetName());
-	}
-
 	RE::MagicSystem::CastingSource get_casting_source(const RE::BGSEquipSlot* a_slot)
 	{
 		if (a_slot == equip::right_hand_equip_slot())
@@ -304,51 +270,6 @@ namespace magic
 		static REL::Relocation<decltype(send_spell_casting_sound_alert)> send_spell_casting_sound_alert{ REL::ID(
 			offset::send_spell_casting_sound_alert) };
 		return send_spell_casting_sound_alert(a_magic_caster, a_spell_item);
-	}
-
-	// ---------- Spells.
-
-	void unequip_spell(RE::BSScript::IVirtualMachine* a_vm,
-		RE::VMStackID a_stack_id,
-		RE::Actor* a_actor,
-		RE::SpellItem* a_spell,
-		uint32_t slot)
-	{
-		using func_t = decltype(&unequip_spell);
-		const REL::Relocation<func_t> func{ REL::ID(offset::get_un_equip_spell) };
-		func(a_vm, a_stack_id, a_actor, a_spell, slot);
-	}
-
-	// ---------- Shouts.
-
-	void un_equip_shout(RE::BSScript::IVirtualMachine* a_vm,
-		RE::VMStackID a_stack_id,
-		RE::Actor* a_actor,
-		RE::TESShout* a_shout)
-	{
-		using func_t = decltype(&un_equip_shout);
-		const REL::Relocation<func_t> func{ REL::ID(offset::get_un_equipShout) };
-		func(a_vm, a_stack_id, a_actor, a_shout);
-	}
-
-	void unequipShoutSlot(RE::PlayerCharacter*& player)
-	{
-		auto* selected_power = player->GetActorRuntimeData().selectedPower;
-		if (selected_power)
-		{
-			logger::trace("Equipped form is {}, try to un equip"sv,
-				util::string_util::int_to_hex(selected_power->formID));
-			if (selected_power->Is(RE::FormType::Shout))
-			{
-				un_equip_shout(nullptr, 0, player, selected_power->As<RE::TESShout>());
-			}
-			else if (selected_power->Is(RE::FormType::Spell))
-			{
-				//power
-				//2=other
-				unequip_spell(nullptr, 0, player, selected_power->As<RE::SpellItem>(), 2);
-			}
-		}
 	}
 
 }

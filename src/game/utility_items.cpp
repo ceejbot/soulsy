@@ -152,38 +152,6 @@ namespace equip
 		logger::trace("equipped weapon/shield/light {}, left {}. return."sv, a_form->GetName(), left);
 	}
 
-	void equip_armor(const RE::TESForm* a_form, RE::PlayerCharacter*& player)
-	{
-		logger::trace("try to equip {}"sv, a_form->GetName());
-
-		RE::TESBoundObject* obj = nullptr;
-		auto item_count         = 0;
-		for (const auto& [item, inv_data] : player::get_inventory(player, RE::FormType::Armor))
-		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
-			{
-				obj        = entry->object;
-				item_count = num_items;
-				break;
-			}
-		}
-
-		if (!obj || item_count == 0)
-		{
-			logger::warn("could not find selected armor, maybe it is gone"sv);
-			//update ui in this case
-			return;
-		}
-		logger::trace("try to equip armor/clothing {}"sv, a_form->GetName());
-
-		if (auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-			!equip::unequipArmor(obj, player, equip_manager))
-		{
-			equip_manager->EquipObject(player, obj);
-			logger::trace("equipped armor {}. return."sv, a_form->GetName());
-		}
-	}
-
 	void consume_potion(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
 	{
 		logger::trace("try to consume {}"sv, a_form->GetName());
@@ -439,4 +407,63 @@ namespace equip
 			a_count--;
 		}
 	}
+
+	// ---------- armor
+
+	bool unequipArmor(RE::TESBoundObject*& item, RE::PlayerCharacter*& player, RE::ActorEquipManager*& equip_manager)
+	{
+		const auto is_worn = is_item_worn(item, player);
+		if (is_worn)
+		{
+			equip_manager->UnequipObject(player, item);
+			logger::trace("unequipped {} armor"sv, item->GetName());
+		}
+		return is_worn;
+	}
+
+	void equipArmor(const RE::TESForm* form, RE::PlayerCharacter*& player)
+	{
+		logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
+
+		RE::TESBoundObject* obj = nullptr;
+		auto item_count         = 0;
+		for (const auto& [item, inv_data] : player::get_inventory(player, RE::FormType::Armor))
+		{
+			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
+			{
+				obj        = entry->object;
+				item_count = num_items;
+				break;
+			}
+		}
+
+		if (!obj || item_count == 0)
+		{
+			logger::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
+			// TODO the armor is gone! inform the controller
+			return;
+		}
+
+		if (auto* equip_manager = RE::ActorEquipManager::GetSingleton(); !unequipArmor(obj, player, equip_manager))
+		{
+			equip_manager->EquipObject(player, obj);
+			logger::trace("successfully equipped armor; name='{}';"sv, form->GetName());
+		}
+	}
+
+	bool is_item_worn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& player)
+	{
+		auto worn = false;
+		for (const auto& [item, inv_data] : player::get_inventory(player, RE::FormType::Armor))
+		{
+			if (const auto& [count, entry] = inv_data; entry->object->formID == bound_obj->formID && entry->IsWorn())
+			{
+				worn = true;
+				break;
+			}
+		}
+		return worn;
+	}
+
+
 }

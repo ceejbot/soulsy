@@ -7,8 +7,6 @@
 #include "ui_renderer.h"
 #include "user_settings.h"
 
-#include "processing/set_setting_data.h"
-
 #include "lib.rs.h"
 
 namespace papyrus

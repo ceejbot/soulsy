@@ -18,9 +18,6 @@ set(headers ${headers}
     src/migrate_me/handle/key_position_handle.h
     src/migrate_me/handle/name_handle.h
     src/migrate_me/handle/page_handle.h
-    src/migrate_me/processing/game_menu_setting.h
-    src/migrate_me/processing/set_setting_data.h
-    src/migrate_me/processing/setting_execute.h
     src/plugin/hooks.h
     src/plugin/keycodes.h
     src/plugin/papyrus.h
@@ -53,9 +50,6 @@ set(sources ${sources}
     src/migrate_me/handle/key_position_handle.cpp
     src/migrate_me/handle/name_handle.cpp
     src/migrate_me/handle/page_handle.cpp
-    src/migrate_me/processing/game_menu_setting.cpp
-    src/migrate_me/processing/set_setting_data.cpp
-    src/migrate_me/processing/setting_execute.cpp
     src/plugin/hooks.cpp
     src/plugin/keycodes.cpp
     src/plugin/papyrus.cpp

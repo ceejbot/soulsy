@@ -54,4 +54,6 @@ namespace helpers
 	void set_alpha_transition(const bool shift, const float target);
 	bool get_is_transitioning();
 	void toggle_hud_visibility();
+
+	uint32_t getSelectedFormFromMenu(RE::UI*& a_ui);
 }

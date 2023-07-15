@@ -173,6 +173,59 @@ namespace helpers
 		return form;
 	}
 
+	uint32_t getSelectedFormFromMenu(RE::UI*& a_ui)
+	{
+		uint32_t menu_form = 0;
+		if (a_ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME))
+		{
+			auto* inventory_menu = static_cast<RE::InventoryMenu*>(a_ui->GetMenu(RE::InventoryMenu::MENU_NAME).get());
+			if (inventory_menu)
+			{
+				RE::GFxValue result;
+				//inventory_menu->uiMovie->SetPause(true);
+				inventory_menu->uiMovie->GetVariable(&result,
+					"_root.Menu_mc.inventoryLists.itemList.selectedEntry.formId");
+				if (result.GetType() == RE::GFxValue::ValueType::kNumber)
+				{
+					menu_form = static_cast<std::uint32_t>(result.GetNumber());
+					logger::trace("formid {}"sv, util::string_util::int_to_hex(menu_form));
+				}
+			}
+		}
+
+		if (a_ui->IsMenuOpen(RE::MagicMenu::MENU_NAME))
+		{
+			auto* magic_menu = static_cast<RE::MagicMenu*>(a_ui->GetMenu(RE::MagicMenu::MENU_NAME).get());
+			if (magic_menu)
+			{
+				RE::GFxValue result;
+				magic_menu->uiMovie->GetVariable(&result, "_root.Menu_mc.inventoryLists.itemList.selectedEntry.formId");
+				if (result.GetType() == RE::GFxValue::ValueType::kNumber)
+				{
+					menu_form = static_cast<std::uint32_t>(result.GetNumber());
+					logger::trace("formid {}"sv, util::string_util::int_to_hex(menu_form));
+				}
+			}
+		}
+
+		if (a_ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
+		{
+			auto* favorite_menu = static_cast<RE::FavoritesMenu*>(a_ui->GetMenu(RE::FavoritesMenu::MENU_NAME).get());
+			if (favorite_menu)
+			{
+				RE::GFxValue result;
+				favorite_menu->uiMovie->GetVariable(&result, "_root.MenuHolder.Menu_mc.itemList.selectedEntry.formId");
+				if (result.GetType() == RE::GFxValue::ValueType::kNumber)
+				{
+					menu_form = static_cast<std::uint32_t>(result.GetNumber());
+					logger::trace("formid {}"sv, util::string_util::int_to_hex(menu_form));
+				}
+			}
+		}
+
+		return menu_form;
+	}
+
 	void rewrite_settings()
 	{
 		logger::trace("rewriting config ..."sv);

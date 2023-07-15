@@ -4,7 +4,6 @@
 #include "sinks.h"
 #include "ui_renderer.h"
 
-#include "processing/set_setting_data.h"  // to be deleted eventually
 #include "user_settings.h"                // same
 
 #include "lib.rs.h"
