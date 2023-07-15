@@ -581,8 +581,10 @@ namespace ui
 	// I regret all of my life choices.
 	void ui_renderer::load_icon_images(std::map<uint32_t, image>& a_struct, std::string& file_path)
 	{
-		const auto res_width  = 1.0f; get_resolution_scale_width();
-		const auto res_height = 1.0f; get_resolution_scale_height();
+		const auto res_width = 1.0f;
+		get_resolution_scale_width();
+		const auto res_height = 1.0f;
+		get_resolution_scale_height();
 
 		const auto start = static_cast<uint32_t>(EntryKind::Alteration);
 		const auto end   = static_cast<uint32_t>(EntryKind::Whip);
@@ -630,8 +632,10 @@ namespace ui
 		std::map<uint32_t, image>& a_struct,
 		std::string& file_path)
 	{
-		const auto res_width  = 1.0f; get_resolution_scale_width();
-		const auto res_height = 1.0f; get_resolution_scale_height();
+		const auto res_width = 1.0f;
+		get_resolution_scale_width();
+		const auto res_height = 1.0f;
+		get_resolution_scale_height();
 
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
@@ -828,9 +832,11 @@ namespace ui
 	void ui_renderer::startTimer(Action which)
 	{
 		// We replace any existing timer for this slot.
-		auto duration = user_settings()->equip_delay(); // this is in ms, so we'll divide...
+		auto duration = user_settings()->equip_delay();  // this is in ms, so we'll divide...
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000);
-		logger::info("started equip delay timer; which={}; delay={};"sv, static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
+		logger::info("started equip delay timer; which={}; delay={};"sv,
+			static_cast<uint8_t>(which),
+			static_cast<float>(duration) / 1000.0f);
 	}
 
 	// remove timer from the map if it exists

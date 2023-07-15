@@ -58,22 +58,17 @@ namespace player
 
 	rust::Box<CycleEntry> equippedAmmo()
 	{
-		auto player = RE::PlayerCharacter::GetSingleton();
+		auto player        = RE::PlayerCharacter::GetSingleton();
 		auto* current_ammo = player->GetCurrentAmmo();
 		if (!current_ammo || !current_ammo->IsAmmo())
 		{
 			return default_cycle_entry();
 		}
 
-		auto* ammo = obj->As<RE::TESAmmo>();
-		const auto formspec       = helpers::get_form_spec(current_ammo);
-		auto count = get_inventory_count(current_ammo, RE::FormType::Ammo, player);
-		return create_cycle_entry(EntryKind::Arrow,
-			false,
-			true,
-			count,
-			current_ammo->GetName(),
-			formspec);
+		auto* ammo          = obj->As<RE::TESAmmo>();
+		const auto formspec = helpers::get_form_spec(current_ammo);
+		auto count          = get_inventory_count(current_ammo, RE::FormType::Ammo, player);
+		return create_cycle_entry(EntryKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
 	}
 
 	void unequipSlot(Action which)
@@ -145,7 +140,7 @@ namespace player
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		equip::equipArmorByForm(form, player);
 	}
-	
+
 	void equipAmmo(const std::string& form_spec)
 	{
 		auto* form = helpers::get_form_from_mod_id_string(form_spec);

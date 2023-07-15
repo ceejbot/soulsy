@@ -3,8 +3,8 @@
 #include "gear.h"
 #include "offset.h"
 #include "player.h"
-#include "user_settings.h"
 #include "string_util.h"
+#include "user_settings.h"
 
 namespace magic
 {

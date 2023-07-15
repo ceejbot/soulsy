@@ -84,7 +84,6 @@ pub mod public {
         let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.handle_inventory_changed(form, count);
     }
-
 }
 
 /// Call this if the HUD changed in a way that merits stopping a fadeout.
@@ -300,7 +299,10 @@ impl Controller {
             }
         }
 
-        if matches!(which, Action::Power | Action::Utility | Action::Left | Action::Right) {
+        if matches!(
+            which,
+            Action::Power | Action::Utility | Action::Left | Action::Right
+        ) {
             let hud = HudElement::from(which);
             if self.cycles.cycle_len(which) > 1 {
                 if let Some(next) = self.cycles.advance(which, 1) {
@@ -344,8 +346,8 @@ impl Controller {
     fn use_utility_item(&mut self) -> KeyEventResponse {
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind() != EntryKind::Empty {
-               // TODO activate the utility item
-               // might need to call individual functions
+                // TODO activate the utility item
+                // might need to call individual functions
             }
         }
 
@@ -418,7 +420,7 @@ impl From<Action> for HudElement {
             HudElement::Power
         } else if value == Action::Utility {
             HudElement::Utility
-        }  else if value == Action::Left {
+        } else if value == Action::Left {
             HudElement::Left
         } else if value == Action::Right {
             HudElement::Right
