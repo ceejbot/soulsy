@@ -739,7 +739,7 @@ namespace ui
 	void ui_renderer::load_font()
 	{
 		auto hud         = layout();
-		auto fontfile = std::string(hud.font);
+		auto fontfile    = std::string(hud.font);
 		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + fontfile;
 		auto file_path   = std::filesystem::path(path);
 
@@ -802,7 +802,7 @@ namespace ui
 		std::map<uint8_t, float>::iterator iter;
 		for (iter = cycle_timers.begin(); iter != cycle_timers.end(); ++iter)
 		{
-			auto which = iter->first;
+			auto which     = iter->first;
 			auto remaining = iter->second;
 
 			remaining -= delta;
@@ -824,11 +824,10 @@ namespace ui
 		// We replace any existing timer for this slot.
 		auto duration = user_settings()->equip_delay();
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 10);
+		logger::info("started equip delay timer; which={}; delay={};"sv, static_cast<uint8_t>(which), static_cast<float>(duration) / 10);
 	}
 
 	// remove timer from the map if it exists
-	void ui_renderer::stopTimer(Action which) { 
-		cycle_timers.erase(static_cast<uint8_t>(which)); 
-	}
+	void ui_renderer::stopTimer(Action which) { cycle_timers.erase(static_cast<uint8_t>(which)); }
 
 }

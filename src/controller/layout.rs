@@ -16,7 +16,7 @@ use crate::plugin::{Color, HudElement, HudLayout, Point, SlotLayout};
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
 /// There can be only one. Not public because we want access managed.
-static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::refresh()));
+static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::init()));
 
 /// Read our layout data from the file, or fall back to defaults if the file
 /// is not present or is invalid TOML.
@@ -59,14 +59,28 @@ impl HudLayout {
     }
 
     /// Refresh the layout from the file, to take an out-of-band update and apply it in-game.
-    pub fn refresh() -> HudLayout {
+    pub fn refresh() {
+        match HudLayout::read_from_file() {
+            Ok(v) => {
+                log::info!("successfully read a HUD layout");
+                let mut hudl = LAYOUT.lock().unwrap();
+                *hudl = v;
+            }
+            Err(e) => {
+                log::warn!("Failed to read layout file; continuing with previous; {e:?}");
+            }
+        }
+    }
+
+    pub fn init() -> HudLayout {
+        // solving my problem this way is cheesy. TODO fix
         match HudLayout::read_from_file() {
             Ok(v) => {
                 log::info!("successfully refreshed HUD layout");
                 v
             }
             Err(e) => {
-                log::warn!("Failed to read layout file; continuing with defaults; {e:?}");
+                log::warn!("Failed to read layout file; initializing from defaults; {e:?}");
                 HudLayout::default()
             }
         }
@@ -85,10 +99,10 @@ impl Default for HudLayout {
             icon_color: Color {
                 r: 255,
                 g: 255,
-                b: 120,
+                b: 200,
                 a: 255,
             },
-            icon_size: Point { x: 125.0, y: 125.0 },
+            icon_size: Point { x: 120.0, y: 120.0 },
             hotkey_color: Color::default(),
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
@@ -106,12 +120,12 @@ impl Default for HudLayout {
             size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
             icon_color: Color {
-                r: 255,
-                g: 120,
-                b: 120,
+                r: 200,
+                g: 255,
+                b: 255,
                 a: 255,
             },
-            icon_size: Point { x: 125.0, y: 125.0 },
+            icon_size: Point { x: 120.0, y: 120.0 },
             hotkey_color: Color::default(),
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
@@ -129,12 +143,12 @@ impl Default for HudLayout {
             size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
             icon_color: Color {
-                r: 120,
-                g: 255,
-                b: 120,
+                r: 255,
+                g: 200,
+                b: 255,
                 a: 255,
             },
-            icon_size: Point { x: 125.0, y: 125.0 },
+            icon_size: Point { x: 120.0, y: 120.0 },
             hotkey_color: Color::default(),
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
@@ -152,12 +166,12 @@ impl Default for HudLayout {
             size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
             icon_color: Color {
-                r: 0,
+                r: 200,
                 g: 255,
-                b: 255,
+                b: 200,
                 a: 255,
             },
-            icon_size: Point { x: 125.0, y: 125.0 },
+            icon_size: Point { x: 120.0, y: 120.0 },
             hotkey_color: Color::default(),
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
@@ -171,16 +185,16 @@ impl Default for HudLayout {
         let ammo_default = SlotLayout {
             element: HudElement::Ammo,
             name: "Ammo".to_string(),
-            offset: Point { x: 62.0, y: 62.0 },
+            offset: Point { x: 0.0, y: 0.0 },
             size: Point { x: 62.0, y: 62.0 },
             bg_color: Color::default(),
             icon_color: Color {
-                r: 255,
-                g: 0,
+                r: 200,
+                g: 200,
                 b: 255,
                 a: 255,
             },
-            icon_size: Point { x: 62.0, y: 62.0 },
+            icon_size: Point { x: 50.0, y: 50.0 },
             hotkey_color: Color::default(),
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
@@ -201,8 +215,8 @@ impl Default for HudLayout {
         ];
         Self {
             anchor: Point {
-                x: 200.0,
-                y: 1300.0,
+                x: 100.0,
+                y: 1400.0,
             },
             size: Point { x: 300.0, y: 300.0 },
             bg_color: Color::default(),
@@ -232,12 +246,12 @@ impl Default for SlotLayout {
             element: HudElement { repr: 1 },
             name: "unknown".to_string(),
             offset: Point::default(),
-            size: Point { x: 150.0, y: 150.0 },
+            size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
-            icon_size: Point { x: 150.0, y: 150.0 },
+            icon_size: Point { x: 100.0, y: 100.0 },
             icon_color: Color {
-                r: 255,
-                g: 255,
+                r: 200,
+                g: 200,
                 b: 255,
                 a: 125,
             },

@@ -64,7 +64,7 @@ namespace hooks
 
 				if (button->IsPressed() && hotkeys->is_cycle_button(key))
 				{
-					auto menu_form = helpers::get_selected_form(ui);
+					auto menu_form = helpers::getSelectedFormFromMenu(ui);
 					if (!menu_form)
 						continue;
 

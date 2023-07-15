@@ -6,6 +6,7 @@ use once_cell::sync::Lazy;
 use super::cycles::*;
 use super::settings::user_settings;
 use crate::plugin::*;
+use super::layout::*;
 
 /// There can be only one. Not public because we want access managed.
 // Does this really need to be a mutex? I think we're single-threaded...
@@ -15,7 +16,6 @@ static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller:
 /// of import into the bridge. I do not want to give the C++ side this object.
 pub mod public {
     use super::*;
-    use crate::layout::*;
 
     /// C++ tells us when it's safe to start pulling together the data we need.
     pub fn initialize_hud() {
@@ -37,8 +37,12 @@ pub mod public {
     /// Function for C++ to call to send a relevant button event to us.
     pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
         let action = Action::from(key);
-        log::info!("incoming key event; key={key}; ");
+        log::info!("incoming key event; key={key}; action={action:?}");
+        if matches!(action, Action::Irrelevant) {
+            KeyEventResponse::default()
+        } else {
         CONTROLLER.lock().unwrap().handle_key_event(action, button)
+        }
     }
 
     /// Function for C++ to call to send a relevant menu button-event to us.
@@ -286,7 +290,10 @@ impl Controller {
     /// layers wants to show UI or play sounds in response.
     fn handle_key_event(&mut self, action: Action, button: &ButtonEvent) -> KeyEventResponse {
         // If we're faded out in any way, show ourselves again.
+        log::info!("entering handle_key_event(); action={action:?}");
+
         if !matches!(action, Action::ShowHide) {
+            log::debug!("doing Action:ShowHide");
             let is_fading: bool = get_is_transitioning();
             if user_settings().fade() && !is_fading {
                 set_alpha_transition(true, 1.0);
@@ -304,6 +311,7 @@ impl Controller {
         // TODO implement!
         match action {
             Action::Power => {
+                log::debug!("doing Action:Power; cycle should advance");
                 let _next = self.cycles.advance(action, 1);
                 KeyEventResponse {
                     handled: true,
@@ -320,6 +328,7 @@ impl Controller {
                 }
             }
             Action::Right => {
+                log::debug!("doing Action:Right; cycle should advance");
                 let _next = self.cycles.advance(action, 1);
                 KeyEventResponse {
                     handled: true,

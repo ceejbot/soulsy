@@ -6,7 +6,7 @@ enum class EntryKind : ::std::uint8_t;
 
 namespace equip
 {
-	void equipArmor(const RE::TESForm* form, RE::PlayerCharacter*& player);
+	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player);
 	// reurns true if anything was unequipped.
 	bool unequipArmor(RE::TESBoundObject*& a_obj,
 		RE::PlayerCharacter*& a_player,

@@ -129,7 +129,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		// event. This appears to be so that we can directly compare it to the hotkey numbers
 		// we have snagged from the MCM settings. ??
 		const uint32_t key = keycodes::get_key_id(button);
-		logger::info("handling button event; after offset key={}"sv, key);
+		logger::info("handling button event; idcode={}; after offset key={}"sv, button->idCode, key);
 		if (key == -1)
 		{
 			continue;

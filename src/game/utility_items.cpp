@@ -421,7 +421,7 @@ namespace equip
 		return is_worn;
 	}
 
-	void equipArmor(const RE::TESForm* form, RE::PlayerCharacter*& player)
+	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
 		logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 

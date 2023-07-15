@@ -25,7 +25,7 @@ use simplelog::*;
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
     // TODO: read from config
-    let level = LevelFilter::Info;
+    let level = LevelFilter::Debug;
 
     let mut pathbuf = PathBuf::from(logdir.to_string());
     pathbuf.set_file_name("SoulsyHUD_rust.log");
