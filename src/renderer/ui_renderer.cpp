@@ -293,6 +293,7 @@ namespace ui
 		ImGui::GetWindowDrawList()->AddText(font, a_font_size, position, color, a_text, nullptr, 0.0f, nullptr);
 	}
 
+	// Used only by draw_animations_frame
 	void ui_renderer::draw_element(ID3D11ShaderResourceView* a_texture,
 		const ImVec2 a_center,
 		const ImVec2 a_size,
@@ -402,6 +403,7 @@ namespace ui
 			{
 				const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(entry_kind)];
 				const auto size                     = ImVec2(slot_layout.icon_size.x, slot_layout.icon_size.y);
+				logger:trace("drawing icon: width={}; height={};"sv, slot_layout.icon_size.x, slot_layout.icon_size.y);
 				drawElement(texture, slot_center, size, 0.f, slot_layout.icon_color);
 			}
 
@@ -580,8 +582,8 @@ namespace ui
 	// I regret all of my life choices.
 	void ui_renderer::load_icon_images(std::map<uint32_t, image>& a_struct, std::string& file_path)
 	{
-		const auto res_width  = get_resolution_scale_width();
-		const auto res_height = get_resolution_scale_height();
+		const auto res_width  = 1.0f; get_resolution_scale_width();
+		const auto res_height = 1.0f; get_resolution_scale_height();
 
 		const auto start = static_cast<uint32_t>(EntryKind::Alteration);
 		const auto end   = static_cast<uint32_t>(EntryKind::Whip);
@@ -629,8 +631,8 @@ namespace ui
 		std::map<uint32_t, image>& a_struct,
 		std::string& file_path)
 	{
-		const auto res_width  = get_resolution_scale_width();
-		const auto res_height = get_resolution_scale_height();
+		const auto res_width  = 1.0f; get_resolution_scale_width();
+		const auto res_height = 1.0f; get_resolution_scale_height();
 
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
@@ -684,8 +686,8 @@ namespace ui
 			logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
 			image img;
 			img.texture = texture;
-			img.width   = static_cast<int32_t>(width * get_resolution_scale_width());
-			img.height  = static_cast<int32_t>(height * get_resolution_scale_height());
+			// img.width   = static_cast<int32_t>(width * get_resolution_scale_width());
+			// img.height  = static_cast<int32_t>(height * get_resolution_scale_height());
 			frame_list.push_back(img);
 		}
 	}
@@ -716,9 +718,8 @@ namespace ui
 		return return_image;
 	}
 
-	float ui_renderer::get_resolution_scale_width() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
-
-	float ui_renderer::get_resolution_scale_height() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
+	// float ui_renderer::get_resolution_scale_width() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
+	// float ui_renderer::get_resolution_scale_height() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
 
 	float ui_renderer::get_resolution_width() { return ImGui::GetIO().DisplaySize.x; }
 
@@ -808,6 +809,7 @@ namespace ui
 			auto remaining = iter->second;
 
 			remaining -= delta;
+			logger::trace("timer decremented; timer={}; delta={}; remaining={};"sv, which, delta, remaining);
 			if (remaining < 0.0f)
 			{
 				cycle_timers.erase(which);
@@ -826,7 +828,7 @@ namespace ui
 		// We replace any existing timer for this slot.
 		auto duration = user_settings()->equip_delay();
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 10);
-		logger::info("started equip delay timer; which={}; delay={};"sv, static_cast<uint8_t>(which), static_cast<float>(duration) / 10);
+		logger::info("started equip delay timer; which={}; delay={};"sv, static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
 	}
 
 	// remove timer from the map if it exists

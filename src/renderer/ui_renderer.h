@@ -56,22 +56,7 @@ namespace ui
 			ImU32 a_color = IM_COL32_WHITE);
 
 		// Oxidation section.
-		static std::vector<Action*> slotsToRender;
 		static void drawAllSlots();
-		static void drawSlotBackground(const float scale_width,
-			const float scale_height,
-			const ImVec2 center,
-			const ImU32 color);
-		static void drawIcon(const float scale_width,
-			const float scale_height,
-			const ImVec2 center,
-			const ImU32 color,
-			const EntryKind icon_num);
-		static void drawKey(const float scale_width,
-			const float scale_height,
-			const ImVec2 center,
-			const ImU32 color,
-			uint32_t alpha);
 		static void drawElement(ID3D11ShaderResourceView* texture,
 			const ImVec2 center,
 			const ImVec2 size,
