@@ -327,7 +327,7 @@ namespace magic
 		RE::TESShout* a_shout)
 	{
 		using func_t = decltype(&un_equip_shout);
-		const REL::Relocation<func_t> func{ REL::ID(offset::un_equip_shout) };
+		const REL::Relocation<func_t> func{ REL::ID(offset::get_un_equipShout) };
 		func(a_vm, a_stack_id, a_actor, a_shout);
 	}
 

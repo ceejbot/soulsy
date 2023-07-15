@@ -26,4 +26,6 @@ namespace equip
 	// 0 - Left hand,  1 - Right hand, 2 Other
 
 	bool is_item_worn(RE::TESBoundObject*& a_obj, RE::PlayerCharacter*& a_player);
+
+	void equipArmor(const RE::TESForm* form, RE::PlayerCharacter*& player);
 }

@@ -21,6 +21,6 @@ namespace processing
 		static void reequip_left_hand_if_needed(handle::position_setting* a_setting);
 
 	private:
-		static void execute_setting(handle::slot_setting*& a_slot, RE::PlayerCharacter*& a_player);
+		// static void execute_setting(handle::slot_setting*& a_slot, RE::PlayerCharacter*& a_player);
 	};
 }

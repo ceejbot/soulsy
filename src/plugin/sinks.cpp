@@ -142,8 +142,8 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		logger::info("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
 			key,
 			response.handled,
-			response.start_timer,
-			response.stop_timer);
+			static_cast<uint8_t>(response.start_timer),
+			static_cast<uint8_t>(response.stop_timer));
 		if (!response.handled)
 		{
 			continue;
@@ -151,13 +151,13 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 
 		if (response.stop_timer != Action::Irrelevant)
 		{
-			logger::info("hysteresis timer STOP; slot={}"sv, response.start_timer);
+			logger::info("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
 			ui::ui_renderer::stopTimer(response.stop_timer);
 		}
 
 		if (response.start_timer != Action::Irrelevant)
 		{
-			logger::info("hysteresis timer START; slot={}"sv, response.start_timer);
+			logger::info("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
 			ui::ui_renderer::startTimer(response.start_timer);
 		}
 

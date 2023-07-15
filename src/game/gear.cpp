@@ -41,16 +41,8 @@ namespace equip
 		return is_worn;
 	}
 
-	void equipArmor(const std::string& form_spec)
+	void equipArmor(const RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
-		auto* form = helpers::get_form_from_mod_id_string(form_spec);
-		if (!form)
-		{
-			return;
-		}
-		auto* player = RE::PlayerCharacter::GetSingleton();
-
-		// Now do the work!
 		logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 
 		RE::TESBoundObject* obj = nullptr;

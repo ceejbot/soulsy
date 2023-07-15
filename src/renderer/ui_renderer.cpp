@@ -24,7 +24,7 @@ namespace ui
 	static std::map<animation_type, std::vector<image>> animation_frame_map = {};
 	static std::vector<std::pair<animation_type, std::unique_ptr<animation>>> animation_list;
 
-	static std::map<Action, float> cycle_timers = {};
+	static std::map<uint8_t, float> cycle_timers = {};
 
 	static std::map<uint32_t, image> image_struct;
 	static std::map<uint32_t, image> icon_struct;
@@ -799,7 +799,7 @@ namespace ui
 
 	void ui_renderer::advanceTimers(float delta)
 	{
-		std::map<Action, float>::iterator iter;
+		std::map<uint8_t, float>::iterator iter;
 		for (iter = cycle_timers.begin(); iter != cycle_timers.end(); ++iter)
 		{
 			auto which = iter->first;
@@ -809,7 +809,8 @@ namespace ui
 			if (remaining < 0.0f)
 			{
 				cycle_timers.erase(which);
-				timer_expired(which);
+				auto action = static_cast<Action>(which);
+				timer_expired(action);
 			}
 			else
 			{
@@ -822,10 +823,12 @@ namespace ui
 	{
 		// We replace any existing timer for this slot.
 		auto duration = user_settings()->equip_delay();
-		cycle_timers.insert_or_assign(which, duration);
+		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 10);
 	}
 
 	// remove timer from the map if it exists
-	void ui_renderer::stopTimer(Action which) { cycle_timers.erase(which); }
+	void ui_renderer::stopTimer(Action which) { 
+		cycle_timers.erase(static_cast<uint8_t>(which)); 
+	}
 
 }

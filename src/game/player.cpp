@@ -137,6 +137,17 @@ namespace player
 		equip::equip_item(form, equip_slot, player, kind);
 	}
 
+	void equipArmor(const std::string& form_spec)
+	{
+		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+		if (!form)
+		{
+			return;
+		}
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		equip::equip_armor(form, player);
+	}
+
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
 		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)
 	{

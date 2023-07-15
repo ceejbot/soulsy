@@ -76,7 +76,7 @@ namespace processing
 				static_cast<uint32_t>(slot->action),
 				slot->form ? util::string_util::int_to_hex(slot->form->GetFormID()) : "null",
 				slot->equip_slot == equip::left_hand_equip_slot());
-			execute_setting(slot, player);
+			// execute_setting(slot, player);
 		}
 
 		if (!un_equip.empty())
