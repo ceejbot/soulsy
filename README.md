@@ -70,22 +70,26 @@ The icons for the built-in theme are the usual SkyUI icons, plus the `futura-boo
 
 Ceej's development to-do list:
 
-- [x] Finish up the icon data loading function. 
-- [x] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
-- [ ] Figure out what I'm doing wrong with MCM config settings.
-- [ ] Track highlight status in the controller to support drawing.
-- [ ] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
-- [ ] Inform rust about inventory changes. aka call to rust from the inventory hooks.
-- [ ] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
-- [ ] Wire up the equip-item functions as well as the equip delay. I'll probably be forced to implement a timer using the tick in the imgui rendering code.
-- [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
-- [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
 - [x] Figure out how to compile papyrus scripts. Answer: PCA.
 - [x] Edit the `.esp`` if necessary. Check it in.
 - [x] Rewrite or merely just tweak the script that builds the mod archive itself, with correctly-placed files.
 - [x] Test to see if the mod loads at all into the game. Fix whatever's broken.
+- [x] Finish up the icon data loading function. 
+- [x] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
 - [ ] Wire up the mod to MCM to show its config & write user settings.
-- [ ] Fix whatever looks bad; repeat.
+- [ ] Figure out what I'm doing wrong with MCM config settings.
+- [ ] Track highlight status in the controller to support drawing.
+- [x] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
+- [ ] Inform rust about inventory changes. aka call to rust from the inventory hooks.
+- [x] Inform Rust about equip changes.
+- [ ] Handle better the case of equipped items not being in the cycle, while the cycle is being advanced.
+- [ ] Get ammo showing correctly.
+- [ ] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
+- [x] Wire up the equip-item functions as well as the equip delay. I'll probably be forced to implement a timer using the tick in the imgui rendering code.
+- [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
+- [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
+- [ ] Debounce keys. Especially the show/hide button.
+- [ ] Come up with a good default layout for the HUD. Pay a designer if necessary.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Update to CommonLibSE-NG.
 - [x] Make Rust log to a second file in the same directory as SKSE.

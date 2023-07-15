@@ -180,6 +180,16 @@ impl CycleData {
         cycle.first().cloned()
     }
 
+    pub fn cycle_len(&self, which: Action) -> usize {
+        match which {
+            Action::Power => self.power.len(),
+            Action::Left => self.left.len(),
+            Action::Right => self.right.len(),
+            Action::Utility => self.utility.len(),
+            _ => 0,
+        }
+    }
+
     /// Attempt to set the current item in a cycle to the given form spec (mod.esp|formid).
     ///
     /// Responds with the entry for the item that ends up being the current for that

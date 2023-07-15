@@ -1,22 +1,22 @@
 animation_alpha = 51
 animation_duration = 0.10000000149011612
-debug = true
 font = "futura-book-bt.ttf"
 font_size = 30.0
+debug = false
 
 [anchor]
-x = 1000.0
-y = 1000.0
+x = 150.0
+y = 1300.0
 
 [size]
-x = 300.0
-y = 300.0
+x = 250.0
+y = 250.0
 
 [bg_color]
 r = 255
 g = 255
 b = 255
-a = 255
+a = 128
 
 [[layouts]]
 name = "Shouts/Powers"
@@ -27,7 +27,7 @@ repr = 0
 
 [layouts.offset]
 x = 0.0
-y = -125.0
+y = -62.0
 
 [layouts.size]
 x = 125.0
@@ -37,17 +37,17 @@ y = 125.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 [layouts.icon_color]
-r = 255
-g = 255
-b = 120
+r = 200
+g = 200
+b = 200
 a = 255
 
 [layouts.icon_size]
-x = 125.0
-y = 125.0
+x = 62.0
+y = 62.0
 
 [layouts.hotkey_color]
 r = 255
@@ -67,7 +67,7 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 100
 
 [layouts.text_offset]
 x = 0.0
@@ -98,7 +98,7 @@ repr = 1
 
 [layouts.offset]
 x = 0.0
-y = 125.0
+y = 62.0
 
 [layouts.size]
 x = 125.0
@@ -108,17 +108,17 @@ y = 125.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 [layouts.icon_color]
-r = 255
-g = 255
-b = 120
+r = 200
+g = 200
+b = 210
 a = 255
 
 [layouts.icon_size]
-x = 125.0
-y = 125.0
+x = 62.0
+y = 62.0
 
 [layouts.hotkey_color]
 r = 255
@@ -138,7 +138,7 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 100
 
 [layouts.text_offset]
 x = 0.0
@@ -168,7 +168,7 @@ count_font_size = 20.0
 repr = 2
 
 [layouts.offset]
-x = -125.0
+x = -62.0
 y = 0.0
 
 [layouts.size]
@@ -179,17 +179,17 @@ y = 125.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 100
 
 [layouts.icon_color]
-r = 255
-g = 255
-b = 120
+r = 200
+g = 200
+b = 210
 a = 255
 
 [layouts.icon_size]
-x = 125.0
-y = 125.0
+x = 62.0
+y = 62.0
 
 [layouts.hotkey_color]
 r = 255
@@ -209,7 +209,7 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 100
 
 [layouts.text_offset]
 x = 0.0
@@ -239,7 +239,7 @@ count_font_size = 20.0
 repr = 3
 
 [layouts.offset]
-x = 125.0
+x = 62.0
 y = 0.0
 
 [layouts.size]
@@ -250,17 +250,17 @@ y = 125.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 [layouts.icon_color]
-r = 255
-g = 255
-b = 120
+r = 200
+g = 200
+b = 210
 a = 255
 
 [layouts.icon_size]
-x = 125.0
-y = 125.0
+x = 62.0
+y = 62.0
 
 [layouts.hotkey_color]
 r = 255
@@ -280,7 +280,7 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 100
 
 [layouts.text_offset]
 x = 0.0
@@ -310,8 +310,8 @@ count_font_size = 20.0
 repr = 4
 
 [layouts.offset]
-x = 62.0
-y = 62.0
+x = 0.0
+y = 0.0
 
 [layouts.size]
 x = 62.0
@@ -321,17 +321,17 @@ y = 62.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 [layouts.icon_color]
-r = 255
-g = 255
-b = 120
+r = 200
+g = 200
+b = 255
 a = 255
 
 [layouts.icon_size]
-x = 62.0
-y = 62.0
+x = 50.0
+y = 50.0
 
 [layouts.hotkey_color]
 r = 255
@@ -351,7 +351,7 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 100
 
 [layouts.text_offset]
 x = 0.0

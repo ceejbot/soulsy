@@ -12,12 +12,12 @@ namespace ui
 	enum class image_type
 	{
 		hud,
-		round,
+		slot,
 		key,
 		total
 	};
 
 	inline static std::map<std::string, image_type> image_type_name_map = { { R"(hud_bg.svg)", image_type::hud },
-		{ R"(slot_bg.svg)", image_type::round },
+		{ R"(slot_bg_gradient.svg)", image_type::slot },
 		{ R"(key_bg.svg)", image_type::key } };
 }

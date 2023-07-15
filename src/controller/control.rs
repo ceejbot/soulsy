@@ -42,7 +42,7 @@ pub mod public {
         if matches!(action, Action::Irrelevant) {
             KeyEventResponse::default()
         } else {
-            log::debug!("incoming key event; key={key}; action={action:?}");
+            log::trace!("incoming key event; key={key}; action={action:?}");
             CONTROLLER.lock().unwrap().handle_key_event(action, button)
         }
     }
@@ -269,6 +269,10 @@ impl Controller {
         );
         changed = changed || self.update_slot(HudElement::Ammo, &ammo);
 
+        if let Some(utility) = self.cycles.get_top(Action::Utility) {
+            changed = changed || self.update_slot(HudElement::Utility, &utility);
+        }
+
         changed
     }
 
@@ -290,11 +294,11 @@ impl Controller {
     ///
     /// Returns an enum indicating what we did in response, in case one of the calling
     /// layers wants to show UI or play sounds in response.
-    fn handle_key_event(&mut self, action: Action, button: &ButtonEvent) -> KeyEventResponse {
+    fn handle_key_event(&mut self, which: Action, _button: &ButtonEvent) -> KeyEventResponse {
         // If we're faded out in any way, show ourselves again.
-        log::info!("entering handle_key_event(); action={action:?}");
+        log::info!("entering handle_key_event(); action={which:?}");
 
-        if !matches!(action, Action::ShowHide) {
+        if !matches!(which, Action::ShowHide) {
             log::debug!("doing Action:ShowHide");
             let is_fading: bool = get_is_transitioning();
             if user_settings().fade() && !is_fading {
@@ -306,49 +310,27 @@ impl Controller {
             }
         }
 
-        // TODO do I need this data?
-        let _is_down: bool = button.IsDown();
-        let _is_up: bool = button.IsUp();
-
-        // TODO implement!
-        match action {
-            Action::Power => {
-                log::debug!("doing Action:Power; cycle should advance");
-                let _next = self.cycles.advance(action, 1);
-                KeyEventResponse {
-                    handled: true,
-                    start_timer: Action::Power,
-                    stop_timer: Action::Irrelevant,
+        if matches!(which, Action::Power | Action::Utility | Action::Left | Action::Right) {
+            if self.cycles.cycle_len(which) > 1 {
+                let _next = self.cycles.advance(which, 1);
+                if which == Action::Utility {
+                    // 
                 }
-            }
-            Action::Left => {
-                let _next = self.cycles.advance(action, 1);
-                KeyEventResponse {
+                return KeyEventResponse {
                     handled: true,
-                    start_timer: Action::Left,
+                    start_timer: which,
                     stop_timer: Action::Irrelevant,
-                }
-            }
-            Action::Right => {
-                log::debug!("doing Action:Right; cycle should advance");
-                let _next = self.cycles.advance(action, 1);
-                KeyEventResponse {
+                };
+            } else {
+                return KeyEventResponse {
                     handled: true,
-                    start_timer: Action::Right,
-                    stop_timer: Action::Irrelevant,
-                }
+                    ..Default::default()
+                };
             }
-            Action::Utility => {
-                let _next = self.cycles.advance(action, 1);
-                KeyEventResponse {
-                    handled: true,
-                    start_timer: Action::Utility,
-                    stop_timer: Action::Irrelevant,
-                }
-            }
+        }
+        match which {
             Action::Activate => self.use_utility_item(),
             Action::ShowHide => {
-                log::debug!("toggling hud visibility");
                 toggle_hud_visibility();
                 KeyEventResponse {
                     handled: true,
@@ -370,8 +352,8 @@ impl Controller {
     fn use_utility_item(&mut self) -> KeyEventResponse {
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind() != EntryKind::Empty {
-                // TODO use it
-                // poison, potion, food, armor, lantern
+               // TODO activate the utility item
+               // might need to call individual functions
             }
         }
 

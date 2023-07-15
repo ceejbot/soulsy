@@ -393,7 +393,7 @@ namespace ui
 
 			if (slot_layout.bg_color.a > 0)
 			{
-				const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::round)];
+				const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::slot)];
 				const auto size                     = ImVec2(slot_layout.size.x, slot_layout.size.y);
 				drawElement(texture, slot_center, size, 0.f, slot_layout.bg_color);
 			}
@@ -403,7 +403,6 @@ namespace ui
 			{
 				const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(entry_kind)];
 				const auto size                     = ImVec2(slot_layout.icon_size.x, slot_layout.icon_size.y);
-				logger:trace("drawing icon: width={}; height={};"sv, slot_layout.icon_size.x, slot_layout.icon_size.y);
 				drawElement(texture, slot_center, size, 0.f, slot_layout.icon_color);
 			}
 
@@ -718,11 +717,14 @@ namespace ui
 		return return_image;
 	}
 
+	// but y tho?
 	// float ui_renderer::get_resolution_scale_width() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
 	// float ui_renderer::get_resolution_scale_height() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
 
-	float ui_renderer::get_resolution_width() { return ImGui::GetIO().DisplaySize.x; }
+	float ui_renderer::get_resolution_scale_width() { return 1.0f; }
+	float ui_renderer::get_resolution_scale_height() { return 1.0f; }
 
+	float ui_renderer::get_resolution_width() { return ImGui::GetIO().DisplaySize.x; }
 	float ui_renderer::get_resolution_height() { return ImGui::GetIO().DisplaySize.y; }
 
 	void ui_renderer::set_fade(const bool a_in, const float a_value)
@@ -732,7 +734,7 @@ namespace ui
 		if (a_in)
 		{
 			float delay    = static_cast<float>(user_settings()->fade_delay());
-			fade_out_timer = delay / 10.0f;  // assuming 10ms per tick, which is an unverified assumption
+			fade_out_timer = delay;
 		}
 	}
 
@@ -809,7 +811,7 @@ namespace ui
 			auto remaining = iter->second;
 
 			remaining -= delta;
-			logger::trace("timer decremented; timer={}; delta={}; remaining={};"sv, which, delta, remaining);
+			logger::info("timer decremented; timer={}; delta={}; remaining={};"sv, which, delta, remaining);
 			if (remaining < 0.0f)
 			{
 				cycle_timers.erase(which);
@@ -826,8 +828,8 @@ namespace ui
 	void ui_renderer::startTimer(Action which)
 	{
 		// We replace any existing timer for this slot.
-		auto duration = user_settings()->equip_delay();
-		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 10);
+		auto duration = user_settings()->equip_delay(); // this is in ms, so we'll divide...
+		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000);
 		logger::info("started equip delay timer; which={}; delay={};"sv, static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
 	}
 
