@@ -78,19 +78,23 @@ Ceej's development to-do list:
 - [x] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
 - [x] Handle the case of equipped items not being in the cycle, while the cycle is being advanced.
 - [x] Wire up the equip-item functions as well as the equip delay. I'll probably be forced to implement a timer using the tick in the imgui rendering code.
+- [x] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
+- [x] Debounce keys. Especially the show/hide button.
 - [ ] Wire up the mod to MCM to show its config & write user settings.
 - [ ] Figure out what I'm doing wrong with MCM config settings.
-- [ ] Debounce keys. Especially the show/hide button.
 - [ ] Track highlight status in the controller to support drawing.
-- [x] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
 - [ ] Inform rust about inventory changes. aka call to rust from the inventory hooks.
 - [x] Inform Rust about equip changes.
-- [ ] Get ammo showing correctly.
+- [x] Get ammo showing correctly.
 - [ ] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
+- [ ] Make re-equipping the left-hand item work.
+- [ ] Wire up activating the utility button.
 - [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
 - [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
-- [ ] Come up with a good default layout for the HUD. Find a designer if necessary.
-- [ ] Improve the CMake files. Debug builds don't work; incremental builds don't always rebuild the rust lib.
+- [x] Come up with an adequate default layout for the HUD.
+- [ ] Make a *good-looking* layout. Find a designer if necessary.
+- [x] Improve the CMake files. Incremental builds don't always rebuild the rust lib.
+- [ ] Add support for debug builds to CMake. Maybe.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Update to CommonLibSE-NG.
 - [x] Make Rust log to a second file in the same directory as SKSE.
