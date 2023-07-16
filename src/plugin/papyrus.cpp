@@ -4,7 +4,6 @@
 #include "enums.h"
 #include "helpers.h"
 #include "ui_renderer.h"
-#include "user_settings.h"
 
 #include "lib.rs.h"
 

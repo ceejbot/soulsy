@@ -10,12 +10,7 @@ set(headers ${headers}
     src/game/player.h
     src/game/utility_items.h
     src/migrate_me/handle/data/ammo_data.h
-    src/migrate_me/handle/data/page/position_draw_setting.h
-    src/migrate_me/handle/data/page/position_setting.h
-    src/migrate_me/handle/data/page/slot_setting.h
     src/migrate_me/handle/extra_data_holder.h
-    src/migrate_me/handle/key_position_handle.h
-    src/migrate_me/handle/name_handle.h
     src/plugin/hooks.h
     src/plugin/keycodes.h
     src/plugin/papyrus.h
@@ -44,8 +39,6 @@ set(sources ${sources}
     src/game/utility_items.cpp
     src/main.cpp
     src/migrate_me/handle/extra_data_holder.cpp
-    src/migrate_me/handle/key_position_handle.cpp
-    src/migrate_me/handle/name_handle.cpp
     src/plugin/hooks.cpp
     src/plugin/keycodes.cpp
     src/plugin/papyrus.cpp

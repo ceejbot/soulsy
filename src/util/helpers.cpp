@@ -7,7 +7,6 @@
 #include "player.h"
 #include "string_util.h"
 #include "ui_renderer.h"
-#include "user_settings.h"
 
 #include "lib.rs.h"
 namespace helpers
