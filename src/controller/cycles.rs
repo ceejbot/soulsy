@@ -1,19 +1,19 @@
+use std::fmt::Display;
 use std::path::PathBuf;
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::user_settings;
-use crate::plugin::{Action, EntryKind, MenuEventResponse};
-
-// Functions exposed to C++.
+use crate::plugin::{playerHasItemOrSpell, Action, EntryKind, MenuEventResponse};
 
 /// Given an entry kind, return the filename of the icon to use for it.
+/// Exposed to C++.
 pub fn get_icon_file(kind: &EntryKind) -> String {
     kind.icon_file()
 }
 
-// TesItemData, which is also exposed to C++.
+/// TesItemData, exposed to C++ as an opaque type.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
 pub struct TesItemData {
     /// Player-visible name.
@@ -129,6 +129,8 @@ impl TesItemData {
 /// files, and advance the cycle when the player presses a cycle button.
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct CycleData {
+    // I really want these to be maps, but toml can't serialize that.
+    // Guess I could write to json instead.
     left: Vec<TesItemData>,
     right: Vec<TesItemData>,
     power: Vec<TesItemData>,
@@ -148,11 +150,11 @@ impl CycleData {
         Ok(())
     }
 
-    /// Read cycle data from its cache file
+    /// Read cycle data from its cache file.
     pub fn read() -> Result<Self> {
         let buf = std::fs::read_to_string(PathBuf::from(CYCLE_PATH))?;
-        let layout = toml::from_str::<CycleData>(&buf)?;
-        Ok(layout)
+        let data = toml::from_str::<CycleData>(&buf)?;
+        Ok(data)
     }
 
     /// Advance the given cycle by one. Returns a copy of the newly-top item.
@@ -190,14 +192,39 @@ impl CycleData {
         }
     }
 
+    /// Remove any items that have vanished from the game or from the player's
+    /// inventory.
+    pub fn validate(&mut self) {
+        self.power = self
+            .power
+            .iter_mut()
+            .filter(|xs| {
+                cxx::let_cxx_string!(form_spec = xs.form_string());
+                playerHasItemOrSpell(&form_spec)
+            })
+            .map(|xs| xs.clone())
+            .collect();
+    }
+
     /// Attempt to set the current item in a cycle to the given form spec (mod.esp|formid).
     ///
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, _which: Action, _form_spec: String) -> Option<TesItemData> {
-        // TODO do I need this at all?
-        todo!()
+    pub fn set_top(&mut self, which: Action, item: TesItemData) {
+        let cycle = match which {
+            Action::Power => &mut self.power,
+            Action::Left => &mut self.left,
+            Action::Right => &mut self.right,
+            Action::Utility => &mut self.utility,
+            _ => {
+                return;
+            }
+        };
+
+        if let Some(idx) = cycle.iter().position(|xs| *xs == item) {
+            cycle.rotate_left(idx);
+        }
     }
 
     // the programmer error is annoying, but it's a shared struct...
@@ -257,7 +284,7 @@ impl CycleData {
             }
         };
 
-        // We have at most 15 items, so we can do this with a linear search.
+        // We have at most 15 items, so we do this blithely.
         let settings = user_settings();
         if let Some(idx) = cycle.iter().position(|xs| *xs == item) {
             cycle.remove(idx);
@@ -273,10 +300,42 @@ impl CycleData {
     pub fn update_count(&mut self, item: TesItemData, count: usize) {
         if item.kind().is_utility() {
             if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
-                log::debug!("updating count for tracked item; formid={}; count={count}", item.form_string());
+                log::debug!(
+                    "updating count for tracked item; formid={}; count={count}",
+                    item.form_string()
+                );
                 candidate.set_count(count);
             }
         }
     }
+}
 
+impl Display for CycleData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\npower: {};\nutility: {};\nleft: {};\nright: {};",
+            vec_to_debug_string(&self.power),
+            vec_to_debug_string(&self.utility),
+            vec_to_debug_string(&self.left),
+            vec_to_debug_string(&self.right)
+        )
+    }
+}
+
+fn vec_to_debug_string(input: &Vec<TesItemData>) -> String {
+    format!(
+        "[{}]",
+        input
+            .iter()
+            .map(|xs| xs.name())
+            .collect::<Vec<String>>()
+            .join(", ")
+    )
+}
+
+impl Display for TesItemData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
 }

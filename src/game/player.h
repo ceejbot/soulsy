@@ -16,7 +16,7 @@ namespace player
 	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout);
 	void play_sound(RE::BGSSoundDescriptor* a_sound_descriptor_form, RE::PlayerCharacter*& a_player);
 
-	uint32_t get_inventory_count(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player);
+	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player);
 
 	// Here I start carving out an API that the rust controller can call to
 	// manipulate things about the player, as well as ask questions of it.
@@ -34,6 +34,7 @@ namespace player
 	void equipWeapon(const std::string& form_spec, Action slot, EntryKind kind);
 	void equipAmmo(const std::string& form_spec);
 	void consumePotion(const std::string& form_spec);
+	bool playerHasItemOrSpell(const std::string& form_spec);
 
 	void equip_item(const RE::TESForm* a_form,
 		RE::BGSEquipSlot*& a_slot,

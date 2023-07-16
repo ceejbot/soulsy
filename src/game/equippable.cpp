@@ -3,6 +3,10 @@
 #include "lib.rs.h"
 #include "player.h"
 
+// A set of helpers for exposing item data to the Rust side, because
+// not all of TESForm's methods can be punched through easily. It ends
+// up being convenient for serialization to use the TesItemData type.
+
 namespace equippable
 {
 	using slot_type = enums::slot_type;
@@ -13,12 +17,11 @@ namespace equippable
 		bool has_count          = (item_type == slot_type::consumable || item_type == slot_type::scroll);
 		auto count              = player::getInventoryCountByForm(item_form);
 		bool two_handed         = equippable::is_two_handed(item_form);
-		std::string form_string = helpers::get_form_spec(item_form);
+		std::string form_string = helpers::makeFormSpecString(item_form);
 		auto kind               = equippable::get_icon_type(item_type, item_form);
 		std::string name        = item_form->GetName();
 
-		auto entry = create_tesitem_shim(kind, two_handed, has_count, count, name, form_string);
-		return entry;
+		return create_tesitem_shim(kind, two_handed, has_count, count, name, form_string);
 	}
 
 	bool can_instant_cast(RE::TESForm* item_form, const slot_type item_type)

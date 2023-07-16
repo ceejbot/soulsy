@@ -6,9 +6,7 @@ Soulsy is a minimal-features Souls-style HUD for Skyrim SE and AE. It is inspire
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project is still in development, though it does in fact run and do stuff when loaded into a game! See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLib and the UI framework.
-
-The project I forked from uses CommonLibSE, but I also intend to migrate to CommonLibSE-NG.
+This project is still in development, though it does in fact run and do stuff when loaded into a game! See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLibSE and the UI framework.
 
 ## User documentation
 
@@ -19,7 +17,7 @@ Soulsy lets you set hotkeys for managing what you have equipped or readied in fo
 - shouts and minor powers
 - a utility slot: potions, scrolls, poisons, food
 
-Soulsy sets up _cycles_ for each of these equipment slots. For example, if you want to switch between Flames and Healing spells in your left hand, you'd add each of them to your left hand cycle. For your right hand, you might set up a long sword with an anti-undead enchantment, a dagger with Soul Trap, and a bow. Pressing the key assigned to a slot moves to the next item in your cycle and equips it (or readies it, in the case of the utility slot). If you tap the key several times quickly, you'll advance through the cycle and then equip the item you were on when you stopped tapping the button. 
+Soulsy sets up _cycles_ for each of these equipment slots. For example, if you want to switch between Flames and Healing spells in your left hand, you'd add each of them to your left hand cycle. For your right hand, you might set up a long sword with an anti-undead enchantment, a dagger with Soul Trap, and a bow. Pressing the key assigned to a slot moves to the next item in your cycle and equips it (or readies it, in the case of the utility slot). If you tap the key several times quickly, you'll advance through the cycle and then equip the item you were on when you stopped tapping the button.
 
 The maximum cycle length is configurable, but caps out at 20. 20 items is a lot of items to cycle through this way, and if you have that many you'd probably be better off using the inventory or favorites menu.
 
@@ -55,7 +53,7 @@ SoulsyHUD/SKSE/plugins
 - `backgrounds/slot_bg.svg` - The background for a single cycle element (left hand, power, etc).
 - `backgrounds/key_bg.svg` - The background for hotkey hints.
 - `animations/highlight` - An animation to play on a highlighted slot. NOT YET FUNCTIONAL.
-- `SKSE/plugins/resources/buttons` - Xbox and Playstation button art. 
+- `SKSE/plugins/resources/buttons` - Xbox and Playstation button art.
 - `SKSE/plugins/resources/fonts` - A TrueType font to use for display. The HUD comes with `futura-book-bt` to match Untarnished UI.
 - `SKSE/plugins/resources/icons` - Icon files in SVG format, each named for the item. The HUD comes with the usual SkyUI icons.
 
@@ -70,7 +68,7 @@ Soulsy is a Rust and C++ project, using CMake to drive Cargo to build the Rust p
 
 The plugin requires the following vcpkg libraries, which will be installed for you:
 
-- [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG)
+- [CommonLibSSE](https://github.com/powerof3/CommonLibSSE)
 - [spdlog](https://github.com/gabime/spdlog)
 - [simpleini](https://github.com/brofield/simpleini)
 - [nanosvg](https://github.com/memononen/nanosvg) (for rastering the svgfiles)
@@ -78,7 +76,7 @@ The plugin requires the following vcpkg libraries, which will be installed for y
 
 There are a number of development conveniences in the [justfile](https://just.systems), including build and archive recipes for Powershell. `cargo install just` if you do not have it.
 
-`cargo --doc open` displays programmer documentation for the Rust side of the plugin. The C++ side is commented, but not to the same degree. (It's a lot more code right now, and most of it is forked code!)
+`cargo --doc open` displays programmer documentation for the Rust side of the plugin. The C++ side is commented, but not to the same degree.
 
 ## Credits
 
@@ -96,7 +94,7 @@ Ceej's development to-do list:
 - [x] Edit the `.esp`` if necessary. Check it in.
 - [x] Rewrite or merely just tweak the script that builds the mod archive itself, with correctly-placed files.
 - [x] Test to see if the mod loads at all into the game. Fix whatever's broken.
-- [x] Finish up the icon data loading function. 
+- [x] Finish up the icon data loading function.
 - [x] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
 - [x] Handle the case of equipped items not being in the cycle, while the cycle is being advanced.
 - [x] Wire up the equip-item functions as well as the equip delay. I'll probably be forced to implement a timer using the tick in the imgui rendering code.
@@ -105,20 +103,21 @@ Ceej's development to-do list:
 - [ ] Wire up the mod to MCM to show its config & write user settings.
 - [ ] Figure out what I'm doing wrong with MCM config settings.
 - [ ] Track highlight status in the controller to support drawing.
-- [ ] Inform rust about inventory changes. aka call to rust from the inventory hooks.
+- [x] Wire up the inventory-changed hooks.
 - [x] Inform Rust about equip changes.
 - [x] Get ammo showing correctly.
 - [ ] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
 - [ ] Make re-equipping the left-hand item work.
-- [ ] Wire up activating the utility button.
+- [x] Wire up activating the utility button.
+- [ ] Figure out why activating potions makes the game lock up.
 - [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
 - [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
 - [x] Come up with an adequate default layout for the HUD.
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
-- [x] Improve the CMake files. Incremental builds don't always rebuild the rust lib.
+- [x] Improve the CMake files so rebuilding is reliable.
 - [ ] Add support for debug builds to CMake. Maybe.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
-- [ ] Update to CommonLibSE-NG.
+- [ ] Update to CommonLibSE-NG?
 - [x] Make Rust log to a second file in the same directory as SKSE.
 - [ ] Make Rust log to the same file as SKSE, if this is even possible. Might not be worth it.
 - [ ] Add more Rust logging for happy-path cases, not just error cases.

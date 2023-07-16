@@ -8,6 +8,9 @@ use controller::*;
 /// affordances of the `cxx` crate. At build time `cxx_build` will generate the
 /// header files required by the C++ side. The macros expand in-line to generate
 /// the matching Rust code.
+
+// ceejbot TODO: organize into namespaces; getting pretty cluttered
+//
 #[cxx::bridge]
 pub mod plugin {
 
@@ -292,7 +295,7 @@ pub mod plugin {
         type TESForm;
         #[namespace = "RE"]
         fn GetFormID(self: &TESForm) -> u32;
-        
+
         /// The equip slot for an item. Imported from CommonLibSE.
         #[namespace = "RE"]
         type BGSEquipSlot;
@@ -333,6 +336,8 @@ pub mod plugin {
         fn equippedRightHand() -> Box<TesItemData>;
         fn equippedPower() -> Box<TesItemData>;
         fn equippedAmmo() -> Box<TesItemData>;
+
+        fn playerHasItemOrSpell(form_spec: &CxxString) -> bool;
 
         fn unequipSlot(which: Action);
 

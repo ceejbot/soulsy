@@ -65,8 +65,8 @@ namespace player
 			return default_cycle_entry();
 		}
 
-		const auto formspec = helpers::get_form_spec(current_ammo);
-		auto count          = get_inventory_count(current_ammo, RE::FormType::Ammo, player);
+		const auto formspec = helpers::makeFormSpecString(current_ammo);
+		auto count          = inventoryCount(current_ammo, RE::FormType::Ammo, player);
 		return create_tesitem_shim(EntryKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
 	}
 
@@ -96,7 +96,7 @@ namespace player
 
 	void equipShout(const std::string& form_spec)
 	{
-		auto* shout_form = helpers::get_form_from_mod_id_string(form_spec);
+		auto* shout_form = helpers::formSpecToFormItem(form_spec);
 		if (!shout_form)
 		{
 			return;
@@ -107,7 +107,7 @@ namespace player
 
 	void equipMagic(const std::string& form_spec, Action slot, EntryKind kind)
 	{
-		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{
 			return;
@@ -119,7 +119,7 @@ namespace player
 
 	void equipWeapon(const std::string& form_spec, Action slot, EntryKind kind)
 	{
-		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{
 			return;
@@ -131,7 +131,7 @@ namespace player
 
 	void equipArmor(const std::string& form_spec)
 	{
-		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{
 			return;
@@ -142,7 +142,7 @@ namespace player
 
 	void equipAmmo(const std::string& form_spec)
 	{
-		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{
 			return;
@@ -151,8 +151,9 @@ namespace player
 		equip::equip_ammo(form, player);
 	}
 
-	void consumePotion(const std::string& form_spec) {
-		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+	void consumePotion(const std::string& form_spec)
+	{
+		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{
 			return;
@@ -167,52 +168,52 @@ namespace player
 		return a_player->GetInventory([a_type](const RE::TESBoundObject& a_object) { return a_object.Is(a_type); });
 	}
 
-	uint32_t getInventoryCountByForm(const RE::TESForm* a_form)
+	uint32_t getInventoryCountByForm(const RE::TESForm* form)
 	{
 		uint32_t count = 0;
-		if (!a_form)
+		if (!form)
 		{
 			return count;
 		}
 
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		if (a_form->IsWeapon())
-		{
-			count = get_inventory_count(a_form, RE::FormType::Weapon, player);
-		}
-		else if (a_form->IsArmor())
-		{
-			count = get_inventory_count(a_form, RE::FormType::Armor, player);
-		} else {
-			count = get_inventory_count(a_form, a_form->GetFormType(), player);
-		}
-
-		logger::trace("got {} in inventory for item {}"sv, count, a_form->GetName());
+		count        = inventoryCount(form, form->GetFormType(), player);
+		logger::trace("item='{}'; count={};"sv, form->GetName(), count);
 
 		return count;
 	}
 
+	bool playerHasItemOrSpell(const std::string& form_spec)
+	{
+		auto* form = helpers::formSpecToFormItem(form_spec);
+		if (!form)
+		{
+			return;
+		}
+		return has_item_or_spell(form);
+	}
+
 	bool has_item_or_spell(RE::TESForm* a_form)
 	{
-		auto has_it = false;
 		if (!a_form)
 		{
-			return has_it;
+			return false;
 		}
 
 		//add option to skip check for Items
 		auto* player = RE::PlayerCharacter::GetSingleton();
+		auto has_it  = false;
 		if (a_form->IsWeapon())
 		{
-			has_it = get_inventory_count(a_form, RE::FormType::Weapon, player) > 0;
+			has_it = inventoryCount(a_form, RE::FormType::Weapon, player) > 0;
 		}
 		else if (a_form->IsArmor())
 		{
-			has_it = get_inventory_count(a_form, RE::FormType::Armor, player) > 0;
+			has_it = inventoryCount(a_form, RE::FormType::Armor, player) > 0;
 		}
 		else if (a_form->Is(RE::FormType::Light))
 		{
-			has_it = get_inventory_count(a_form, RE::FormType::Light, player) > 0;
+			has_it = inventoryCount(a_form, RE::FormType::Light, player) > 0;
 		}
 		else if (a_form->Is(RE::FormType::Spell) || a_form->Is(RE::FormType::LeveledSpell))
 		{
@@ -221,11 +222,11 @@ namespace player
 		}
 		else if (a_form->Is(RE::FormType::AlchemyItem))
 		{
-			has_it = get_inventory_count(a_form, RE::FormType::AlchemyItem, player) > 0;
+			has_it = inventoryCount(a_form, RE::FormType::AlchemyItem, player) > 0;
 		}
 		else if (a_form->Is(RE::FormType::Scroll))
 		{
-			has_it = get_inventory_count(a_form, RE::FormType::Scroll, player) > 0;
+			has_it = inventoryCount(a_form, RE::FormType::Scroll, player) > 0;
 		}
 		else if (a_form->Is(RE::FormType::Shout))
 		{
@@ -233,7 +234,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		logger::trace("Player has item/spell/shout {}, name {}, form {} "sv,
+		logger::trace("player has: {}; name='{}'; formid=0x{};"sv,
 			has_it,
 			a_form->GetName(),
 			util::string_util::int_to_hex(a_form->formID));
@@ -241,7 +242,7 @@ namespace player
 		return has_it;
 	}
 
-	uint32_t get_inventory_count(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
+	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
 	{
 		auto count     = 0;
 		auto inventory = get_inventory(a_player, a_type);

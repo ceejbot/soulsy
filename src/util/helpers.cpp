@@ -27,20 +27,7 @@ namespace helpers
 
 	void show_hud() { ui::ui_renderer::set_show_ui(true); }
 
-	data_helper* get_extra_data(RE::TESForm*& form)
-	{
-		const auto item       = new data_helper();
-		const auto type       = equippable::get_type(form);
-		const auto two_handed = equippable::is_two_handed(form);
-
-		item->form       = form;
-		item->type       = type;
-		item->two_handed = two_handed;
-
-		return item;
-	}
-
-	std::string get_form_spec(RE::TESForm* form)
+	std::string makeFormSpecString(RE::TESForm* form)
 	{
 		std::string form_string;
 		if (!form)
@@ -56,8 +43,6 @@ namespace helpers
 		}
 		else
 		{
-			//  logger::trace("doing file search for form source"sv);
-			//it is not, search for the file it is from
 			auto* source_file = form->sourceFiles.array->front()->fileName;
 			auto local_form   = form->GetLocalFormID();
 
@@ -72,43 +57,7 @@ namespace helpers
 		return form_string;
 	}
 
-	std::string get_mod_and_form(const RE::FormID& a_form_id)
-	{
-		std::string form_string;
-		if (!a_form_id)
-		{
-			return form_string;
-		}
-
-		const auto* form = RE::TESForm::LookupByID(a_form_id);
-		logger::trace("Item is {}, formid {}, formid not translated {}. return."sv,
-			form->GetName(),
-			string_util::int_to_hex(form->GetFormID()),
-			form->GetFormID());
-
-		if (form->IsDynamicForm())
-		{
-			form_string =
-				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, string_util::int_to_hex(form->GetFormID()));
-		}
-		else
-		{
-			//it is not, search for the file it is from
-			auto* source_file = form->sourceFiles.array->front()->fileName;
-			auto local_form   = form->GetLocalFormID();
-
-			logger::trace("form is from {}, local id is {}, translated {}"sv,
-				source_file,
-				local_form,
-				string_util::int_to_hex(local_form));
-
-			form_string = fmt::format("{}{}{}", source_file, util::delimiter, string_util::int_to_hex(local_form));
-		}
-
-		return form_string;
-	}
-
-	RE::TESForm* get_form_from_mod_id_string(const std::string& a_str)
+	RE::TESForm* formSpecToFormItem(const std::string& a_str)
 	{
 		if (!a_str.find(util::delimiter))
 		{

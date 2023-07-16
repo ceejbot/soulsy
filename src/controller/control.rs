@@ -19,30 +19,24 @@ pub mod public {
 
     /// C++ tells us when it's safe to start pulling together the data we need.
     pub fn initialize_hud() {
-        log::info!("initializing hud");
+        log::info!("initializing hud controller");
         let mut ctrl = CONTROLLER.lock().unwrap();
         let settings = user_settings();
-        log::info!("---------- have a settings dump");
         log::info!("{settings:?}");
-        log::info!("---------- end settings dump");
         let hud = layout();
         log::info!(
-            "hud layout: loc={},{}; size={},{}",
+            "hud layout: loc={},{}; size={},{};",
             hud.anchor.x,
             hud.anchor.y,
             hud.size.x,
             hud.size.y
         );
 
-        // here we should validate all four cycle entries which might refer to now-missing items
-        // player::has_item_or_spell(form) is the function to call
-
-        // now walk through what we should be showing in each slot, whether in the cycle or not
+        ctrl.validate_cycles();
         if ctrl.update_equipped() {
             show_hud();
         }
-
-        // TODO
+        log::info!("HUD data should be fresh; ready to cycle!")
     }
 
     /// Function for C++ to call to send a relevant button event to us.
@@ -119,16 +113,24 @@ impl Controller {
         }
     }
 
+    pub fn validate_cycles(&mut self) {
+        self.cycles.validate();
+        log::info!("after validation, cycles are: {}", self.cycles);
+    }
+
     /// The player's inventory changed! Act on it if we need to.
     fn handle_inventory_changed(&mut self, item: Box<TesItemData>, count: usize) {
-        log::info!("inventory count changed; formid={}; count={count}", item.form_string());
+        log::info!(
+            "inventory count changed; formid={}; count={count}",
+            item.form_string()
+        );
 
         if item.kind() == EntryKind::Arrow {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
                 if *candidate == *item {
                     candidate.set_count(item.count());
                 }
-            }  
+            }
         } else {
             self.cycles.update_count(*item, count);
         }
@@ -239,12 +241,12 @@ impl Controller {
                 self.left_hand_cached
             );
             if let Some(leftie) = &self.left_hand_cached {
+                // BUG: THIS DOES NOT WORK AS EXPECTED. The item mesh is not visible.
                 self.equip_item(&leftie, Action::Left);
                 self.left_hand_cached = None;
             }
         }
 
-        // Whatever we did earlier, update so we show what we have now.
         let left_entry = equippedLeftHand();
         changed = changed || self.update_slot(HudElement::Left, &left_entry);
 
@@ -266,6 +268,11 @@ impl Controller {
                 right_entry.name(),
                 ammo.name()
             );
+            // If any of our equipped items is in a cycle, make that item the top item
+            // so advancing the cycles works as expected.
+            self.cycles.set_top(Action::Power, *power);
+            self.cycles.set_top(Action::Left, *left_entry);
+            self.cycles.set_top(Action::Right, *right_entry);
         }
 
         changed
@@ -358,7 +365,9 @@ impl Controller {
     fn use_utility_item(&mut self) -> KeyEventResponse {
         log::debug!("using utility item (possibly crashy)");
         if let Some(item) = self.cycles.get_top(Action::Utility) {
-            if item.kind().is_potion() || matches!(item.kind(), EntryKind::PoisonDefault | EntryKind::Food) {
+            if item.kind().is_potion()
+                || matches!(item.kind(), EntryKind::PoisonDefault | EntryKind::Food)
+            {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 consumePotion(&form_spec);
             } else if item.kind().is_armor() {
