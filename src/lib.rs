@@ -119,7 +119,7 @@ pub mod plugin {
     /// This lets us determine the icon as well as which cycle slot an item can
     /// be added to.
     #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
-    enum EntryKind {
+    enum TesItemKind {
         Empty,
         Alteration,
         ArmorClothing,
@@ -248,7 +248,7 @@ pub mod plugin {
 
         /// This is an entry in the cycle. The UI will ask questions of it.
         type TesItemData;
-        fn kind(self: &TesItemData) -> EntryKind;
+        fn kind(self: &TesItemData) -> TesItemKind;
         fn highlighted(self: &TesItemData) -> bool;
         fn name(self: &TesItemData) -> String;
         fn has_count(self: &TesItemData) -> bool;
@@ -256,7 +256,7 @@ pub mod plugin {
         /// Call to create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
         fn make_tesitem(
-            kind: EntryKind,
+            kind: TesItemKind,
             two_handed: bool,
             has_count: bool,
             count: usize,
@@ -266,12 +266,12 @@ pub mod plugin {
         /// Snag a default cycle entry.
         fn default_cycle_entry() -> Box<TesItemData>;
 
-        // Functions from EntryKind.
-        fn kind_has_count(kind: EntryKind) -> bool;
-        fn kind_is_magic(kind: EntryKind) -> bool;
+        // Functions from TesItemKind.
+        fn kind_has_count(kind: TesItemKind) -> bool;
+        fn kind_is_magic(kind: TesItemKind) -> bool;
 
         /// Get the svg icon matching this item. Not a full path.
-        fn get_icon_file(kind: &EntryKind) -> String;
+        fn get_icon_file(kind: &TesItemKind) -> String;
 
         /// Handle an incoming key press event from the game. An enum encoding how it was handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;

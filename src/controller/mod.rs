@@ -9,9 +9,9 @@
 //! uses is available to be bridged to C++.
 pub mod control;
 pub mod cycles;
-pub mod entrykind;
 pub mod layout;
 pub mod settings;
+pub mod tesitemkind;
 
 // We don't have much logging setup code, so just shove it in here.
 use std::fs::File;
@@ -19,9 +19,9 @@ use std::path::PathBuf;
 
 pub use control::public::*;
 pub use cycles::{default_cycle_entry, get_icon_file, make_tesitem, TesItemData};
-pub use entrykind::{kind_has_count, kind_is_magic};
 pub use layout::layout;
-pub use settings::{refresh_user_settings, user_settings, UserSettings}; // hmm, is this for settings? I'm confused...
+pub use settings::{refresh_user_settings, user_settings, UserSettings};
+pub use tesitemkind::{kind_has_count, kind_is_magic}; // hmm, is this for settings? I'm confused...
 
 use simplelog::*;
 

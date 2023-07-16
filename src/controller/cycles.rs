@@ -5,11 +5,11 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::user_settings;
-use crate::plugin::{playerHasItemOrSpell, Action, EntryKind, MenuEventResponse};
+use crate::plugin::{playerHasItemOrSpell, Action, MenuEventResponse, TesItemKind};
 
 /// Given an entry kind, return the filename of the icon to use for it.
 /// Exposed to C++.
-pub fn get_icon_file(kind: &EntryKind) -> String {
+pub fn get_icon_file(kind: &TesItemKind) -> String {
     kind.icon_file()
 }
 
@@ -21,7 +21,7 @@ pub struct TesItemData {
     /// A string that can be turned back into form data; for serializing.
     form_string: String,
     /// An enum classifying this item for fast question-answering as well as icon selection.
-    kind: EntryKind,
+    kind: TesItemKind,
     /// True if this item requires both hands to use.
     two_handed: bool,
     /// True if this item should be displayed with count data.
@@ -41,7 +41,7 @@ impl PartialEq for TesItemData {
 }
 
 pub fn make_tesitem(
-    icon_kind: EntryKind,
+    icon_kind: TesItemKind,
     two_handed: bool,
     has_count: bool,
     count: usize,
@@ -65,7 +65,7 @@ pub fn default_cycle_entry() -> Box<TesItemData> {
 impl TesItemData {
     /// This is called from C++ when handing us a new item.
     pub fn new(
-        icon_kind: EntryKind,
+        icon_kind: TesItemKind,
         two_handed: bool,
         has_count: bool,
         count: usize,
@@ -115,7 +115,7 @@ impl TesItemData {
     }
 
     /// Get the enum representing this entry's kind (1-handed sword, dagger, health potion, etc.)
-    pub fn kind(&self) -> EntryKind {
+    pub fn kind(&self) -> TesItemKind {
         self.kind
     }
 

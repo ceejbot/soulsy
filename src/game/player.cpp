@@ -54,7 +54,7 @@ namespace player
 
 		const auto formspec = helpers::makeFormSpecString(current_ammo);
 		auto count          = inventoryCount(current_ammo, RE::FormType::Ammo, player);
-		return make_tesitem(EntryKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
+		return make_tesitem(TesItemKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
 	}
 
 	void unequipSlot(Action which)
@@ -192,10 +192,11 @@ namespace player
 		// TODO this is buggy. It might have to do with how I'm equipping the right, not the left.
 		// Still investigating.
 		auto* left_slot = equip::left_hand_equip_slot();
-		auto* task = SKSE::GetTaskInterface();
+		auto* task      = SKSE::GetTaskInterface();
 		if (task)
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, left_slot); });
+			task->AddTask(
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, left_slot); });
 		}
 	}
 

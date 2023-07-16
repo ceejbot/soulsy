@@ -105,25 +105,16 @@ namespace ui
 
 		wnd_proc_hook::func = reinterpret_cast<WNDPROC>(
 			SetWindowLongPtrA(sd.OutputWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wnd_proc_hook::thunk)));
-		if (!wnd_proc_hook::func)
-		{
-			logger::error("SetWindowLongPtrA failed"sv);
-		}
+		if (!wnd_proc_hook::func) { logger::error("SetWindowLongPtrA failed"sv); }
 	}
 
 	void ui_renderer::dxgi_present_hook::thunk(std::uint32_t a_p1)
 	{
 		func(a_p1);
 
-		if (!d_3d_init_hook::initialized.load())
-		{
-			return;
-		}
+		if (!d_3d_init_hook::initialized.load()) { return; }
 
-		if (!loaded_font && !tried_font_load)
-		{
-			load_font();
-		}
+		if (!loaded_font && !tried_font_load) { load_font(); }
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -221,27 +212,18 @@ namespace ui
 				anim->animate_action(ImGui::GetIO().DeltaTime);
 				++it;
 			}
-			else
-			{
-				it = animation_list.erase(it);
-			}
+			else { it = animation_list.erase(it); }
 		}
 	}
 
 	void ui_renderer::drawText(const char* text, const ImVec2 center, const float font_size, const Color color)
 	{
-		if (!text || !*text || color.a == 0)
-		{
-			return;
-		}
+		if (!text || !*text || color.a == 0) { return; }
 
 		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a);
 		const ImVec2 text_bounds = ImGui::CalcTextSize(text);
 		auto* font               = loaded_font;
-		if (!font)
-		{
-			font = ImGui::GetDefaultFont();
-		}
+		if (!font) { font = ImGui::GetDefaultFont(); }
 
 		ImGui::GetWindowDrawList()->AddText(font, font_size, center, text_color, text, nullptr, 0.0f, nullptr);
 	}
@@ -269,10 +251,7 @@ namespace ui
 		auto text_x = 0.f;
 		auto text_y = 0.f;
 
-		if (!a_text || !*a_text || a_alpha == 0)
-		{
-			return;
-		}
+		if (!a_text || !*a_text || a_alpha == 0) { return; }
 
 		const ImU32 color = IM_COL32(a_red, a_green, a_blue, a_alpha);
 
@@ -282,31 +261,16 @@ namespace ui
 			text_x = -text_size.x * 0.5f;
 			text_y = -text_size.y * 0.5f;
 		}
-		if (a_deduct_text_x)
-		{
-			text_x = text_x - text_size.x;
-		}
-		if (a_deduct_text_y)
-		{
-			text_y = text_y - text_size.y;
-		}
-		if (a_add_text_x)
-		{
-			text_x = text_x + text_size.x;
-		}
-		if (a_add_text_y)
-		{
-			text_y = text_y + text_size.y;
-		}
+		if (a_deduct_text_x) { text_x = text_x - text_size.x; }
+		if (a_deduct_text_y) { text_y = text_y - text_size.y; }
+		if (a_add_text_x) { text_x = text_x + text_size.x; }
+		if (a_add_text_y) { text_y = text_y + text_size.y; }
 
 		const auto position =
 			ImVec2(a_x + a_offset_x + a_offset_extra_x + text_x, a_y + a_offset_y + a_offset_extra_y + text_y);
 
 		auto* font = loaded_font;
-		if (!font)
-		{
-			font = ImGui::GetDefaultFont();
-		}
+		if (!font) { font = ImGui::GetDefaultFont(); }
 
 		ImGui::GetWindowDrawList()->AddText(font, a_font_size, position, color, a_text, nullptr, 0.0f, nullptr);
 	}
@@ -328,8 +292,8 @@ namespace ui
 		};
 		constexpr ImVec2 uvs[4] = { ImVec2(0.0f, 0.0f), ImVec2(1.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec2(0.0f, 1.0f) };
 
-		ImGui::GetWindowDrawList()
-			->AddImageQuad(a_texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], a_color);
+		ImGui::GetWindowDrawList()->AddImageQuad(
+			a_texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], a_color);
 	}
 
 	void ui_renderer::init_animation(const animation_type animation_type,
@@ -343,10 +307,7 @@ namespace ui
 		const uint32_t a_alpha,
 		float a_duration)
 	{
-		if (a_alpha == 0)
-		{
-			return;
-		}
+		if (a_alpha == 0) { return; }
 
 		logger::trace("starting inited animation");
 		constexpr auto angle = 0.0f;
@@ -387,8 +348,8 @@ namespace ui
 		};
 		constexpr ImVec2 uvs[4] = { ImVec2(0.0f, 0.0f), ImVec2(1.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec2(0.0f, 1.0f) };
 
-		ImGui::GetWindowDrawList()
-			->AddImageQuad(texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], im_color);
+		ImGui::GetWindowDrawList()->AddImageQuad(
+			texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], im_color);
 	}
 
 	void ui_renderer::drawAllSlots()
@@ -402,7 +363,7 @@ namespace ui
 			rust::Box<TesItemData> entry = entry_to_show_in_slot(slot_layout.element);
 			const auto entry_kind        = entry->kind();
 			const auto entry_name        = entry->name();
-			auto* name                    = new std::string(entry_name);
+			auto* name                   = new std::string(entry_name);
 			const auto hotkey            = settings->hotkey_for(slot_layout.element);
 			const auto slot_center       = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
 			// logger::trace("drawing slot {} at x={}; y={}; name='{}'",
@@ -467,7 +428,7 @@ namespace ui
 				}
 			}
 
-			if (entry_kind != EntryKind::Arrow && slot_layout.hotkey_color.a > 0)
+			if (entry_kind != TesItemKind::Arrow && slot_layout.hotkey_color.a > 0)
 			{
 				const auto hk_im_center =
 					ImVec2(slot_center.x + slot_layout.hotkey_offset.x, slot_center.y + slot_layout.hotkey_offset.y);
@@ -493,8 +454,7 @@ namespace ui
 	{
 		advanceTimers(ImGui::GetIO().DeltaTime);
 
-		if (!show_ui_)
-			return;
+		if (!show_ui_) return;
 
 		if (auto* ui = RE::UI::GetSingleton(); !ui || ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() ||
 											   !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>() ||
@@ -555,24 +515,15 @@ namespace ui
 				// to be expressed in milliseconds in the UI. Let's guess a tick == 10ms.
 				fade_out_timer = static_cast<float>(settings->fade_delay()) / 100.0f;
 				fade += 0.01f;
-				if (fade > 1.0f)
-				{
-					fade = 1.0f;
-				}
+				if (fade > 1.0f) { fade = 1.0f; }
 			}
 			else if (!fade_in && fade != 0.0f)
 			{
-				if (fade_out_timer > 0.0f)
-				{
-					fade_out_timer -= ImGui::GetIO().DeltaTime;
-				}
+				if (fade_out_timer > 0.0f) { fade_out_timer -= ImGui::GetIO().DeltaTime; }
 				else
 				{
 					fade -= 0.01f;
-					if (fade < 0.0f)
-					{
-						fade = 0.0f;
-					}
+					if (fade < 0.0f) { fade = 0.0f; }
 				}
 			}
 		}
@@ -586,8 +537,8 @@ namespace ui
 		const auto res_height = 1.0f;
 		get_resolution_scale_height();
 
-		const auto start = static_cast<uint32_t>(EntryKind::Alteration);
-		const auto end   = static_cast<uint32_t>(EntryKind::Whip);
+		const auto start = static_cast<uint32_t>(TesItemKind::Alteration);
+		const auto end   = static_cast<uint32_t>(TesItemKind::Whip);
 
 		for (uint32_t idx = start; idx <= end; idx++)
 		{
@@ -595,7 +546,7 @@ namespace ui
 			// The one below walks the directory and tries to match located
 			// files with the requested icons in the map. This one walks
 			// all needed icons and tries to find matching files.
-			EntryKind icon       = static_cast<EntryKind>(idx);
+			TesItemKind icon     = static_cast<TesItemKind>(idx);
 			const auto icon_file = get_icon_file(icon);
 			auto entrypath       = std::filesystem::path(file_path);
 			entrypath /= std::string(icon_file);
@@ -603,10 +554,8 @@ namespace ui
 			std::error_code ec;
 			if (std::filesystem::exists(entrypath, ec))
 			{
-				if (load_texture_from_file(entrypath.string().c_str(),
-						&a_struct[idx].texture,
-						a_struct[idx].width,
-						a_struct[idx].height))
+				if (load_texture_from_file(
+						entrypath.string().c_str(), &a_struct[idx].texture, a_struct[idx].width, a_struct[idx].height))
 				{
 					/*
 					logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
@@ -620,10 +569,7 @@ namespace ui
 					a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
 				}
 			}
-			else
-			{
-				logger::error("failed to load {}"sv, entrypath.filename().string().c_str());
-			}
+			else { logger::error("failed to load {}"sv, entrypath.filename().string().c_str()); }
 		}
 	}
 
@@ -659,10 +605,7 @@ namespace ui
 						a_struct[index].width,
 						a_struct[index].height);
 				}
-				else
-				{
-					logger::error("failed to load texture {}"sv, entry.path().filename().string().c_str());
-				}
+				else { logger::error("failed to load texture {}"sv, entry.path().filename().string().c_str()); }
 
 				a_struct[index].width  = static_cast<int32_t>(a_struct[index].width * res_width);
 				a_struct[index].height = static_cast<int32_t>(a_struct[index].height * res_height);
@@ -679,8 +622,8 @@ namespace ui
 			int32_t height                    = 0;
 			if (entry.path().filename().extension() != ".svg")
 			{
-				logger::warn("file {}, does not match supported extension '.svg'"sv,
-					entry.path().filename().string().c_str());
+				logger::warn(
+					"file {}, does not match supported extension '.svg'"sv, entry.path().filename().string().c_str());
 				continue;
 			}
 
@@ -706,17 +649,11 @@ namespace ui
 			{
 				return_image = ps_key_struct[a_key];
 			}
-			else
-			{
-				return_image = xbox_key_struct[a_key];
-			}
+			else { return_image = xbox_key_struct[a_key]; }
 		}
 		else
 		{
-			if (key_struct.contains(a_key))
-			{
-				return_image = key_struct[a_key];
-			}
+			if (key_struct.contains(a_key)) { return_image = key_struct[a_key]; }
 		}
 		return return_image;
 	}
@@ -822,10 +759,7 @@ namespace ui
 				auto action = static_cast<Action>(which);
 				timer_expired(action);
 			}
-			else
-			{
-				cycle_timers[which] = remaining;
-			}
+			else { cycle_timers[which] = remaining; }
 		}
 	}
 

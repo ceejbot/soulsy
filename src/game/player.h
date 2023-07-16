@@ -5,7 +5,7 @@
 
 struct TesItemData;
 enum class Action : ::std::uint8_t;
-enum class EntryKind : ::std::uint8_t;
+enum class TesItemKind : ::std::uint8_t;
 
 namespace player
 {

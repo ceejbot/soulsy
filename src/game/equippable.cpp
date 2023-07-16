@@ -14,7 +14,7 @@ namespace equippable
 	{
 		bool two_handed         = equippable::requiresTwoHands(item_form);
 		std::string form_string = helpers::makeFormSpecString(item_form);
-		auto kind               = equippable::entryKindFromForm(item_form);
+		auto kind               = equippable::itemKindFromForm(item_form);
 		auto count              = player::getInventoryCountByForm(item_form);
 		bool show_count         = kind_has_count(kind);
 		std::string name        = item_form->GetName();
@@ -22,7 +22,7 @@ namespace equippable
 		return make_tesitem(kind, two_handed, show_count, count, name, form_string);
 	}
 
-	bool canInstantCast(RE::TESForm* item_form, const EntryKind kind)
+	bool canInstantCast(RE::TESForm* item_form, const TesItemKind kind)
 	{
 		if (kind_is_magic(kind))
 		{
@@ -35,7 +35,7 @@ namespace equippable
 			return false;
 		}
 
-		return (kind == EntryKind::Scroll);
+		return (kind == TesItemKind::Scroll);
 	}
 
 	bool requiresTwoHands(RE::TESForm*& item_form)
@@ -83,9 +83,9 @@ namespace equippable
 		return RE::ActorValue::kNone;
 	}
 
-	EntryKind entryKindFromForm(RE::TESForm*& item_form)
+	TesItemKind itemKindFromForm(RE::TESForm*& item_form)
 	{
-		if (!item_form) { return EntryKind::Empty; }
+		if (!item_form) { return TesItemKind::Empty; }
 
 		if (item_form->IsWeapon())
 		{
@@ -99,7 +99,7 @@ namespace equippable
 		{
 			const auto* armor = item_form->As<RE::TESObjectARMO>();
 			//GetSlotMask 49
-			if (armor->IsShield()) { return EntryKind::Shield; }
+			if (armor->IsShield()) { return TesItemKind::Shield; }
 			else if (armor->IsClothing() &&
 					 (armor->HasKeywordString("_WL_Lantern") &&
 							 armor->HasPartOf(RE::BIPED_MODEL::BipedObjectSlot::kNone) &&
@@ -108,11 +108,11 @@ namespace equippable
 			{
 				//Wearable Lanterns got keyword _WL_Lantern
 				//Simple Wearable Lanterns do not have a keyword, but will be equipped on 49 (30+19)
-				return EntryKind::Lantern;
+				return TesItemKind::Lantern;
 			}
 			else if (armor->IsClothing() && armor->HasKeywordString("BOS_DisplayMaskKeyword"))
 			{
-				return EntryKind::Mask;
+				return TesItemKind::Mask;
 			}
 
 			return subKindForArmor(item_form);
@@ -130,67 +130,67 @@ namespace equippable
 			if (spell_type == RE::MagicSystem::SpellType::kLesserPower ||
 				spell_type == RE::MagicSystem::SpellType::kPower)
 			{
-				return EntryKind::Power;
+				return TesItemKind::Power;
 			}
 		}
 
-		if (item_form->Is(RE::FormType::Shout)) { return EntryKind::Shout; }
+		if (item_form->Is(RE::FormType::Shout)) { return TesItemKind::Shout; }
 
 		if (item_form->Is(RE::FormType::AlchemyItem)) { return subKindForConsumable(item_form); }
 
-		if (item_form->Is(RE::FormType::Scroll)) { return EntryKind::Scroll; }
+		if (item_form->Is(RE::FormType::Scroll)) { return TesItemKind::Scroll; }
 
-		if (item_form->Is(RE::FormType::Ammo)) { return EntryKind::Arrow; }
+		if (item_form->Is(RE::FormType::Ammo)) { return TesItemKind::Arrow; }
 
-		if (item_form->Is(RE::FormType::Light)) { return EntryKind::Torch; }
+		if (item_form->Is(RE::FormType::Light)) { return TesItemKind::Torch; }
 
-		return EntryKind::IconDefault;
+		return TesItemKind::IconDefault;
 	}
 
-	EntryKind subKindForWeapon(RE::TESForm*& item_form)
+	TesItemKind subKindForWeapon(RE::TESForm*& item_form)
 	{
-		if (!item_form || !item_form->IsWeapon()) { return EntryKind::IconDefault; }
+		if (!item_form || !item_form->IsWeapon()) { return TesItemKind::IconDefault; }
 		switch (const auto* weapon = item_form->As<RE::TESObjectWEAP>(); weapon->GetWeaponType())
 		{
-			case RE::WEAPON_TYPE::kHandToHandMelee: return EntryKind::HandToHand;
+			case RE::WEAPON_TYPE::kHandToHandMelee: return TesItemKind::HandToHand;
 
 			case RE::WEAPON_TYPE::kOneHandSword:
-				if (weapon->HasKeywordString("WeapTypeRapier")) { return EntryKind::Rapier; }
-				else if (weapon->HasKeywordString("WeapTypeKatana")) { return EntryKind::Katana; }
-				return EntryKind::SwordOneHanded;
+				if (weapon->HasKeywordString("WeapTypeRapier")) { return TesItemKind::Rapier; }
+				else if (weapon->HasKeywordString("WeapTypeKatana")) { return TesItemKind::Katana; }
+				return TesItemKind::SwordOneHanded;
 
 			case RE::WEAPON_TYPE::kOneHandDagger:
-				if (weapon->HasKeywordString("WeapTypeClaw")) { return EntryKind::Claw; }
-				return EntryKind::Dagger;
+				if (weapon->HasKeywordString("WeapTypeClaw")) { return TesItemKind::Claw; }
+				return TesItemKind::Dagger;
 
-			case RE::WEAPON_TYPE::kOneHandAxe: return EntryKind::AxeOneHanded;
+			case RE::WEAPON_TYPE::kOneHandAxe: return TesItemKind::AxeOneHanded;
 
 			case RE::WEAPON_TYPE::kOneHandMace:
-				if (weapon->HasKeywordString("WeapTypeWhip")) { return EntryKind::Whip; }
-				return EntryKind::Mace;
+				if (weapon->HasKeywordString("WeapTypeWhip")) { return TesItemKind::Whip; }
+				return TesItemKind::Mace;
 
 			case RE::WEAPON_TYPE::kTwoHandSword:
-				if (weapon->HasKeywordString("WeapTypePike")) { return EntryKind::Pike; }
-				return EntryKind::SwordTwoHanded;
+				if (weapon->HasKeywordString("WeapTypePike")) { return TesItemKind::Pike; }
+				return TesItemKind::SwordTwoHanded;
 
 			case RE::WEAPON_TYPE::kTwoHandAxe:
-				if (weapon->HasKeywordString("WeapTypeHalberd")) { return EntryKind::Halberd; }
-				else if (weapon->HasKeywordString("WeapTypeQtrStaff")) { return EntryKind::QuarterStaff; }
-				return EntryKind::AxeTwoHanded;
+				if (weapon->HasKeywordString("WeapTypeHalberd")) { return TesItemKind::Halberd; }
+				else if (weapon->HasKeywordString("WeapTypeQtrStaff")) { return TesItemKind::QuarterStaff; }
+				return TesItemKind::AxeTwoHanded;
 
-			case RE::WEAPON_TYPE::kBow: return EntryKind::Bow;
+			case RE::WEAPON_TYPE::kBow: return TesItemKind::Bow;
 
-			case RE::WEAPON_TYPE::kStaff: return EntryKind::Staff;
+			case RE::WEAPON_TYPE::kStaff: return TesItemKind::Staff;
 
-			case RE::WEAPON_TYPE::kCrossbow: return EntryKind::Crossbow;
+			case RE::WEAPON_TYPE::kCrossbow: return TesItemKind::Crossbow;
 		}
 
-		return EntryKind::IconDefault;
+		return TesItemKind::IconDefault;
 	}
 
-	EntryKind subKindForMagic(RE::TESForm*& item_form)
+	TesItemKind subKindForMagic(RE::TESForm*& item_form)
 	{
-		if (!item_form || !item_form->Is(RE::FormType::Spell)) { return EntryKind::IconDefault; }
+		if (!item_form || !item_form->Is(RE::FormType::Spell)) { return TesItemKind::IconDefault; }
 
 		auto* spell        = item_form->As<RE::SpellItem>();
 		const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
@@ -199,78 +199,78 @@ namespace equippable
 
 		switch (actor_value)
 		{
-			case RE::ActorValue::kAlteration: return EntryKind::Alteration;
+			case RE::ActorValue::kAlteration: return TesItemKind::Alteration;
 
-			case RE::ActorValue::kConjuration: return EntryKind::Conjuration;
+			case RE::ActorValue::kConjuration: return TesItemKind::Conjuration;
 
 			case RE::ActorValue::kDestruction:
 				switch (effect->data.resistVariable)
 				{
-					case RE::ActorValue::kResistFire: return EntryKind::DestructionFire;
-					case RE::ActorValue::kResistFrost: return EntryKind::DestructionFrost;
-					case RE::ActorValue::kResistShock: return EntryKind::DestructionShock;
-					default: return EntryKind::Destruction;
+					case RE::ActorValue::kResistFire: return TesItemKind::DestructionFire;
+					case RE::ActorValue::kResistFrost: return TesItemKind::DestructionFrost;
+					case RE::ActorValue::kResistShock: return TesItemKind::DestructionShock;
+					default: return TesItemKind::Destruction;
 				}
-			case RE::ActorValue::kIllusion: return EntryKind::Illusion;
+			case RE::ActorValue::kIllusion: return TesItemKind::Illusion;
 
 			case RE::ActorValue::kRestoration:
 				//might not fit all spells
-				return EntryKind::Restoration;
+				return TesItemKind::Restoration;
 
-			default: return EntryKind::SpellDefault;
+			default: return TesItemKind::SpellDefault;
 		}
 	}
 
-	EntryKind subKindForConsumable(RE::TESForm*& item_form)
+	TesItemKind subKindForConsumable(RE::TESForm*& item_form)
 	{
-		if (!item_form || !item_form->Is(RE::FormType::AlchemyItem)) { return EntryKind::IconDefault; }
+		if (!item_form || !item_form->Is(RE::FormType::AlchemyItem)) { return TesItemKind::IconDefault; }
 
 		auto* alchemy_potion = item_form->As<RE::AlchemyItem>();
-		if (alchemy_potion->IsFood()) { return EntryKind::Food; }
-		if (alchemy_potion->IsPoison()) { return EntryKind::PoisonDefault; }
+		if (alchemy_potion->IsFood()) { return TesItemKind::Food; }
+		if (alchemy_potion->IsPoison()) { return TesItemKind::PoisonDefault; }
 
 		auto actor_value = getPotionEffect(alchemy_potion, false);
 		return subKindForConsumableByEffect(actor_value);
 	}
 
-	EntryKind subKindForArmor(RE::TESForm*& item_form)
+	TesItemKind subKindForArmor(RE::TESForm*& item_form)
 	{
-		if (!item_form || !item_form->IsArmor()) { return EntryKind::IconDefault; }
+		if (!item_form || !item_form->IsArmor()) { return TesItemKind::IconDefault; }
 		switch (const auto* armor = item_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
 		{
-			case RE::BIPED_MODEL::ArmorType::kLightArmor: return EntryKind::ArmorLight;
-			case RE::BIPED_MODEL::ArmorType::kHeavyArmor: return EntryKind::ArmorHeavy;
-			case RE::BIPED_MODEL::ArmorType::kClothing: return EntryKind::ArmorClothing;
+			case RE::BIPED_MODEL::ArmorType::kLightArmor: return TesItemKind::ArmorLight;
+			case RE::BIPED_MODEL::ArmorType::kHeavyArmor: return TesItemKind::ArmorHeavy;
+			case RE::BIPED_MODEL::ArmorType::kClothing: return TesItemKind::ArmorClothing;
 		}
 
-		return EntryKind::IconDefault;
+		return TesItemKind::IconDefault;
 	}
 
-	EntryKind subKindForConsumableByEffect(RE::ActorValue& actor_value)
+	TesItemKind subKindForConsumableByEffect(RE::ActorValue& actor_value)
 	{
 		switch (actor_value)
 		{
 			case RE::ActorValue::kHealth:
 			case RE::ActorValue::kHealRateMult:
-			case RE::ActorValue::kHealRate: return EntryKind::PotionHealth;
+			case RE::ActorValue::kHealRate: return TesItemKind::PotionHealth;
 
 			case RE::ActorValue::kStamina:
 			case RE::ActorValue::kStaminaRateMult:
-			case RE::ActorValue::kStaminaRate: return EntryKind::PotionStamina;
+			case RE::ActorValue::kStaminaRate: return TesItemKind::PotionStamina;
 
 			case RE::ActorValue::kMagicka:
 			case RE::ActorValue::kMagickaRateMult:
-			case RE::ActorValue::kMagickaRate: return EntryKind::PotionMagicka;
+			case RE::ActorValue::kMagickaRate: return TesItemKind::PotionMagicka;
 
-			case RE::ActorValue::kResistFire: return EntryKind::PotionFireResist;
+			case RE::ActorValue::kResistFire: return TesItemKind::PotionFireResist;
 
-			case RE::ActorValue::kResistShock: return EntryKind::PotionShockResist;
+			case RE::ActorValue::kResistShock: return TesItemKind::PotionShockResist;
 
-			case RE::ActorValue::kResistFrost: return EntryKind::PotionFrostResist;
+			case RE::ActorValue::kResistFrost: return TesItemKind::PotionFrostResist;
 
-			case RE::ActorValue::kResistMagic: return EntryKind::PotionMagicResist;
+			case RE::ActorValue::kResistMagic: return TesItemKind::PotionMagicResist;
 
-			default: return EntryKind::PotionDefault;
+			default: return TesItemKind::PotionDefault;
 		}
 	}
 }

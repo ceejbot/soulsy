@@ -125,7 +125,7 @@ impl Controller {
             item.form_string()
         );
 
-        if item.kind() == EntryKind::Arrow {
+        if item.kind() == TesItemKind::Arrow {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
                 if *candidate == *item {
                     candidate.set_count(item.count());
@@ -162,7 +162,7 @@ impl Controller {
         };
 
         let kind = item.kind();
-        if matches!(kind, EntryKind::Empty) && which != Action::Utility {
+        if matches!(kind, TesItemKind::Empty) && which != Action::Utility {
             unequipSlot(which);
             return;
         }
@@ -193,7 +193,7 @@ impl Controller {
             equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
-        } else if kind == EntryKind::Arrow {
+        } else if kind == TesItemKind::Arrow {
             equipAmmo(&form_spec);
         } else {
             log::info!(
@@ -373,7 +373,7 @@ impl Controller {
         log::debug!("using utility item (possibly crashy)");
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind().is_potion()
-                || matches!(item.kind(), EntryKind::PoisonDefault | EntryKind::Food)
+                || matches!(item.kind(), TesItemKind::PoisonDefault | TesItemKind::Food)
             {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 consumePotion(&form_spec);
