@@ -232,7 +232,7 @@ impl Controller {
             self.two_hander_equipped = true;
         }
 
-        if !right_entry.two_handed() && self.two_hander_equipped {
+        let left_entry = if !right_entry.two_handed() && self.two_hander_equipped {
             // We've switched from a two-hander to a one-hander. Re-equip what
             // we had in the left. This schedules an SKSE task, so it won't be
             // re-entrant AFAIK.
@@ -241,19 +241,20 @@ impl Controller {
                 self.left_hand_cached
             );
             if let Some(leftie) = &self.left_hand_cached {
-                // BUG: THIS DOES NOT WORK AS EXPECTED. The item mesh is not visible.
                 cxx::let_cxx_string!(form_spec = leftie.form_string());
                 reequipLeftHand(&form_spec);
-                // self.equip_item(&leftie, Action::Left);
+                let leftie = leftie.clone();
                 self.left_hand_cached = None;
+                Box::new(leftie)
+            } else {
+                equippedLeftHand()
             }
-        }
-
-        let left_entry = if self.two_hander_equipped {
+        } else if self.two_hander_equipped {
             Box::<TesItemData>::default()
         } else {
             equippedLeftHand()
         };
+
         changed = changed || self.update_slot(HudElement::Left, &left_entry);
 
         let power = equippedPower();
