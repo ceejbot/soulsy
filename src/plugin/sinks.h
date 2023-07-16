@@ -5,14 +5,11 @@
 // with CommonLibSSE's events and do initial processing in the callbacks.
 // All heavy application-level logic happens on the Rust side.
 
-
 void register_all_sinks();
 
 class EquipEventSink final : public RE::BSTEventSink<RE::TESEquipEvent>
 {
 public:
-	using event_result = RE::BSEventNotifyControl;
-
 	static EquipEventSink* get_singleton(void);
 	static void register_sink(void);
 
@@ -24,7 +21,7 @@ public:
 	EquipEventSink& operator=(EquipEventSink&&)      = delete;
 
 protected:
-	event_result ProcessEvent(const RE::TESEquipEvent* event,
+	RE::BSEventNotifyControl ProcessEvent(const RE::TESEquipEvent* event,
 		[[maybe_unused]] RE::BSTEventSource<RE::TESEquipEvent>* source) override;
 
 private:
@@ -34,8 +31,6 @@ private:
 
 class KeyEventSink final : public RE::BSTEventSink<RE::InputEvent*>
 {
-	using event_result = RE::BSEventNotifyControl;
-
 public:
 	static KeyEventSink* get_singleton();
 	static void register_sink();
@@ -47,7 +42,7 @@ public:
 	KeyEventSink& operator=(KeyEventSink&&)      = delete;
 
 protected:
-	event_result ProcessEvent(RE::InputEvent* const* a_event,
+	RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event,
 		[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* a_event_source) override;
 
 private:
