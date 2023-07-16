@@ -32,31 +32,25 @@ namespace equip
 
 	void unequipHand(RE::PlayerCharacter*& player, Action which)
 	{
-		// I guess this is what we do when we don't have let-if.
-		RE::TESForm* equipped_object = nullptr;
-		RE::BGSEquipSlot* slot       = nullptr;
-
+		RE::BGSEquipSlot* slot = nullptr;
 		if (which == Action::Right)
 		{
-			slot            = left_hand_equip_slot();
-			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+			slot = left_hand_equip_slot();
 		}
 		else if (which == Action::Left)
 		{
-			slot            = right_hand_equip_slot();
-			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+			slot = right_hand_equip_slot();
 		}
 		else
 		{
 			logger::debug("somebody called unequipHand() with slot={};"sv, static_cast<uint8_t>(which));
 			return;
 		}
+		unequip_slot(slot, player);
+	}
 
-		if (!equipped_object)
-		{
-			return;
-		}
-
+	void unequip_slot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	{
 		bool did_call       = false;
 		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
 		if (equipped_object->IsWeapon())
@@ -85,20 +79,15 @@ namespace equip
 			did_call = true;
 		}
 
-		logger::trace("unequippd item from slot; item={}; slot={}; did_call={};"sv,
+		logger::trace("unequipped item from slot; item={}; slot={}; did_call={};"sv,
 			equipped_object->GetName(),
 			static_cast<uint8_t>(which),
 			did_call);
 	}
 
-	// used by utility_items.cpp -- still relevant?
-	void unequip_slot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player, const action_type action)
+	/*
+	void unequip_slot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
-		if (action != action_type::un_equip)
-		{
-			return;
-		}
-
 		RE::TESForm* equipped_object = nullptr;
 		if (slot == left_hand_equip_slot())
 		{
@@ -110,8 +99,10 @@ namespace equip
 			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 		}
 
-		if (equipped_object)
+		if (!equipped_object)
 		{
+			return;
+		}
 			logger::debug("Object {} is equipped, is left {}."sv,
 				equipped_object->GetName(),
 				slot == left_hand_equip_slot());
@@ -150,7 +141,7 @@ namespace equip
 				slot == left_hand_equip_slot(),
 				did_call);
 		}
-	}
+		} */
 
 	void unequip_object_ft_dummy_dagger(RE::BGSEquipSlot*& slot,
 		RE::PlayerCharacter*& player,
@@ -239,5 +230,4 @@ namespace equip
 		RE::ActorEquipManager::GetSingleton()->EquipShout(a_player, shout);
 		logger::trace("equipped shout {}. return."sv, a_form->GetName());
 	}
-
 }

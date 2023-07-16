@@ -231,6 +231,27 @@ namespace player
 		return has_it;
 	}
 
+	void reequipLeftHand(const int& form_spec)
+	{
+		auto* form = helpers::formSpecToFormItem(form_spec);
+		if (!form)
+		{
+			return false;
+		}
+
+		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
+		auto* player        = RE::PlayerCharacter::GetSingleton();
+		auto* left_slot     = equip::left_hand_equip_slot();
+
+		equip::unequip_slot(slot, player);
+		// equip::un_equip_object_ft_dummy_dagger(left_slot, player, equip_manager);
+		auto* task = SKSE::GetTaskInterface();
+		if (task)
+		{
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, form); });
+		}
+	}
+
 	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
 	{
 		auto count     = 0;

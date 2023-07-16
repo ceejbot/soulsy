@@ -18,7 +18,7 @@ namespace equip
 		logger::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
 			a_form->GetName(),
 			left,
-			static_cast<uint32_t>(kind));
+			a_form->GetFormType());
 
 		if (a_form->formID == util::unarmed)
 		{
@@ -206,7 +206,12 @@ namespace equip
 		logger::trace("calling drink/eat potion/food {}, count left {}"sv, obj->GetName(), remaining);
 		//RE::ExtraDataList* extraDataList = nullptr;
 		//player->DrinkPotion(alchemy_item, extraDataList);
-		RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item);
+		// RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item);
+		auto* task = SKSE::GetTaskInterface();
+		if (task)
+		{
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, form); });
+		}
 		logger::trace("drank/ate potion/food {}. return."sv, obj->GetName());
 	}
 
@@ -358,11 +363,11 @@ namespace equip
 		uint32_t potion_doses = 1;
 		/* it works for vanilla and adamant
             * vanilla does a basic set value to 3
-            * adamant does 2 times add value 2 
+            * adamant does 2 times add value 2
             * ordinator we could handle it "dirty" because the Information we need needs to be RE, but if perk xy Is set
              we could calculate it ourselves. It is basically AV multiply base + "alchemy level" * 0.1 * 3 = dose count
             * vokrii should be fine as well
-            * other add av multiply implementations need to be handled by getting the data from the game 
+            * other add av multiply implementations need to be handled by getting the data from the game
             * the MCM setting will be left for overwrite handling */
 		if (a_player->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
 		{

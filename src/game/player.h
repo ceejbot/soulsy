@@ -34,6 +34,7 @@ namespace player
 	void equipAmmo(const std::string& form_spec);
 	void consumePotion(const std::string& form_spec);
 	bool playerHasItemOrSpell(const std::string& form_spec);
+	void reequipLeftHand(const std::string& form_spec);
 
 	void equip_item(const RE::TESForm* a_form,
 		RE::BGSEquipSlot*& a_slot,
