@@ -74,6 +74,22 @@ impl EntryKind {
         )
     }
 
+    // EntryKind::PoisonDefault,
+    /// Check if this item is gluggable.
+    pub fn is_potion(&self) -> bool {
+        matches!(
+            *self,
+            EntryKind::PotionDefault
+                | EntryKind::PotionFireResist
+                | EntryKind::PotionFrostResist
+                | EntryKind::PotionHealth
+                | EntryKind::PotionMagicka
+                | EntryKind::PotionMagicResist
+                | EntryKind::PotionShockResist
+                | EntryKind::PotionStamina
+        )
+    }
+
     /// Check if this entry can be equipped in the left hand.
     ///
     /// Returns true for weapons, magic, lights, and shields.

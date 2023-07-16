@@ -341,5 +341,6 @@ pub mod plugin {
         fn equipWeapon(form_spec: &CxxString, which: Action, kind: EntryKind);
         fn equipArmor(form_spec: &CxxString);
         fn equipAmmo(form_spec: &CxxString);
+        fn consumePotion(form_spec: &CxxString);
     }
 }

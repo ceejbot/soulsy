@@ -151,6 +151,16 @@ namespace player
 		equip::equip_ammo(form, player);
 	}
 
+	void consumePotion(const std::string& form_spec) {
+		auto* form = helpers::get_form_from_mod_id_string(form_spec);
+		if (!form)
+		{
+			return;
+		}
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		equip::consume_potion(form, player);
+	}
+
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
 		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)
 	{

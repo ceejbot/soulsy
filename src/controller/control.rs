@@ -238,7 +238,7 @@ impl Controller {
                 "maybe re-equipping left hand item; item='{:?}';",
                 self.left_hand_cached
             );
-            if let Some(_leftie) = &self.left_hand_cached {
+            if let Some(leftie) = &self.left_hand_cached {
                 self.equip_item(&leftie, Action::Left);
                 self.left_hand_cached = None;
             }
@@ -358,13 +358,16 @@ impl Controller {
     fn use_utility_item(&mut self) -> KeyEventResponse {
         log::debug!("using utility item (unimplemented)");
         if let Some(item) = self.cycles.get_top(Action::Utility) {
-            if item.kind() != EntryKind::Empty {
-                // TODO activate the utility item
-                // might need to call individual functions
+            if item.kind().is_potion() || matches!(item.kind(), EntryKind::PoisonDefault | EntryKind::Food) {
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                consumePotion(&form_spec);
+            } else if item.kind().is_armor() {
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                equipArmor(&form_spec);
             }
         }
 
-        // No matter what we did, we stop the timer.
+        // No matter what we did, we stop the timer. Not that a timer should exist.
         KeyEventResponse {
             handled: true,
             start_timer: Action::Irrelevant,
