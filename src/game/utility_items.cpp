@@ -12,7 +12,7 @@
 
 namespace equip
 {
-	void equip_item(const RE::TESForm* a_form, RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& player, EntryKind kind)
+	void equip_item(const RE::TESForm* a_form, RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& player)
 	{
 		auto left = a_slot == equip::left_hand_equip_slot();
 		logger::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
@@ -23,7 +23,7 @@ namespace equip
 		if (a_form->formID == util::unarmed)
 		{
 			logger::trace("Got unarmed, try to call un equip"sv);
-			equip::unequip_slot(a_slot, player, enums::action_type::un_equip);
+			equip::unequip_this_slot(a_slot, player);
 			return;
 		}
 
@@ -138,7 +138,7 @@ namespace equip
 			//all we have are already equipped
 			logger::warn("All Items we have of {} are equipped, return."sv, obj->GetName());
 			//try to prevent the game to equip something else
-			equip::unequip_slot(a_slot, player, enums::action_type::un_equip);
+			equip::unequip_this_slot(a_slot, player);
 			return;
 		}
 
@@ -148,7 +148,7 @@ namespace equip
 		{
 			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, obj, extra, 1, a_slot); });
 		}
-		logger::trace("equipped weapon/shield/light {}, left {}. return."sv, a_form->GetName(), left);
+		logger::trace("scheduled task to equip weapon/shield/light {}, left {}. return."sv, a_form->GetName(), left);
 	}
 
 	void consume_potion(const RE::TESForm* potion_form, RE::PlayerCharacter*& player)
@@ -202,15 +202,11 @@ namespace equip
 		}
 
 		// there's a function in Actor called DrinkPotion that we probably want to use
-		// bool Actor::DrinkPotion(AlchemyItem* potion, ExtraDataList* extra_data)
 		logger::trace("calling drink/eat potion/food {}, count left {}"sv, obj->GetName(), remaining);
-		//RE::ExtraDataList* extraDataList = nullptr;
-		//player->DrinkPotion(alchemy_item, extraDataList);
-		// RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item);
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, form); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item); });
 		}
 		logger::trace("drank/ate potion/food {}. return."sv, obj->GetName());
 	}

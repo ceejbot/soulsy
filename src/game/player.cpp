@@ -104,7 +104,7 @@ namespace player
 		equip::equipShoutByForm(shout_form, player);
 	}
 
-	void equipMagic(const std::string& form_spec, Action slot, EntryKind kind)
+	void equipMagic(const std::string& form_spec, Action slot)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
@@ -113,10 +113,10 @@ namespace player
 		}
 		auto* player     = RE::PlayerCharacter::GetSingleton();
 		auto* equip_slot = (slot == Action::Left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot());
-		equip::equip_item(form, equip_slot, player, kind);
+		equip::equip_item(form, equip_slot, player);
 	}
 
-	void equipWeapon(const std::string& form_spec, Action slot, EntryKind kind)
+	void equipWeapon(const std::string& form_spec, Action slot)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
@@ -125,7 +125,7 @@ namespace player
 		}
 		auto* player     = RE::PlayerCharacter::GetSingleton();
 		auto* equip_slot = (slot == Action::Left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot());
-		equip::equip_item(form, equip_slot, player, kind);
+		equip::equip_item(form, equip_slot, player);
 	}
 
 	void equipArmor(const std::string& form_spec)
@@ -231,24 +231,32 @@ namespace player
 		return has_it;
 	}
 
-	void reequipLeftHand(const int& form_spec)
+	void reequipLeftHand(const std::string& form_spec)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{
-			return false;
+			return;
 		}
 
-		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-		auto* player        = RE::PlayerCharacter::GetSingleton();
-		auto* left_slot     = equip::left_hand_equip_slot();
+		auto* player    = RE::PlayerCharacter::GetSingleton();
 
-		equip::unequip_slot(slot, player);
-		// equip::un_equip_object_ft_dummy_dagger(left_slot, player, equip_manager);
+		RE::TESBoundObject* bound_obj = nullptr;
+		equip::boundObjectForForm(form, player, bound_obj);
+		if (!bound_obj)
+		{
+			return;
+		}
+
+		logger::info("re-equipping item in left hand; name=''; formid=0x{}"sv,
+			form->GetName(),
+			util::string_util::int_to_hex(form->formID));
+		// auto* left_slot = equip::left_hand_equip_slot();
+		// equip::unequip_this_slot(left_slot, player);
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, form); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj); });
 		}
 	}
 

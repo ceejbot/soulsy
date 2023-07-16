@@ -13,8 +13,9 @@ namespace equip
 	RE::BGSEquipSlot* left_hand_equip_slot();
 	RE::BGSEquipSlot* power_equip_slot();
 
+	void boundObjectForForm(const RE::TESForm* form, RE::PlayerCharacter*& the_player, RE::TESBoundObject* outval);
 
-	void unequip_slot(RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& a_player, action_type a_action);
+	void unequip_this_slot(RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& a_player);
 	void unequip_object_ft_dummy_dagger(RE::BGSEquipSlot*& a_slot,
 		RE::PlayerCharacter*& a_player,
 		RE::ActorEquipManager*& a_actor_equip_manager);

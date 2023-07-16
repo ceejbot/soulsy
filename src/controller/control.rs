@@ -188,9 +188,9 @@ impl Controller {
         // These are all different because the game API is a bit of an evolved thing.
         if kind.is_magic() {
             // My name is John Wellington Wells / I'm a dealer in...
-            equipMagic(&form_spec, which, kind);
+            equipMagic(&form_spec, which);
         } else if kind.left_hand_ok() || kind.right_hand_ok() {
-            equipWeapon(&form_spec, which, kind);
+            equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
         } else if kind == EntryKind::Arrow {
@@ -242,12 +242,18 @@ impl Controller {
             );
             if let Some(leftie) = &self.left_hand_cached {
                 // BUG: THIS DOES NOT WORK AS EXPECTED. The item mesh is not visible.
-                self.equip_item(&leftie, Action::Left);
+                cxx::let_cxx_string!(form_spec = leftie.form_string());
+                reequipLeftHand(&form_spec);
+                // self.equip_item(&leftie, Action::Left);
                 self.left_hand_cached = None;
             }
         }
 
-        let left_entry = equippedLeftHand();
+        let left_entry = if self.two_hander_equipped {
+            Box::<TesItemData>::default()
+        } else {
+            equippedLeftHand()
+        };
         changed = changed || self.update_slot(HudElement::Left, &left_entry);
 
         let power = equippedPower();

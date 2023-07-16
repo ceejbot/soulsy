@@ -46,13 +46,26 @@ namespace equip
 			logger::debug("somebody called unequipHand() with slot={};"sv, static_cast<uint8_t>(which));
 			return;
 		}
-		unequip_slot(slot, player);
+		unequip_this_slot(slot, player);
 	}
 
-	void unequip_slot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void unequip_this_slot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
 		bool did_call       = false;
 		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
+
+		RE::TESForm* equipped_object = nullptr;
+		if (slot == left_hand_equip_slot())
+		{
+			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		}
+		else if (slot == right_hand_equip_slot())
+		{
+			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		}
+		if (!equipped_object)
+			return;
+
 		if (equipped_object->IsWeapon())
 		{
 			const auto weapon = equipped_object->As<RE::TESObjectWEAP>();
@@ -79,10 +92,7 @@ namespace equip
 			did_call = true;
 		}
 
-		logger::trace("unequipped item from slot; item={}; slot={}; did_call={};"sv,
-			equipped_object->GetName(),
-			static_cast<uint8_t>(which),
-			did_call);
+		logger::trace("unequipped item from slot; item={}; did_call={};"sv, equipped_object->GetName(), did_call);
 	}
 
 	/*
@@ -229,5 +239,42 @@ namespace equip
 
 		RE::ActorEquipManager::GetSingleton()->EquipShout(a_player, shout);
 		logger::trace("equipped shout {}. return."sv, a_form->GetName());
+	}
+
+	void boundObjectForForm(const RE::TESForm* form, RE::PlayerCharacter*& the_player, RE::TESBoundObject* outval)
+	{
+		RE::TESBoundObject* obj = nullptr;
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates;
+
+		if (form->Is(RE::FormType::Weapon))
+		{
+			candidates = player::get_inventory(the_player, RE::FormType::Weapon);
+		}
+		else if (form->Is(RE::FormType::Armor))
+		{
+			candidates = player::get_inventory(the_player, RE::FormType::Armor);
+		}
+		else if (form->Is(RE::FormType::Light))
+		{
+			candidates = player::get_inventory(the_player, RE::FormType::Light);
+		}
+
+		auto item_count = 0;
+		for (const auto& [item, inv_data] : candidates)
+		{
+			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
+			{
+				obj        = item;
+				item_count = num_items;
+				break;
+			}
+		}
+
+		logger::info("found {} candidates for bound object; name='{}'; formid=0x{};"sv,
+			item_count,
+			form->GetName(),
+			util::string_util::int_to_hex(form->formID));
+
+		outval = obj;
 	}
 }

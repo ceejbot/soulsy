@@ -29,8 +29,8 @@ namespace player
 	void unequipShout();
 	void equipShout(const std::string& form_spec);
 	void equipArmor(const std::string& form_spec);
-	void equipMagic(const std::string& form_spec, Action slot, EntryKind kind);
-	void equipWeapon(const std::string& form_spec, Action slot, EntryKind kind);
+	void equipMagic(const std::string& form_spec, Action slot);
+	void equipWeapon(const std::string& form_spec, Action slot);
 	void equipAmmo(const std::string& form_spec);
 	void consumePotion(const std::string& form_spec);
 	bool playerHasItemOrSpell(const std::string& form_spec);

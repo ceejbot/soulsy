@@ -342,10 +342,11 @@ pub mod plugin {
         fn unequipSlot(which: Action);
 
         fn equipShout(form_spec: &CxxString);
-        fn equipMagic(form_spec: &CxxString, which: Action, kind: EntryKind);
-        fn equipWeapon(form_spec: &CxxString, which: Action, kind: EntryKind);
+        fn equipMagic(form_spec: &CxxString, which: Action);
+        fn equipWeapon(form_spec: &CxxString, which: Action);
         fn equipArmor(form_spec: &CxxString);
         fn equipAmmo(form_spec: &CxxString);
         fn consumePotion(form_spec: &CxxString);
+        fn reequipLeftHand(form_spec: &CxxString);
     }
 }
