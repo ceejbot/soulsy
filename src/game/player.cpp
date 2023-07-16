@@ -17,7 +17,6 @@ namespace player
 	using string_util = util::string_util;
 	using slot_type   = enums::slot_type;
 	using action_type = enums::action_type;
-	using data_helper = helpers::data_helper;
 
 	rust::Box<TesItemData> equippedLeftHand()
 	{
@@ -188,7 +187,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{
-			return;
+			return false;
 		}
 		return has_item_or_spell(form);
 	}
