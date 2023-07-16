@@ -18,7 +18,6 @@ set(headers ${headers}
     src/renderer/animation_handler.h
     src/renderer/image_path.h
     src/renderer/ui_renderer.h
-    src/util/config_writer_helper.h
     src/util/constant.h
     src/util/enums.h
     src/util/helpers.h
