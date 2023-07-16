@@ -238,7 +238,7 @@ impl Controller {
                 "maybe re-equipping left hand item; item='{:?}';",
                 self.left_hand_cached
             );
-            if let Some(leftie) = &self.left_hand_cached {
+            if let Some(_leftie) = &self.left_hand_cached {
                 self.equip_item(&leftie, Action::Left);
                 self.left_hand_cached = None;
             }
@@ -249,7 +249,6 @@ impl Controller {
         changed = changed || self.update_slot(HudElement::Left, &left_entry);
 
         let power = equippedPower();
-        log::info!("power: {} {}", power.name(), power.form_string());
         changed = changed || self.update_slot(HudElement::Power, &power);
 
         let ammo = equippedAmmo();

@@ -39,7 +39,6 @@ impl HudLayout {
         } else if let Ok(buf) = fs::read_to_string(PathBuf::from(LAYOUT_PATH)) {
             match toml::from_str::<HudLayout>(&buf) {
                 Ok(v) => {
-                    log::info!("successfully read a hud layout file");
                     Ok(v)
                 }
                 Err(e) => {
@@ -62,7 +61,7 @@ impl HudLayout {
     pub fn refresh() {
         match HudLayout::read_from_file() {
             Ok(v) => {
-                log::info!("successfully read a HUD layout");
+                log::info!("refreshed HUD layout; triggering redraw...");
                 let mut hudl = LAYOUT.lock().unwrap();
                 *hudl = v;
             }
@@ -76,7 +75,7 @@ impl HudLayout {
         // solving my problem this way is cheesy. TODO fix
         match HudLayout::read_from_file() {
             Ok(v) => {
-                log::info!("successfully refreshed HUD layout");
+                log::info!("successfully initialized HUD layout from player file");
                 v
             }
             Err(e) => {
@@ -107,7 +106,7 @@ impl Default for HudLayout {
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
             hotkey_bg_color: Color::default(),
-            text_offset: Point { x: 0.0, y: 0.0 },
+            count_offset: Point { x: 0.0, y: 0.0 },
             count_font_size: 20.0,
             count_color: Color::default(),
             name_color: Color::default(),
@@ -130,7 +129,7 @@ impl Default for HudLayout {
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
             hotkey_bg_color: Color::default(),
-            text_offset: Point { x: 0.0, y: 0.0 },
+            count_offset: Point { x: 0.0, y: 0.0 },
             count_font_size: 20.0,
             count_color: Color::default(),
             name_color: Color::default(),
@@ -153,7 +152,7 @@ impl Default for HudLayout {
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
             hotkey_bg_color: Color::default(),
-            text_offset: Point { x: 0.0, y: 0.0 },
+            count_offset: Point { x: 0.0, y: 0.0 },
             count_font_size: 20.0,
             count_color: Color::default(),
             name_color: Color::default(),
@@ -176,7 +175,7 @@ impl Default for HudLayout {
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
             hotkey_bg_color: Color::default(),
-            text_offset: Point { x: 0.0, y: 0.0 },
+            count_offset: Point { x: 0.0, y: 0.0 },
             count_font_size: 20.0,
             count_color: Color::default(),
             name_color: Color::default(),
@@ -199,7 +198,7 @@ impl Default for HudLayout {
             hotkey_offset: Point { x: 10.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
             hotkey_bg_color: Color::default(),
-            text_offset: Point { x: 0.0, y: 0.0 },
+            count_offset: Point { x: 0.0, y: 0.0 },
             count_font_size: 20.0,
             count_color: Color::default(),
             name_color: Color::default(),
@@ -259,7 +258,7 @@ impl Default for SlotLayout {
             hotkey_offset: Point { x: 20.0, y: 0.0 },
             hotkey_size: Point { x: 30.0, y: 30.0 },
             hotkey_bg_color: Color::default(),
-            text_offset: Point::default(),
+            count_offset: Point::default(),
             count_font_size: 20.0,
             count_color: Color::default(),
             name_offset: Point::default(),

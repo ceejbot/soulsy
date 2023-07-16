@@ -69,7 +69,7 @@ g = 255
 b = 255
 a = 0
 
-[layouts.text_offset]
+[layouts.count_offset]
 x = 0.0
 y = 0.0
 
@@ -86,8 +86,8 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 0.0
-y = 20.0
+x = 130.0
+y = 110.0
 
 [[layouts]]
 name = "Consumables"
@@ -140,15 +140,15 @@ g = 255
 b = 255
 a = 0
 
-[layouts.text_offset]
-x = 0.0
-y = 0.0
+[layouts.count_offset]
+x = 25.0
+y = 40.0
 
 [layouts.count_color]
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 [layouts.name_color]
 r = 255
@@ -157,8 +157,8 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 20.0
-y = 20.0
+x = 50.0
+y = 40.0
 
 [[layouts]]
 name = "Left Hand"
@@ -209,9 +209,9 @@ y = 30.0
 r = 255
 g = 255
 b = 255
-a = 100
+a = 0
 
-[layouts.text_offset]
+[layouts.count_offset]
 x = 0.0
 y = 0.0
 
@@ -228,8 +228,8 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 0.0
-y = 20.0
+x = 195.0
+y = 50.0
 
 [[layouts]]
 name = "Right Hand"
@@ -282,7 +282,7 @@ g = 255
 b = 255
 a = 0
 
-[layouts.text_offset]
+[layouts.count_offset]
 x = 0.0
 y = 0.0
 
@@ -299,8 +299,8 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 0.0
-y = 20.0
+x = 5.0
+y = 75.0
 
 [[layouts]]
 name = "Ammo"
@@ -326,7 +326,7 @@ a = 0
 [layouts.icon_color]
 r = 200
 g = 200
-b = 255
+b = 200
 a = 255
 
 [layouts.icon_size]
@@ -353,9 +353,9 @@ g = 255
 b = 255
 a = 0
 
-[layouts.text_offset]
-x = 50.0
-y = 50.0
+[layouts.count_offset]
+x = 70.0
+y = 100.0
 
 [layouts.count_color]
 r = 255
@@ -370,5 +370,5 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 10.0
-y = 20.0
+x = 95.0
+y = 100.0

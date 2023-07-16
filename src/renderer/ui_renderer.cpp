@@ -228,10 +228,7 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::drawText(const char* text,
-		const ImVec2 center,
-		const float font_size,
-		const Color color)
+	void ui_renderer::drawText(const char* text, const ImVec2 center, const float font_size, const Color color)
 	{
 		if (!text || !*text || color.a == 0)
 		{
@@ -403,14 +400,16 @@ namespace ui
 		for (auto slot_layout : top_layout.layouts)
 		{
 			rust::Box<TesItemData> entry = entry_to_show_in_slot(slot_layout.element);
-			const auto entry_kind       = entry->kind();
-			const auto entry_name       = entry->name();
-			const auto hotkey           = settings->hotkey_for(slot_layout.element);
-			const auto slot_center      = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
-			// logger::trace("drawing slot {} at x={}; y={}",
+			const auto entry_kind        = entry->kind();
+			const auto entry_name        = entry->name();
+			auto* name                    = new std::string(entry_name);
+			const auto hotkey            = settings->hotkey_for(slot_layout.element);
+			const auto slot_center       = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
+			// logger::trace("drawing slot {} at x={}; y={}; name='{}'",
 			// 	static_cast<uint8_t>(slot_layout.element),
 			// 	(anchor.x + slot_layout.offset.x),
-			// 	(anchor.y + slot_layout.offset.y));
+			// 	(anchor.y + slot_layout.offset.y),
+			// 	name->c_str());
 
 			if (slot_layout.bg_color.a > 0)
 			{
@@ -447,11 +446,10 @@ namespace ui
 			// Now decide if we should draw the text showing the item's name.
 			if (slot_layout.name_color.a > 0 && !entry_name.empty())
 			{
-				auto name = std::string(entry_name).c_str();
 				const auto text_pos =
-					ImVec2(slot_center.x + slot_layout.text_offset.x, slot_center.y + slot_layout.text_offset.y);
+					ImVec2(slot_center.x + slot_layout.name_offset.x, slot_center.y + slot_layout.name_offset.y);
 
-				drawText(name, text_pos, top_layout.font_size, slot_layout.name_color);
+				drawText(name->c_str(), text_pos, top_layout.font_size, slot_layout.name_color);
 			}
 
 			// next up: do we have extra text to show on this puppy?
@@ -460,7 +458,7 @@ namespace ui
 				auto count     = entry->count();
 				auto slot_text = std::to_string(count);
 				const auto text_pos =
-					ImVec2(slot_center.x + slot_layout.text_offset.x, slot_center.y + slot_layout.text_offset.y);
+					ImVec2(slot_center.x + slot_layout.count_offset.x, slot_center.y + slot_layout.count_offset.y);
 
 				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
@@ -514,11 +512,11 @@ namespace ui
 
 		const auto settings           = user_settings();
 		const auto hide_out_of_combat = settings->fade();
-		const auto player = RE::PlayerCharacter::GetSingleton();
-		const bool inCombat = player->IsInCombat();
-		const auto weaponsDrawn = player->AsActorState()->IsWeaponDrawn();
+		const auto player             = RE::PlayerCharacter::GetSingleton();
+		const bool inCombat           = player->IsInCombat();
+		const auto weaponsDrawn       = player->AsActorState()->IsWeaponDrawn();
 
-		fade_in = hide_out_of_combat ? (inCombat || weaponsDrawn)  : true;
+		fade_in = hide_out_of_combat ? (inCombat || weaponsDrawn) : true;
 
 		static constexpr ImGuiWindowFlags window_flag =
 			ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs;
@@ -817,7 +815,7 @@ namespace ui
 			auto remaining = iter->second;
 
 			remaining -= delta;
-			logger::info("timer decremented; timer={}; delta={}; remaining={};"sv, which, delta, remaining);
+			// logger::trace("timer decremented; timer={}; delta={}; remaining={};"sv, which, delta, remaining);
 			if (remaining < 0.0f)
 			{
 				cycle_timers.erase(which);

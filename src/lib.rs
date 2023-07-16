@@ -99,7 +99,7 @@ pub mod plugin {
         hotkey_bg_color: Color,
 
         /// If text is drawn in this element, where to draw it.
-        text_offset: Point,
+        count_offset: Point,
         /// If this element has to show a count, the font size to use.
         count_font_size: f32,
         /// The color of any count size text; 0 alpha means not to draw it at all.
