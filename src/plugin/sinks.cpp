@@ -10,6 +10,8 @@
 
 // Handle equipment change events. We need to update our UI when this happens.
 
+using event_result = RE::BSEventNotifyControl;
+
 // Where all == both.
 void register_all_sinks()
 {
@@ -38,8 +40,6 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 
 	return event_result::kContinue;
 }
-
-using event_result = RE::BSEventNotifyControl;
 
 KeyEventSink* KeyEventSink::get_singleton()
 {

@@ -9,6 +9,8 @@ void register_all_sinks();
 
 class EquipEventSink final : public RE::BSTEventSink<RE::TESEquipEvent>
 {
+	using event_result = RE::BSEventNotifyControl;
+
 public:
 	static EquipEventSink* get_singleton(void);
 	static void register_sink(void);
@@ -31,6 +33,8 @@ private:
 
 class KeyEventSink final : public RE::BSTEventSink<RE::InputEvent*>
 {
+	using event_result = RE::BSEventNotifyControl;
+
 public:
 	static KeyEventSink* get_singleton();
 	static void register_sink();

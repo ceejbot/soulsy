@@ -6,6 +6,7 @@
 #include "perk_visitor.h"
 #include "player.h"
 #include "string_util.h"
+#include "equippable.h"
 
 #include "lib.rs.h"
 
@@ -17,7 +18,7 @@ namespace equip
 		auto slot_is_left = slot == equip::left_hand_equip_slot();
 		logger::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
 			form->GetName(),
-			left,
+			slot_is_left,
 			form->GetFormType());
 
 		if (form->formID == util::unarmed)
@@ -74,7 +75,7 @@ namespace equip
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, slot); });
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, nullptr, 1, slot); });
 		}
 	}
 
@@ -141,7 +142,7 @@ namespace equip
 		logger::trace("try to equip {}"sv, a_form->GetName());
 
 		RE::TESBoundObject* obj = nullptr;
-		auto left               = 0;
+		auto remaining          = 0;
 		for (auto candidates = player::get_inventory(a_player, RE::FormType::Ammo);
 			 const auto& [item, inv_data] : candidates)
 		{
