@@ -166,7 +166,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		logger::trace("player has: {}; name='{}'; formid=0x{};"sv,
+		logger::info("player has: {}; name='{}'; formid=0x{};"sv,
 			has_it,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
@@ -182,7 +182,8 @@ namespace player
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
 		RE::TESBoundObject* bound_obj = nullptr;
-		equip::boundObjectForForm(form, player, bound_obj);
+		RE::ExtraDataList* extra      = nullptr;
+		equip::boundObjectForForm(form, player, bound_obj, extra);
 		if (!bound_obj) { return; }
 
 		logger::info("re-equipping item in left hand; name='{}'; formid=0x{}"sv,
@@ -190,12 +191,11 @@ namespace player
 			util::string_util::int_to_hex(form->formID));
 		// TODO this is buggy. It might have to do with how I'm equipping the right, not the left.
 		// Still investigating.
-		// auto* left_slot = equip::left_hand_equip_slot();
-		// equip::unequipLeftOrRightSlot(left_slot, player);
+		auto* left_slot = equip::left_hand_equip_slot();
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, left_slot); });
 		}
 	}
 
@@ -211,6 +211,7 @@ namespace player
 				break;
 			}
 		}
+
 		return count;
 	}
 

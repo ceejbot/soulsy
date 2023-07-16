@@ -28,13 +28,13 @@ namespace equip
 			return;
 		}
 
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
+		RE::TESBoundObject *bound_obj = nullptr;
+		RE::ExtraDataList *extra      = nullptr;
 		auto item_count               = equip::boundObjectForForm(form, player, bound_obj, extra);
 
-		if (!item_count || !bound_obj)
+		if (!bound_obj)
 		{
-			logger::info("unable to find any instances of item in player inventory. name='{}'"sv, form->GetName());
+			logger::info("unable to find bound object for name='{}'"sv, form->GetName());
 			return;
 		}
 
@@ -76,7 +76,7 @@ namespace equip
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, nullptr, 1, slot); });
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, slot); });
 		}
 	}
 

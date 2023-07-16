@@ -84,10 +84,6 @@ tag VERSION:
     cp -p data/SoulsyHUD.esl archive/
     cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
-    declare -a langs=(czech french german italian japanese polish russian spanish)
-    for lang in "${langs[@]}"; do
-        cp archive/Interface/Translations/SoulsyHUD_english.txt archive/Interface/Translations/SoulsyHUD_$lang.txt
-    done
 
 # Build a full mod archive
 archive-win:

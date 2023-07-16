@@ -178,16 +178,16 @@ namespace equip
 
 	int boundObjectForForm(const RE::TESForm* form,
 		RE::PlayerCharacter*& the_player,
-		RE::TESBoundObject* outobj,
-		RE::ExtraDataList* outextra)
+		RE::TESBoundObject*& outobj,
+		RE::ExtraDataList*& outextra)
 	{
-		RE::TESBoundObject* obj = nullptr;
+		RE::TESBoundObject* bound_obj = nullptr;
+		RE::ExtraDataList* extra      = nullptr;
 		std::vector<RE::ExtraDataList*> extra_vector;
-		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates;
-
-		if (form->Is(RE::FormType::Weapon)) { candidates = player::get_inventory(the_player, RE::FormType::Weapon); }
-		else if (form->Is(RE::FormType::Armor)) { candidates = player::get_inventory(the_player, RE::FormType::Armor); }
-		else if (form->Is(RE::FormType::Light)) { candidates = player::get_inventory(the_player, RE::FormType::Light); }
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::get_inventory(the_player, form->GetFormType());
+		
+		logger::trace("found count={} candidates for name='{}';"sv, candidates.size(), form->GetName());
 
 		auto item_count = 0;
 		for (const auto& [item, inv_data] : candidates)
@@ -221,13 +221,13 @@ namespace equip
 			return 0;
 		}
 
-		logger::info("found {} instances for bound object; name='{}'; formid=0x{};"sv,
+		logger::info("found {} instance for bound object; name='{}'; formid=0x{};"sv,
 			item_count,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
 
 		if (!extra_vector.empty()) { outextra = extra_vector.back(); }
-		outobj = obj;
+		outobj = bound_obj;
 		return item_count;
 	}
 }

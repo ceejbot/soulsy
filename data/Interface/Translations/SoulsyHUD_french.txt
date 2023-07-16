@@ -1,0 +1,38 @@
+$SoulsyHUD										Soulsy HUD
+$SoulsyHUD_Splash_Text							A tiny low-maintenance Souls-like equipment cycler.
+
+$SoulsyHUD_MainPage_Title						Controls and options
+
+$SoulsyHUD_Controls_HeaderText					Key bindings
+
+$SoulsyHUD_Controls_PowerCycleKey_OptionText	Powers
+$SoulsyHUD_Controls_PowerCycleKey_InfoText		The hotkey for cycling shouts and powers
+$SoulsyHUD_Controls_RightCycleKey_OptionText	Right
+$SoulsyHUD_Controls_RightCycleKey_InfoText		The hotkey for cycling right-hand items
+$SoulsyHUD_Controls_UtilityCycleKey_OptionText	Utility
+$SoulsyHUD_Controls_UtilityCycleKey_InfoText	The hotkey for cycling utility items
+$SoulsyHUD_Controls_LeftCycleKey_OptionText		Left
+$SoulsyHUD_Controls_LeftCycleKey_InfoText		The hotkey for cycling left-hand items
+$SoulsyHUD_Controls_ActivateKey_OptionText		Use utility
+$SoulsyHUD_Controls_ActivateKey_InfoText		The hotkey for using the selected utility item
+$SoulsyHUD_Controls_ShowHideKey_OptionText		Show/Hide
+$SoulsyHUD_Controls_ShowHideKey_InfoText		The hotkey for toggling HUD widget visibility
+$SoulsyHUD_Controls_RefreshKey_OptionText		Refresh layout
+$SoulsyHUD_Controls_RefreshKey_InfoText			The hotkey for reading a new layout from the TOML file.
+
+SoulsyHUD_Options_Options_HeaderText	HUD behavior options
+
+$SoulsyHUD_Options_Length_OptionText		Cycle length
+$SoulsyHUD_Options_Length_InfoText			The longest to allow your cycles to be. This defaults to 10, but even that length is likely unwieldy.
+$SoulsyHUD_Options_EquipDelay_OptionText	Equip delay
+$SoulsyHUD_Options_EquipDelay_InfoText		The milliseconds to delay after tapping a cycle button before selecting the item. A short value, like 750ms, is good.
+$SoulsyHUD_Options_Fade_OptionText			Fade
+$SoulsyHUD_Options_Fade_InfoText			Enable to make the HUD widget fade out if you're not in combat or don't have your weapons readied.
+$SoulsyHUD_Options_FadeDelay_OptionText		Fade delay
+$SoulsyHUD_Options_FadeDelay_InfoText		The milliseconds to delay before fading the widget out when you exit combat or stow your weapons.
+
+$SoulsyHUD_Options_Controller_OptionText	Controller display
+$SoulsyHUD_Options_Controller_InfoText		Which controller style to use for hotkey hints in the HUD.
+$SoulsyHUD_Controls_PC		PC
+$SoulsyHUD_Controls_PS		Playstation
+$SoulsyHUD_Controls_Xbox	Xbox

@@ -204,6 +204,33 @@ impl CycleData {
             })
             .map(|xs| xs.clone())
             .collect();
+        self.utility = self
+            .utility
+            .iter_mut()
+            .filter(|xs| {
+                cxx::let_cxx_string!(form_spec = xs.form_string());
+                playerHasItemOrSpell(&form_spec)
+            })
+            .map(|xs| xs.clone())
+            .collect();
+        self.left = self
+            .left
+            .iter_mut()
+            .filter(|xs| {
+                cxx::let_cxx_string!(form_spec = xs.form_string());
+                playerHasItemOrSpell(&form_spec)
+            })
+            .map(|xs| xs.clone())
+            .collect();
+        self.right = self
+            .right
+            .iter_mut()
+            .filter(|xs| {
+                cxx::let_cxx_string!(form_spec = xs.form_string());
+                playerHasItemOrSpell(&form_spec)
+            })
+            .map(|xs| xs.clone())
+            .collect();
     }
 
     /// Attempt to set the current item in a cycle to the given form spec (mod.esp|formid).
