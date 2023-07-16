@@ -183,6 +183,8 @@ namespace player
 		else if (a_form->IsArmor())
 		{
 			count = get_inventory_count(a_form, RE::FormType::Armor, player);
+		} else {
+			count = get_inventory_count(a_form, a_form->GetFormType(), player);
 		}
 
 		logger::trace("got {} in inventory for item {}"sv, count, a_form->GetName());

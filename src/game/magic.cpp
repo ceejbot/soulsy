@@ -4,7 +4,6 @@
 #include "offset.h"
 #include "player.h"
 #include "string_util.h"
-#include "user_settings.h"
 
 namespace magic
 {
@@ -39,7 +38,7 @@ namespace magic
 		logger::trace("spell {} is type {}"sv, spell->GetName(), static_cast<uint32_t>(casting_type));
 		if (a_action == action_type::instant && casting_type != RE::MagicSystem::CastingType::kConcentration)
 		{
-			if (config::mcm_setting::get_elden_demon_souls())
+			if (true)
 			{
 				auto selected_power = a_player->GetActorRuntimeData().selectedPower;
 				if (selected_power)
@@ -60,8 +59,7 @@ namespace magic
 
 			auto current_magicka = actor->AsActorValueOwner()->GetActorValue(RE::ActorValue::kMagicka);
 			auto dual_cast       = false;
-			if (!spell->IsTwoHanded() && config::mcm_setting::get_try_dual_cast_top_spell() &&
-				config::mcm_setting::get_elden_demon_souls())
+			if (!spell->IsTwoHanded())
 			{
 				auto* game_setting             = RE::GameSettingCollection::GetSingleton();
 				auto dual_cast_cost_multiplier = game_setting->GetSetting("fMagicDualCastingCostMult")->GetFloat();

@@ -133,9 +133,9 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		if (button->IsPressed() || button->IsDown() || button->IsHeld()) {
 			continue;
 		}
-		logger::debug("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
+		//logger::trace("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
 		const KeyEventResponse response = handle_key_event(key, *button);
-		logger::trace("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
+		logger::debug("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
 			key,
 			response.handled,
 			static_cast<uint8_t>(response.start_timer),

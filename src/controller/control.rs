@@ -356,7 +356,7 @@ impl Controller {
 
     /// Activate whatever we have in the utility slot.
     fn use_utility_item(&mut self) -> KeyEventResponse {
-        log::debug!("using utility item (unimplemented)");
+        log::debug!("using utility item (possibly crashy)");
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind().is_potion() || matches!(item.kind(), EntryKind::PoisonDefault | EntryKind::Food) {
                 cxx::let_cxx_string!(form_spec = item.form_string());

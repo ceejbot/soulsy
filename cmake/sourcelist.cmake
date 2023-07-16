@@ -1,8 +1,5 @@
 set(headers ${headers}
     src/PCH.h
-    src/config/custom_setting.h
-    src/config/file_setting.h
-    src/config/user_settings.h
     src/game/equippable.h
     src/game/gear.h
     src/game/magic.h
@@ -27,9 +24,6 @@ set(headers ${headers}
 )
 set(sources ${sources}
     ${headers}
-    src/config/custom_setting.cpp
-    src/config/file_setting.cpp
-    src/config/user_settings.cpp
     src/game/equippable.cpp
     src/game/gear.cpp
     src/game/magic.cpp

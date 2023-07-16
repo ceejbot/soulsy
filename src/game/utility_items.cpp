@@ -7,7 +7,6 @@
 #include "perk_visitor.h"
 #include "player.h"
 #include "string_util.h"
-#include "user_settings.h"
 
 #include "lib.rs.h"
 
@@ -152,41 +151,44 @@ namespace equip
 		logger::trace("equipped weapon/shield/light {}, left {}. return."sv, a_form->GetName(), left);
 	}
 
-	void consume_potion(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
+	void consume_potion(const RE::TESForm* potion_form, RE::PlayerCharacter*& player)
 	{
-		logger::trace("try to consume {}"sv, a_form->GetName());
+		logger::trace("consume_potion called; form_id=0x{}; potion='{}';"sv,
+			util::string_util::int_to_hex(potion_form->formID),
+			potion_form->GetName());
 
 		RE::TESBoundObject* obj = nullptr;
-		uint32_t left           = 0;
-		for (auto potential_items = player::get_inventory(a_player, RE::FormType::AlchemyItem);
+		uint32_t remaining      = 0;
+		for (auto potential_items = player::get_inventory(player, RE::FormType::AlchemyItem);
 			 const auto& [item, inv_data] : potential_items)
 		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
+			if (const auto& [num_items, entry] = inv_data; entry->object->formID == potion_form->formID)
 			{
-				obj  = item;
-				left = num_items;
+				obj       = item;
+				remaining = num_items;
 				break;
 			}
 		}
 
-		if (config::mcm_setting::get_prevent_consumption_of_last_dynamic_potion() && obj && obj->IsDynamicForm() &&
-			left == 1)
+		if (obj && obj->IsDynamicForm() && remaining == 1)
 		{
 			logger::warn(
-				"Somehow the game crashes on potions with dynamic id if the count is 0 (happens with or without the mod). So I am not consuming it. Form {}, Name {}"sv,
+				"The game crashes on potions with dynamic id if the count is 0 (happens with or without the mod). Skipping. formid=0x{};, name='{}';"sv,
 				util::string_util::int_to_hex(obj->formID),
 				obj->GetName());
 			return;
 		}
 
-		if (!obj || left == 0)
+		if (!obj || remaining == 0)
 		{
 			logger::warn("could not find selected potion, maybe all have been consumed"sv);
+			// TODO honk
 			return;
 		}
 
 		if (!obj->Is(RE::FormType::AlchemyItem))
 		{
+			// TODO honk
 			logger::warn("object {} is not an alchemy item. return."sv, obj->GetName());
 			return;
 		}
@@ -194,15 +196,20 @@ namespace equip
 		auto* alchemy_item = obj->As<RE::AlchemyItem>();
 		if (alchemy_item->IsPoison())
 		{
-			poison_weapon(a_player, alchemy_item, left);
-			logger::trace("Is a poison, I am done here. return.");
+			logger::trace("poison applied!"sv);
+			poison_weapon(player, alchemy_item, remaining);
 			return;
 		}
 
-		logger::trace("calling drink/eat potion/food {}, count left {}"sv, obj->GetName(), left);
-		RE::ActorEquipManager::GetSingleton()->EquipObject(a_player, obj);
+		// there's a function in Actor called DrinkPotion that we probably want to use
+		// bool Actor::DrinkPotion(AlchemyItem* potion, ExtraDataList* extra_data)
+		logger::trace("calling drink/eat potion/food {}, count left {}"sv, obj->GetName(), remaining);
+		//RE::ExtraDataList* extraDataList = nullptr;
+		//player->DrinkPotion(alchemy_item, extraDataList);
+		RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item);
 		logger::trace("drank/ate potion/food {}. return."sv, obj->GetName());
 	}
+
 
 	void equip_ammo(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
 	{
@@ -278,8 +285,8 @@ namespace equip
 			fmt::format(FMT_STRING("{:.2f}"), missing));
 
 		//min heal, max heal
-		auto min_perfect = config::mcm_setting::get_potion_min_perfect();
-		auto max_perfect = config::mcm_setting::get_potion_max_perfect();
+		auto min_perfect = 0.7f;
+		auto max_perfect = 1.2f;
 		logger::trace("min perfect {}, max perfect {}, missing {}"sv,
 			fmt::format(FMT_STRING("{:.2f}"), missing * min_perfect),
 			fmt::format(FMT_STRING("{:.2f}"), missing * max_perfect),
@@ -306,8 +313,7 @@ namespace equip
 			if (actor_value == a_actor_value)
 			{
 				//set obj here, because if we do not have a perfect hit, we still need to consume something
-				if (config::mcm_setting::get_prevent_consumption_of_last_dynamic_potion() &&
-					alchemy_item->IsDynamicForm() && num_items == 1)
+				if (alchemy_item->IsDynamicForm() && num_items == 1)
 				{
 					logger::warn(
 						"Somehow the game crashes on potions with dynamic id if the count is 0 (happens with or without the mod). So I am not consuming it. Form {}, Name {}"sv,
@@ -358,18 +364,11 @@ namespace equip
             * vokrii should be fine as well
             * other add av multiply implementations need to be handled by getting the data from the game 
             * the MCM setting will be left for overwrite handling */
-		if (config::mcm_setting::get_overwrite_poison_dose())
+		if (a_player->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
 		{
-			potion_doses = config::mcm_setting::get_apply_poison_dose();
-		}
-		else
-		{
-			if (a_player->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
-			{
-				auto perk_visit = util::perk_visitor(a_player, static_cast<float>(potion_doses));
-				a_player->ForEachPerkEntry(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount, perk_visit);
-				potion_doses = static_cast<int>(perk_visit.get_result());
-			}
+			auto perk_visit = util::perk_visitor(a_player, static_cast<float>(potion_doses));
+			a_player->ForEachPerkEntry(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount, perk_visit);
+			potion_doses = static_cast<int>(perk_visit.get_result());
 		}
 		logger::trace("Poison dose set value is {}"sv, potion_doses);
 

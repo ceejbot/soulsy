@@ -61,7 +61,7 @@ namespace helpers
 			auto* source_file = form->sourceFiles.array->front()->fileName;
 			auto local_form   = form->GetLocalFormID();
 
-			logger::trace("form is from {}, local id is {}, translated {}"sv,
+			logger::trace("form is from {}, local id is {}, hex 0x{}"sv,
 				source_file,
 				local_form,
 				string_util::int_to_hex(local_form));
