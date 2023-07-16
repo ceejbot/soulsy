@@ -2,18 +2,20 @@
   "$schema": "https://raw.githubusercontent.com/Exit-9B/MCM-Helper/main/docs/config.schema.json",
   "modName": "SoulsyHUD",
   "displayName": "SoulsyHUD",
-  "minMcmVersion": 11,
+  "minMcmVersion": 13,
+  "cursorFillMode": "topToBottom",
   "pages": [
     {
       "pageDisplayName": "$SoulsyHUD",
-      "cursorFillMode": "topToBottom",
-      "content": [{
-        "type": "header", 
-        "text": "$SoulsyHUD_MainPage_Text" }]
+      "content": [
+        {
+          "type": "header",
+          "text": "$SoulsyHUD_Splash_Text"
+        }
+      ]
     },
     {
       "pageDisplayName": "$SoulsyHUD_MainPage_Title",
-      "cursorFillMode": "topToBottom",
       "content": [
         {
           "text": "$SoulsyHUD_Controls_HeaderText",
@@ -24,7 +26,6 @@
           "text": "$SoulsyHUD_Controls_PowerCycleKey_OptionText",
           "help": "$SoulsyHUD_Controls_PowerCycleKey_InfoText",
           "type": "keymap",
-          "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
@@ -34,7 +35,6 @@
           "text": "$SoulsyHUD_Controls_UtilityCycleKey_OptionText",
           "help": "$SoulsyHUD_Controls_UtilityCycleKey_InfoText",
           "type": "keymap",
-          "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
@@ -44,7 +44,6 @@
           "help": "$SoulsyHUD_Controls_LeftCycleKey_InfoText",
           "text": "$SoulsyHUD_Controls_LeftCycleKey_OptionText",
           "type": "keymap",
-          "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
@@ -54,7 +53,6 @@
           "text": "$SoulsyHUD_Controls_RightCycleKey_OptionText",
           "help": "$SoulsyHUD_Controls_RightCycleKey_InfoText",
           "type": "keymap",
-          "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
@@ -64,7 +62,6 @@
           "text": "$SoulsyHUD_Controls_ActivateKey_OptionText",
           "type": "keymap",
           "help": "$SoulsyHUD_Controls_ActivateKey_InfoText",
-          "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
@@ -74,7 +71,6 @@
           "text": "$SoulsyHUD_Controls_ShowHideKey_OptionText",
           "type": "keymap",
           "help": "$SoulsyHUD_Controls_ShowHideKey_InfoText",
-          "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
@@ -84,7 +80,6 @@
           "text": "$SoulsyHUD_Controls_RefreshKey_OptionText",
           "type": "keymap",
           "help": "$SoulsyHUD_Controls_RefreshKey_InfoText",
-          "ignoreConflicts": false,
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
@@ -108,9 +103,8 @@
         {
           "id": "uEquipDelay:Options",
           "text": "$SoulsyHUD_Options_EquipDelay_OptionText",
-          "type": "keymap",
+          "type": "slider",
           "help": "$SoulsyHUD_Options_EquipDelay_InfoText",
-          "ignoreConflicts": false,
           "valueOptions": {
             "min": 0,
             "max": 2500,
@@ -130,9 +124,8 @@
         {
           "id": "uFadeDelay:Options",
           "text": "$SoulsyHUD_Options_FadeDelay_OptionText",
-          "type": "keymap",
+          "type": "slider",
           "help": "$SoulsyHUD_Options_FadeDelay_InfoText",
-          "ignoreConflicts": false,
           "valueOptions": {
             "min": 0,
             "max": 5000,
