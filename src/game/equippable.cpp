@@ -60,6 +60,29 @@ namespace equippable
 		return two_handed;
 	}
 
+	RE::ActorValue getPotionEffect(RE::TESForm* a_form, bool a_check)
+	{
+		if (!a_form->Is(RE::FormType::AlchemyItem)) { return RE::ActorValue::kNone; }
+
+		auto* alchemy_potion = a_form->As<RE::AlchemyItem>();
+		if (alchemy_potion->IsFood() || alchemy_potion->IsPoison()) { return RE::ActorValue::kNone; }
+
+		const auto* effect = alchemy_potion->GetCostliestEffectItem()->baseEffect;
+		auto actor_value   = effect->GetMagickSkill();
+		if (actor_value == RE::ActorValue::kNone) { actor_value = effect->data.primaryAV; }
+
+		if (!a_check) { return actor_value; }
+
+		if ((actor_value == RE::ActorValue::kHealth || actor_value == RE::ActorValue::kStamina ||
+				actor_value == RE::ActorValue::kMagicka) &&
+			effect->data.flags.none(RE::EffectSetting::EffectSettingData::Flag::kRecover))
+		{
+			return actor_value;
+		}
+
+		return RE::ActorValue::kNone;
+	}
+
 	EntryKind entryKindFromForm(RE::TESForm*& item_form)
 	{
 		if (!item_form) { return EntryKind::Empty; }
@@ -206,7 +229,7 @@ namespace equippable
 		if (alchemy_potion->IsFood()) { return EntryKind::Food; }
 		if (alchemy_potion->IsPoison()) { return EntryKind::PoisonDefault; }
 
-		auto actor_value = helpers::get_actor_value_effect_from_potion(alchemy_potion, false);
+		auto actor_value = getPotionEffect(alchemy_potion, false);
 		return subKindForConsumableByEffect(actor_value);
 	}
 
@@ -216,9 +239,7 @@ namespace equippable
 		switch (const auto* armor = item_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
 		{
 			case RE::BIPED_MODEL::ArmorType::kLightArmor: return EntryKind::ArmorLight;
-
 			case RE::BIPED_MODEL::ArmorType::kHeavyArmor: return EntryKind::ArmorHeavy;
-
 			case RE::BIPED_MODEL::ArmorType::kClothing: return EntryKind::ArmorClothing;
 		}
 

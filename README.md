@@ -25,7 +25,8 @@ To add or remove an item from a cycle, bring up the inventory, magic or favorite
 
 Soulsy also has a hotkey for activating your selected utility item. This is the only category of item that Soulsy will try to activate for you; everything else needs to used the same way the base game has you use them. The last hotkey-able shortcut is for hiding and showing the HUD. There is an MCM setting if you want the HUD to fade out when you're not in combat or don't have your weapons readied.
 
-That's it for the feature set. Soulsy does not (yet?) attempt to select the best ammo, potion or poison the way iEquip does. It equips what you tell it to equip, as quickly and reliably as it can. Soulsy also does not offer in-game layout editing, though you can modify the layout by editing a toml file outside the game. There's a refresh key that you can set and use to reload the layout on the fly.
+That's it for the feature set. Soulsy does not (yet?) attempt to select the best ammo, potion or poison the way iEquip does. It equips what you tell it to equip, as quickly and reliably as it can. Soulsy also does not offer in-game layout editing, though you can modify the layout by editing a toml file outside the game. There's a refresh key that you can set and use to reload on the fly to
+look at your changes.
 
 ### Settings options
 
@@ -117,6 +118,7 @@ Ceej's development to-do list:
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
 - [ ] I18n. I ripped out some affordances for alternative fonts & UI text translations.
 - [ ] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
+- [ ] Sort out `gear.h` vs `utility_items.h`. Merge?
 - [x] Improve the CMake files so rebuilding is reliable.
 - [ ] Add support for debug builds to CMake, or at least remove the half-done option.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.

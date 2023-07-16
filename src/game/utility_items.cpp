@@ -222,7 +222,7 @@ namespace equip
 			auto* alchemy_item = item->As<RE::AlchemyItem>();
 			if (alchemy_item->IsPoison() || alchemy_item->IsFood()) { continue; }
 			// returns currently only the types we want
-			auto actor_value = helpers::get_actor_value_effect_from_potion(item);
+			auto actor_value = equippable::getPotionEffect(item, true);
 			if (actor_value == RE::ActorValue::kNone) { continue; }
 
 			if (actor_value == a_actor_value)

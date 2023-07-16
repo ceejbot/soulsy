@@ -137,34 +137,4 @@ namespace helpers
 
 		return menu_form;
 	}
-
-	std::string get_section_name_for_page_position(const uint32_t a_page, const uint32_t a_position)
-	{
-		//for now, I will just generate it
-		return fmt::format("Page{}Position{}", a_page, a_position);
-	}
-
-	RE::ActorValue get_actor_value_effect_from_potion(RE::TESForm* a_form, bool a_check)
-	{
-		if (!a_form->Is(RE::FormType::AlchemyItem)) { return RE::ActorValue::kNone; }
-
-		auto* alchemy_potion = a_form->As<RE::AlchemyItem>();
-		if (alchemy_potion->IsFood() || alchemy_potion->IsPoison()) { return RE::ActorValue::kNone; }
-
-		const auto* effect = alchemy_potion->GetCostliestEffectItem()->baseEffect;
-		auto actor_value   = effect->GetMagickSkill();
-		if (actor_value == RE::ActorValue::kNone) { actor_value = effect->data.primaryAV; }
-
-		if (!a_check) { return actor_value; }
-
-		if ((actor_value == RE::ActorValue::kHealth || actor_value == RE::ActorValue::kStamina ||
-				actor_value == RE::ActorValue::kMagicka) &&
-			effect->data.flags.none(RE::EffectSetting::EffectSettingData::Flag::kRecover))
-		{
-			return actor_value;
-		}
-
-		return RE::ActorValue::kNone;
-	}
-
 }

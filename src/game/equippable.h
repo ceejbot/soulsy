@@ -12,6 +12,7 @@ namespace equippable
 
 	bool requiresTwoHands(RE::TESForm*& form);
 	bool canInstantCast(RE::TESForm* form, EntryKind kind);
+	RE::ActorValue getPotionEffect(RE::TESForm* form, bool filter);
 
 	EntryKind subKindForWeapon(RE::TESForm*& form);
 	EntryKind subKindForMagic(RE::TESForm*& form);
