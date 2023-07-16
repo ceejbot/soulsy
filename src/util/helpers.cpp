@@ -1,7 +1,6 @@
 ﻿#include "helpers.h"
 
 #include "constant.h"
-#include "enums.h"
 #include "equippable.h"
 #include "gear.h"
 #include "player.h"
@@ -30,10 +29,7 @@ namespace helpers
 	std::string makeFormSpecString(RE::TESForm* form)
 	{
 		std::string form_string;
-		if (!form)
-		{
-			return form_string;
-		}
+		if (!form) { return form_string; }
 
 		if (form->IsDynamicForm())
 		{
@@ -59,10 +55,7 @@ namespace helpers
 
 	RE::TESForm* formSpecToFormItem(const std::string& a_str)
 	{
-		if (!a_str.find(util::delimiter))
-		{
-			return nullptr;
-		}
+		if (!a_str.find(util::delimiter)) { return nullptr; }
 		RE::TESForm* form;
 
 		std::istringstream string_stream{ a_str };
@@ -73,15 +66,9 @@ namespace helpers
 		RE::FormID form_id;
 		std::istringstream(id) >> std::hex >> form_id;
 
-		if (plugin.empty())
-		{
-			return nullptr;
-		}
+		if (plugin.empty()) { return nullptr; }
 
-		if (plugin == util::dynamic_name)
-		{
-			form = RE::TESForm::LookupByID(form_id);
-		}
+		if (plugin == util::dynamic_name) { form = RE::TESForm::LookupByID(form_id); }
 		else
 		{
 			logger::trace("checking mod {} for form {}"sv, plugin, form_id);
@@ -108,8 +95,8 @@ namespace helpers
 			{
 				RE::GFxValue result;
 				//inventory_menu->uiMovie->SetPause(true);
-				inventory_menu->uiMovie->GetVariable(&result,
-					"_root.Menu_mc.inventoryLists.itemList.selectedEntry.formId");
+				inventory_menu->uiMovie->GetVariable(
+					&result, "_root.Menu_mc.inventoryLists.itemList.selectedEntry.formId");
 				if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 				{
 					menu_form = static_cast<std::uint32_t>(result.GetNumber());
@@ -159,28 +146,16 @@ namespace helpers
 
 	RE::ActorValue get_actor_value_effect_from_potion(RE::TESForm* a_form, bool a_check)
 	{
-		if (!a_form->Is(RE::FormType::AlchemyItem))
-		{
-			return RE::ActorValue::kNone;
-		}
+		if (!a_form->Is(RE::FormType::AlchemyItem)) { return RE::ActorValue::kNone; }
 
 		auto* alchemy_potion = a_form->As<RE::AlchemyItem>();
-		if (alchemy_potion->IsFood() || alchemy_potion->IsPoison())
-		{
-			return RE::ActorValue::kNone;
-		}
+		if (alchemy_potion->IsFood() || alchemy_potion->IsPoison()) { return RE::ActorValue::kNone; }
 
 		const auto* effect = alchemy_potion->GetCostliestEffectItem()->baseEffect;
 		auto actor_value   = effect->GetMagickSkill();
-		if (actor_value == RE::ActorValue::kNone)
-		{
-			actor_value = effect->data.primaryAV;
-		}
+		if (actor_value == RE::ActorValue::kNone) { actor_value = effect->data.primaryAV; }
 
-		if (!a_check)
-		{
-			return actor_value;
-		}
+		if (!a_check) { return actor_value; }
 
 		if ((actor_value == RE::ActorValue::kHealth || actor_value == RE::ActorValue::kStamina ||
 				actor_value == RE::ActorValue::kMagicka) &&

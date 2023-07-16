@@ -1,7 +1,5 @@
 #pragma once
 
-#include "enums.h"
-
 #include "rust/cxx.h"
 
 struct TesItemData;

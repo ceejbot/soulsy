@@ -1,7 +1,6 @@
 ﻿#include "utility_items.h"
 
 #include "constant.h"
-#include "enums.h"
 #include "gear.h"
 #include "helpers.h"
 #include "perk_visitor.h"

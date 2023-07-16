@@ -1,5 +1,4 @@
 #include "hooks.h"
-#include "enums.h"
 #include "equippable.h"
 
 #include "lib.rs.h"
@@ -38,16 +37,10 @@ namespace hooks
 		{
 			for (auto* event = *eventPtr; event; event = event->next)
 			{
-				if (event->eventType != RE::INPUT_EVENT_TYPE::kButton || !event->HasIDCode())
-				{
-					continue;
-				}
+				if (event->eventType != RE::INPUT_EVENT_TYPE::kButton || !event->HasIDCode()) { continue; }
 
 				auto* button = static_cast<RE::ButtonEvent*>(event);
-				if (button->idCode == keycodes::k_invalid)
-				{
-					continue;
-				}
+				if (button->idCode == keycodes::k_invalid) { continue; }
 
 				auto key = keycodes::get_key_id(button);
 
@@ -57,20 +50,15 @@ namespace hooks
 				}
 
 				// Early return after we're finished processing button-up events.
-				if (!button->IsDown())
-				{
-					continue;
-				}
+				if (!button->IsDown()) { continue; }
 
 				if (button->IsPressed() && hotkeys->is_cycle_button(key))
 				{
 					auto menu_form = helpers::getSelectedFormFromMenu(ui);
-					if (!menu_form)
-						continue;
+					if (!menu_form) continue;
 
 					auto* item_form = RE::TESForm::LookupByID(menu_form);
-					if (!item_form)
-						continue;
+					if (!item_form) continue;
 
 					auto entry                 = equippable::makeTESItemDataFromForm(item_form);
 					MenuEventResponse response = handle_menu_event(key, std::move(entry));
@@ -128,10 +116,7 @@ namespace hooks
 		if (object->GetBaseObject()->IsInventoryObject())
 		{
 			auto item_form = RE::TESForm::LookupByID(object->formID);
-			if (!item_form)
-			{
-				return;
-			}
+			if (!item_form) { return; }
 			auto shim = equippable::makeTESItemDataFromForm(item_form);
 			handle_inventory_changed(std::move(shim), count);
 		}

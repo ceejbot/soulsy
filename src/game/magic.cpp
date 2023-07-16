@@ -14,10 +14,8 @@ namespace magic
 		RE::PlayerCharacter*& a_player)
 	{
 		auto left = a_slot == equip::left_hand_equip_slot();
-		logger::trace("try to work spell {}, action {}, left {}"sv,
-			a_form->GetName(),
-			static_cast<uint32_t>(a_action),
-			left);
+		logger::trace(
+			"try to work spell {}, action {}, left {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action), left);
 
 		if (!a_form->Is(RE::FormType::Spell))
 		{
@@ -63,8 +61,8 @@ namespace magic
 			{
 				auto* game_setting             = RE::GameSettingCollection::GetSingleton();
 				auto dual_cast_cost_multiplier = game_setting->GetSetting("fMagicDualCastingCostMult")->GetFloat();
-				logger::trace("dual cast, multiplier {}"sv,
-					fmt::format(FMT_STRING("{:.2f}"), dual_cast_cost_multiplier));
+				logger::trace(
+					"dual cast, multiplier {}"sv, fmt::format(FMT_STRING("{:.2f}"), dual_cast_cost_multiplier));
 				dual_cast = can_dual_cast(cost, current_magicka, dual_cast_cost_multiplier);
 				if (dual_cast)
 				{
@@ -80,10 +78,7 @@ namespace magic
 				{
 					logger::warn("Will not flash HUD Menu, because I could not find it.");
 				}
-				else
-				{
-					flash_hud_meter(RE::ActorValue::kMagicka);
-				}
+				else { flash_hud_meter(RE::ActorValue::kMagicka); }
 				logger::warn("not enough magicka for spell {}, magicka {}, cost {} return."sv,
 					a_form->GetName(),
 					current_magicka,
@@ -91,9 +86,8 @@ namespace magic
 				return;
 			}
 
-			actor->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-				RE::ActorValue::kMagicka,
-				-cost);
+			actor->AsActorValueOwner()->RestoreActorValue(
+				RE::ACTOR_VALUE_MODIFIER::kDamage, RE::ActorValue::kMagicka, -cost);
 
 			//could trigger an animation here
 			//might need to set some things
@@ -104,21 +98,13 @@ namespace magic
 
 			auto magnitude     = 1.f;
 			auto effectiveness = 1.f;
-			if (auto* effect = spell->GetCostliestEffectItem())
-			{
-				magnitude = effect->GetMagnitude();
-			}
+			if (auto* effect = spell->GetCostliestEffectItem()) { magnitude = effect->GetMagnitude(); }
 			logger::trace("casting spell {}, magnitude {}, effectiveness {}"sv,
 				spell->GetName(),
 				fmt::format(FMT_STRING("{:.2f}"), magnitude),
 				fmt::format(FMT_STRING("{:.2f}"), effectiveness));
-			caster->CastSpellImmediate(spell,
-				false,
-				target,
-				effectiveness,
-				false,
-				magnitude,
-				is_self_target ? nullptr : actor);
+			caster->CastSpellImmediate(
+				spell, false, target, effectiveness, false, magnitude, is_self_target ? nullptr : actor);
 			//tested with adamant, works with the silent casting perk as well
 			send_spell_casting_sound_alert(caster, spell);
 		}
@@ -128,14 +114,14 @@ namespace magic
 			const auto* obj_left  = a_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 			if (left && obj_left && obj_left->formID == spell->formID)
 			{
-				logger::debug("Object Left {} is already where it should be already equipped. return."sv,
-					spell->GetName());
+				logger::debug(
+					"Object Left {} is already where it should be already equipped. return."sv, spell->GetName());
 				return;
 			}
 			if (!left && obj_right && obj_right->formID == spell->formID)
 			{
-				logger::debug("Object Right {} is already where it should be already equipped. return."sv,
-					spell->GetName());
+				logger::debug(
+					"Object Right {} is already where it should be already equipped. return."sv, spell->GetName());
 				return;
 			}
 
@@ -210,7 +196,7 @@ namespace magic
 		}
 
 		if (const auto* selected_power = a_player->GetActorRuntimeData().selectedPower;
-			selected_power && a_action != enums::action_type::instant)
+			selected_power && a_action != action_type::instant)
 		{
 			logger::trace("current selected power is {}, is shout {}, is spell {}"sv,
 				selected_power->GetName(),
@@ -237,23 +223,14 @@ namespace magic
 
 	RE::MagicSystem::CastingSource get_casting_source(const RE::BGSEquipSlot* a_slot)
 	{
-		if (a_slot == equip::right_hand_equip_slot())
-		{
-			return RE::MagicSystem::CastingSource::kRightHand;
-		}
-		if (a_slot == equip::left_hand_equip_slot())
-		{
-			return RE::MagicSystem::CastingSource::kLeftHand;
-		}
+		if (a_slot == equip::right_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kRightHand; }
+		if (a_slot == equip::left_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kLeftHand; }
 		return RE::MagicSystem::CastingSource::kOther;
 	}
 
 	bool can_dual_cast(float a_cost, float a_magicka, float a_multiplier)
 	{
-		if ((a_cost * a_multiplier) < a_magicka)
-		{
-			return true;
-		}
+		if ((a_cost * a_multiplier) < a_magicka) { return true; }
 		return false;
 	}
 

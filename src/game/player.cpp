@@ -1,6 +1,5 @@
 #include "player.h"
 
-#include "enums.h"
 #include "equippable.h"
 #include "gear.h"
 #include "magic.h"

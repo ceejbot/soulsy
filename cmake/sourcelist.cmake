@@ -14,7 +14,6 @@ set(headers ${headers}
     src/renderer/image_path.h
     src/renderer/ui_renderer.h
     src/util/constant.h
-    src/util/enums.h
     src/util/helpers.h
     src/util/key_path.h
     src/util/offset.h
