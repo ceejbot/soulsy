@@ -1,8 +1,8 @@
 ﻿#include "utility_items.h"
+
 #include "constant.h"
 #include "enums.h"
 #include "gear.h"
-#include "handle/extra_data_holder.h"
 #include "helpers.h"
 #include "perk_visitor.h"
 #include "player.h"
@@ -12,143 +12,71 @@
 
 namespace equip
 {
-	void equip_item(const RE::TESForm* a_form, RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& player)
+	// Bottleneck for equipping all left or right hand items.
+	void equip_item(const RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
-		auto left = a_slot == equip::left_hand_equip_slot();
+		auto slot_is_left = slot == equip::left_hand_equip_slot();
 		logger::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
-			a_form->GetName(),
+			form->GetName(),
 			left,
-			a_form->GetFormType());
+			form->GetFormType());
 
-		if (a_form->formID == util::unarmed)
+		if (form->formID == util::unarmed)
 		{
-			logger::trace("Got unarmed, try to call un equip"sv);
-			equip::unequip_this_slot(a_slot, player);
+			logger::trace("this slot should be unarmed; unequipping slot"sv);
+			equip::unequipLeftOrRightSlot(slot, player);
 			return;
 		}
 
-		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		std::vector<RE::ExtraDataList*> extra_vector;
-		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> potential_items;
-		if (a_form->Is(RE::FormType::Weapon))
-		{
-			potential_items = player::get_inventory(player, RE::FormType::Weapon);
-		}
-		else if (a_form->Is(RE::FormType::Armor))
-		{
-			potential_items = player::get_inventory(player, RE::FormType::Armor);
-		}
-		else if (a_form->Is(RE::FormType::Light))
-		{
-			potential_items = player::get_inventory(player, RE::FormType::Light);
-		}
+		RE::TESBoundObject* bound_obj = nullptr;
+		auto item_count               = equip::boundObjectForForm(form, player, bound_obj);
 
-
-		auto item_count = 0;
-		for (const auto& [item, inv_data] : potential_items)
-		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
-			{
-				obj                         = item;
-				item_count                  = num_items;
-				auto simple_extra_data_list = entry->extraLists;
-				if (simple_extra_data_list)
-				{
-					for (auto* extra_data : *simple_extra_data_list)
-					{
-						extra           = extra_data;
-						auto worn_right = extra_data->HasType(RE::ExtraDataType::kWorn);
-						auto worn_left  = extra_data->HasType(RE::ExtraDataType::kWornLeft);
-						logger::trace("extra data {}, worn right {}, worn left {}"sv,
-							extra_data->GetCount(),
-							worn_right,
-							worn_left);
-						if (!worn_right && !worn_left)
-						{
-							extra_vector.push_back(extra_data);
-						}
-					}
-				}
-				break;
-			}
-		}
-
-		if (!obj)
+		if (!bound_obj)
 		{
 			logger::warn("could not find selected weapon/shield, maybe it is gone"sv);
 			return;
 		}
 
-		auto* extra_handler = handle::extra_data_holder::get_singleton();
-		if (extra_handler->is_form_set(a_form))
-		{
-			auto extra_list = extra_handler->get_extra_list_for_form(a_form);
-			if (!extra_list.empty())
-			{
-				extra = extra_list.back();
-				extra_list.pop_back();
-				extra_handler->overwrite_extra_data_for_form(a_form, extra_list);
-			}
-		}
-		else
-		{
-			if (!extra_vector.empty())
-			{
-				extra = extra_vector.back();
-				extra_vector.pop_back();  //remove last item, because we already use that
-				extra_handler->init_extra_data(a_form, extra_vector);
-				logger::trace("set {} extra data for form {}"sv, extra_vector.size(), a_form->GetName());
-			}
-		}
-
 		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (left && obj_left && obj_left->formID == obj->formID)
+
+		const auto obj_equipped_left  = obj_left && obj_left->formID == bound_obj->formID;
+		const auto obj_equipped_right = obj_right && obj_right->formID == bound_obj->formID;
+
+		if (slot_is_left && obj_equipped_left)
 		{
-			logger::debug("Object Left {} is already where it should be already equipped. return."sv, obj->GetName());
+			logger::debug("item already equipped in left hand. name='{}'"sv, bound_obj->GetName());
 			return;
 		}
 
-		if (!left && obj_right && obj_right->formID == obj->formID)
+		if (!slot_is_left && obj_equipped_right)
 		{
-			logger::debug("Object Right {} is already where it should be already equipped. return."sv, obj->GetName());
+			logger::debug("item already equipped in right hand. name='{}'"sv, bound_obj->GetName());
 			return;
 		}
 
 		auto equipped_count = 0;
-		if (obj_right && obj_right->formID == obj->formID)
-		{
-			equipped_count++;
-			logger::debug("Object {} already equipped."sv, obj->GetName());
-		}
-
-		if (obj_left && obj_left->formID == obj->formID)
-		{
-			equipped_count++;
-			logger::debug("Object {} already equipped."sv, obj->GetName());
-		}
-
-		logger::trace("Got a count of {} in the Inventory {}, Equipped {}"sv,
-			obj->GetName(),
+		if (obj_equipped_left) { equipped_count++; }
+		if (obj_equipped_right) { equipped_count++; }
+		logger::trace("checking how many '{}' we have available; count={}; equipped_count={}"sv,
+			bound_obj->GetName(),
 			item_count,
 			equipped_count);
+
 		if (item_count == equipped_count)
 		{
-			//all we have are already equipped
-			logger::warn("All Items we have of {} are equipped, return."sv, obj->GetName());
-			//try to prevent the game to equip something else
-			equip::unequip_this_slot(a_slot, player);
+			// The game might try to equip something else, according to mlthelama.
+			equip::unequipLeftOrRightSlot(slot, player);
 			return;
 		}
 
-		logger::trace("try to equip weapon/shield/light {}"sv, a_form->GetName());
+		logger::trace("adding task to equip '{}'; left={};"sv, form->GetName(), slot_is_left);
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, obj, extra, 1, a_slot); });
+			task->AddTask(
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, slot); });
 		}
-		logger::trace("scheduled task to equip weapon/shield/light {}, left {}. return."sv, a_form->GetName(), left);
 	}
 
 	void consume_potion(const RE::TESForm* potion_form, RE::PlayerCharacter*& player)
@@ -201,16 +129,13 @@ namespace equip
 			return;
 		}
 
-		// there's a function in Actor called DrinkPotion that we probably want to use
-		logger::trace("calling drink/eat potion/food {}, count left {}"sv, obj->GetName(), remaining);
+		logger::trace("adding task to drink/eat potion/food; name='{}'; remaining={};"sv, obj->GetName(), remaining);
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
 			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item); });
 		}
-		logger::trace("drank/ate potion/food {}. return."sv, obj->GetName());
 	}
-
 
 	void equip_ammo(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
 	{
@@ -218,35 +143,34 @@ namespace equip
 
 		RE::TESBoundObject* obj = nullptr;
 		auto left               = 0;
-		for (auto potential_items = player::get_inventory(a_player, RE::FormType::Ammo);
-			 const auto& [item, inv_data] : potential_items)
+		for (auto candidates = player::get_inventory(a_player, RE::FormType::Ammo);
+			 const auto& [item, inv_data] : candidates)
 		{
 			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
 			{
-				obj  = item;
-				left = num_items;
+				obj       = item;
+				remaining = num_items;
 				break;
 			}
 		}
 
-		if (!obj || left == 0)
+		if (!obj || remaining == 0)
 		{
-			logger::warn("could not find selected ammo, maybe all have been used"sv);
+			logger::warn("ammo type not found in inventory! name='{}';"sv, a_form->GetName());
 			return;
 		}
 
 		if (const auto* current_ammo = a_player->GetCurrentAmmo(); current_ammo && current_ammo->formID == obj->formID)
 		{
-			logger::debug("Ammo {} already equipped, return."sv, obj->GetName());
 			return;
 		}
 
+		logger::trace("adding task to equip ammo; name='';"sv, obj->GetName());
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
 			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(a_player, obj); });
 		}
-		logger::trace("equipped {}. return."sv, obj->GetName());
 	}
 
 	void unequip_ammo()
@@ -255,10 +179,7 @@ namespace equip
 		auto player = RE::PlayerCharacter::GetSingleton();
 
 		auto* obj = player->GetCurrentAmmo();
-		if (!obj || !obj->IsAmmo())
-		{
-			return;
-		}
+		if (!obj || !obj->IsAmmo()) { return; }
 
 		auto* ammo = obj->As<RE::TESAmmo>();
 		if (ammo->GetRuntimeData().data.flags.all(RE::AMMO_DATA::Flag::kNonBolt) ||
@@ -267,12 +188,12 @@ namespace equip
 			RE::ActorEquipManager::GetSingleton()->UnequipObject(player, ammo);
 			logger::trace("Called to un equip {}"sv, ammo->GetName());
 		}
-		logger::trace("Done work. return"sv);
 	}
 
+	// TODO dry this up for sure
 	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& a_player)
 	{
-		//get player missing value
+		// get player missing value
 		auto current_actor_value   = a_player->AsActorValueOwner()->GetActorValue(a_actor_value);
 		auto permanent_actor_value = a_player->AsActorValueOwner()->GetPermanentActorValue(a_actor_value);
 		auto temporary_actor_value =
@@ -285,7 +206,7 @@ namespace equip
 			fmt::format(FMT_STRING("{:.2f}"), max_actor_value),
 			fmt::format(FMT_STRING("{:.2f}"), missing));
 
-		//min heal, max heal
+		// min heal, max heal
 		auto min_perfect = 0.7f;
 		auto max_perfect = 1.2f;
 		logger::trace("min perfect {}, max perfect {}, missing {}"sv,
@@ -300,20 +221,15 @@ namespace equip
 			const auto& [num_items, entry] = inv_data;
 
 			auto* alchemy_item = item->As<RE::AlchemyItem>();
-			if (alchemy_item->IsPoison() || alchemy_item->IsFood())
-			{
-				continue;
-			}
-			//returns currently only the types we want
+			if (alchemy_item->IsPoison() || alchemy_item->IsFood()) { continue; }
+			// returns currently only the types we want
 			auto actor_value = helpers::get_actor_value_effect_from_potion(item);
-			if (actor_value == RE::ActorValue::kNone)
-			{
-				continue;
-			}
+			if (actor_value == RE::ActorValue::kNone) { continue; }
 
 			if (actor_value == a_actor_value)
 			{
-				//set obj here, because if we do not have a perfect hit, we still need to consume something
+				// set obj here, because if we do not have a perfect hit, we still need to
+				// consume something
 				if (alchemy_item->IsDynamicForm() && num_items == 1)
 				{
 					logger::warn(
@@ -326,10 +242,7 @@ namespace equip
 
 				auto magnitude = alchemy_item->GetCostliestEffectItem()->GetMagnitude();
 				auto duration  = alchemy_item->GetCostliestEffectItem()->GetDuration();
-				if (duration == 0)
-				{
-					duration = 1;
-				}
+				if (duration == 0) { duration = 1; }
 
 				auto max_healed = magnitude * duration;
 				if (max_healed >= (missing * min_perfect) && max_healed <= (missing * max_perfect))
@@ -347,10 +260,7 @@ namespace equip
 			logger::trace("calling to consume potion {}"sv, obj->GetName());
 			consume_potion(obj, a_player);
 		}
-		else
-		{
-			logger::warn("No suitable potion found. return.");
-		}
+		else { logger::warn("No suitable potion found. return."); }
 	}
 
 	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count)
@@ -358,13 +268,15 @@ namespace equip
 		logger::trace("try to apply poison to weapon, count left {}"sv, a_count);
 		uint32_t potion_doses = 1;
 		/* it works for vanilla and adamant
-            * vanilla does a basic set value to 3
-            * adamant does 2 times add value 2
-            * ordinator we could handle it "dirty" because the Information we need needs to be RE, but if perk xy Is set
-             we could calculate it ourselves. It is basically AV multiply base + "alchemy level" * 0.1 * 3 = dose count
-            * vokrii should be fine as well
-            * other add av multiply implementations need to be handled by getting the data from the game
-            * the MCM setting will be left for overwrite handling */
+* vanilla does a basic set value to 3
+* adamant does 2 times add value 2
+* ordinator we could handle it "dirty" because the Information we need needs to
+be RE, but if perk xy Is set we could calculate it ourselves. It is basically AV
+multiply base + "alchemy level" * 0.1 * 3 = dose count
+* vokrii should be fine as well
+* other add av multiply implementations need to be handled by getting the data
+from the game
+* the MCM setting will be left for overwrite handling */
 		if (a_player->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
 		{
 			auto perk_visit = util::perk_visitor(a_player, static_cast<float>(potion_doses));
@@ -374,17 +286,14 @@ namespace equip
 		logger::trace("Poison dose set value is {}"sv, potion_doses);
 
 		RE::BGSSoundDescriptor* sound_descriptor;
-		if (a_poison->data.consumptionSound)
-		{
-			sound_descriptor = a_poison->data.consumptionSound->soundDescriptor;
-		}
+		if (a_poison->data.consumptionSound) { sound_descriptor = a_poison->data.consumptionSound->soundDescriptor; }
 		else
 		{
 			sound_descriptor = RE::TESForm::LookupByID(0x00106614)->As<RE::BGSSoundDescriptorForm>()->soundDescriptor;
 		}
 
-		//check if there is a weapon to apply it to
-		//check count here as well, since we need max 2
+		// check if there is a weapon to apply it to
+		// check count here as well, since we need max 2
 		auto* equipped_object = a_player->GetEquippedEntryData(false);
 		if (equipped_object && equipped_object->object->IsWeapon() && !equipped_object->IsPoisoned())
 		{
@@ -399,9 +308,8 @@ namespace equip
 		if (equipped_object_left && equipped_object_left->object->IsWeapon() && !equipped_object_left->IsPoisoned() &&
 			a_count > 0)
 		{
-			logger::trace("try to add poison {} to left {}"sv,
-				a_poison->GetName(),
-				equipped_object_left->GetDisplayName());
+			logger::trace(
+				"try to add poison {} to left {}"sv, a_poison->GetName(), equipped_object_left->GetDisplayName());
 			equipped_object_left->PoisonObject(a_poison, potion_doses);
 			a_player->RemoveItem(a_poison, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
 			a_count--;
@@ -465,5 +373,4 @@ namespace equip
 		return worn;
 	}
 
-
-}
+}  // namespace equip

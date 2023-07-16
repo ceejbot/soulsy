@@ -5,6 +5,13 @@ use once_cell::sync::Lazy;
 
 use crate::plugin::EntryKind;
 
+pub fn kind_has_count(kind: EntryKind) -> bool {
+    kind.show_count()
+}
+pub fn kind_is_magic(kind: EntryKind) -> bool {
+    kind.is_magic()
+}
+
 /// We cannot derive default for shared enums, so we define it here.
 impl Default for EntryKind {
     fn default() -> Self {
@@ -36,6 +43,23 @@ impl EntryKind {
                 | EntryKind::Restoration
                 | EntryKind::SpellDefault
                 | EntryKind::Scroll
+        )
+    }
+
+    pub fn show_count(&self) -> bool {
+        matches!(
+            *self,
+            EntryKind::PoisonDefault
+                | EntryKind::PotionDefault
+                | EntryKind::PotionFireResist
+                | EntryKind::PotionFrostResist
+                | EntryKind::PotionHealth
+                | EntryKind::PotionMagicka
+                | EntryKind::PotionMagicResist
+                | EntryKind::PotionShockResist
+                | EntryKind::PotionStamina
+                | EntryKind::Scroll
+                | EntryKind::Arrow
         )
     }
 

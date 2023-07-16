@@ -1,11 +1,14 @@
 ﻿#pragma once
 
-#include "enums.h"
-
-// TODO: this can probably go away.
+// TODO: Rewrite if adding a cast-from-hud feature. Otherwise remove.
 namespace magic
 {
-	using action_type = enums::action_type;
+	enum class action_type : std::uint32_t
+	{
+		default_action = 0,
+		instant        = 1,
+		un_equip       = 2
+	};
 
 	void cast_magic(RE::TESForm* a_form,
 		action_type a_action,

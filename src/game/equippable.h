@@ -9,20 +9,16 @@ enum class EntryKind : ::std::uint8_t;
 
 namespace equippable
 {
-	using slot_type = enums::slot_type;
+	rust::Box<TesItemData> makeTESItemDataFromForm(RE::TESForm* form);
+	EntryKind entryKindFromForm(RE::TESForm*& item_form);
 
-	rust::Box<TesItemData> makeTESItemDataFromForm(RE::TESForm* item_form);
+	bool requiresTwoHands(RE::TESForm*& form);
+	bool canInstantCast(RE::TESForm* form, EntryKind kind);
 
-	slot_type get_type(RE::TESForm*& item_form);
-	bool is_two_handed(RE::TESForm*& item_form);
-	bool can_instant_cast(RE::TESForm* item_form, slot_type item_type);
-
-	EntryKind get_icon_type(const slot_type item_type, RE::TESForm*& item_form);
-
-	EntryKind get_weapon_type_icon(RE::TESForm*& form);
-	EntryKind get_spell_icon(RE::TESForm*& form);
-	EntryKind get_consumable_icon(RE::TESForm*& form);
-	EntryKind get_armor_icon(RE::TESForm*& form);
-	EntryKind get_consumable_icon_by_actor_value(RE::ActorValue& actor_value);
+	EntryKind subKindForWeapon(RE::TESForm*& form);
+	EntryKind subKindForMagic(RE::TESForm*& form);
+	EntryKind subKindForConsumable(RE::TESForm*& form);
+	EntryKind subKindForArmor(RE::TESForm*& form);
+	EntryKind subKindForConsumableByEffect(RE::ActorValue& actor_value);
 
 }

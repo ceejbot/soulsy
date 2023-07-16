@@ -10,7 +10,7 @@ use controller::*;
 /// the matching Rust code.
 
 // ceejbot TODO: organize into namespaces; getting pretty cluttered
-//
+
 #[cxx::bridge]
 pub mod plugin {
 
@@ -255,7 +255,7 @@ pub mod plugin {
         fn count(self: &TesItemData) -> usize;
         /// Call to create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
-        fn create_tesitem_shim(
+        fn make_tesitem(
             kind: EntryKind,
             two_handed: bool,
             has_count: bool,
@@ -265,6 +265,10 @@ pub mod plugin {
         ) -> Box<TesItemData>;
         /// Snag a default cycle entry.
         fn default_cycle_entry() -> Box<TesItemData>;
+
+        // Functions from EntryKind.
+        fn kind_has_count(kind: EntryKind) -> bool;
+        fn kind_is_magic(kind: EntryKind) -> bool;
 
         /// Get the svg icon matching this item. Not a full path.
         fn get_icon_file(kind: &EntryKind) -> String;

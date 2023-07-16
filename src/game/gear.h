@@ -1,21 +1,17 @@
 ﻿#pragma once
 
-#include "enums.h"
-
 enum class Action : ::std::uint8_t;
 
 // Equipping and unequipping armor and weapons.
 namespace equip
 {
-	using action_type = enums::action_type;
-
 	RE::BGSEquipSlot* right_hand_equip_slot();
 	RE::BGSEquipSlot* left_hand_equip_slot();
 	RE::BGSEquipSlot* power_equip_slot();
 
-	void boundObjectForForm(const RE::TESForm* form, RE::PlayerCharacter*& the_player, RE::TESBoundObject* outval);
+	int boundObjectForForm(const RE::TESForm* form, RE::PlayerCharacter*& the_player, RE::TESBoundObject* outval);
 
-	void unequip_this_slot(RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& a_player);
+	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& a_player);
 	void unequip_object_ft_dummy_dagger(RE::BGSEquipSlot*& a_slot,
 		RE::PlayerCharacter*& a_player,
 		RE::ActorEquipManager*& a_actor_equip_manager);
@@ -38,6 +34,4 @@ namespace equip
 		RE::VMStackID a_stack_id,
 		RE::Actor* a_actor,
 		RE::TESShout* a_shout);
-
-
 }

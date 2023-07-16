@@ -6,8 +6,6 @@
 #include "player.h"
 #include "ui_renderer.h"
 
-#include "handle/extra_data_holder.h"
-
 #include "lib.rs.h"
 
 // Handle equipment change events. We need to update our UI when this happens.
@@ -30,25 +28,18 @@ void EquipEventSink::register_sink() { RE::ScriptEventSourceHolder::GetSingleton
 EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::TESEquipEvent>* source)
 {
-	if (!event || !event->actor || !event->actor->IsPlayerRef())
-	{
-		return event_result::kContinue;
-	}
+	if (!event || !event->actor || !event->actor->IsPlayerRef()) { return event_result::kContinue; }
 
 	auto* form = RE::TESForm::LookupByID(event->baseObject);
-	if (!form)
-	{
-		return event_result::kContinue;
-	}
+	if (!form) { return event_result::kContinue; }
 
-	auto item    = equippable::makeTESItemDataFromForm(form);
+	auto item = equippable::makeTESItemDataFromForm(form);
 	handle_item_equipped(std::move(item));
 
 	return event_result::kContinue;
 }
 
-using event_result  = RE::BSEventNotifyControl;
-using position_type = enums::position_type;
+using event_result = RE::BSEventNotifyControl;
 
 KeyEventSink* KeyEventSink::get_singleton()
 {
@@ -66,25 +57,16 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 	[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* source)
 {
 	// We start by figuring out if we need to ddo anything at all.
-	if (!event_list)
-	{
-		return event_result::kContinue;
-	}
+	if (!event_list) { return event_result::kContinue; }
 
 	// If we can't ask questions about the state of the UI, we bail.
 	auto* ui = RE::UI::GetSingleton();
-	if (!ui)
-	{
-		return event_result::kContinue;
-	}
+	if (!ui) { return event_result::kContinue; }
 
 	// We do nothing if the console, the inventory menu, the magic menu, or the favorites
 	// menu are open.
 	const auto* interface_strings = RE::InterfaceStrings::GetSingleton();
-	if (ui->IsMenuOpen(interface_strings->console))
-	{
-		return event_result::kContinue;
-	}
+	if (ui->IsMenuOpen(interface_strings->console)) { return event_result::kContinue; }
 
 	if (ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) || ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
 		ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
@@ -95,10 +77,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 	// We might get a list of events to handle.
 	for (auto* event = *event_list; event; event = event->next)
 	{
-		if (event->eventType != RE::INPUT_EVENT_TYPE::kButton)
-		{
-			continue;
-		}
+		if (event->eventType != RE::INPUT_EVENT_TYPE::kButton) { continue; }
 
 		/*if the game is not paused with the menu, it triggers the menu always in the background*/
 		if (ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
@@ -125,14 +104,9 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		// event. This appears to be so that we can directly compare it to the hotkey numbers
 		// we have snagged from the MCM settings. ??
 		const uint32_t key = keycodes::get_key_id(button);
-		if (key == -1)
-		{
-			continue;
-		}
+		if (key == -1) { continue; }
 
-		if (button->IsPressed() || button->IsDown() || button->IsHeld()) {
-			continue;
-		}
+		if (button->IsPressed() || button->IsDown() || button->IsHeld()) { continue; }
 		//logger::trace("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
 		const KeyEventResponse response = handle_key_event(key, *button);
 		logger::debug("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
@@ -140,10 +114,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 			response.handled,
 			static_cast<uint8_t>(response.start_timer),
 			static_cast<uint8_t>(response.stop_timer));
-		if (!response.handled)
-		{
-			continue;
-		}
+		if (!response.handled) { continue; }
 
 		if (response.stop_timer != Action::Irrelevant)
 		{

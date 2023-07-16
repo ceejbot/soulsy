@@ -8,12 +8,13 @@ AlignConsecutiveMacros: 'false'
 AlignEscapedNewlines: Left
 AlignOperands: 'true'
 AlignTrailingComments: 'true'
-AllowAllArgumentsOnNextLine: 'false'
+AllowAllArgumentsOnNextLine: 'true'
 AllowAllParametersOfDeclarationOnNextLine: 'false'
-AllowShortBlocksOnASingleLine: Empty
-AllowShortCaseLabelsOnASingleLine: 'false'
+AllowShortBlocksOnASingleLine: Always
+AllowShortEnumsOnASingleLine: 'true'
+AllowShortCaseLabelsOnASingleLine: 'true'
 AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: 'true'
 AlwaysBreakAfterReturnType: None

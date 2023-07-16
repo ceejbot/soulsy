@@ -33,23 +33,17 @@ namespace equip
 	void unequipHand(RE::PlayerCharacter*& player, Action which)
 	{
 		RE::BGSEquipSlot* slot = nullptr;
-		if (which == Action::Right)
-		{
-			slot = left_hand_equip_slot();
-		}
-		else if (which == Action::Left)
-		{
-			slot = right_hand_equip_slot();
-		}
+		if (which == Action::Right) { slot = left_hand_equip_slot(); }
+		else if (which == Action::Left) { slot = right_hand_equip_slot(); }
 		else
 		{
 			logger::debug("somebody called unequipHand() with slot={};"sv, static_cast<uint8_t>(which));
 			return;
 		}
-		unequip_this_slot(slot, player);
+		unequipLeftOrRightSlot(slot, player);
 	}
 
-	void unequip_this_slot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
 		bool did_call       = false;
 		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
@@ -63,8 +57,7 @@ namespace equip
 		{
 			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 		}
-		if (!equipped_object)
-			return;
+		if (!equipped_object) return;
 
 		if (equipped_object->IsWeapon())
 		{
@@ -94,64 +87,6 @@ namespace equip
 
 		logger::trace("unequipped item from slot; item={}; did_call={};"sv, equipped_object->GetName(), did_call);
 	}
-
-	/*
-	void unequip_slot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
-	{
-		RE::TESForm* equipped_object = nullptr;
-		if (slot == left_hand_equip_slot())
-		{
-			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		}
-
-		if (slot == right_hand_equip_slot())
-		{
-			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		}
-
-		if (!equipped_object)
-		{
-			return;
-		}
-			logger::debug("Object {} is equipped, is left {}."sv,
-				equipped_object->GetName(),
-				slot == left_hand_equip_slot());
-			bool did_call       = false;
-			auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-			if (equipped_object->IsWeapon())
-			{
-				const auto weapon = equipped_object->As<RE::TESObjectWEAP>();
-				equip_manager->UnequipObject(player, weapon, nullptr, 1, slot);
-				did_call = true;
-			}
-			if (equipped_object->Is(RE::FormType::Armor))
-			{
-				if (const auto armor = equipped_object->As<RE::TESObjectARMO>(); armor->IsShield())
-				{
-					equip_manager->UnequipObject(player, armor, nullptr, 1, slot);
-					did_call = true;
-				}
-			}
-
-			if (equipped_object->Is(RE::FormType::Spell))
-			{
-				unequip_object_ft_dummy_dagger(slot, player, equip_manager);
-				did_call = true;
-			}
-
-			if (equipped_object->Is(RE::FormType::Light))
-			{
-				const auto light = equipped_object->As<RE::TESObjectLIGH>();
-				equip_manager->UnequipObject(player, light, nullptr, 1, slot);
-				did_call = true;
-			}
-
-			logger::trace("called un equip for {}, left {}, did call {}"sv,
-				equipped_object->GetName(),
-				slot == left_hand_equip_slot(),
-				did_call);
-		}
-		} */
 
 	void unequip_object_ft_dummy_dagger(RE::BGSEquipSlot*& slot,
 		RE::PlayerCharacter*& player,
@@ -192,8 +127,8 @@ namespace equip
 		auto* selected_power = player->GetActorRuntimeData().selectedPower;
 		if (selected_power)
 		{
-			logger::trace("Equipped form is {}, try to un equip"sv,
-				util::string_util::int_to_hex(selected_power->formID));
+			logger::trace(
+				"shout/power slot equipped formid=0x{};"sv, util::string_util::int_to_hex(selected_power->formID));
 			if (selected_power->Is(RE::FormType::Shout))
 			{
 				un_equip_shout(nullptr, 0, player, selected_power->As<RE::TESShout>());
@@ -241,23 +176,14 @@ namespace equip
 		logger::trace("equipped shout {}. return."sv, a_form->GetName());
 	}
 
-	void boundObjectForForm(const RE::TESForm* form, RE::PlayerCharacter*& the_player, RE::TESBoundObject* outval)
+	int boundObjectForForm(const RE::TESForm* form, RE::PlayerCharacter*& the_player, RE::TESBoundObject* outval)
 	{
 		RE::TESBoundObject* obj = nullptr;
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates;
 
-		if (form->Is(RE::FormType::Weapon))
-		{
-			candidates = player::get_inventory(the_player, RE::FormType::Weapon);
-		}
-		else if (form->Is(RE::FormType::Armor))
-		{
-			candidates = player::get_inventory(the_player, RE::FormType::Armor);
-		}
-		else if (form->Is(RE::FormType::Light))
-		{
-			candidates = player::get_inventory(the_player, RE::FormType::Light);
-		}
+		if (form->Is(RE::FormType::Weapon)) { candidates = player::get_inventory(the_player, RE::FormType::Weapon); }
+		else if (form->Is(RE::FormType::Armor)) { candidates = player::get_inventory(the_player, RE::FormType::Armor); }
+		else if (form->Is(RE::FormType::Light)) { candidates = player::get_inventory(the_player, RE::FormType::Light); }
 
 		auto item_count = 0;
 		for (const auto& [item, inv_data] : candidates)
@@ -276,5 +202,6 @@ namespace equip
 			util::string_util::int_to_hex(form->formID));
 
 		outval = obj;
+		return item_count;
 	}
 }

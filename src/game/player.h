@@ -36,10 +36,6 @@ namespace player
 	bool playerHasItemOrSpell(const std::string& form_spec);
 	void reequipLeftHand(const std::string& form_spec);
 
-	void equip_item(const RE::TESForm* a_form,
-		RE::BGSEquipSlot*& a_slot,
-		RE::PlayerCharacter*& a_player,
-		enums::slot_type a_type);
 	void equip_armor(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
 	void equip_ammo(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
 	void unequip_ammo();

@@ -1,6 +1,6 @@
 # Soulsy
 
-Soulsy is a minimal-features Souls-style HUD for Skyrim SE and AE. It is inspired by hotkey HUD mods like Elden Equip, iEquip, and LamasTinyHud. It is in fact a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD)!
+Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It is in fact a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD)! It is simpler than LamasTinyHud is, however.
 
 ## Development goals
 
@@ -25,7 +25,7 @@ To add or remove an item from a cycle, bring up the inventory, magic or favorite
 
 Soulsy also has a hotkey for activating your selected utility item. This is the only category of item that Soulsy will try to activate for you; everything else needs to used the same way the base game has you use them. The last hotkey-able shortcut is for hiding and showing the HUD. There is an MCM setting if you want the HUD to fade out when you're not in combat or don't have your weapons readied.
 
-That's it for the feature set. Soulsy does not (yet?) attempt to select the best ammo, potion or poison the way iEquip does. It equips what you tell it to equip, as quickly and reliably as it can. Soulsy also does not offer in-game layout editing, though you can edit and theme the layout by editing a toml file outside the game. There's a refresh key that you can set and use to reload the layout on the fly.
+That's it for the feature set. Soulsy does not (yet?) attempt to select the best ammo, potion or poison the way iEquip does. It equips what you tell it to equip, as quickly and reliably as it can. Soulsy also does not offer in-game layout editing, though you can modify the layout by editing a toml file outside the game. There's a refresh key that you can set and use to reload the layout on the fly.
 
 ### Settings options
 
@@ -37,14 +37,14 @@ TKTKTK
 
 The HUD look can be changed by modifying files in `SKSE/plugins`.
 
-```
+```text
 SoulsyHUD/SKSE/plugins
 ├── resources
-│  ├── animations
-│  ├── backgrounds
-│  ├── buttons
-│  ├── fonts
-│  └── icons
+│  ├── animations/highlight/
+│  ├── backgrounds/*
+│  ├── buttons/*
+│  ├── fonts/*
+│  └── icons/*
 └── SoulsyHUD_Layout.toml
 ```
 
@@ -97,30 +97,32 @@ Ceej's development to-do list:
 - [x] Finish up the icon data loading function.
 - [x] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
 - [x] Handle the case of equipped items not being in the cycle, while the cycle is being advanced.
-- [x] Wire up the equip-item functions as well as the equip delay. I'll probably be forced to implement a timer using the tick in the imgui rendering code.
+- [x] Wire up the equip-item functions as well as the equip delay. Implement a timer using the tick in the imgui rendering code.
 - [x] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
 - [x] Debounce keys. Especially the show/hide button.
 - [ ] Wire up the mod to MCM to show its config & write user settings.
-- [ ] Figure out what I'm doing wrong with MCM config settings.
+- [ ] Figure out what I'm doing wrong with MCM config settings. No really.
 - [ ] Track highlight status in the controller to support drawing.
 - [x] Wire up the inventory-changed hooks.
 - [x] Inform Rust about equip changes.
 - [x] Get ammo showing correctly.
-- [ ] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
+- [x] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
+- [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [ ] Make re-equipping the left-hand item work.
 - [x] Wire up activating the utility button.
-- [ ] Figure out why activating potions makes the game lock up.
+- [x] Figure out why activating potions makes the game lock up.
 - [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
 - [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
 - [x] Come up with an adequate default layout for the HUD.
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
+- [ ] I18n. I ripped out some affordances for alternative fonts & UI text translations.
+- [ ] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
 - [x] Improve the CMake files so rebuilding is reliable.
-- [ ] Add support for debug builds to CMake. Maybe.
+- [ ] Add support for debug builds to CMake, or at least remove the half-done option.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Update to CommonLibSE-NG?
 - [x] Make Rust log to a second file in the same directory as SKSE.
-- [ ] Make Rust log to the same file as SKSE, if this is even possible. Might not be worth it.
-- [ ] Add more Rust logging for happy-path cases, not just error cases.
+- [ ] Add more Rust debug-level logging for happy-path cases.
 - [ ] Consider getting more testers.
 
 ## License

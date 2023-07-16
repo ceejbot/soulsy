@@ -18,9 +18,11 @@ use std::fs::File;
 use std::path::PathBuf;
 
 pub use control::public::*;
-pub use cycles::{create_tesitem_shim, default_cycle_entry, get_icon_file, TesItemData};
+pub use cycles::{default_cycle_entry, get_icon_file, make_tesitem, TesItemData};
+pub use entrykind::{kind_has_count, kind_is_magic};
 pub use layout::layout;
 pub use settings::{refresh_user_settings, user_settings, UserSettings}; // hmm, is this for settings? I'm confused...
+
 use simplelog::*;
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {

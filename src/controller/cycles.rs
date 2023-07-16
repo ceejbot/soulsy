@@ -40,7 +40,7 @@ impl PartialEq for TesItemData {
     }
 }
 
-pub fn create_tesitem_shim(
+pub fn make_tesitem(
     icon_kind: EntryKind,
     two_handed: bool,
     has_count: bool,

@@ -6,8 +6,6 @@ set(headers ${headers}
     src/game/perk_visitor.h
     src/game/player.h
     src/game/utility_items.h
-    src/migrate_me/handle/data/ammo_data.h
-    src/migrate_me/handle/extra_data_holder.h
     src/plugin/hooks.h
     src/plugin/keycodes.h
     src/plugin/papyrus.h
@@ -31,7 +29,6 @@ set(sources ${sources}
     src/game/player.cpp
     src/game/utility_items.cpp
     src/main.cpp
-    src/migrate_me/handle/extra_data_holder.cpp
     src/plugin/hooks.cpp
     src/plugin/keycodes.cpp
     src/plugin/papyrus.cpp
