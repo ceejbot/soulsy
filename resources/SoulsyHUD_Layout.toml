@@ -2,7 +2,7 @@ animation_alpha = 51
 animation_duration = 0.2
 font = "futura-book-bt.ttf"
 font_size = 20.0
-debug = false
+debug = true
 
 [anchor]
 x = 170.0

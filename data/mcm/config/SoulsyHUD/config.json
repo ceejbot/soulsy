@@ -1,14 +1,19 @@
 {
+  "$schema": "https://raw.githubusercontent.com/Exit-9B/MCM-Helper/main/docs/config.schema.json",
   "modName": "SoulsyHUD",
   "displayName": "SoulsyHUD",
   "minMcmVersion": 11,
   "pages": [
     {
       "pageDisplayName": "$SoulsyHUD",
-      "content": [{ "text": "$SoulsyHUD_MainPage_Text" }]
+      "cursorFillMode": "topToBottom",
+      "content": [{
+        "type": "header", 
+        "text": "$SoulsyHUD_MainPage_Text" }]
     },
     {
       "pageDisplayName": "$SoulsyHUD_MainPage_Title",
+      "cursorFillMode": "topToBottom",
       "content": [
         {
           "text": "$SoulsyHUD_Controls_HeaderText",
@@ -83,12 +88,7 @@
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
-        }
-      ]
-    },
-    {
-      "pageDisplayName": "$SoulsyHUD_MainPage_Title",
-      "content": [
+        },
         {
           "text": "$SoulsyHUD_Options_Options_HeaderText",
           "type": "header"

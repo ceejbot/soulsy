@@ -75,6 +75,8 @@ tag VERSION:
 
 # Bash version of archive creation, sans 7zip step for now.
 @archive: 
+    #!/usr/bin/env bash
+    set -e
     mkdir -p archive/SKSE/plugins
     cp -rp resources archive/SKSE/plugins
     mv archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml archive/SKSE/plugins/
@@ -82,6 +84,10 @@ tag VERSION:
     cp -p data/SoulsyHUD.esl archive/
     cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
+    declare -a langs=(czech french german italian japanese polish russian spanish)
+    for lang in "${langs[@]}"; do
+        cp archive/Interface/Translations/SoulsyHUD_english.txt archive/Interface/Translations/SoulsyHUD_$lang.txt
+    done
 
 # Build a full mod archive
 archive-win:
