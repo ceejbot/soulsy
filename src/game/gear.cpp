@@ -142,43 +142,47 @@ namespace equip
 		}
 	}
 
-	void equipShoutByForm(RE::TESForm* a_form, RE::PlayerCharacter*& a_player)
+	void equipShoutByForm(RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
-		logger::trace("try to equip shout {}"sv, a_form->GetName());
+		logger::trace("try to equip shout {}"sv, form->GetName());
 
-		if (!a_form->Is(RE::FormType::Shout))
+		if (!form->Is(RE::FormType::Shout))
 		{
-			logger::warn("object {} is not a shout. return."sv, a_form->GetName());
+			logger::warn("object {} is not a shout. return."sv, form->GetName());
 			return;
 		}
 
-		if (const auto selected_power = a_player->GetActorRuntimeData().selectedPower; selected_power)
+		if (const auto selected_power = player->GetActorRuntimeData().selectedPower; selected_power)
 		{
 			logger::trace("current selected power is {}, is shout {}, is spell {}"sv,
 				selected_power->GetName(),
 				selected_power->Is(RE::FormType::Shout),
 				selected_power->Is(RE::FormType::Spell));
-			if (selected_power->formID == a_form->formID)
+			if (selected_power->formID == form->formID)
 			{
-				logger::debug("no need to equip shout {}, it is already equipped. return."sv, a_form->GetName());
+				logger::debug("no need to equip shout {}, it is already equipped. return."sv, form->GetName());
 				return;
 			}
 		}
 
-		auto* shout = a_form->As<RE::TESShout>();
-		if (!player::has_shout(a_player, shout))
+		auto* shout = form->As<RE::TESShout>();
+		if (!player::has_shout(player, shout))
 		{
 			logger::warn("player does not have spell {}. return."sv, shout->GetName());
 			return;
 		}
 
-		RE::ActorEquipManager::GetSingleton()->EquipShout(a_player, shout);
-		logger::trace("equipped shout {}. return."sv, a_form->GetName());
+		RE::ActorEquipManager::GetSingleton()->EquipShout(player, shout);
+		logger::trace("equipped shout {}. return."sv, form->GetName());
 	}
 
-	int boundObjectForForm(const RE::TESForm* form, RE::PlayerCharacter*& the_player, RE::TESBoundObject* outval)
+	int boundObjectForForm(const RE::TESForm* form,
+		RE::PlayerCharacter*& the_player,
+		RE::TESBoundObject* outobj,
+		RE::ExtraDataList* outextra)
 	{
 		RE::TESBoundObject* obj = nullptr;
+		std::vector<RE::ExtraDataList*> extra_vector;
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates;
 
 		if (form->Is(RE::FormType::Weapon)) { candidates = player::get_inventory(the_player, RE::FormType::Weapon); }
@@ -190,18 +194,40 @@ namespace equip
 		{
 			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
 			{
-				obj        = item;
-				item_count = num_items;
+				bound_obj                   = item;
+				item_count                  = num_items;
+				auto simple_extra_data_list = entry->extraLists;
+				if (simple_extra_data_list)
+				{
+					for (auto* extra_data : *simple_extra_data_list)
+					{
+						extra           = extra_data;
+						auto worn_right = extra_data->HasType(RE::ExtraDataType::kWorn);
+						auto worn_left  = extra_data->HasType(RE::ExtraDataType::kWornLeft);
+						logger::trace("extra data {}, worn right {}, worn left {}"sv,
+							extra_data->GetCount(),
+							worn_right,
+							worn_left);
+						if (!worn_right && !worn_left) { extra_vector.push_back(extra_data); }
+					}
+				}
 				break;
 			}
 		}
 
-		logger::info("found {} candidates for bound object; name='{}'; formid=0x{};"sv,
+		if (!bound_obj)
+		{
+			logger::info("unable to find any bound objects for item; bailing. name='{}'; "sv, form->GetName());
+			return 0;
+		}
+
+		logger::info("found {} instances for bound object; name='{}'; formid=0x{};"sv,
 			item_count,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
 
-		outval = obj;
+		if (!extra_vector.empty()) { outextra = extra_vector.back(); }
+		outobj = obj;
 		return item_count;
 	}
 }

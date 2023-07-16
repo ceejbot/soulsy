@@ -29,11 +29,12 @@ namespace equip
 		}
 
 		RE::TESBoundObject* bound_obj = nullptr;
-		auto item_count               = equip::boundObjectForForm(form, player, bound_obj);
+		RE::ExtraDataList* extra      = nullptr;
+		auto item_count               = equip::boundObjectForForm(form, player, bound_obj, extra);
 
-		if (!bound_obj)
+		if (!item_count || !bound_obj)
 		{
-			logger::warn("could not find selected weapon/shield, maybe it is gone"sv);
+			logger::info("unable to find any instances of item in player inventory. name='{}'"sv, form->GetName());
 			return;
 		}
 
@@ -87,8 +88,8 @@ namespace equip
 
 		RE::TESBoundObject* obj = nullptr;
 		uint32_t remaining      = 0;
-		for (auto potential_items = player::get_inventory(player, RE::FormType::AlchemyItem);
-			 const auto& [item, inv_data] : potential_items)
+		for (auto candidates = player::get_inventory(player, RE::FormType::AlchemyItem);
+			 const auto& [item, inv_data] : candidates)
 		{
 			if (const auto& [num_items, entry] = inv_data; entry->object->formID == potion_form->formID)
 			{
@@ -215,8 +216,8 @@ namespace equip
 			fmt::format(FMT_STRING("{:.2f}"), missing));
 
 		RE::TESBoundObject* obj = nullptr;
-		for (auto potential_items = player::get_inventory(a_player, RE::FormType::AlchemyItem);
-			 const auto& [item, inv_data] : potential_items)
+		for (auto candidates = player::get_inventory(a_player, RE::FormType::AlchemyItem);
+			 const auto& [item, inv_data] : candidates)
 		{
 			const auto& [num_items, entry] = inv_data;
 
