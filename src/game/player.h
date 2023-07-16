@@ -11,11 +11,10 @@ namespace player
 {
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
 		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type);
-	uint32_t getInventoryCountByForm(const RE::TESForm* a_form);
-	bool has_item_or_spell(RE::TESForm* a_form);
 	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout);
 	void play_sound(RE::BGSSoundDescriptor* a_sound_descriptor_form, RE::PlayerCharacter*& a_player);
 
+	uint32_t getInventoryCountByForm(const RE::TESForm* a_form);
 	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player);
 
 	// Here I start carving out an API that the rust controller can call to

@@ -189,54 +189,44 @@ namespace player
 		{
 			return false;
 		}
-		return has_item_or_spell(form);
-	}
 
-	bool has_item_or_spell(RE::TESForm* a_form)
-	{
-		if (!a_form)
-		{
-			return false;
-		}
-
-		//add option to skip check for Items
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		auto has_it  = false;
-		if (a_form->IsWeapon())
+		if (form->IsWeapon())
 		{
-			has_it = inventoryCount(a_form, RE::FormType::Weapon, player) > 0;
+			has_it = inventoryCount(form, RE::FormType::Weapon, player) > 0;
 		}
-		else if (a_form->IsArmor())
+		else if (form->IsArmor())
 		{
-			has_it = inventoryCount(a_form, RE::FormType::Armor, player) > 0;
+			has_it = inventoryCount(form, RE::FormType::Armor, player) > 0;
 		}
-		else if (a_form->Is(RE::FormType::Light))
+		else if (form->Is(RE::FormType::Light))
 		{
-			has_it = inventoryCount(a_form, RE::FormType::Light, player) > 0;
+			has_it = inventoryCount(form, RE::FormType::Light, player) > 0;
 		}
-		else if (a_form->Is(RE::FormType::Spell) || a_form->Is(RE::FormType::LeveledSpell))
+		else if (form->Is(RE::FormType::Spell) || form->Is(RE::FormType::LeveledSpell))
 		{
-			auto* spell = a_form->As<RE::SpellItem>();
+			auto* spell = form->As<RE::SpellItem>();
 			has_it      = player->HasSpell(spell);
 		}
-		else if (a_form->Is(RE::FormType::AlchemyItem))
+		else if (form->Is(RE::FormType::AlchemyItem))
 		{
-			has_it = inventoryCount(a_form, RE::FormType::AlchemyItem, player) > 0;
+			has_it = inventoryCount(form, RE::FormType::AlchemyItem, player) > 0;
 		}
-		else if (a_form->Is(RE::FormType::Scroll))
+		else if (form->Is(RE::FormType::Scroll))
 		{
-			has_it = inventoryCount(a_form, RE::FormType::Scroll, player) > 0;
+			has_it = inventoryCount(form, RE::FormType::Scroll, player) > 0;
 		}
-		else if (a_form->Is(RE::FormType::Shout))
+		else if (form->Is(RE::FormType::Shout))
 		{
-			const auto shout = a_form->As<RE::TESShout>();
+			const auto shout = form->As<RE::TESShout>();
 			has_it           = has_shout(player, shout);
 		}
 
 		logger::trace("player has: {}; name='{}'; formid=0x{};"sv,
 			has_it,
-			a_form->GetName(),
-			util::string_util::int_to_hex(a_form->formID));
+			form->GetName(),
+			util::string_util::int_to_hex(form->formID));
 
 		return has_it;
 	}
