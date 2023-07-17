@@ -3,7 +3,9 @@
 #include "equippable.h"
 #include "gear.h"
 #include "magic.h"
+#include "shouts.h"
 #include "utility_items.h"
+#include "weapons.h"
 
 #include "helpers.h"
 #include "offset.h"
@@ -46,7 +48,7 @@ namespace player
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		equip::boundObjectForForm(item_form, player, bound_obj, extra);
+		game::boundObjectForForm(item_form, player, bound_obj, extra);
 		if (!bound_obj) { return equippable::makeTESItemDataFromForm(item_form); }
 
 		return equippable::makeTESItemDataFromForm(bound_obj);
@@ -62,7 +64,7 @@ namespace player
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		equip::boundObjectForForm(item_form, player, bound_obj, extra);
+		game::boundObjectForForm(item_form, player, bound_obj, extra);
 		if (!bound_obj) { return equippable::makeTESItemDataFromForm(item_form); }
 
 		return equippable::makeTESItemDataFromForm(bound_obj);
@@ -93,15 +95,15 @@ namespace player
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
-		if (which == Action::Power) { equip::unequipShoutSlot(player); }
-		else if (which == Action::Right || which == Action::Left) { equip::unequipHand(player, which); }
+		if (which == Action::Power) { shouts::unequipShoutSlot(player); }
+		else if (which == Action::Right || which == Action::Left) { game::unequipHand(player, which); }
 		else { logger::debug("somebody called unequipSlot() with slot={};"sv, static_cast<uint8_t>(which)); }
 	}
 
 	void unequipShout()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		equip::unequipShoutSlot(player);
+		shouts::unequipShoutSlot(player);
 	}
 
 	void equipShout(const std::string& form_spec)
@@ -109,7 +111,7 @@ namespace player
 		auto* shout_form = helpers::formSpecToFormItem(form_spec);
 		if (!shout_form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		equip::equipShoutByForm(shout_form, player);
+		shouts::equipShoutByForm(shout_form, player);
 	}
 
 	void equipMagic(const std::string& form_spec, Action slot)
@@ -117,8 +119,8 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player     = RE::PlayerCharacter::GetSingleton();
-		auto* equip_slot = (slot == Action::Left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot());
-		equip::equip_item(form, equip_slot, player);
+		auto* equip_slot = (slot == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot());
+		game::equipItemByFormAndSlot(form, equip_slot, player);
 	}
 
 	void equipWeapon(const std::string& form_spec, Action slot)
@@ -126,8 +128,8 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player     = RE::PlayerCharacter::GetSingleton();
-		auto* equip_slot = (slot == Action::Left ? equip::left_hand_equip_slot() : equip::right_hand_equip_slot());
-		equip::equip_item(form, equip_slot, player);
+		auto* equip_slot = (slot == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot());
+		game::equipItemByFormAndSlot(form, equip_slot, player);
 	}
 
 	void equipArmor(const std::string& form_spec)
@@ -135,7 +137,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		equip::equipArmorByForm(form, player);
+		game::equipArmorByForm(form, player);
 	}
 
 	void equipAmmo(const std::string& form_spec)
@@ -143,7 +145,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		equip::equip_ammo(form, player);
+		game::equipAmmoByForm(form, player);
 	}
 
 	void consumePotion(const std::string& form_spec)
@@ -151,11 +153,11 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		equip::consume_potion(form, player);
+		game::consumePotion(form, player);
 	}
 
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
-		get_inventory(RE::PlayerCharacter*& a_player, RE::FormType a_type)
+		getInventoryForType(RE::PlayerCharacter*& a_player, RE::FormType a_type)
 	{
 		return a_player->GetInventory([a_type](const RE::TESBoundObject& a_object) { return a_object.Is(a_type); });
 	}
@@ -172,7 +174,7 @@ namespace player
 		return count;
 	}
 
-	bool playerHasItemOrSpell(const std::string& form_spec)
+	bool hasItemOrSpell(const std::string& form_spec)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return false; }
@@ -215,7 +217,7 @@ namespace player
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		equip::boundObjectForForm(form, player, bound_obj, extra);
+		game::boundObjectForForm(form, player, bound_obj, extra);
 		if (!bound_obj) { return; }
 
 		logger::info("re-equipping item in left hand; name='{}'; formid=0x{}"sv,
@@ -223,7 +225,7 @@ namespace player
 			util::string_util::int_to_hex(form->formID));
 		// TODO this is buggy. It might have to do with how I'm equipping the right, not the left.
 		// Still investigating.
-		auto* left_slot = equip::left_hand_equip_slot();
+		auto* left_slot = game::left_hand_equip_slot();
 		auto* task      = SKSE::GetTaskInterface();
 		if (task)
 		{
@@ -235,7 +237,7 @@ namespace player
 	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
 	{
 		auto count     = 0;
-		auto inventory = get_inventory(a_player, a_type);
+		auto inventory = getInventoryForType(a_player, a_type);
 		for (const auto& [item, inv_data] : inventory)
 		{
 			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)

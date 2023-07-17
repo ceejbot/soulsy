@@ -3,11 +3,6 @@
 #include "lib.rs.h"
 #include "player.h"
 
-// A set of helpers for exposing item data to the Rust side, because
-// not all of TESForm's methods can be punched through easily. It ends
-// up being convenient for serialization to use the TesItemData type,
-// which is a side benefit.
-
 namespace equippable
 {
 	rust::Box<TesItemData> makeTESItemDataFromForm(RE::TESForm* item_form)

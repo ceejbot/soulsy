@@ -348,7 +348,7 @@ pub mod plugin {
         fn equippedAmmo() -> Box<TesItemData>;
 
         /// Check if the player still has items from this form in their inventory.
-        fn playerHasItemOrSpell(form_spec: &CxxString) -> bool;
+        fn hasItemOrSpell(form_spec: &CxxString) -> bool;
 
         /// Unequip the relevant slot.
         fn unequipSlot(which: Action);

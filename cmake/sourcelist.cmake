@@ -3,9 +3,10 @@ set(headers ${headers}
     src/game/equippable.h
     src/game/gear.h
     src/game/magic.h
-    src/game/perk_visitor.h
     src/game/player.h
-    src/game/utility_items.h
+    src/game/shouts.h
+    src/game/utility.h
+    src/game/weapons.h
     src/plugin/hooks.h
     src/plugin/keycodes.h
     src/plugin/papyrus.h
@@ -24,9 +25,10 @@ set(sources ${sources}
     src/game/equippable.cpp
     src/game/gear.cpp
     src/game/magic.cpp
-    src/game/perk_visitor.cpp
     src/game/player.cpp
-    src/game/utility_items.cpp
+    src/game/shouts.cpp
+    src/game/utility.cpp
+    src/game/weapons.cpp
     src/main.cpp
     src/plugin/hooks.cpp
     src/plugin/keycodes.cpp

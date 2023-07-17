@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 // TODO: Rewrite if adding a cast-from-hud feature. Otherwise remove.
-namespace magic
+namespace game
 {
 	enum class action_type : std::uint32_t
 	{

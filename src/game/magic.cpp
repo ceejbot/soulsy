@@ -5,7 +5,7 @@
 #include "player.h"
 #include "string_util.h"
 
-namespace magic
+namespace game
 {
 	// TODO remove entirely
 	void cast_magic(RE::TESForm* a_form,
@@ -13,7 +13,7 @@ namespace magic
 		const RE::BGSEquipSlot* a_slot,
 		RE::PlayerCharacter*& a_player)
 	{
-		auto left = a_slot == equip::left_hand_equip_slot();
+		auto left = a_slot == game::left_hand_equip_slot();
 		logger::trace(
 			"try to work spell {}, action {}, left {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action), left);
 
@@ -148,7 +148,7 @@ namespace magic
 
 		RE::TESBoundObject* obj = nullptr;
 		auto left               = 0;
-		for (auto potential_items = player::get_inventory(a_player, RE::FormType::Scroll);
+		for (auto potential_items = player::getInventoryForType(a_player, RE::FormType::Scroll);
 			 const auto& [item, inv_data] : potential_items)
 		{
 			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
@@ -223,8 +223,8 @@ namespace magic
 
 	RE::MagicSystem::CastingSource get_casting_source(const RE::BGSEquipSlot* a_slot)
 	{
-		if (a_slot == equip::right_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kRightHand; }
-		if (a_slot == equip::left_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kLeftHand; }
+		if (a_slot == game::right_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kRightHand; }
+		if (a_slot == game::left_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kLeftHand; }
 		return RE::MagicSystem::CastingSource::kOther;
 	}
 

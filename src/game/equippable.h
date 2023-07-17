@@ -2,6 +2,11 @@
 
 #include "rust/cxx.h"
 
+// A set of helpers for exposing item data to the Rust side, because
+// not all of TESForm's methods can be punched through easily. It ends
+// up being convenient for serialization to use the TesItemData type,
+// which is a side benefit.
+
 struct TesItemData;
 enum class TesItemKind : ::std::uint8_t;
 
@@ -19,5 +24,4 @@ namespace equippable
 	TesItemKind subKindForConsumable(RE::TESForm*& form);
 	TesItemKind subKindForArmor(RE::TESForm*& form);
 	TesItemKind subKindForConsumableByEffect(RE::ActorValue& actor_value);
-
 }

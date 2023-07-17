@@ -2,7 +2,7 @@ set windows-shell := ["pwsh.exe", "-Command"]
 set shell := ["bash", "-uc"]
 set dotenv-load := true
 
-shbang := if os_family() == "windows" { "rust-script.exe" } else { "/usr/bin/env rust-script" } 
+shbang := if os_family() == "windows" { "rust-script.exe" } else { "/usr/bin/env rust-script" }
 
 # List available recipes.
 help:
@@ -20,7 +20,7 @@ setup:
     cmake --preset vs2022-windows
 
 # Rebuild the archive for testing. Build requires a windows toolchain & cmake.
-@rebuild: 
+@rebuild:
     if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
@@ -35,8 +35,12 @@ setup:
     cargo nextest run
     cargo clippy
 
-# Fix clippy lints and format both Rust & C++.
+# Lint Rust. (TODO find the modern C++ linter.)
 @lint:
+    cargo clippy
+
+# Fix clippy lints and format both Rust & C++.
+@format:
     cargo clippy --fix --allow-staged
     cargo +nightly fmt
     find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
@@ -74,7 +78,7 @@ tag VERSION:
     echo "Release tagged for version v{{VERSION}}"
 
 # Bash version of archive creation, sans 7zip step for now.
-archive: 
+archive:
     #!/usr/bin/env bash
     set -e
     mkdir -p archive/SKSE/plugins
@@ -107,7 +111,7 @@ archive-win:
         std::fs::create_dir_all("archive/SKSE/plugins/resources").expect("couldn't create archive directory");
         // recursive copy into a deeper location
         fs_extra::dir::copy("resources", "archive/SKSE/plugins", &options).expect("fail");
-        std::fs::rename("archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml", 
+        std::fs::rename("archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml",
             "archive/SKSE/plugins/SoulsyHUD_Layout.toml")
             .expect("don't make lemonade");
 

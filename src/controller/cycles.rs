@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use super::control::MenuEventResponse;
 use super::user_settings;
-use crate::plugin::{playerHasItemOrSpell, Action, TesItemKind};
+use crate::plugin::{hasItemOrSpell, Action, TesItemKind};
 
 /// Given an entry kind, return the filename of the icon to use for it.
 /// Exposed to C++.
@@ -201,7 +201,7 @@ impl CycleData {
             .iter_mut()
             .filter(|xs| {
                 cxx::let_cxx_string!(form_spec = xs.form_string());
-                playerHasItemOrSpell(&form_spec)
+                hasItemOrSpell(&form_spec)
             })
             .map(|xs| xs.clone())
             .collect();
@@ -210,7 +210,7 @@ impl CycleData {
             .iter_mut()
             .filter(|xs| {
                 cxx::let_cxx_string!(form_spec = xs.form_string());
-                playerHasItemOrSpell(&form_spec)
+                hasItemOrSpell(&form_spec)
             })
             .map(|xs| xs.clone())
             .collect();
@@ -219,7 +219,7 @@ impl CycleData {
             .iter_mut()
             .filter(|xs| {
                 cxx::let_cxx_string!(form_spec = xs.form_string());
-                playerHasItemOrSpell(&form_spec)
+                hasItemOrSpell(&form_spec)
             })
             .map(|xs| xs.clone())
             .collect();
@@ -228,7 +228,7 @@ impl CycleData {
             .iter_mut()
             .filter(|xs| {
                 cxx::let_cxx_string!(form_spec = xs.form_string());
-                playerHasItemOrSpell(&form_spec)
+                hasItemOrSpell(&form_spec)
             })
             .map(|xs| xs.clone())
             .collect();
