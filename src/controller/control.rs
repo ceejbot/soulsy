@@ -5,11 +5,10 @@ use once_cell::sync::Lazy;
 
 use super::cycles::*;
 use super::settings::user_settings;
-use crate::layout;
+use crate::hud_layout;
 use crate::plugin::*;
 
 /// There can be only one. Not public because we want access managed.
-// Does this really need to be a mutex? I think we're single-threaded...
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
 
 /// This mod bundles up the public-facing interface of the controller for ease
@@ -23,7 +22,7 @@ pub mod public {
         let mut ctrl = CONTROLLER.lock().unwrap();
         let settings = user_settings();
         log::info!("{settings:?}");
-        let hud = layout();
+        let hud = hud_layout();
         log::info!(
             "hud layout: loc={},{}; size={},{};",
             hud.anchor.x,
@@ -53,7 +52,7 @@ pub mod public {
     /// Function for C++ to call to send a relevant menu button-event to us.
     ///
     /// We get a fully-filled out TesItemData struct to use as we see fit.
-    pub fn handle_menu_event(key: u32, menu_item: Box<TesItemData>) -> MenuEventResponse {
+    pub fn handle_menu_event(key: u32, menu_item: Box<TesItemData>) {
         let action = Action::from(key);
         CONTROLLER.lock().unwrap().toggle_item(action, *menu_item)
     }
@@ -267,8 +266,10 @@ impl Controller {
 
     /// The game informs us that our equipment has changed. Update.
     ///
-    /// The item we're handed was either equipped or UNequipped. We are not
-    /// told which. There are some changes we do need to react to.
+    /// The item we're handed was either equipped or UNequipped.
+    /// There are some changes we do need to react to, either because
+    /// they were done out-of-band of the HUD or because we want to
+    /// do more work in reaction to changes we initiated.
     fn handle_item_equipped(&mut self, equipped: bool, item: Box<TesItemData>) -> bool {
         log::info!(
             "entering handle_item_equipped(); equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; cached={:?}",
@@ -347,10 +348,6 @@ impl Controller {
                     // reequipLeftHand(&form_spec);
                 }
             }
-            if item.two_handed() {
-                // only set; do not unset.
-                self.two_hander_equipped = true;
-            }
             return right_changed;
         }
 
@@ -363,9 +360,24 @@ impl Controller {
     }
 
     fn handle_right_hand_event(&mut self, item: TesItemData) -> bool {
+        log::debug!(
+            "entering handle RIGHT; item is two-handed: {}; two_hander_equipped={}",
+            item.two_handed(),
+            self.two_hander_equipped
+        );
+
+        // Tracking two-handed/one-handed transitions.
+        // We get 2-handed equip events for the right hand only, so we
+        // do that bookkeeping here.
+        if item.two_handed() {
+            // only set; do not unset.
+            log::info!("right-hand item is 2-handed; setting var");
+            self.two_hander_equipped = true;
+        }
+
         if let Some(visible) = self.visible.get(&HudElement::Right) {
             if visible.form_string() != item.form_string() {
-                log::debug!("equipped right-hand item; name='{}';", item.name());
+                log::debug!("updating visible right-hand item; name='{}';", item.name());
                 self.cycles.set_top(Action::Right, item.clone());
                 self.update_slot(HudElement::Right, &item);
                 return true;
@@ -380,11 +392,10 @@ impl Controller {
         return true;
     }
 
-    // todo tomorrow when I'm fresh: coalesce this with right hand version
     fn handle_left_hand_event(&mut self, item: TesItemData) -> bool {
         let left_prev = self.visible.get(&HudElement::Left);
         log::debug!(
-            "entering handle left; item is two-handed: {}; two_hander_equipped={}",
+            "entering handle LEFT; item is two-handed: {}; two_hander_equipped={}",
             item.two_handed(),
             self.two_hander_equipped
         );
@@ -392,7 +403,6 @@ impl Controller {
         // We don't care if it's visible or not. If we've equipped
         // a one-hander in the left hand, we record it.
         if !item.two_handed() && self.two_hander_equipped {
-            // If we're here, we've equipped something new in the left hand.
             // Let's see if this item matches something we had equipped before!
             if let Some(cached_left) = &self.left_hand_cached {
                 if item.form_string() == cached_left.form_string() {
@@ -409,10 +419,6 @@ impl Controller {
             } else {
                 log::debug!("we chose not to do anything because our cached item is None???");
             }
-        }
-        // we do not want to un-set
-        if item.two_handed() {
-            self.two_hander_equipped = true;
         }
 
         // We do not show two-handed items in the left hand, though.
@@ -467,14 +473,14 @@ impl Controller {
 
         if matches!(which, Action::ShowHide) {
             log::debug!("doing Action:ShowHide");
-            toggle_hud_visibility();
+            toggleHUD();
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()
             };
         } else {
             // If we're faded out in any way, show ourselves again, because we're about to do something.
-            if user_settings().fade() && get_is_transitioning() {
+            if user_settings().fade() && getIsFading() {
                 show_hud();
             }
         }
@@ -545,7 +551,7 @@ impl Controller {
     /// This function is called when the player has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    fn toggle_item(&mut self, action: Action, item: TesItemData) -> MenuEventResponse {
+    fn toggle_item(&mut self, action: Action, item: TesItemData) {
         let result = self.cycles.toggle(action, item.clone());
 
         // notify the player what happened...
@@ -563,7 +569,7 @@ impl Controller {
         };
         let message = format!("{} {} {} cycle", item.name(), verb, cyclename);
         cxx::let_cxx_string!(msg = message);
-        notify_player(&msg);
+        notifyPlayer(&msg);
 
         if matches!(
             result,
@@ -581,8 +587,6 @@ impl Controller {
                 }
             }
         }
-
-        result
     }
 }
 
@@ -636,4 +640,17 @@ impl From<u32> for Action {
             Action::Irrelevant
         }
     }
+}
+
+/// What the controller did with a specific menu
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum MenuEventResponse {
+    Okay,
+    #[default]
+    Unhandled,
+    Error,
+    ItemAdded,
+    ItemRemoved,
+    ItemInappropriate,
+    TooManyItems,
 }

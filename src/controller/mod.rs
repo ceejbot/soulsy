@@ -5,8 +5,8 @@
 //! triggers the UI to update in certain cases, but otherwise does not mediate
 //! between the data and the renderer.
 //!
-//! There is little defined in this module file, but everything it imports and
-//! uses is available to be bridged to C++.
+//! There is little defined in this module file, but everything it re-exports
+//! is available to be bridged to C++ in the `plugin` module.
 pub mod control;
 pub mod cycles;
 pub mod layout;
@@ -19,14 +19,14 @@ use std::path::PathBuf;
 
 pub use control::public::*;
 pub use cycles::{default_cycle_entry, get_icon_file, make_tesitem, TesItemData};
-pub use layout::layout;
+pub use layout::hud_layout;
 pub use settings::{refresh_user_settings, user_settings, UserSettings};
 pub use tesitemkind::{kind_has_count, kind_is_magic}; // hmm, is this for settings? I'm confused...
 
 use simplelog::*;
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
-    let hudl = layout(); // yeah, it's in here, sorry. we can reload this at runtime.
+    let hudl = hud_layout(); // yeah, it's in here, sorry. we can reload this at runtime.
     let log_level = if hudl.debug {
         LevelFilter::Debug
     } else {

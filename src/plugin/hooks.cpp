@@ -60,9 +60,8 @@ namespace hooks
 					auto* item_form = RE::TESForm::LookupByID(menu_form);
 					if (!item_form) continue;
 
-					auto entry                 = equippable::makeTESItemDataFromForm(item_form);
-					MenuEventResponse response = handle_menu_event(key, std::move(entry));
-					logger::info("got result code {} from menu event for {}"sv, static_cast<uint32_t>(response), key);
+					auto entry = equippable::makeTESItemDataFromForm(item_form);
+					handle_menu_event(key, std::move(entry));
 				}
 			}
 		}

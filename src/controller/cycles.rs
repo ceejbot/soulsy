@@ -4,8 +4,9 @@ use std::path::PathBuf;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
+use super::control::MenuEventResponse;
 use super::user_settings;
-use crate::plugin::{playerHasItemOrSpell, Action, MenuEventResponse, TesItemKind};
+use crate::plugin::{playerHasItemOrSpell, Action, TesItemKind};
 
 /// Given an entry kind, return the filename of the icon to use for it.
 /// Exposed to C++.

@@ -193,19 +193,6 @@ pub mod plugin {
         RefreshLayout,
     }
 
-    /// I would rather not use exceptions for normal flow control.
-    #[derive(Debug, Clone, PartialEq, Eq)]
-    enum MenuEventResponse {
-        Okay,
-        Unhandled,
-        Error,
-        ItemAdded,
-        ItemRemoved,
-        ItemInappropriate,
-        TooManyItems,
-        // other responses/errors?
-    }
-
     /// What Rust did with a key event, so the C++ caller can present UI.
     ///
     /// This struct passes data from controller to C++ to signal if it should
@@ -231,27 +218,39 @@ pub mod plugin {
 
         /// Give access to the settings to the C++ side.
         type UserSettings;
+        /// Get the user setting for the equip delay timer, in milliseconds.
         fn equip_delay(self: &UserSettings) -> u32;
+        /// Get the user setting for the fade-out delay timer, in milliseconds.
         fn fade_delay(self: &UserSettings) -> u32;
+        /// Get whether the HUD should fade out when not in combat.
         fn fade(self: &UserSettings) -> bool;
+        /// Check if this button is relevant to the HUD.
         fn is_cycle_button(self: &UserSettings, key: u32) -> bool;
+        /// Get how long a cycle is allow to be.
         fn maxlen(self: &UserSettings) -> u32;
+        /// Get the hotkey for a specific action.
         fn hotkey_for(self: &UserSettings, action: HudElement) -> u32;
+        /// Get which kind of controller to draw shortcuts for: keyboard, PS5, or Xbox.
         fn controller_kind(self: &UserSettings) -> u32;
 
         /// Managed access to the settings object, so we can lazy-load if necessary.
         fn user_settings() -> Box<UserSettings>;
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
-        /// Fetch a read-only copy of our current layout;
-        fn layout() -> HudLayout;
+        /// Fetch a read-only copy of our current layout.
+        fn hud_layout() -> HudLayout;
 
         /// This is an entry in the cycle. The UI will ask questions of it.
         type TesItemData;
+        /// The item category, fine-grained to help with icon choices.
         fn kind(self: &TesItemData) -> TesItemKind;
+        /// True if any UI for this item should be drawn highlight. UNUSED.
         fn highlighted(self: &TesItemData) -> bool;
+        /// The game's name for this item.
         fn name(self: &TesItemData) -> String;
+        /// Whether this item has a relevant count.
         fn has_count(self: &TesItemData) -> bool;
+        /// How many of this item the player has last time we checked. Updated on inventory changes.
         fn count(self: &TesItemData) -> usize;
         /// Call to create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
@@ -263,20 +262,22 @@ pub mod plugin {
             name: &str,
             form_string: &str,
         ) -> Box<TesItemData>;
-        /// Snag a default cycle entry.
+        /// Make a default item, representing an empty choice.
         fn default_cycle_entry() -> Box<TesItemData>;
 
-        // Functions from TesItemKind.
+        /// Check if this item category can be stacked in inventory.
         fn kind_has_count(kind: TesItemKind) -> bool;
+        /// Check if this item category counts as magic for the HUD.
         fn kind_is_magic(kind: TesItemKind) -> bool;
-
-        /// Get the svg icon matching this item. Not a full path.
+        /// Get the filename of the svg icon matching this item. Not a full path.
         fn get_icon_file(kind: &TesItemKind) -> String;
+
+        // These are called by plugin hooks and sinks.
 
         /// Handle an incoming key press event from the game. An enum encoding how it was handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
-        fn handle_menu_event(key: u32, item: Box<TesItemData>) -> MenuEventResponse;
+        fn handle_menu_event(key: u32, item: Box<TesItemData>);
         /// Get the item readied in the given slot, if any.
         fn entry_to_show_in_slot(slot: HudElement) -> Box<TesItemData>;
         /// A cycle delay timer has expired. Time to equip!
@@ -289,28 +290,25 @@ pub mod plugin {
         fn handle_inventory_changed(item: Box<TesItemData>, count: usize);
     }
 
+    #[namespace = "RE"]
     unsafe extern "C++" {
         // everything in the RE namespace is from CommonLibSE
-        // I can imagine auto-generating a complete bridge at some point.
+        // I can imagine auto-generating a near-complete bridge at some point.
+        // This cannot be done using cxx because of all the char*.
         include!("PCH.h");
 
         /// The form object: the source of all data! We expose selected methods.
-        #[namespace = "RE"]
         type TESForm;
-        #[namespace = "RE"]
+        /// Get the id for this form.
         fn GetFormID(self: &TESForm) -> u32;
 
-        /// The equip slot for an item. Imported from CommonLibSE.
-        #[namespace = "RE"]
+        /// The equip slot for an item.
         type BGSEquipSlot;
         /// A keyboard, mouse, or gamepad button event. Imported from CommonLibSE.
-        #[namespace = "RE"]
         type ButtonEvent;
         /// Exposes to Rust the is-down method on the button event object.
-        #[namespace = "RE"]
         fn IsDown(self: &ButtonEvent) -> bool;
         /// Exposes to Rust the is-up method on the button event object.
-        #[namespace = "RE"]
         fn IsUp(self: &ButtonEvent) -> bool;
     }
 
@@ -320,14 +318,14 @@ pub mod plugin {
         include!("helpers.h");
 
         /// Display a debug notification on the screen. Used as hacky action confirmation.
-        fn notify_player(message: &CxxString);
+        fn notifyPlayer(message: &CxxString);
         /// Start the HUD widget fading in or out to the goal transparency.
-        fn set_alpha_transition(do_fade: bool, alpha: f32);
+        fn fadeToAlpha(do_fade: bool, alpha: f32);
         /// Check if the HUD widget is in the middle of a fade in or out.
-        fn get_is_transitioning() -> bool;
+        fn getIsFading() -> bool;
         /// Show or hide the HUD widget.
-        fn toggle_hud_visibility();
-        /// Show the hude no matter what;
+        fn toggleHUD();
+        /// Show the hud no matter what.
         fn show_hud();
     }
 
@@ -336,23 +334,38 @@ pub mod plugin {
     unsafe extern "C++" {
         include!("player.h");
 
+        /// Get the parent form item for the object equipped in the left hand.
         fn equippedLeftHand() -> Box<TesItemData>;
-        fn equippedRightHand() -> Box<TesItemData>;
-        fn equippedPower() -> Box<TesItemData>;
-        fn equippedAmmo() -> Box<TesItemData>;
+        /// Get the bound object (not the parent!) for the object equipped in the left hand.
         fn boundObjectLeftHand() -> Box<TesItemData>;
+        /// Get the parent form item for the object equipped in the right hand.
+        fn equippedRightHand() -> Box<TesItemData>;
+        /// Get the bound object (not the parent!) for the object equipped in the right hand.
         fn boundObjectRightHand() -> Box<TesItemData>;
+        /// Get the form for the equipped shout or power.
+        fn equippedPower() -> Box<TesItemData>;
+        /// Get the form for the equipped ammo.
+        fn equippedAmmo() -> Box<TesItemData>;
 
+        /// Check if the player still has items from this form in their inventory.
         fn playerHasItemOrSpell(form_spec: &CxxString) -> bool;
 
+        /// Unequip the relevant slot.
         fn unequipSlot(which: Action);
 
+        /// Equip the shout matching the form spec.
         fn equipShout(form_spec: &CxxString);
+        /// Equip the spell matching the form spec.
         fn equipMagic(form_spec: &CxxString, which: Action);
+        /// Equip the weapon matching the form spec.
         fn equipWeapon(form_spec: &CxxString, which: Action);
+        /// Equip the armor matching the form spec.
         fn equipArmor(form_spec: &CxxString);
+        /// Equip the amoo matching the form spec.
         fn equipAmmo(form_spec: &CxxString);
+        /// Consume a potion matching the form spec. Skips dynamic items (for now).
         fn consumePotion(form_spec: &CxxString);
+        /// Re-equip an item in the left hand. This forces an un-equip first.
         fn reequipLeftHand(form_spec: &CxxString);
     }
 }

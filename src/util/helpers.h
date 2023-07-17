@@ -14,9 +14,9 @@ namespace helpers
 	std::string makeFormSpecString(RE::TESForm* form);
 	uint32_t getSelectedFormFromMenu(RE::UI*& a_ui);
 
-	void notify_player(const std::string& message);
-	void set_alpha_transition(const bool shift, const float target);
-	bool get_is_transitioning();
-	void toggle_hud_visibility();
+	void notifyPlayer(const std::string& message);
+	void fadeToAlpha(const bool shift, const float target);
+	bool getIsFading();
+	void toggleHUD();
 	void show_hud();
 }

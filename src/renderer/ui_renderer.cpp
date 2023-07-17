@@ -354,7 +354,7 @@ namespace ui
 
 	void ui_renderer::drawAllSlots()
 	{
-		const auto top_layout = layout();
+		const auto top_layout = hud_layout();
 		const auto settings   = user_settings();
 		const auto anchor     = top_layout.anchor;
 
@@ -490,7 +490,7 @@ namespace ui
 
 		ImGui::Begin(hud_name, nullptr, window_flag);
 
-		const HudLayout hudl = layout();
+		const HudLayout hudl = hud_layout();
 		const auto anchor    = hudl.anchor;
 		const auto hudsize   = hudl.size;
 
@@ -683,7 +683,7 @@ namespace ui
 
 	void ui_renderer::load_font()
 	{
-		auto hud         = layout();
+		auto hud         = hud_layout();
 		auto fontfile    = std::string(hud.font);
 		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + fontfile;
 		auto file_path   = std::filesystem::path(path);

@@ -12,17 +12,17 @@ namespace helpers
 {
 	using string_util = util::string_util;
 
-	void notify_player(const std::string& message)
+	void notifyPlayer(const std::string& message)
 	{
 		auto* msg = message.c_str();
 		RE::DebugNotification(msg);
 	}
 
-	void set_alpha_transition(const bool shift, const float target) { ui::ui_renderer::set_fade(shift, target); }
+	void fadeToAlpha(const bool shift, const float target) { ui::ui_renderer::set_fade(shift, target); }
 
-	bool get_is_transitioning() { return ui::ui_renderer::get_fade(); }
+	bool getIsFading() { return ui::ui_renderer::get_fade(); }
 
-	void toggle_hud_visibility() { ui::ui_renderer::toggle_show_ui(); }
+	void toggleHUD() { ui::ui_renderer::toggle_show_ui(); }
 
 	void show_hud() { ui::ui_renderer::set_show_ui(true); }
 
