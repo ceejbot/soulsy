@@ -8,11 +8,9 @@ use controller::*;
 /// affordances of the `cxx` crate. At build time `cxx_build` will generate the
 /// header files required by the C++ side. The macros expand in-line to generate
 /// the matching Rust code.
-
-// ceejbot TODO: organize into namespaces; getting pretty cluttered
-
 #[cxx::bridge]
 pub mod plugin {
+    // ceejbot TODO: organize into namespaces; getting pretty cluttered
 
     /// Hud elements to draw.
     #[derive(Deserialize, Serialize, Debug, Clone, Hash)]
@@ -172,7 +170,8 @@ pub mod plugin {
         Whip,
     }
 
-    /// Turning the key number into an enum is handy.
+    /// This enum maps key presses to the desired action. More like a C/java
+    /// enum than a Rust sum type enum.
     #[derive(Debug, Clone, Hash)]
     enum Action {
         /// We do not need to do anything, possibly because the key was not one of our hotkeys.
@@ -198,7 +197,7 @@ pub mod plugin {
     /// This struct passes data from controller to C++ to signal if it should
     /// start or stop a timer, and if so which timer. For complicated reasons,
     /// timers on the Rust side are impractical (they need to be async) and so I
-    /// am doing them on the  C++ side. A better solution would be nice.
+    /// am doing them on the  C++ side.
     #[derive(Debug, Clone, PartialEq, Eq)]
     struct KeyEventResponse {
         /// Did we handle this keypress?
@@ -210,7 +209,7 @@ pub mod plugin {
     }
 
     extern "Rust" {
-        /// Trigger the rust side to start logging.
+        /// Tell the rust side where to log.
         fn initialize_rust_logging(logdir: &CxxString);
         /// Trigger rust to read config, figure out what the player has equipped,
         /// and figure out what it should draw.
@@ -263,7 +262,7 @@ pub mod plugin {
             form_string: &str,
         ) -> Box<TesItemData>;
         /// Make a default item, representing an empty choice.
-        fn default_cycle_entry() -> Box<TesItemData>;
+        fn default_tes_item() -> Box<TesItemData>;
 
         /// Check if this item category can be stacked in inventory.
         fn kind_has_count(kind: TesItemKind) -> bool;
@@ -326,7 +325,7 @@ pub mod plugin {
         /// Show or hide the HUD widget.
         fn toggleHUD();
         /// Show the hud no matter what.
-        fn show_hud();
+        fn showHUD();
     }
 
     // Selected player data fetchers.

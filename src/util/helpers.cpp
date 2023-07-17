@@ -24,7 +24,7 @@ namespace helpers
 
 	void toggleHUD() { ui::ui_renderer::toggle_show_ui(); }
 
-	void show_hud() { ui::ui_renderer::set_show_ui(true); }
+	void showHUD() { ui::ui_renderer::set_show_ui(true); }
 
 	std::string makeFormSpecString(RE::TESForm* form)
 	{

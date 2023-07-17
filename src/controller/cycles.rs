@@ -1,3 +1,5 @@
+//! Management of the cycle data: serialization and mutation.
+//!
 use std::fmt::Display;
 use std::path::PathBuf;
 
@@ -41,6 +43,7 @@ impl PartialEq for TesItemData {
     }
 }
 
+/// Make a TesItemData struct from the given data.
 pub fn make_tesitem(
     icon_kind: TesItemKind,
     two_handed: bool,
@@ -59,7 +62,9 @@ pub fn make_tesitem(
     ))
 }
 
-pub fn default_cycle_entry() -> Box<TesItemData> {
+/// Construct a default TesItemData struct, which is displayed as
+/// an empty spot on the HUD.
+pub fn default_tes_item() -> Box<TesItemData> {
     Box::<TesItemData>::default()
 }
 

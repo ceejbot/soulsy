@@ -21,9 +21,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return default_cycle_entry();
+		if (!obj) return default_tes_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_cycle_entry();
+		if (!item_form) return default_tes_item();
 		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
@@ -32,9 +32,9 @@ namespace player
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return default_cycle_entry();
+		if (!obj) return default_tes_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_cycle_entry();
+		if (!item_form) return default_tes_item();
 		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
@@ -42,9 +42,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return default_cycle_entry();
+		if (!obj) return default_tes_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_cycle_entry();
+		if (!item_form) return default_tes_item();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
@@ -58,9 +58,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return default_cycle_entry();
+		if (!obj) return default_tes_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_cycle_entry();
+		if (!item_form) return default_tes_item();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
@@ -74,9 +74,9 @@ namespace player
 	{
 		auto* player    = RE::PlayerCharacter::GetSingleton();
 		const auto* obj = player->GetActorRuntimeData().selectedPower;
-		if (!obj) return default_cycle_entry();
+		if (!obj) return default_tes_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_cycle_entry();
+		if (!item_form) return default_tes_item();
 		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
@@ -84,7 +84,7 @@ namespace player
 	{
 		auto player        = RE::PlayerCharacter::GetSingleton();
 		auto* current_ammo = player->GetCurrentAmmo();
-		if (!current_ammo || !current_ammo->IsAmmo()) { return default_cycle_entry(); }
+		if (!current_ammo || !current_ammo->IsAmmo()) { return default_tes_item(); }
 
 		const auto formspec = helpers::makeFormSpecString(current_ammo);
 		auto count          = inventoryCount(current_ammo, RE::FormType::Ammo, player);

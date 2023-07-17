@@ -33,7 +33,7 @@ pub mod public {
 
         ctrl.validate_cycles();
         if ctrl.update_hud() {
-            show_hud();
+            showHUD();
         }
         log::info!("HUD data should be fresh; ready to cycle!")
     }
@@ -481,7 +481,7 @@ impl Controller {
         } else {
             // If we're faded out in any way, show ourselves again, because we're about to do something.
             if user_settings().fade() && getIsFading() {
-                show_hud();
+                showHUD();
             }
         }
 
@@ -493,7 +493,7 @@ impl Controller {
             if self.cycles.cycle_len(which) > 1 {
                 if let Some(next) = self.cycles.advance(which, 1) {
                     self.update_slot(hud, &next);
-                    show_hud();
+                    showHUD();
                 }
                 return KeyEventResponse {
                     handled: true,
@@ -514,7 +514,7 @@ impl Controller {
             return self.use_utility_item();
         } else if matches!(which, Action::RefreshLayout) {
             HudLayout::refresh();
-            show_hud();
+            showHUD();
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()
