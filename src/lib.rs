@@ -284,7 +284,7 @@ pub mod plugin {
         /// Update the entire HUD without any hints about what just changed.
         fn update_hud() -> bool;
         /// Handle equipment-changed events from the game.
-        fn handle_item_equipped(item: Box<TesItemData>) -> bool;
+        fn handle_item_equipped(equipped: bool, item: Box<TesItemData>) -> bool;
         /// The player's inventory changed. Update if necessary.
         fn handle_inventory_changed(item: Box<TesItemData>, count: usize);
     }
@@ -340,6 +340,8 @@ pub mod plugin {
         fn equippedRightHand() -> Box<TesItemData>;
         fn equippedPower() -> Box<TesItemData>;
         fn equippedAmmo() -> Box<TesItemData>;
+        fn boundObjectLeftHand() -> Box<TesItemData>;
+        fn boundObjectRightHand() -> Box<TesItemData>;
 
         fn playerHasItemOrSpell(form_spec: &CxxString) -> bool;
 

@@ -77,9 +77,9 @@ pub mod public {
     }
 
     /// We know for sure the player just equipped this item.
-    pub fn handle_item_equipped(item: Box<TesItemData>) -> bool {
+    pub fn handle_item_equipped(equipped: bool, item: Box<TesItemData>) -> bool {
         let mut ctrl = CONTROLLER.lock().unwrap();
-        ctrl.handle_item_equipped(item)
+        ctrl.handle_item_equipped(equipped, item)
     }
 
     /// A consumable's count changed. Record if relevant.
@@ -98,6 +98,8 @@ pub struct Controller {
     visible: HashMap<HudElement, TesItemData>,
     /// True if we've got a two-handed weapon equipped right now.
     two_hander_equipped: bool,
+    /// We cache the left-hand item we had before a two-hander arrived.
+    left_hand_cached: Option<TesItemData>,
 }
 
 impl Controller {
@@ -217,11 +219,15 @@ impl Controller {
     /// out of band, e.g., by using a menu, and only then if we screwed
     /// up an equip event.
     fn update_hud(&mut self) -> bool {
-        let right_entry = equippedRightHand();
+        let right_entry = boundObjectRightHand();
         let right_changed = self.update_slot(HudElement::Right, &right_entry);
 
-        let left_entry = equippedLeftHand();
+        let left_entry = boundObjectLeftHand();
         let left_changed = self.update_slot(HudElement::Left, &left_entry);
+        if !left_entry.two_handed() {
+            self.left_hand_cached = Some(*left_entry.clone());
+        }
+        self.two_hander_equipped = left_entry.two_handed();
 
         let power = equippedPower();
         let power_changed = self.update_slot(HudElement::Power, &power);
@@ -229,7 +235,16 @@ impl Controller {
         let ammo = equippedAmmo();
         let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
 
-        let changed = right_changed || left_changed || power_changed || ammo_changed;
+        let utility_changed = if let Some(utility) = self.cycles.get_top(Action::Utility) {
+            log::info!("utility item starts at name='{}';", utility.name());
+            self.update_slot(HudElement::Utility, &utility);
+            true
+        } else {
+            false
+        };
+
+        let changed =
+            right_changed || left_changed || power_changed || ammo_changed || utility_changed;
 
         if changed {
             log::info!(
@@ -237,7 +252,7 @@ impl Controller {
                 power.name(),
                 left_entry.name(),
                 right_entry.name(),
-                ammo.name()
+                ammo.name(),
             );
 
             // If any of our equipped items is in a cycle, make that item the top item
@@ -254,47 +269,52 @@ impl Controller {
     ///
     /// The item we're handed was either equipped or UNequipped. We are not
     /// told which. There are some changes we do need to react to.
-    fn handle_item_equipped(&mut self, item: Box<TesItemData>) -> bool {
+    fn handle_item_equipped(&mut self, equipped: bool, item: Box<TesItemData>) -> bool {
         log::info!(
-            "entering handle_item_equipped with obj; name='{}'; form_spec={};",
+            "entering handle_item_equipped(); equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; cached={:?}",
+            equipped,
             item.name(),
-            item.form_string()
+            item.kind(),
+            self.two_hander_equipped,
+            self.left_hand_cached
         );
-
-        if item.kind() == TesItemKind::Arrow {
-            let ammo = equippedAmmo();
-            log::info!(
-                "three kinds of arrow walk into a bar; equipped={}; item={};",
-                ammo.name(),
-                item.name()
-            );
-            if ammo.form_string() == item.form_string() {
-                // we are equipping this.
-                self.visible.insert(HudElement::Power, *item);
-                return true;
-            } else {
-                // We are unequipping it, and will wait for the equipping update.
-                return false;
-            }
-        }
 
         if item.kind().is_utility() {
             // We do nothing. We are the source of truth on the utility view.
             return false;
         }
 
-        if item.kind().is_power() {
-            if let Some(previous) = self.visible.get(&HudElement::Power) {
-                if previous.form_string() != item.form_string() {
-                    // Trying the other logic thingie for powers.
-                    self.visible.insert(HudElement::Power, *item.clone());
-                    self.cycles.set_top(Action::Power, *item);
+        let item = *item; // insert unboxing video
+
+        if matches!(item.kind(), TesItemKind::Arrow) {
+            log::debug!("handling ammo");
+            if let Some(visible) = self.visible.get(&HudElement::Ammo) {
+                if visible.form_string() != item.form_string() {
+                    log::debug!("updating visible ammo; name='{}';", item.name());
+                    self.update_slot(HudElement::Ammo, &item);
                     return true;
                 } else {
                     return false;
                 }
             } else {
-                self.visible.insert(HudElement::Power, *item);
+                self.update_slot(HudElement::Ammo, &item);
+                return true;
+            }
+        }
+
+        if item.kind().is_power() {
+            log::debug!("handling power/shout");
+            if let Some(visible) = self.visible.get(&HudElement::Power) {
+                if visible.form_string() != item.form_string() {
+                    log::debug!("updating visible power; name='{}';", item.name());
+                    self.update_slot(HudElement::Power, &item);
+                    self.cycles.set_top(Action::Power, item.clone());
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                self.update_slot(HudElement::Power, &item);
                 return true;
             }
         }
@@ -303,64 +323,126 @@ impl Controller {
             return false;
         }
 
-        let rightie = equippedRightHand();
-        let leftie = equippedLeftHand();
+        let rightie = boundObjectRightHand();
+        let leftie = boundObjectLeftHand();
 
-        if (item.form_string() != rightie.form_string())
-            && (item.form_string() != leftie.form_string())
-        {
-            // We are unequipping this item. We do nothing.
-            return false;
-        }
+        log::debug!(
+            "form strings: item={}; right={}; left={}; two-hander-equipped={};",
+            item.form_string(),
+            rightie.form_string(),
+            leftie.form_string(),
+            self.two_hander_equipped
+        );
 
         if rightie.form_string() == item.form_string() {
             // We are equipping this item in the right hand.
-            let right_prev = self.visible.get(&HudElement::Right);
-            if let Some(visible) = right_prev {
-                if visible.form_string() != item.form_string() {
-                    self.visible.insert(HudElement::Right, *item.clone());
-                    self.cycles.set_top(Action::Right, *item);
-                    return true;
-                } else {
-                    return false;
+            let right_changed = self.handle_right_hand_event(item.clone());
+            if self.two_hander_equipped && !item.two_handed() {
+                if let Some(prev_left) = self.left_hand_cached.clone() {
+                    log::info!(
+                        "contemplating forcing re-equip here; name='{}';",
+                        prev_left.name()
+                    );
+                    // cxx::let_cxx_string!(form_spec = prev_left.form_string());
+                    // reequipLeftHand(&form_spec);
                 }
-            } else {
-                self.visible.insert(HudElement::Right, *item.clone());
-                self.cycles.set_top(Action::Right, *item);
-                return true;
             }
-        } else if leftie.form_string() == item.form_string() {
-            // We are equipping this item in the left hand.
-            let left_prev = self.visible.get(&HudElement::Left);
-
-            // We do not show two-handed items in the left hand, though.
             if item.two_handed() {
-                if let Some(visible) = left_prev {
-                    if visible.form_string().is_empty() {
-                        return false; // no change from previous state
-                    }
-                }
-                let insert_this = TesItemData::default();
-                self.visible.insert(HudElement::Left, insert_this);
-                return true;
+                // only set; do not unset.
+                self.two_hander_equipped = true;
             }
-            self.two_hander_equipped = item.two_handed();
+            return right_changed;
+        }
 
-            if let Some(visible) = left_prev {
-                if visible.form_string() != item.form_string() {
-                    self.visible.insert(HudElement::Left, *item.clone());
-                    self.cycles.set_top(Action::Left, *item);
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                self.visible.insert(HudElement::Left, *item.clone());
-                self.cycles.set_top(Action::Left, *item);
+        if leftie.form_string() == item.form_string() {
+            // We are equipping this item in the left hand.
+            return self.handle_left_hand_event(item);
+        }
+
+        return false; // we really shouldn't reach this, but
+    }
+
+    fn handle_right_hand_event(&mut self, item: TesItemData) -> bool {
+        if let Some(visible) = self.visible.get(&HudElement::Right) {
+            if visible.form_string() != item.form_string() {
+                log::debug!("equipped right-hand item; name='{}';", item.name());
+                self.cycles.set_top(Action::Right, item.clone());
+                self.update_slot(HudElement::Right, &item);
                 return true;
+            } else {
+                return false;
             }
         }
-        false
+
+        // somehow nothing was in there
+        self.cycles.set_top(Action::Right, item.clone());
+        self.update_slot(HudElement::Right, &item);
+        return true;
+    }
+
+    // todo tomorrow when I'm fresh: coalesce this with right hand version
+    fn handle_left_hand_event(&mut self, item: TesItemData) -> bool {
+        let left_prev = self.visible.get(&HudElement::Left);
+        log::debug!(
+            "entering handle left; item is two-handed: {}; two_hander_equipped={}",
+            item.two_handed(),
+            self.two_hander_equipped
+        );
+
+        // We don't care if it's visible or not. If we've equipped
+        // a one-hander in the left hand, we record it.
+        if !item.two_handed() && self.two_hander_equipped {
+            // If we're here, we've equipped something new in the left hand.
+            // Let's see if this item matches something we had equipped before!
+            if let Some(cached_left) = &self.left_hand_cached {
+                if item.form_string() == cached_left.form_string() {
+                    // Force a re-equip.
+                    log::debug!("forcing left-hand re-equip");
+                    self.two_hander_equipped = false;
+                    cxx::let_cxx_string!(form_spec = item.form_string());
+                    reequipLeftHand(&form_spec);
+                    return false;
+                } else {
+                    log::debug!("updating cached left hand item");
+                    self.left_hand_cached = Some(item.clone());
+                }
+            } else {
+                log::debug!("we chose not to do anything because our cached item is None???");
+            }
+        }
+        // we do not want to un-set
+        if item.two_handed() {
+            self.two_hander_equipped = true;
+        }
+
+        // We do not show two-handed items in the left hand, though.
+        if item.two_handed() {
+            if let Some(visible) = left_prev {
+                if visible.form_string().is_empty() {
+                    return false; // no change from previous state
+                }
+            }
+            let insert_this = TesItemData::default();
+            self.update_slot(HudElement::Left, &insert_this);
+            return true;
+        }
+
+        let update = if let Some(visible) = left_prev {
+            if visible.form_string() != item.form_string() {
+                log::debug!("equipped left-hand item; name='{}';", item.name());
+                true
+            } else {
+                false
+            }
+        } else {
+            true
+        };
+
+        if update {
+            self.cycles.set_top(Action::Left, item.clone());
+            self.update_slot(HudElement::Left, &item);
+        }
+        update
     }
 
     fn update_slot(&mut self, slot: HudElement, new_item: &TesItemData) -> bool {

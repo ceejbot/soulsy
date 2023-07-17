@@ -24,6 +24,8 @@ namespace player
 	rust::Box<TesItemData> equippedRightHand();
 	rust::Box<TesItemData> equippedPower();
 	rust::Box<TesItemData> equippedAmmo();
+	rust::Box<TesItemData> boundObjectLeftHand();
+	rust::Box<TesItemData> boundObjectRightHand();
 
 	void unequipSlot(Action slot);
 	void unequipShout();
