@@ -6,7 +6,8 @@ Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is 
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project is still in development, though it does in fact run and do stuff when loaded into a game! See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLibSE and the UI framework.
+This project is still in development, though it does in fact run and act as
+expected in-game! (Almost.) See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLibSE and the UI framework.
 
 ## User documentation
 
@@ -81,7 +82,7 @@ There are a number of development conveniences in the [justfile](https://just.sy
 
 ## Credits
 
-All of the UI code is retained from [LamasTinyHud](https://www.nexusmods.com/skyrimspecialedition/mods/82545), so [mlthelama](https://github.com/mlthelama) gets all the props. I also learned a lot about how to make an SKSE plugin by reading their source. Give that HUD a try if you don't like the souls-game style, or want a UI you can edit in-game. The original has more features than this one does! It's also the only hotkeys hud mod I tried that worked well in my game, so that's a testimonial.
+I could not have approached the rendering code without the work in [LamasTinyHud](https://www.nexusmods.com/skyrimspecialedition/mods/82545), so [mlthelama](https://github.com/mlthelama) gets all the props. I also learned a lot about how to make an SKSE plugin by reading their source. Give that HUD a try if you don't like the souls-game style, or want a UI you can edit in-game. The original has more features than this one does! It's also the only hotkeys hud mod I tried that worked well in my game, so that's a testimonial.
 
 The icons for the built-in theme are the usual SkyUI icons, plus the `futura-book-bt` true-type font. The other layout data is adapted from the [Untarnished UI skin](https://www.nexusmods.com/skyrimspecialedition/mods/82545) for LamasTinyHUD by [MinhazMurks](https://www.nexusmods.com/skyrimspecialedition/users/26341279).
 
@@ -103,29 +104,31 @@ Ceej's development to-do list:
 - [x] Debounce keys. Especially the show/hide button.
 - [ ] Wire up the mod to MCM to show its config & write user settings.
 - [ ] Figure out what I'm doing wrong with MCM config settings. No really.
-- [ ] Track highlight status in the controller to support drawing.
+- [ ] Is there an official way to show a textual feedback message in SkyUI?
+- [ ] Make re-equipping the left-hand item work.
 - [x] Wire up the inventory-changed hooks.
 - [x] Inform Rust about equip changes.
 - [x] Get ammo showing correctly.
 - [x] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
-- [ ] Is there an official way to show a textual feedback message in SkyUI?
-- [ ] Make re-equipping the left-hand item work.
 - [x] Wire up activating the utility button.
 - [x] Figure out why activating potions makes the game lock up.
-- [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
 - [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
 - [x] Come up with an adequate default layout for the HUD.
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
-- [ ] I18n. I ripped out some affordances for alternative fonts & UI text translations.
+- [ ] I18n: fonts.
+- [x] I18n: translation files.
 - [ ] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
-- [ ] Sort out `gear.h` vs `utility_items.h`. Merge?
+- [ ] Review the 20-or-so TODO items noted in code comments.
+- [x] Sort out `gear.h` vs `utility_items.h`. Merge?
 - [x] Improve the CMake files so rebuilding is reliable.
 - [ ] Add support for debug builds to CMake, or at least remove the half-done option.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
+- [ ] Consider getting more testers.
+- [ ] Track highlight status in the controller to support animating a highlighted slot.
+- [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
 - [ ] Update to CommonLibSE-NG?
 - [x] Make Rust log to a second file in the same directory as SKSE.
-- [ ] Add more Rust debug-level logging for happy-path cases.
-- [ ] Consider getting more testers.
+- [x] Add more Rust debug-level logging for happy-path cases.
 
 ## License
 

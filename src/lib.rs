@@ -72,7 +72,6 @@ pub mod plugin {
     /// This has all the same data as the previous slot settings struct, but rearranges
     /// it into more subtypes. The current logic uses the alpha level of an item to decide
     /// if it should be drawn or not. I might go for an explict boolean for that.
-    /// TODO: make this more concise!
     #[derive(Deserialize, Serialize, Debug, Clone)]
     struct SlotLayout {
         /// The hud element this layout is for.

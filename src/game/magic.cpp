@@ -7,7 +7,6 @@
 
 namespace game
 {
-	// TODO remove entirely
 	void cast_magic(RE::TESForm* a_form,
 		action_type a_action,
 		const RE::BGSEquipSlot* a_slot,

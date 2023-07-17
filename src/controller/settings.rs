@@ -109,7 +109,7 @@ impl UserSettings {
         let conf = Ini::load_from_file(SETTINGS_PATH)?;
         let empty = ini::Properties::new();
 
-        // This is the sound of my brain going clonk. TODO rework.
+        // This is the sound of my brain going clonk.
         let controls = if let Some(s) = conf.section(Some("Controls")) {
             s
         } else {

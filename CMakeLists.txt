@@ -223,8 +223,7 @@ target_include_directories(
 )
 
 # The last few of these are surprising, but are pulled in by some of the rust crates
-# included in the Rust library. TODO trim down dependencies and enabled features so I
-# can trim this list.
+# included in the Rust library.
 target_link_libraries(
     ${PROJECT_NAME}
     PRIVATE
