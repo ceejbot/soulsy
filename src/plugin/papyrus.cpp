@@ -20,7 +20,7 @@ namespace papyrus
 
 	bool Register(RE::BSScript::IVirtualMachine* a_vm)
 	{
-		a_vm->RegisterFunction("OnConfigClose", mcm_name, on_config_close);
+		a_vm->RegisterFunction("OnConfigClose", mcm_name, onConfigClose);
 		a_vm->RegisterFunction("GetResolutionWidth", mcm_name, get_resolution_width);
 		a_vm->RegisterFunction("GetResolutionHeight", mcm_name, get_resolution_height);
 
@@ -28,22 +28,21 @@ namespace papyrus
 		return true;
 	}
 
-	void on_config_close(RE::TESQuest*)
+	void onConfigClose(RE::TESQuest*)
 	{
-		logger::info("on_config_close() start"sv);
+		logger::info("updating configuration after settings change!"sv);
 		rust::Box<UserSettings> old_settings = user_settings();
 		refresh_user_settings();
 		rust::Box<UserSettings> new_settings = user_settings();
 
-		if (old_settings->maxlen() > new_settings->maxlen())
+		auto newmax = new_settings->maxlen();
+		if (old_settings->maxlen() > newmax)
 		{
-			// TODO trim cycles from the end
+			logger::info("truncating cycles to len={};"sv, newmax);
+			truncate_cycles(newmax);
 		}
-
-		// force a redraw if the settings changed
+		// force a redraw, I guess?
 		ui::ui_renderer::set_fade(true, 1.f);
-
-		logger::debug("on_config_close() done"sv);
 	}
 
 	RE::BSFixedString get_resolution_width(RE::TESQuest*)

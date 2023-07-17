@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use super::control::MenuEventResponse;
 use super::user_settings;
-use crate::plugin::{hasItemOrSpell, Action, TesItemKind};
+use crate::plugin::{hasItemOrSpell, notifyPlayer, Action, TesItemKind};
 
 /// Given an entry kind, return the filename of the icon to use for it.
 /// Exposed to C++.
@@ -195,6 +195,29 @@ impl CycleData {
             Action::Right => self.right.len(),
             Action::Utility => self.utility.len(),
             _ => 0,
+        }
+    }
+
+    pub fn truncate_if_needed(&mut self, newlen: usize) {
+        if self.power.len() > newlen {
+            self.power.truncate(newlen);
+            cxx::let_cxx_string!(msg = format!("Power cycle shortened to {} items.", newlen));
+            notifyPlayer(&msg);
+        }
+        if self.utility.len() > newlen {
+            self.utility.truncate(newlen);
+            cxx::let_cxx_string!(msg = format!("Utility cycle shortened to {} items.", newlen));
+            notifyPlayer(&msg);
+        }
+        if self.left.len() > newlen {
+            self.left.truncate(newlen);
+            cxx::let_cxx_string!(msg = format!("Left-hand cycle shortened to {} items.", newlen));
+            notifyPlayer(&msg);
+        }
+        if self.right.len() > newlen {
+            self.right.truncate(newlen);
+            cxx::let_cxx_string!(msg = format!("Right-hand cycle shortened to {} items.", newlen));
+            notifyPlayer(&msg);
         }
     }
 

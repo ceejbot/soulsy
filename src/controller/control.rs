@@ -86,6 +86,11 @@ pub mod public {
         let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.handle_inventory_changed(item, count);
     }
+
+    pub fn truncate_cycles(new: usize) {
+        let mut ctrl = CONTROLLER.lock().unwrap();
+        ctrl.cycles.truncate_if_needed(new);
+    }
 }
 
 /// What, model/view/controller? In my UI application? oh no

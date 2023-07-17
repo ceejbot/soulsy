@@ -2,7 +2,7 @@
 
 namespace papyrus
 {
-	void on_config_close(RE::TESQuest*);
+	void onConfigClose(RE::TESQuest*);
 	RE::BSFixedString get_resolution_width(RE::TESQuest*);
 	RE::BSFixedString get_resolution_height(RE::TESQuest*);
 

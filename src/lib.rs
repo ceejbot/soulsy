@@ -231,6 +231,8 @@ pub mod plugin {
         fn hotkey_for(self: &UserSettings, action: HudElement) -> u32;
         /// Get which kind of controller to draw shortcuts for: keyboard, PS5, or Xbox.
         fn controller_kind(self: &UserSettings) -> u32;
+        /// If a settings change has shortened the max cycle length, truncate if we have to.
+        fn truncate_cycles(new_length: usize);
 
         /// Managed access to the settings object, so we can lazy-load if necessary.
         fn user_settings() -> Box<UserSettings>;

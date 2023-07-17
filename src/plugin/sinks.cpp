@@ -56,7 +56,7 @@ void KeyEventSink::register_sink()
 event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 	[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* source)
 {
-	// We start by figuring out if we need to ddo anything at all.
+	// We start by figuring out if we need to do anything at all.
 	if (!event_list) { return event_result::kContinue; }
 
 	// If we can't ask questions about the state of the UI, we bail.
@@ -109,11 +109,11 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		if (button->IsPressed() || button->IsDown() || button->IsHeld()) { continue; }
 		//logger::trace("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
 		const KeyEventResponse response = handle_key_event(key, *button);
-		logger::debug("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
-			key,
-			response.handled,
-			static_cast<uint8_t>(response.start_timer),
-			static_cast<uint8_t>(response.stop_timer));
+		// logger::trace("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
+		// 	key,
+		// 	response.handled,
+		// 	static_cast<uint8_t>(response.start_timer),
+		// 	static_cast<uint8_t>(response.stop_timer));
 		if (!response.handled) { continue; }
 
 		if (response.stop_timer != Action::Irrelevant)
