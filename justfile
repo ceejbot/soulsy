@@ -74,7 +74,7 @@ tag VERSION:
     echo "Release tagged for version v{{VERSION}}"
 
 # Bash version of archive creation, sans 7zip step for now.
-@archive: 
+archive: 
     #!/usr/bin/env bash
     set -e
     mkdir -p archive/SKSE/plugins

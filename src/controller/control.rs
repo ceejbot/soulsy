@@ -215,24 +215,31 @@ impl Controller {
 
     /// Returns true if our view of the player changed.
     fn update_equipped(&mut self) -> bool {
-        let mut changed = false;
-
         let previously_visible = self.visible.clone();
         let left_previous = previously_visible.get(&HudElement::Left).clone();
+        let left_entry = equippedLeftHand();
 
+        let right_previous = previously_visible.get(&HudElement::Right).clone();
         let right_entry = equippedRightHand();
-        changed = changed || self.update_slot(HudElement::Right, &right_entry);
 
-        if right_entry.two_handed() && !self.two_hander_equipped {
-            // We've switched from a singled-handed weapon to a two-hander.
-            // Remember what we had equipped in the left.
-            if self.left_hand_cached.is_none() {
-                self.left_hand_cached = left_previous.cloned();
+        let previously_twohanded = if let Some(right_previous) = right_previous {
+            right_previous.two_handed()
+        } else {
+            false
+        };
+
+        let right_changed = self.update_slot(HudElement::Right, &right_entry);
+        if right_changed && !previously_twohanded && right_entry.two_handed() {
+            if self.left_hand_cached.is_some() {
+                log::warn!(
+                    "Quite surprised to find that we had a leftie cached; leftie={:?}",
+                    self.left_hand_cached
+                );
             }
-            self.two_hander_equipped = true;
+            self.left_hand_cached = left_previous.cloned();
         }
 
-        let left_entry = if !right_entry.two_handed() && self.two_hander_equipped {
+        if right_changed && previously_twohanded && !right_entry.two_handed() {
             // We've switched from a two-hander to a one-hander. Re-equip what
             // we had in the left. This schedules an SKSE task, so it won't be
             // re-entrant AFAIK.
@@ -241,46 +248,50 @@ impl Controller {
                 self.left_hand_cached
             );
             if let Some(leftie) = &self.left_hand_cached {
-                cxx::let_cxx_string!(form_spec = leftie.form_string());
-                reequipLeftHand(&form_spec);
                 let leftie = leftie.clone();
                 self.left_hand_cached = None;
-                Box::new(leftie)
-            } else {
-                equippedLeftHand()
+                cxx::let_cxx_string!(form_spec = leftie.form_string());
+                reequipLeftHand(&form_spec);
+                // don't update the ui; we will let the equip notification tell us when
             }
-        } else if self.two_hander_equipped {
+        }
+
+        let show_left = if left_entry.two_handed() {
             Box::<TesItemData>::default()
         } else {
-            equippedLeftHand()
+            left_entry
         };
 
-        changed = changed || self.update_slot(HudElement::Left, &left_entry);
+        let left_changed = self.update_slot(HudElement::Left, &show_left);
 
         let power = equippedPower();
-        changed = changed || self.update_slot(HudElement::Power, &power);
+        let power_changed = self.update_slot(HudElement::Power, &power);
 
         let ammo = equippedAmmo();
-        changed = changed || self.update_slot(HudElement::Ammo, &ammo);
+        let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
 
-        if let Some(utility) = self.cycles.get_top(Action::Utility) {
-            changed = changed || self.update_slot(HudElement::Utility, &utility);
-        }
+        let utility_changed = if let Some(utility) = self.cycles.get_top(Action::Utility) {
+            self.update_slot(HudElement::Utility, &utility)
+        } else {
+            false
+        };
 
-        if changed {
-            log::info!(
-                "visible items changed: power='{}'; left='{}'; right='{}'; ammo='{}';",
-                power.name(),
-                left_entry.name(),
-                right_entry.name(),
-                ammo.name()
-            );
-            // If any of our equipped items is in a cycle, make that item the top item
-            // so advancing the cycles works as expected.
-            self.cycles.set_top(Action::Power, *power);
-            self.cycles.set_top(Action::Left, *left_entry);
-            self.cycles.set_top(Action::Right, *right_entry);
-        }
+        let changed =
+            right_changed || left_changed || power_changed || ammo_changed || utility_changed;
+
+        log::info!(
+            "visible items changed: power='{}'; left='{}'; right='{}'; ammo='{}';",
+            power.name(),
+            show_left.name(),
+            right_entry.name(),
+            ammo.name()
+        );
+
+        // If any of our equipped items is in a cycle, make that item the top item
+        // so advancing the cycles works as expected.
+        self.cycles.set_top(Action::Power, *power);
+        self.cycles.set_top(Action::Left, *show_left);
+        self.cycles.set_top(Action::Right, *right_entry);
 
         changed
     }
