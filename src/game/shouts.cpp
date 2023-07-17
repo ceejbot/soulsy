@@ -1,6 +1,8 @@
 #include "shouts.h"
 
 #include "string_util.h"
+#include "offset.h"
+#include "player.h"
 
 // For game implementation reasons, this also includes spells.
 // Lesser powers are spells that go into the shout slot, IIUC.

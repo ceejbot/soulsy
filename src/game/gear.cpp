@@ -1,8 +1,10 @@
 ﻿#include "gear.h"
 
+#include "constant.h"
 #include "offset.h"
 #include "player.h"
 #include "string_util.h"
+#include "weapons.h"
 
 #include "lib.rs.h"
 
@@ -79,7 +81,7 @@ namespace game
 
 	void equipItemByFormAndSlot(const RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
-		auto slot_is_left = slot == game::left_hand_equip_slot();
+		auto slot_is_left = slot == left_hand_equip_slot();
 		logger::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
 			form->GetName(),
 			slot_is_left,
@@ -88,13 +90,13 @@ namespace game
 		if (form->formID == util::unarmed)
 		{
 			logger::trace("this slot should be unarmed; unequipping slot"sv);
-			game::unequipLeftOrRightSlot(slot, player);
+			unequipLeftOrRightSlot(slot, player);
 			return;
 		}
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		auto item_count               = game::boundObjectForForm(form, player, bound_obj, extra);
+		auto item_count               = boundObjectForForm(form, player, bound_obj, extra);
 
 		if (!bound_obj)
 		{
@@ -131,7 +133,7 @@ namespace game
 		if (item_count == equipped_count)
 		{
 			// The game might try to equip something else, according to mlthelama.
-			game::unequipLeftOrRightSlot(slot, player);
+			unequipLeftOrRightSlot(slot, player);
 			return;
 		}
 

@@ -1,10 +1,9 @@
-#include "consumables.h"
+#include "utility.h"
 
 #include "constant.h"
 #include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
-#include "perk_visitor.h"
 #include "player.h"
 #include "string_util.h"
 
@@ -12,6 +11,8 @@
 
 namespace game
 {
+	using string_util = util::string_util;
+
 	// ---------- ammo
 
 	void equipAmmoByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
@@ -66,8 +67,8 @@ namespace game
 		{
 			RE::ActorEquipManager::GetSingleton()->UnequipObject(player, ammo);
 			logger::debug("unequipping ammo if needed; name='{}'; form=0x{}"sv,
-				form->GetName(),
-				util::string_util::int_to_hex(form->formID));
+				ammo->GetName(),
+				util::string_util::int_to_hex(ammo->formID));
 		}
 	}
 

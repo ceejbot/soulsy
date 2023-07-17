@@ -1,6 +1,8 @@
 #include "weapons.h"
 
 #include "string_util.h"
+#include "offset.h"
+#include "lib.rs.h"
 
 namespace game
 {

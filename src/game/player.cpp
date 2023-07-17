@@ -4,7 +4,7 @@
 #include "gear.h"
 #include "magic.h"
 #include "shouts.h"
-#include "utility_items.h"
+#include "utility.h"
 #include "weapons.h"
 
 #include "helpers.h"
@@ -95,7 +95,7 @@ namespace player
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
-		if (which == Action::Power) { shouts::unequipShoutSlot(player); }
+		if (which == Action::Power) { game::unequipShoutSlot(player); }
 		else if (which == Action::Right || which == Action::Left) { game::unequipHand(player, which); }
 		else { logger::debug("somebody called unequipSlot() with slot={};"sv, static_cast<uint8_t>(which)); }
 	}
@@ -103,7 +103,7 @@ namespace player
 	void unequipShout()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		shouts::unequipShoutSlot(player);
+		game::unequipShoutSlot(player);
 	}
 
 	void equipShout(const std::string& form_spec)
@@ -111,7 +111,7 @@ namespace player
 		auto* shout_form = helpers::formSpecToFormItem(form_spec);
 		if (!shout_form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		shouts::equipShoutByForm(shout_form, player);
+		game::equipShoutByForm(shout_form, player);
 	}
 
 	void equipMagic(const std::string& form_spec, Action slot)
