@@ -8,22 +8,13 @@
 
 void init_logger()
 {
-	if (static bool initialized = false; !initialized)
-	{
-		initialized = true;
-	}
-	else
-	{
-		return;
-	}
+	if (static bool initialized = false; !initialized) { initialized = true; }
+	else { return; }
 
 	try
 	{
 		auto path = logger::log_directory();
-		if (!path)
-		{
-			stl::report_and_fail("failed to get standard log path"sv);
-		}
+		if (!path) { stl::report_and_fail("failed to get standard log path"sv); }
 
 		*path /= fmt::format("{}.log"sv, Version::PROJECT);
 		auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
@@ -72,8 +63,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			ui::ui_renderer::set_show_ui(true);
 			logger::info("SKSE post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
 			break;
-		default:
-			break;
+		default: break;
 	}
 }
 

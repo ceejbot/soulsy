@@ -351,7 +351,7 @@ impl Display for CycleData {
     }
 }
 
-fn vec_to_debug_string(input: &Vec<TesItemData>) -> String {
+fn vec_to_debug_string(input: &[TesItemData]) -> String {
     format!(
         "[{}]",
         input

@@ -356,7 +356,7 @@ impl Controller {
             return self.handle_left_hand_event(item);
         }
 
-        return false; // we really shouldn't reach this, but
+        false // we really shouldn't reach this, but
     }
 
     fn handle_right_hand_event(&mut self, item: TesItemData) -> bool {
@@ -389,7 +389,7 @@ impl Controller {
         // somehow nothing was in there
         self.cycles.set_top(Action::Right, item.clone());
         self.update_slot(HudElement::Right, &item);
-        return true;
+        true
     }
 
     fn handle_left_hand_event(&mut self, item: TesItemData) -> bool {
@@ -522,7 +522,7 @@ impl Controller {
         }
 
         // unreachable tbh
-        return KeyEventResponse::default();
+        KeyEventResponse::default()
     }
 
     /// Activate whatever we have in the utility slot.

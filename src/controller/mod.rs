@@ -21,9 +21,8 @@ pub use control::public::*;
 pub use cycles::{default_cycle_entry, get_icon_file, make_tesitem, TesItemData};
 pub use layout::hud_layout;
 pub use settings::{refresh_user_settings, user_settings, UserSettings};
-pub use tesitemkind::{kind_has_count, kind_is_magic}; // hmm, is this for settings? I'm confused...
-
 use simplelog::*;
+pub use tesitemkind::{kind_has_count, kind_is_magic}; // hmm, is this for settings? I'm confused...
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
     let hudl = hud_layout(); // yeah, it's in here, sorry. we can reload this at runtime.

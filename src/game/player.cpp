@@ -47,16 +47,14 @@ namespace player
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		equip::boundObjectForForm(item_form, player, bound_obj, extra);
-		if (!bound_obj) { 
-			return equippable::makeTESItemDataFromForm(item_form);
-		}
+		if (!bound_obj) { return equippable::makeTESItemDataFromForm(item_form); }
 
 		return equippable::makeTESItemDataFromForm(bound_obj);
 	}
 
 	rust::Box<TesItemData> boundObjectRightHand()
 	{
-		auto* player = RE::PlayerCharacter::GetSingleton();
+		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 		if (!obj) return default_cycle_entry();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
@@ -65,9 +63,7 @@ namespace player
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		equip::boundObjectForForm(item_form, player, bound_obj, extra);
-		if (!bound_obj) { 
-			return equippable::makeTESItemDataFromForm(item_form);
-		}
+		if (!bound_obj) { return equippable::makeTESItemDataFromForm(item_form); }
 
 		return equippable::makeTESItemDataFromForm(bound_obj);
 	}

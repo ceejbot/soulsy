@@ -1,12 +1,12 @@
 ﻿#include "utility_items.h"
 
 #include "constant.h"
+#include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
 #include "perk_visitor.h"
 #include "player.h"
 #include "string_util.h"
-#include "equippable.h"
 
 #include "lib.rs.h"
 
@@ -28,8 +28,8 @@ namespace equip
 			return;
 		}
 
-		RE::TESBoundObject *bound_obj = nullptr;
-		RE::ExtraDataList *extra      = nullptr;
+		RE::TESBoundObject* bound_obj = nullptr;
+		RE::ExtraDataList* extra      = nullptr;
 		auto item_count               = equip::boundObjectForForm(form, player, bound_obj, extra);
 
 		if (!bound_obj)
