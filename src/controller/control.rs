@@ -125,7 +125,7 @@ impl Controller {
     /// The player's inventory changed! Act on it if we need to.
     fn handle_inventory_changed(&mut self, item: Box<TesItemData>, count: usize) {
         log::info!(
-            "inventory count changed; formid={}; count={count}",
+            "inventory count changed; formID={}; count={count}",
             item.form_string()
         );
 
@@ -201,7 +201,7 @@ impl Controller {
             equipAmmo(&form_spec);
         } else {
             log::info!(
-                "we did nothing with item name={}; kind={kind:?};",
+                "we did nothing with item name='{}'; kind={kind:?};",
                 item.name()
             );
         }

@@ -357,7 +357,7 @@ impl CycleData {
         if item.kind().is_utility() {
             if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
                 log::debug!(
-                    "updating count for tracked item; formid={}; count={count}",
+                    "updating count for tracked item; formID={}; count={count}",
                     item.form_string()
                 );
                 candidate.set_count(count);

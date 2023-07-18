@@ -1,8 +1,8 @@
 #include "shouts.h"
 
-#include "string_util.h"
 #include "offset.h"
 #include "player.h"
+#include "string_util.h"
 
 // For game implementation reasons, this also includes spells.
 // Lesser powers are spells that go into the shout slot, IIUC.
@@ -36,7 +36,7 @@ namespace game
 		if (selected_power)
 		{
 			logger::trace(
-				"unequipping shout/power formid=0x{};"sv, util::string_util::int_to_hex(selected_power->formID));
+				"unequipping shout/power formID={};"sv, util::string_util::int_to_hex(selected_power->formID));
 			if (selected_power->Is(RE::FormType::Shout))
 			{
 				un_equip_shout(nullptr, 0, player, selected_power->As<RE::TESShout>());

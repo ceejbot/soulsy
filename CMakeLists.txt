@@ -35,8 +35,8 @@ if(DEFINED VCPKG_ROOT)
     set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
 else()
     message(
-        WARNING
-        "Variable VCPKG_ROOT is not set. Continuing without vcpkg."
+        FATAL_ERROR
+        "Variable VCPKG_ROOT is not set. Please set it in either the cmake file or your env."
     )
 endif()
 
@@ -48,7 +48,7 @@ option(ENABLE_SKYRIM_AE "Enable support for Skyrim AE in the dynamic runtime fea
 option(ENABLE_SKYRIM_VR "Enable support for Skyrim VR in the dynamic runtime feature." OFF)
 set(BUILD_TESTS OFF)
 
-
+# We're building and linking with a Rust library.
 set(CARGO_MANIFEST ${CMAKE_SOURCE_DIR}/Cargo.toml)
 set(CARGO_TARGET_DIR ${CMAKE_SOURCE_DIR}/target)
 

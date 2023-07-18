@@ -10,7 +10,7 @@ namespace game
 	void cast_magic(RE::TESForm* a_form,
 		action_type a_action,
 		const RE::BGSEquipSlot* a_slot,
-		RE::PlayerCharacter*& a_player)
+		RE::PlayerCharacter*& player)
 	{
 		auto left = a_slot == game::left_hand_equip_slot();
 		logger::trace(
@@ -24,7 +24,7 @@ namespace game
 
 		auto* spell = a_form->As<RE::SpellItem>();
 
-		if (!a_player->HasSpell(spell))
+		if (!player->HasSpell(spell))
 		{
 			logger::warn("player does not have spell {}. return."sv, spell->GetName());
 			return;
@@ -135,38 +135,29 @@ namespace game
 		logger::trace("worked spell {}, action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
-	void cast_scroll(const RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& a_player)
+	void cast_scroll(const RE::TESForm* form, action_type a_action, RE::PlayerCharacter*& player)
 	{
-		logger::trace("try to work scroll {}, action {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action));
+		logger::trace("start casting scroll; name='{}'; action {}"sv, form->GetName(), static_cast<uint32_t>(a_action));
 
-		if (!a_form->Is(RE::FormType::Scroll))
+		if (!form->Is(RE::FormType::Scroll))
 		{
-			logger::warn("object {} is not a scroll. return."sv, a_form->GetName());
+			logger::warn("object {} is not a scroll. return."sv, form->GetName());
 			return;
 		}
 
-		RE::TESBoundObject* obj = nullptr;
-		auto left               = 0;
-		for (auto potential_items = player::getInventoryForType(a_player, RE::FormType::Scroll);
-			 const auto& [item, inv_data] : potential_items)
-		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
-			{
-				obj  = item;
-				left = num_items;
-				break;
-			}
-		}
+		RE::TESBoundObject* obj  = nullptr;
+		RE::ExtraDataList* extra = nullptr;
+		auto item_count          = boundObjectForForm(form, player, obj, extra);
 
 		if (!obj || left == 0)
 		{
-			logger::warn("could not find selected scroll, maybe it all have been consumed"sv);
+			logger::warn("scroll not found in inventory"sv);
 			return;
 		}
 
 		if (a_action == action_type::instant)
 		{
-			auto* actor  = a_player->As<RE::Actor>();
+			auto* actor  = player->As<RE::Actor>();
 			auto* scroll = obj->As<RE::ScrollItem>();
 			actor->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)
 				->CastSpellImmediate(scroll, false, actor, 1.0f, false, 0.0f, nullptr);
@@ -177,14 +168,14 @@ namespace game
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
-				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(a_player, obj); });
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, obj); });
 			}
 		}
 
-		logger::trace("worked scroll {}, action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
+		logger::trace("used scroll {}, action {}. return."sv, form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
-	void equip_or_cast_power(RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& a_player)
+	void equip_or_cast_power(RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& player)
 	{
 		logger::trace("try to work power {}, action {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 
@@ -194,7 +185,7 @@ namespace game
 			return;
 		}
 
-		if (const auto* selected_power = a_player->GetActorRuntimeData().selectedPower;
+		if (const auto* selected_power = player->GetActorRuntimeData().selectedPower;
 			selected_power && a_action != action_type::instant)
 		{
 			logger::trace("current selected power is {}, is shout {}, is spell {}"sv,
@@ -209,14 +200,14 @@ namespace game
 		}
 
 		auto* spell = a_form->As<RE::SpellItem>();
-		if (!a_player->HasSpell(spell))
+		if (!player->HasSpell(spell))
 		{
 			logger::warn("player does not have spell {}. return."sv, spell->GetName());
 			return;
 		}
 
 
-		RE::ActorEquipManager::GetSingleton()->EquipSpell(a_player, spell);
+		RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell);
 		logger::trace("worked power {} action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 

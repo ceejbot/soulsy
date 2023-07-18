@@ -55,7 +55,7 @@ namespace game
 			return 0;
 		}
 
-		logger::info("found {} instance for bound object; name='{}'; formid=0x{};"sv,
+		logger::info("found {} instance for bound object; name='{}'; formID={};"sv,
 			item_count,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
@@ -137,7 +137,10 @@ namespace game
 			return;
 		}
 
-		logger::trace("adding task to equip '{}'; left={};"sv, form->GetName(), slot_is_left);
+		logger::trace("queuing task to equip '{}'; left={}; formID={};"sv,
+			form->GetName(),
+			slot_is_left,
+			util::string_util::int_to_hex(bound_obj->formID));
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{

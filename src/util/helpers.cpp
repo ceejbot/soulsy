@@ -42,12 +42,9 @@ namespace helpers
 			auto* source_file = form->sourceFiles.array->front()->fileName;
 			auto local_form   = form->GetLocalFormID();
 
-			logger::trace("form is from {}, local id is {}, hex 0x{}"sv,
-				source_file,
-				local_form,
-				string_util::int_to_hex(local_form));
-
-			form_string = fmt::format("{}{}{}", source_file, util::delimiter, string_util::int_to_hex(local_form));
+			const auto hexified = string_util::int_to_hex(local_form);
+			logger::trace("source file='{}'; local id={}'; hex={};"sv, source_file, local_form, hexified);
+			form_string = fmt::format("{}{}{}", source_file, util::delimiter, hexified);
 		}
 
 		return form_string;
@@ -64,14 +61,21 @@ namespace helpers
 		std::getline(string_stream, plugin, *util::delimiter);
 		std::getline(string_stream, id);
 		RE::FormID form_id;
-		std::istringstream(id) >> std::hex >> form_id;
+		// strip off 0x if present
+		auto formline = std::istringstream(id);
+		formline.ignore(2, 'x');
+		formline >> std::hex >> form_id;
 
-		if (plugin.empty()) { return nullptr; }
+		if (plugin.empty())
+		{
+			logger::warn("malformed form spec? spec={};"sv, a_str);
+			return nullptr;
+		}
 
 		if (plugin == util::dynamic_name) { form = RE::TESForm::LookupByID(form_id); }
 		else
 		{
-			logger::trace("checking mod {} for form {}"sv, plugin, form_id);
+			logger::trace("looking for form={}; checking plugin='{}';"sv, form_id, plugin);
 
 			const auto data_handler = RE::TESDataHandler::GetSingleton();
 			form                    = data_handler->LookupForm(form_id, plugin);
@@ -79,7 +83,8 @@ namespace helpers
 
 		if (form != nullptr)
 		{
-			logger::trace("got form id {}, name {}", string_util::int_to_hex(form->GetFormID()), form->GetName());
+			logger::trace(
+				"found it! name='{}'; formID={}", form->GetName(), string_util::int_to_hex(form->GetFormID()));
 		}
 
 		return form;

@@ -200,7 +200,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		logger::info("player has: {}; name='{}'; formid=0x{};"sv,
+		logger::info("player has: {}; name='{}'; formID={};"sv,
 			has_it,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
@@ -220,7 +220,7 @@ namespace player
 		game::boundObjectForForm(form, player, bound_obj, extra);
 		if (!bound_obj) { return; }
 
-		logger::info("re-equipping item in left hand; name='{}'; formid=0x{}"sv,
+		logger::info("re-equipping item in left hand; name='{}'; formID={}"sv,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
 		// TODO this is buggy. It might have to do with how I'm equipping the right, not the left.

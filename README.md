@@ -7,16 +7,16 @@ Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
 This project is still in development, though it does in fact run and act as
-expected in-game! (Almost.) See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the UI rendering and the plugin hooks/listeners to Rust, and have the C++ vanish down to glue code with CommonLibSE and the UI framework.
+expected in-game! (Almost.) See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish.
 
 ## User documentation
 
 Soulsy lets you set hotkeys for managing what you have equipped or readied in four equipment slots:
 
-- right hand: weapons, spells, two-handed weapons
+- right hand: weapons, spells, two-handed weapons, scrolls
 - left hand: one-handed weapons, spells, shields, torches, lanterns
-- shouts and minor powers
-- a utility slot: potions, scrolls, poisons, food
+- shouts and minor powers, scrolls
+- a utility slot: potions, poisons, food, armor
 
 Soulsy sets up _cycles_ for each of these equipment slots. For example, if you want to switch between Flames and Healing spells in your left hand, you'd add each of them to your left hand cycle. For your right hand, you might set up a long sword with an anti-undead enchantment, a dagger with Soul Trap, and a bow. Pressing the key assigned to a slot moves to the next item in your cycle and equips it (or readies it, in the case of the utility slot). If you tap the key several times quickly, you'll advance through the cycle and then equip the item you were on when you stopped tapping the button.
 
@@ -50,7 +50,7 @@ SoulsyHUD/SKSE/plugins
 └── SoulsyHUD_Layout.toml
 ```
 
-- `SoulsyHud_Layout.toml` - The HUD layout, in TOML format. Set text colors and locations.
+- `SoulsyHud_Layout.toml` - The HUD layout, in TOML format. Set colors, transparencies, sizes, and locations for every HUD element.
 - `backgrounds/hud_bg.svg` - The background for the entire HUD.
 - `backgrounds/slot_bg.svg` - The background for a single cycle element (left hand, power, etc).
 - `backgrounds/key_bg.svg` - The background for hotkey hints.
@@ -80,6 +80,8 @@ There are a number of development conveniences in the [justfile](https://just.sy
 
 `cargo --doc open` displays programmer documentation for the Rust side of the plugin. The C++ side is commented, but not to the same degree.
 
+This project follows the standard [Contributor's Covenant](./CODE_OF_CONDUCT.md).
+
 ## Credits
 
 I could not have approached the rendering code without the work in [LamasTinyHud](https://www.nexusmods.com/skyrimspecialedition/mods/82545), so [mlthelama](https://github.com/mlthelama) gets all the props. I also learned a lot about how to make an SKSE plugin by reading their source. Give that HUD a try if you don't like the souls-game style, or want a UI you can edit in-game. The original has more features than this one does! It's also the only hotkeys hud mod I tried that worked well in my game, so that's a testimonial.
@@ -92,7 +94,7 @@ The icons for the built-in theme are the usual SkyUI icons, plus the `futura-boo
 
 Ceej's development to-do list:
 
-- [x] Figure out how to compile papyrus scripts. Answer: PCA.
+- [x] Figure out how to compile papyrus scripts. Answer: Pyro.
 - [x] Edit the `.esp`` if necessary. Check it in.
 - [x] Rewrite or merely just tweak the script that builds the mod archive itself, with correctly-placed files.
 - [x] Test to see if the mod loads at all into the game. Fix whatever's broken.
@@ -105,6 +107,7 @@ Ceej's development to-do list:
 - [x] Wire up the mod to MCM to show its config & write user settings.
 - [x] Figure out what I'm doing wrong with MCM config settings. No really.
 - [ ] Figure out what I'm doing wrong with translation files. UTF-16 LE, one tab. What else?
+- [ ] Why is consuming potions unstable? Sometimes fine, sometimes lockup.
 - [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [x] Make re-equipping the left-hand item work.
 - [x] Wire up the inventory-changed hooks.
@@ -116,6 +119,7 @@ Ceej's development to-do list:
 - [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
 - [x] Come up with an adequate default layout for the HUD.
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
+- [ ] Decide what to do about highlight animations.
 - [ ] I18n: fonts.
 - [x] I18n: translation files.
 - [x] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
@@ -129,7 +133,7 @@ Ceej's development to-do list:
 - [x] Make Rust log to a second file in the same directory as SKSE.
 - [x] Add more Rust debug-level logging for happy-path cases.
 
-Stretch goals:
+Second phase goals:
 
 - [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
 - [ ] Move imgui rendering to Rust. Bindings exist already, plus a DX11 rendering back end.

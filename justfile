@@ -19,7 +19,7 @@ help:
 setup:
     cmake --preset vs2022-windows
 
-# Rebuild the archive for testing. Build requires a windows toolchain & cmake.
+# Rebuild the archive for testing. Requires windows.
 @rebuild:
     if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
     cargo build --release
@@ -45,7 +45,7 @@ setup:
     cargo +nightly fmt
     find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
 
-# Generate source files list for CMake. Only works in WSL.
+# Generate source files list for CMake. Bash.
 sources:
     #!/bin/bash
     set -e
@@ -61,7 +61,7 @@ sources:
     sed -e 's/^\.\//    /' test.txt > cmake/sourcelist.cmake
     rm test.txt
 
-# Set the crate version and tag the repo to match.
+# Set the crate version and tag the repo to match. Bash.
 tag VERSION:
     #!/usr/bin/env bash
     set -e
@@ -89,7 +89,7 @@ archive:
     cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
 
-# Build a full mod archive
+# Build a full mod archive; cross-platform.
 archive-win:
     #!{{shbang}}
     //! I would write this in bash, but I cannot do that from pwsh.
@@ -140,12 +140,12 @@ spotless: clean
     cargo clean
     rm -rf build
 
-# Powershell vrsion of the timeless classic.
+# Pwsh version of the timeless classic.
 @clean-win:
     if (test-path archive.7z) { remove-item archive.7z }
     if (test-path archive) { rm archive -r -force }
 
-# powershell version of the recipe for the ultra-tidy
+# Pwsh version of the recipe for the ultra-tidy
 @spotless-win: clean-win
     cargo clean
-    rm -rf build
+    if (test-path build) { rm build -r -force }

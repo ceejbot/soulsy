@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 1603 1603" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <g transform="matrix(1,0,0,1,-0.196196,0.52567)">
-        <g transform="matrix(0.658545,-0.658545,0.716584,0.716584,-548.129,705.651)">
-            <path d="M1598.52,532.322C1598.52,467.321 1541.09,414.548 1470.36,414.548L434.596,414.548C363.866,414.548 306.442,467.321 306.442,532.322L306.442,1484.2C306.442,1549.2 363.866,1601.97 434.596,1601.97L1470.36,1601.97C1541.09,1601.97 1598.52,1549.2 1598.52,1484.2L1598.52,532.322Z"/>
-            <path d="M1598.52,532.322C1598.52,467.321 1541.09,414.548 1470.36,414.548L434.596,414.548C363.866,414.548 306.442,467.321 306.442,532.322L306.442,1484.2C306.442,1549.2 363.866,1601.97 434.596,1601.97L1470.36,1601.97C1541.09,1601.97 1598.52,1549.2 1598.52,1484.2L1598.52,532.322ZM1596.37,532.322L1596.37,1484.2C1596.37,1548.11 1539.91,1600 1470.36,1600C1470.36,1600 434.596,1600 434.596,1600C365.051,1600 308.589,1548.11 308.589,1484.2C308.589,1484.2 308.589,532.322 308.589,532.322C308.589,468.41 365.051,416.521 434.596,416.521C434.596,416.521 1470.36,416.521 1470.36,416.521C1539.91,416.521 1596.37,468.41 1596.37,532.322Z" style="fill:white;"/>
+<svg width="100%" height="100%" viewBox="0 0 1702 1702" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,50.8901,49.9865)">
+        <g transform="matrix(0.658545,-0.658545,0.716584,0.716584,-549.754,705.651)">
+            <rect x="306.442" y="414.548" width="1292.08" height="1187.42" style="fill:url(#_Radial1);"/>
+            <path d="M1598.52,414.548L306.442,414.548L306.442,1601.97L1598.52,1601.97L1598.52,414.548ZM1596.37,416.521L1596.37,1600C1596.37,1600 308.589,1600 308.589,1600C308.589,1600 308.589,416.521 308.589,416.521C308.589,416.521 1596.37,416.521 1596.37,416.521L1596.37,416.521Z" style="fill:white;"/>
         </g>
     </g>
+    <defs>
+        <radialGradient id="_Radial1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(646.038,0,0,593.713,952.48,1008.26)"><stop offset="0" style="stop-color:black;stop-opacity:1"/><stop offset="1" style="stop-color:black;stop-opacity:0"/></radialGradient>
+    </defs>
 </svg>
