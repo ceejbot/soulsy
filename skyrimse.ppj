@@ -1,0 +1,17 @@
+<?xml version='1.0'?><!-- Game is either sse, tesv, or fo4 -->
+<PapyrusProject xmlns="PapyrusProject.xsd" 
+    Flags="TESV_Papyrus_Flags.flg" 
+    Game="sse" 
+    Output="data\scripts" 
+    Optimize="true" 
+    Release="false" 
+    Final="false">
+    <Imports>
+        <Import>.\data\scripts\source</Import>
+        <Import>G:\SteamLibrary\steamapps\common\Skyrim Special Edition\Data\Source\Scripts</Import>
+        <Import>G:\VortexStaging\MCM SDK\Source\Scripts</Import>
+    </Imports>
+    <Folders>
+        <Folder>.\data\scripts\source</Folder>
+    </Folders>
+</PapyrusProject>
