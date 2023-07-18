@@ -147,27 +147,34 @@ pub struct CycleData {
 static CYCLE_PATH: &str = "./data/SKSE/Plugins";
 
 impl CycleData {
-    /// Write the cycle data to its file. This is *not yet* managed by character
-    /// in any way, so it might be nonsense for one save vs another. It has the same
-    /// but with rollbacks.
+    /// Write the cycle data to its file.
     fn cycle_storage() -> PathBuf {
-        let name = playerName();
-        PathBuf::from(CYCLE_PATH)
-            .join("SoulsyHUD_")
-            .join(name.trim().replace(" ", "_"))
-            .join("_Cycles.toml")
+        let name = playerName()
+            .trim()
+            .replace(" ", "_")
+            .replace("'", "")
+            .replace("\"", "");
+        PathBuf::from(CYCLE_PATH).join(format!("SoulsyHUD_{}_Cycles.toml", name))
     }
 
     /// Write serialized toml to the cycle storage file for this character.
     pub fn write(&self) -> Result<()> {
         let buf = toml::to_string(self)?;
         std::fs::write(CycleData::cycle_storage(), buf)?;
+        log::debug!(
+            "wrote cycle data to {}",
+            CycleData::cycle_storage().display()
+        );
         Ok(())
     }
 
     /// Read cycle data from the serialization file for this character.
     pub fn read() -> Result<Self> {
         let buf = std::fs::read_to_string(CycleData::cycle_storage())?;
+        log::debug!(
+            "read cycle data from {}",
+            CycleData::cycle_storage().display()
+        );
         let data = toml::from_str::<CycleData>(&buf)?;
         Ok(data)
     }

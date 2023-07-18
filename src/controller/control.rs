@@ -509,6 +509,7 @@ impl Controller {
             if self.cycles.cycle_len(which) > 1 {
                 if let Some(next) = self.cycles.advance(which, 1) {
                     self.update_slot(hud, &next);
+                    self.flush_cycle_data();
                     showHUD();
                 }
                 return KeyEventResponse {
@@ -591,16 +592,20 @@ impl Controller {
             result,
             MenuEventResponse::ItemAdded | MenuEventResponse::ItemRemoved
         ) {
-            // the data changed. flush it to disk with char name in it or something
-            match self.cycles.write() {
-                Ok(_) => log::info!(
-                    "persisted cycle data after change; verb='{}'; item='{}';",
-                    verb,
-                    item.name()
-                ),
-                Err(e) => {
-                    log::warn!("failed to persist cycle data, but gamely continuing; {e:?}");
-                }
+            // the data changed. flush it to disk
+            log::debug!(
+                "persisted cycle data after change; verb='{}'; item='{}';",
+                verb,
+                item.name());
+            self.flush_cycle_data();
+        }
+    }
+
+    fn flush_cycle_data(&self) {
+        match self.cycles.write() {
+            Ok(_) => {},
+            Err(e) => {
+                log::warn!("failed to persist cycle data, but gamely continuing; {e:?}");
             }
         }
     }

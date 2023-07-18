@@ -17,7 +17,7 @@ namespace player
 {
 	using string_util = util::string_util;
 
-	std::string playerName()
+	rust::String playerName()
 	{
 		auto name = RE::PlayerCharacter::GetSingleton()->GetName();
 		return name;
