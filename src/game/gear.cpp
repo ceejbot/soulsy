@@ -94,9 +94,13 @@ namespace game
 			return;
 		}
 
+
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		auto item_count               = boundObjectForForm(form, player, bound_obj, extra);
+		auto item_count               = 2;  // we can equip a spell in both hands
+
+		if (item_form->Is(RE::FormType::Spell)) { bound_obj = item_form; }
+		else { item_count = boundObjectForForm(form, player, bound_obj, extra); }
 
 		if (!bound_obj)
 		{
