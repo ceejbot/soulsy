@@ -7,6 +7,6 @@
         </g>
     </g>
     <defs>
-        <radialGradient id="_Radial1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(646.038,0,0,593.713,952.48,1008.26)"><stop offset="0" style="stop-color:black;stop-opacity:1"/><stop offset="1" style="stop-color:black;stop-opacity:0"/></radialGradient>
+        <radialGradient id="_Radial1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(646.038,0,0,593.713,952.48,1008.26)"><stop offset="0" style="stop-color:black;stop-opacity:1"/><stop offset="0.46" style="stop-color:black;stop-opacity:0.72"/><stop offset="1" style="stop-color:black;stop-opacity:0"/></radialGradient>
     </defs>
 </svg>

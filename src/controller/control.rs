@@ -419,22 +419,12 @@ impl Controller {
         // We don't care if it's visible or not. If we've equipped
         // a one-hander in the left hand, we record it.
         if !item.two_handed() && self.two_hander_equipped {
-            // Let's see if this item matches something we had equipped before!
-            if let Some(cached_left) = &self.left_hand_cached {
-                if item.form_string() == cached_left.form_string() {
-                    // Force a re-equip.
-                    log::debug!("forcing left-hand re-equip");
-                    self.two_hander_equipped = false;
-                    cxx::let_cxx_string!(form_spec = item.form_string());
-                    reequipLeftHand(&form_spec);
-                    return false;
-                } else {
-                    log::debug!("updating cached left hand item");
-                    self.left_hand_cached = Some(item.clone());
-                }
-            } else {
-                log::debug!("we chose not to do anything because our cached item is None???");
-            }
+            log::debug!("forcing left-hand re-equip");
+            self.two_hander_equipped = false;
+            cxx::let_cxx_string!(form_spec = item.form_string());
+            reequipLeftHand(&form_spec);
+            log::debug!("updating cached left hand item");
+            self.left_hand_cached = Some(item.clone());
         }
 
         // We do not show two-handed items in the left hand, though.
