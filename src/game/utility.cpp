@@ -84,9 +84,9 @@ namespace game
 		logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
-		auto item_count          = boundObjectForForm(form, player, obj, extra);
+		auto remaining           = boundObjectForForm(form, player, obj, extra);
 
-		if (!obj || item_count == 0)
+		if (!obj || remaining == 0)
 		{
 			logger::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
 			return;
@@ -103,7 +103,7 @@ namespace game
 		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
 		if (is_worn)
 		{
-			task->AddTask([=]() { equip_manager->UnEquipObject(player, obj, extra); });
+			task->AddTask([=]() { equip_manager->UnequipObject(player, obj, extra); });
 		}
 		else
 		{
@@ -121,7 +121,7 @@ namespace game
 
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
-		auto item_count          = boundObjectForForm(form, player, obj, extra);
+		auto remaining           = boundObjectForForm(potion_form, player, obj, extra);
 
 		if (!obj || remaining == 0)
 		{
@@ -151,8 +151,9 @@ namespace game
 		auto* alchemy_item = obj->As<RE::AlchemyItem>();
 		if (alchemy_item->IsPoison())
 		{
-			poison_weapon(player, alchemy_item, remaining);
-			return;
+			logger::trace("would call poison_weapon here, but we're experimenting."sv);
+			//poison_weapon(player, alchemy_item, remaining);
+			//return;
 		}
 
 		logger::trace("queuing task to use consumable; name='{}'; remaining={}; formID={};"sv,
@@ -242,7 +243,7 @@ namespace game
 	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count)
 	{
 		logger::trace("try to apply poison to weapon, count left {}"sv, a_count);
-		uint32_t potion_doses = 1;
+		uint32_t poison_doses = 1;
 		/*
 comment preserved from mlthelama
 it works for vanilla and adamant
@@ -258,7 +259,7 @@ the MCM setting will be left for overwrite handling
 */
 		if (a_player->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
 		{
-			auto perk_visit = perk_visitor(a_player, static_cast<float>(potion_doses));
+			auto perk_visit = perk_visitor(a_player, static_cast<float>(poison_doses));
 			a_player->ForEachPerkEntry(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount, perk_visit);
 			poison_doses = static_cast<int>(perk_visit.get_result());
 		}
@@ -282,17 +283,19 @@ the MCM setting will be left for overwrite handling
 			player::play_sound(sound_descriptor, a_player);
 			// We might have applied several doses based on the perk, but we remove only one.
 			a_player->RemoveItem(a_poison, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
+			logger::trace("we removed the itme without crashing. oh boy."sv);
 			a_count--;
 		}
 
+		logger::trace("now considering left-hand item."sv);
 		auto* equipped_object_left = a_player->GetEquippedEntryData(true);
 		if (equipped_object_left && equipped_object_left->object->IsWeapon() && !equipped_object_left->IsPoisoned() &&
 			a_count > 0)
 		{
-			logger::trace("about to poison left-hand weapon; poison='{}'; weapon='{}';{}"sv,
+			logger::trace("about to poison left-hand weapon; poison='{}'; weapon='{}';"sv,
 				a_poison->GetName(),
 				equipped_object_left->GetDisplayName());
-			equipped_object_left->PoisonObject(a_poison, potion_doses);
+			equipped_object_left->PoisonObject(a_poison, poison_doses);
 			a_player->RemoveItem(a_poison, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
 		}
 	}

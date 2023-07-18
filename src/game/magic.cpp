@@ -37,7 +37,7 @@ namespace game
 		{
 			if (true)
 			{
-				auto selected_power = a_player->GetActorRuntimeData().selectedPower;
+				auto selected_power = player->GetActorRuntimeData().selectedPower;
 				if (selected_power)
 				{
 					logger::warn(
@@ -47,7 +47,7 @@ namespace game
 					return;
 				}
 			}
-			auto* actor  = a_player->As<RE::Actor>();
+			auto* actor  = player->As<RE::Actor>();
 			auto* caster = actor->GetMagicCaster(get_casting_source(a_slot));
 
 			//might cost nothing if nothing has been equipped into tha hands after start, so it seems
@@ -91,7 +91,7 @@ namespace game
 			//could trigger an animation here
 			//might need to set some things
 			//TODO make an animation to play here
-			//a_player->NotifyAnimationGraph("IdleMagic_01"); //works
+			//player->NotifyAnimationGraph("IdleMagic_01"); //works
 			auto is_self_target = spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf;
 			auto* target        = is_self_target ? actor : actor->GetActorRuntimeData().currentCombatTarget.get().get();
 
@@ -109,8 +109,8 @@ namespace game
 		}
 		else
 		{
-			const auto* obj_right = a_player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-			const auto* obj_left  = a_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+			const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+			const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 			if (left && obj_left && obj_left->formID == spell->formID)
 			{
 				logger::debug(
@@ -128,7 +128,7 @@ namespace game
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
-				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(a_player, spell, a_slot); });
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell, a_slot); });
 			}
 		}
 
@@ -149,7 +149,7 @@ namespace game
 		RE::ExtraDataList* extra = nullptr;
 		auto item_count          = boundObjectForForm(form, player, obj, extra);
 
-		if (!obj || left == 0)
+		if (!obj || item_count == 0)
 		{
 			logger::warn("scroll not found in inventory"sv);
 			return;

@@ -88,6 +88,10 @@ archive:
     cp -p data/SoulsyHUD.esl archive/
     cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
+    # todo remove at some point
+    cp -p build/Release/SoulsyHUD.dll /mnt/g/VortexStaging/SoulsyHUD/SKSE/plugins/SoulsyHUD.dll
+    cp -p build/Release/SoulsyHUD.pdb /mnt/g/VortexStaging/SoulsyHUD/SKSE/plugins/SoulsyHUD.pdb
+
 
 # Build a full mod archive; cross-platform.
 archive-win:
