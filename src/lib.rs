@@ -334,6 +334,9 @@ pub mod plugin {
     unsafe extern "C++" {
         include!("player.h");
 
+        /// Get the player's name.
+        fn playerName() -> String;
+
         /// Get the parent form item for the object equipped in the left hand.
         fn equippedLeftHand() -> Box<TesItemData>;
         /// Get the bound object (not the parent!) for the object equipped in the left hand.

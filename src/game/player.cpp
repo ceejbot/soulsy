@@ -17,6 +17,12 @@ namespace player
 {
 	using string_util = util::string_util;
 
+	std::string playerName()
+	{
+		auto name = RE::PlayerCharacter::GetSingleton()->GetName();
+		return name;
+	}
+
 	rust::Box<TesItemData> equippedLeftHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();

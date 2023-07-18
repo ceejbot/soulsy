@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use super::control::MenuEventResponse;
 use super::user_settings;
-use crate::plugin::{hasItemOrSpell, notifyPlayer, Action, TesItemKind};
+use crate::plugin::{hasItemOrSpell, notifyPlayer, playerName, Action, TesItemKind};
 
 /// Given an entry kind, return the filename of the icon to use for it.
 /// Exposed to C++.
@@ -144,21 +144,30 @@ pub struct CycleData {
 }
 
 // where to persist
-static CYCLE_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Cycles.toml";
+static CYCLE_PATH: &str = "./data/SKSE/Plugins";
 
 impl CycleData {
     /// Write the cycle data to its file. This is *not yet* managed by character
     /// in any way, so it might be nonsense for one save vs another. It has the same
     /// but with rollbacks.
+    fn cycle_storage() -> PathBuf {
+        let name = playerName();
+        PathBuf::from(CYCLE_PATH)
+            .join("SoulsyHUD_")
+            .join(name.trim().replace(" ", "_"))
+            .join("_Cycles.toml")
+    }
+
+    /// Write serialized toml to the cycle storage file for this character.
     pub fn write(&self) -> Result<()> {
         let buf = toml::to_string(self)?;
-        std::fs::write(CYCLE_PATH, buf)?;
+        std::fs::write(CycleData::cycle_storage(), buf)?;
         Ok(())
     }
 
-    /// Read cycle data from its cache file.
+    /// Read cycle data from the serialization file for this character.
     pub fn read() -> Result<Self> {
-        let buf = std::fs::read_to_string(PathBuf::from(CYCLE_PATH))?;
+        let buf = std::fs::read_to_string(CycleData::cycle_storage())?;
         let data = toml::from_str::<CycleData>(&buf)?;
         Ok(data)
     }
@@ -188,6 +197,7 @@ impl CycleData {
         cycle.first().cloned()
     }
 
+    /// Get the length of the given cycle.
     pub fn cycle_len(&self, which: Action) -> usize {
         match which {
             Action::Power => self.power.len(),
@@ -198,6 +208,7 @@ impl CycleData {
         }
     }
 
+    /// Truncate a cycle to the passed-in length if necessary. Notifies on change.
     pub fn truncate_if_needed(&mut self, newlen: usize) {
         if self.power.len() > newlen {
             self.power.truncate(newlen);

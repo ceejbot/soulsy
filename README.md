@@ -107,7 +107,7 @@ Ceej's development to-do list:
 - [x] Wire up the mod to MCM to show its config & write user settings.
 - [x] Figure out what I'm doing wrong with MCM config settings. No really.
 - [ ] Figure out what I'm doing wrong with translation files. UTF-16 LE, one tab. What else?
-- [ ] Why is consuming potions unstable? Sometimes fine, sometimes lockup.
+- [x] Why is consuming potions unstable? Sometimes fine, sometimes lockup.
 - [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [x] Make re-equipping the left-hand item work.
 - [x] Wire up the inventory-changed hooks.
@@ -123,10 +123,10 @@ Ceej's development to-do list:
 - [ ] I18n: fonts.
 - [x] I18n: translation files.
 - [x] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
+- [ ] Cycle serialization files should include the player name so character-hopping doesn't lose dta.
 - [ ] Review the 20-or-so TODO items noted in code comments.
 - [x] Sort out `gear.h` vs `utility_items.h`. Merge?
 - [x] Improve the CMake files so rebuilding is reliable.
-- [ ] Add support for debug builds to CMake, or at least remove the half-done option.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Consider getting more testers.
 - [ ] Track highlight status in the controller to support animating a highlighted slot.
@@ -135,6 +135,7 @@ Ceej's development to-do list:
 
 Second phase goals:
 
+- [ ] Add support for debug builds to CMake, or at least remove the half-done option.
 - [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
 - [ ] Move imgui rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
 - [ ] Make image loading on-demand, to save memory. (Maybe an unimportant optimization? Measure.)

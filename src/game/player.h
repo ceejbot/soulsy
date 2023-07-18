@@ -27,6 +27,7 @@ namespace player
 	rust::Box<TesItemData> boundObjectLeftHand();
 	rust::Box<TesItemData> boundObjectRightHand();
 
+	std::string playerName();
 	void unequipSlot(Action slot);
 	void unequipShout();
 	void equipShout(const std::string& form_spec);
