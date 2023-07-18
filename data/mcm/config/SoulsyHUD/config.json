@@ -4,156 +4,138 @@
   "displayName": "SoulsyHUD",
   "minMcmVersion": 13,
   "cursorFillMode": "topToBottom",
-  "pages": [
+  "content": [
     {
-      "pageDisplayName": "$SoulsyHUD",
-      "cursorFillMode": "topToBottom",
-      "content": [
-        {
-          "type": "header",
-          "text": "$SoulsyHUD_Splash_Text"
-        }
-      ]
+      "text": "Key bindings",
+      "type": "header"
     },
     {
-      "pageDisplayName": "$SoulsyHUD_MainPage_Title",
-      "cursorFillMode": "topToBottom",
-      "content": [
-        {
-          "text": "$SoulsyHUD_Controls_HeaderText",
-          "type": "header"
-        },
-        {
-          "id": "uPowerCycleKey:Controls",
-          "text": "$SoulsyHUD_Controls_PowerCycleKey_OptionText",
-          "help": "$SoulsyHUD_Controls_PowerCycleKey_InfoText",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uUtilityCycleKey:Controls",
-          "text": "$SoulsyHUD_Controls_UtilityCycleKey_OptionText",
-          "help": "$SoulsyHUD_Controls_UtilityCycleKey_InfoText",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uLeftCycleKey:Controls",
-          "help": "$SoulsyHUD_Controls_LeftCycleKey_InfoText",
-          "text": "$SoulsyHUD_Controls_LeftCycleKey_OptionText",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uRightCycleKey:Controls",
-          "text": "$SoulsyHUD_Controls_RightCycleKey_OptionText",
-          "help": "$SoulsyHUD_Controls_RightCycleKey_InfoText",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uUtilityActivateKey:Controls",
-          "text": "$SoulsyHUD_Controls_ActivateKey_OptionText",
-          "type": "keymap",
-          "help": "$SoulsyHUD_Controls_ActivateKey_InfoText",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uShowHideKey:Controls",
-          "text": "$SoulsyHUD_Controls_ShowHideKey_OptionText",
-          "type": "keymap",
-          "help": "$SoulsyHUD_Controls_ShowHideKey_InfoText",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uRefreshKey:Controls",
-          "text": "$SoulsyHUD_Controls_RefreshKey_OptionText",
-          "type": "keymap",
-          "help": "$SoulsyHUD_Controls_RefreshKey_InfoText",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "type": "empty"
-        },
-        {
-          "text": "$SoulsyHUD_Options_Options_HeaderText",
-          "type": "header"
-        },
-        {
-          "id": "uMaxCycleLength:Options",
-          "text": "$SoulsyHUD_Options_Length_OptionText",
-          "type": "slider",
-          "help": "$SoulsyHUD_Options_Length_InfoText",
-          "valueOptions": {
-            "min": 2,
-            "max": 15,
-            "step": 1,
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uEquipDelay:Options",
-          "text": "$SoulsyHUD_Options_EquipDelay_OptionText",
-          "type": "slider",
-          "help": "$SoulsyHUD_Options_EquipDelay_InfoText",
-          "valueOptions": {
-            "min": 0,
-            "max": 2500,
-            "step": 50,
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "bFade:Options",
-          "text": "$SoulsyHUD_Controls_Fade_OptionText",
-          "type": "toggle",
-          "help": "$SoulsyHUD_Controls_Fade_InfoText",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uFadeDelay:Options",
-          "text": "$SoulsyHUD_Options_FadeDelay_OptionText",
-          "type": "slider",
-          "help": "$SoulsyHUD_Options_FadeDelay_InfoText",
-          "valueOptions": {
-            "min": 0,
-            "max": 5000,
-            "step": 100,
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uControllerKind:Options",
-          "text": "$SoulsyHUD_Options_Controller_OptionText",
-          "type": "enum",
-          "help": "$SoulsyHUD_Options_Controller_InfoText",
-          "valueOptions": {
-            "options": [
-              "$SoulsyHUD_Controls_PC",
-              "$SoulsyHUD_Controls_PS",
-              "$SoulsyHUD_Controls_Xbox"
-            ],
-            "sourceType": "ModSettingInt",
-            "defaultValue": 0
-          }
-        }
-      ]
+      "id": "uPowerCycleKey:Controls",
+      "text": "Powers",
+      "help": "The hotkey for cycling shouts and powers",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uUtilityCycleKey:Controls",
+      "text": "Utility",
+      "help": "The hotkey for cycling consumables, like potions and poisons",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uLeftCycleKey:Controls",
+      "text": "Left",
+      "help": "The hotkey for cycling left-hand items",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uRightCycleKey:Controls",
+      "text": "Right",
+      "help": "The hotkey for cycling right-hand items",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uUtilityActivateKey:Controls",
+      "text": "Activate utility item",
+      "type": "keymap",
+      "help": "The hotkey for using the selected utility item",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uShowHideKey:Controls",
+      "text": "Show/Hide",
+      "type": "keymap",
+      "help": "The hotkey for toggling HUD widget visibility",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uRefreshKey:Controls",
+      "text": "Refresh layout",
+      "type": "keymap",
+      "help": "The hotkey for reading a new layout from the TOML file.",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "text": "HUD behavior options",
+      "type": "header",
+      "position": 1
+    },
+    {
+      "id": "uMaxCycleLength:Options",
+      "text": "Cycle length",
+      "type": "slider",
+      "help": "The longest to allow your cycles to be. This defaults to 10, but even that length is likely unwieldy.",
+      "valueOptions": {
+        "min": 2,
+        "max": 15,
+        "step": 1,
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uEquipDelay:Options",
+      "text": "Equip delay",
+      "type": "slider",
+      "help": "The milliseconds to delay after tapping a cycle button before activating the item. A short value, like 500ms, is good.",
+      "valueOptions": {
+        "min": 0,
+        "max": 2500,
+        "step": 50,
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "bFade:Options",
+      "text": "Fade out",
+      "type": "toggle",
+      "help": "Enable to make the HUD widget fade out if you're not in combat or don't have your weapons readied.",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uFadeDelay:Options",
+      "text": "Fade delay",
+      "type": "slider",
+      "help": "The milliseconds to delay before fading the widget out when you exit combat or stow your weapons.",
+      "valueOptions": {
+        "min": 0,
+        "max": 5000,
+        "step": 100,
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uControllerKind:Options",
+      "text": "Controller display",
+      "type": "enum",
+      "help": "Which controller style to use for hotkey hints.",
+      "valueOptions": {
+        "options": [
+          "$SoulsyHUD_Controls_PC",
+          "$SoulsyHUD_Controls_PS",
+          "$SoulsyHUD_Controls_Xbox"
+        ],
+        "sourceType": "ModSettingInt",
+        "defaultValue": 0
+      }
     }
   ]
 }

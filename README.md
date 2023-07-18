@@ -102,10 +102,10 @@ Ceej's development to-do list:
 - [x] Wire up the equip-item functions as well as the equip delay. Implement a timer using the tick in the imgui rendering code.
 - [x] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
 - [x] Debounce keys. Especially the show/hide button.
-- [ ] Wire up the mod to MCM to show its config & write user settings.
-- [ ] Figure out what I'm doing wrong with MCM config settings. No really.
+- [x] Wire up the mod to MCM to show its config & write user settings.
+- [x] Figure out what I'm doing wrong with MCM config settings. No really.
 - [ ] Is there an official way to show a textual feedback message in SkyUI?
-- [ ] Make re-equipping the left-hand item work.
+- [x] Make re-equipping the left-hand item work.
 - [x] Wire up the inventory-changed hooks.
 - [x] Inform Rust about equip changes.
 - [x] Get ammo showing correctly.
@@ -117,7 +117,7 @@ Ceej's development to-do list:
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
 - [ ] I18n: fonts.
 - [x] I18n: translation files.
-- [ ] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
+- [x] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
 - [ ] Review the 20-or-so TODO items noted in code comments.
 - [x] Sort out `gear.h` vs `utility_items.h`. Merge?
 - [x] Improve the CMake files so rebuilding is reliable.
