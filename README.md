@@ -125,10 +125,15 @@ Ceej's development to-do list:
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Consider getting more testers.
 - [ ] Track highlight status in the controller to support animating a highlighted slot.
-- [ ] Move image loading code to Rust. Selectively load only the images we need, if possible. Will need to reload on config change.
-- [ ] Update to CommonLibSE-NG?
 - [x] Make Rust log to a second file in the same directory as SKSE.
 - [x] Add more Rust debug-level logging for happy-path cases.
+
+Stretch goals:
+
+- [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
+- [ ] Move imgui rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
+- [ ] Make image loading on-demand, to save memory. (Maybe an unimportant optimization? Measure.)
+- [ ] Update to CommonLibSSE-NG?
 
 ## License
 

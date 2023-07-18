@@ -7,6 +7,7 @@
   "pages": [
     {
       "pageDisplayName": "$SoulsyHUD",
+      "cursorFillMode": "topToBottom",
       "content": [
         {
           "type": "header",
@@ -16,6 +17,7 @@
     },
     {
       "pageDisplayName": "$SoulsyHUD_MainPage_Title",
+      "cursorFillMode": "topToBottom",
       "content": [
         {
           "text": "$SoulsyHUD_Controls_HeaderText",
@@ -83,6 +85,9 @@
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
+        },
+        {
+          "type": "empty"
         },
         {
           "text": "$SoulsyHUD_Options_Options_HeaderText",
