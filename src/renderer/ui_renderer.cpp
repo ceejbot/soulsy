@@ -745,6 +745,7 @@ namespace ui
 
 	void ui_renderer::advanceTimers(float delta)
 	{
+		std::vector<uint8_t> to_remove;
 		std::map<uint8_t, float>::iterator iter;
 		for (iter = cycle_timers.begin(); iter != cycle_timers.end(); ++iter)
 		{
@@ -755,12 +756,14 @@ namespace ui
 			// logger::trace("timer decremented; timer={}; delta={}; remaining={};"sv, which, delta, remaining);
 			if (remaining < 0.0f)
 			{
-				cycle_timers.erase(which);
+				to_remove.push_back(which);
 				auto action = static_cast<Action>(which);
 				timer_expired(action);
 			}
 			else { cycle_timers[which] = remaining; }
 		}
+
+		for (const auto& xs : to_remove) { cycle_timers.erase(xs); }
 	}
 
 	void ui_renderer::startTimer(Action which)

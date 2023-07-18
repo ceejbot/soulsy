@@ -104,6 +104,7 @@ Ceej's development to-do list:
 - [x] Debounce keys. Especially the show/hide button.
 - [x] Wire up the mod to MCM to show its config & write user settings.
 - [x] Figure out what I'm doing wrong with MCM config settings. No really.
+- [ ] Figure out what I'm doing wrong with translation files. UTF-16 LE, one tab. What else?
 - [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [x] Make re-equipping the left-hand item work.
 - [x] Wire up the inventory-changed hooks.
