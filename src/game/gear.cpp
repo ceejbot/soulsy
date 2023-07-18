@@ -82,14 +82,14 @@ namespace game
 	void equipItemByFormAndSlot(const RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
-		logger::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
+		logger::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
 			form->GetName(),
 			slot_is_left,
 			form->GetFormType());
 
 		if (form->formID == util::unarmed)
 		{
-			logger::trace("this slot should be unarmed; unequipping slot"sv);
+			logger::debug("this slot should be unarmed; unequipping slot"sv);
 			unequipLeftOrRightSlot(slot, player);
 			return;
 		}
@@ -100,7 +100,7 @@ namespace game
 
 		if (!bound_obj)
 		{
-			logger::info("unable to find bound object for name='{}'"sv, form->GetName());
+			logger::debug("unable to find bound object for name='{}'"sv, form->GetName());
 			return;
 		}
 
@@ -125,7 +125,7 @@ namespace game
 		auto equipped_count = 0;
 		if (obj_equipped_left) { equipped_count++; }
 		if (obj_equipped_right) { equipped_count++; }
-		logger::trace("checking how many '{}' we have available; count={}; equipped_count={}"sv,
+		logger::debug("checking how many '{}' we have available; count={}; equipped_count={}"sv,
 			bound_obj->GetName(),
 			item_count,
 			equipped_count);
@@ -137,7 +137,7 @@ namespace game
 			return;
 		}
 
-		logger::trace("queuing task to equip '{}'; left={}; formID={};"sv,
+		logger::debug("queuing task to equip '{}'; left={}; formID={};"sv,
 			form->GetName(),
 			slot_is_left,
 			util::string_util::int_to_hex(bound_obj->formID));

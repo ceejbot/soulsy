@@ -77,11 +77,12 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 
 	logger::info("{} loading"sv, Version::PROJECT);
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
+	auto hud = hud_layout();
 
-	if (true)
+	if (hud.debug)
 	{
-		spdlog::set_level(spdlog::level::trace);
-		spdlog::flush_on(spdlog::level::trace);
+		spdlog::set_level(spdlog::level::debug);
+		spdlog::flush_on(spdlog::level::debug);
 	}
 
 	Init(a_skse);

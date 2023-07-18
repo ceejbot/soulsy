@@ -26,7 +26,7 @@ count_font_size = 15.0
 repr = 0
 
 [layouts.offset]
-x = 0.0
+x = 5.0
 y = -83.0
 
 [layouts.size]
@@ -46,8 +46,8 @@ b = 200
 a = 255
 
 [layouts.icon_size]
-x = 50.0
-y = 50.0
+x = 40.0
+y = 40.0
 
 [layouts.hotkey_color]
 r = 255
@@ -117,8 +117,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 50.0
-y = 50.0
+x = 40.0
+y = 40.0
 
 [layouts.hotkey_color]
 r = 255
@@ -188,8 +188,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 50.0
-y = 50.0
+x = 40.0
+y = 40.0
 
 [layouts.hotkey_color]
 r = 255
@@ -259,8 +259,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 50.0
-y = 50.0
+x = 40.0
+y = 40.0
 
 [layouts.hotkey_color]
 r = 255
