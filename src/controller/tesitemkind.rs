@@ -220,7 +220,7 @@ static ICON_MAP: Lazy<HashMap<TesItemKind, String>> = Lazy::new(|| {
         ),
         (TesItemKind::PotionStamina, "potion_stamina.svg".to_string()),
         (TesItemKind::Power, "power.svg".to_string()),
-        (TesItemKind::QuarterStaff, "quarterstaff.svg".to_string()),
+        (TesItemKind::QuarterStaff, "quarter_staff.svg".to_string()),
         (TesItemKind::Rapier, "rapier.svg".to_string()),
         (TesItemKind::Restoration, "restoration.svg".to_string()),
         (TesItemKind::Scroll, "scroll.svg".to_string()),

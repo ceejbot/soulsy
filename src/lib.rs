@@ -231,7 +231,7 @@ pub mod plugin {
         /// Get which kind of controller to draw shortcuts for: keyboard, PS5, or Xbox.
         fn controller_kind(self: &UserSettings) -> u32;
         /// If a settings change has shortened the max cycle length, truncate if we have to.
-        fn truncate_cycles(new_length: usize);
+        fn truncate_cycles(new_length: u32);
 
         /// Managed access to the settings object, so we can lazy-load if necessary.
         fn user_settings() -> Box<UserSettings>;
@@ -251,14 +251,14 @@ pub mod plugin {
         /// Whether this item has a relevant count.
         fn has_count(self: &TesItemData) -> bool;
         /// How many of this item the player has last time we checked. Updated on inventory changes.
-        fn count(self: &TesItemData) -> usize;
+        fn count(self: &TesItemData) -> u32;
         /// Call to create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
         fn make_tesitem(
             kind: TesItemKind,
             two_handed: bool,
             has_count: bool,
-            count: usize,
+            count: u32,
             name: &str,
             form_string: &str,
         ) -> Box<TesItemData>;
@@ -287,7 +287,7 @@ pub mod plugin {
         /// Handle equipment-changed events from the game.
         fn handle_item_equipped(equipped: bool, item: Box<TesItemData>) -> bool;
         /// The player's inventory changed. Update if necessary.
-        fn handle_inventory_changed(item: Box<TesItemData>, count: usize);
+        fn handle_inventory_changed(item: Box<TesItemData>, count: i32);
     }
 
     #[namespace = "RE"]

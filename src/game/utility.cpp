@@ -151,9 +151,8 @@ namespace game
 		auto* alchemy_item = obj->As<RE::AlchemyItem>();
 		if (alchemy_item->IsPoison())
 		{
-			logger::trace("would call poison_weapon here, but we're experimenting."sv);
-			//poison_weapon(player, alchemy_item, remaining);
-			//return;
+			poison_weapon(player, alchemy_item, remaining);
+			return;
 		}
 
 		logger::trace("queuing task to use consumable; name='{}'; remaining={}; formID={};"sv,
@@ -167,14 +166,79 @@ namespace game
 		}
 	}
 
+	void poison_weapon(RE::PlayerCharacter*& the_player, RE::AlchemyItem*& a_poison, uint32_t a_count)
+	{
+		logger::trace("try to apply poison to weapon, inventory count={}"sv, a_count);
+		uint32_t poison_doses = 1;
+		/*
+comment preserved from mlthelama
+it works for vanilla and adamant
+vanilla does a basic set value to 3
+adamant does 2 times add value 2
+ordinator we could handle it "dirty" because the Information we need needs to
+be RE, but if perk xy Is set we could calculate it ourselves. It is basically AV
+multiply base + "alchemy level" * 0.1 * 3 = dose count
+vokrii should be fine as well
+other add av multiply implementations need to be handled by getting the data
+from the game
+the MCM setting will be left for overwrite handling
+*/
+		if (the_player->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
+		{
+			auto perk_visit = perk_visitor(the_player, static_cast<float>(poison_doses));
+			the_player->ForEachPerkEntry(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount, perk_visit);
+			poison_doses = static_cast<int>(perk_visit.get_result());
+		}
+		logger::trace("poison doses read from perks; poison_doses={};"sv, poison_doses);
+
+		RE::BGSSoundDescriptor* sound_descriptor;
+		if (a_poison->data.consumptionSound) { sound_descriptor = a_poison->data.consumptionSound->soundDescriptor; }
+		else
+		{
+			sound_descriptor = RE::TESForm::LookupByID(0x00106614)->As<RE::BGSSoundDescriptorForm>()->soundDescriptor;
+		}
+
+		auto used = 0;
+		auto* equipped_object = the_player->GetEquippedEntryData(false);
+		if (equipped_object && equipped_object->object->IsWeapon() && !equipped_object->IsPoisoned() && a_count > 0)
+		{
+			logger::trace("about to poison right-hand weapon; poison='{}'; weapon='{}';"sv,
+				a_poison->GetName(),
+				equipped_object->GetDisplayName());
+			equipped_object->PoisonObject(a_poison, poison_doses);
+			// We only play the sound once, even if we also dose the left-hand item.
+			player::play_sound(sound_descriptor, the_player);
+			used++;
+			a_count--;
+		}
+
+		logger::trace("now considering left-hand item."sv);
+		auto* equipped_object_left = the_player->GetEquippedEntryData(true);
+		if (equipped_object_left && equipped_object_left->object->IsWeapon() && !equipped_object_left->IsPoisoned() &&
+			a_count > 0)
+		{
+			logger::trace("about to poison left-hand weapon; poison='{}'; weapon='{}';"sv,
+				a_poison->GetName(),
+				equipped_object_left->GetDisplayName());
+			equipped_object_left->PoisonObject(a_poison, poison_doses);
+			used++;
+		}
+		auto* task = SKSE::GetTaskInterface();
+		if (task)
+		{
+			logger::trace("queuing remove item tasks..."sv);
+			task->AddTask([=]() {  the_player->RemoveItem(a_poison, used, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr); });
+		}
+	}
+
 	// TODO dry this up for sure. not yet in use.
-	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& a_player)
+	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& the_player)
 	{
 		// get player missing value
-		auto current_actor_value   = a_player->AsActorValueOwner()->GetActorValue(a_actor_value);
-		auto permanent_actor_value = a_player->AsActorValueOwner()->GetPermanentActorValue(a_actor_value);
+		auto current_actor_value   = the_player->AsActorValueOwner()->GetActorValue(a_actor_value);
+		auto permanent_actor_value = the_player->AsActorValueOwner()->GetPermanentActorValue(a_actor_value);
 		auto temporary_actor_value =
-			a_player->GetActorValueModifier(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kHealth);
+			the_player->GetActorValueModifier(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kHealth);
 		auto max_actor_value = permanent_actor_value + temporary_actor_value;
 		auto missing         = max_actor_value - current_actor_value;
 		logger::trace("actor value {}, current {}, max {}, missing {}"sv,
@@ -192,7 +256,7 @@ namespace game
 			fmt::format(FMT_STRING("{:.2f}"), missing));
 
 		RE::TESBoundObject* obj = nullptr;
-		for (auto candidates = player::getInventoryForType(a_player, RE::FormType::AlchemyItem);
+		for (auto candidates = player::getInventoryForType(the_player, RE::FormType::AlchemyItem);
 			 const auto& [item, inv_data] : candidates)
 		{
 			const auto& [num_items, entry] = inv_data;
@@ -235,69 +299,9 @@ namespace game
 		if (obj)
 		{
 			logger::trace("Calling consume potion; name='{}';"sv, obj->GetName());
-			consumePotion(obj, a_player);
+			consumePotion(obj, the_player);
 		}
 		else { logger::warn("No suitable potion found. return."); }
-	}
-
-	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count)
-	{
-		logger::trace("try to apply poison to weapon, count left {}"sv, a_count);
-		uint32_t poison_doses = 1;
-		/*
-comment preserved from mlthelama
-it works for vanilla and adamant
-vanilla does a basic set value to 3
-adamant does 2 times add value 2
-ordinator we could handle it "dirty" because the Information we need needs to
-be RE, but if perk xy Is set we could calculate it ourselves. It is basically AV
-multiply base + "alchemy level" * 0.1 * 3 = dose count
-vokrii should be fine as well
-other add av multiply implementations need to be handled by getting the data
-from the game
-the MCM setting will be left for overwrite handling
-*/
-		if (a_player->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
-		{
-			auto perk_visit = perk_visitor(a_player, static_cast<float>(poison_doses));
-			a_player->ForEachPerkEntry(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount, perk_visit);
-			poison_doses = static_cast<int>(perk_visit.get_result());
-		}
-		logger::trace("poison doses read from perks; poison_doses={};"sv, poison_doses);
-
-		RE::BGSSoundDescriptor* sound_descriptor;
-		if (a_poison->data.consumptionSound) { sound_descriptor = a_poison->data.consumptionSound->soundDescriptor; }
-		else
-		{
-			sound_descriptor = RE::TESForm::LookupByID(0x00106614)->As<RE::BGSSoundDescriptorForm>()->soundDescriptor;
-		}
-
-		auto* equipped_object = a_player->GetEquippedEntryData(false);
-		if (equipped_object && equipped_object->object->IsWeapon() && !equipped_object->IsPoisoned() && a_count > 0)
-		{
-			logger::trace("about to poison right-hand weapon; poison='{}'; weapon='{}';"sv,
-				a_poison->GetName(),
-				equipped_object->GetDisplayName());
-			equipped_object->PoisonObject(a_poison, poison_doses);
-			// We only play the sound once, even if we also dose the left-hand item.
-			player::play_sound(sound_descriptor, a_player);
-			// We might have applied several doses based on the perk, but we remove only one.
-			a_player->RemoveItem(a_poison, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
-			logger::trace("we removed the itme without crashing. oh boy."sv);
-			a_count--;
-		}
-
-		logger::trace("now considering left-hand item."sv);
-		auto* equipped_object_left = a_player->GetEquippedEntryData(true);
-		if (equipped_object_left && equipped_object_left->object->IsWeapon() && !equipped_object_left->IsPoisoned() &&
-			a_count > 0)
-		{
-			logger::trace("about to poison left-hand weapon; poison='{}'; weapon='{}';"sv,
-				a_poison->GetName(),
-				equipped_object_left->GetDisplayName());
-			equipped_object_left->PoisonObject(a_poison, poison_doses);
-			a_player->RemoveItem(a_poison, 1, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
-		}
 	}
 
 	// ---------- perk visitor, used only by the actor value potion selection

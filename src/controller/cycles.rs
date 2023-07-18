@@ -30,7 +30,7 @@ pub struct TesItemData {
     /// True if this item should be displayed with count data.
     has_count: bool,
     /// Cached count from inventory data. Relies on hooks to be updated.
-    count: usize,
+    count: u32,
     /// is currently highlighted for some reason
     highlighted: bool,
 }
@@ -48,7 +48,7 @@ pub fn make_tesitem(
     icon_kind: TesItemKind,
     two_handed: bool,
     has_count: bool,
-    count: usize,
+    count: u32,
     name: &str,
     form_string: &str,
 ) -> Box<TesItemData> {
@@ -74,7 +74,7 @@ impl TesItemData {
         icon_kind: TesItemKind,
         two_handed: bool,
         has_count: bool,
-        count: usize,
+        count: u32,
         name: &str,
         form_string: &str,
     ) -> Self {
@@ -104,13 +104,13 @@ impl TesItemData {
     }
 
     /// If this item has a count, e.g., is arrows, return how many the player has.
-    pub fn count(&self) -> usize {
+    pub fn count(&self) -> u32 {
         self.count
     }
 
     // TODO remove this; we only ever want to change this via local control
     /// If the player's inventory changes, we update the item count.
-    pub fn set_count(&mut self, v: usize) {
+    pub fn set_count(&mut self, v: u32) {
         self.count = v;
     }
 
@@ -353,7 +353,7 @@ impl CycleData {
         }
     }
 
-    pub fn update_count(&mut self, item: TesItemData, count: usize) {
+    pub fn update_count(&mut self, item: TesItemData, count: u32) {
         if item.kind().is_utility() {
             if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
                 log::debug!(

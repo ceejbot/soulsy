@@ -82,14 +82,14 @@ pub mod public {
     }
 
     /// A consumable's count changed. Record if relevant.
-    pub fn handle_inventory_changed(item: Box<TesItemData>, count: usize) {
+    pub fn handle_inventory_changed(item: Box<TesItemData>, count: i32) {
         let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.handle_inventory_changed(item, count);
     }
 
-    pub fn truncate_cycles(new: usize) {
+    pub fn truncate_cycles(new: u32) {
         let mut ctrl = CONTROLLER.lock().unwrap();
-        ctrl.cycles.truncate_if_needed(new);
+        ctrl.cycles.truncate_if_needed(new as usize);
     }
 }
 
@@ -123,20 +123,31 @@ impl Controller {
     }
 
     /// The player's inventory changed! Act on it if we need to.
-    fn handle_inventory_changed(&mut self, item: Box<TesItemData>, count: usize) {
+    fn handle_inventory_changed(&mut self, item: Box<TesItemData>, delta: i32) {
         log::info!(
-            "inventory count changed; formID={}; count={count}",
+            "inventory count changed; formID={}; count={delta}",
             item.form_string()
         );
+
+        let current = item.count();
+        let new_count = if delta.is_negative() {
+            if delta > current as i32 {
+                0
+            } else {
+                current - delta.unsigned_abs()
+            }
+        } else {
+            current + delta as u32
+        };
 
         if item.kind() == TesItemKind::Arrow {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
                 if *candidate == *item {
-                    candidate.set_count(item.count());
+                    candidate.set_count(new_count);
                 }
             }
         } else {
-            self.cycles.update_count(*item, count);
+            self.cycles.update_count(*item, new_count);
         }
     }
 
