@@ -129,9 +129,9 @@
       "help": "Which controller style to use for hotkey hints.",
       "valueOptions": {
         "options": [
-          "$SoulsyHUD_Controls_PC",
-          "$SoulsyHUD_Controls_PS",
-          "$SoulsyHUD_Controls_Xbox"
+          "Keyboard",
+          "Playstation",
+          "XBox"
         ],
         "sourceType": "ModSettingInt",
         "defaultValue": 0

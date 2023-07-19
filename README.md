@@ -2,62 +2,13 @@
 
 Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It is in fact a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD)! It is simpler than LamasTinyHud is, however.
 
+Check out the remarkably terse [user docs](./docs/usage.md).
+
 ## Development goals
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project is still in development, though it does in fact run and act as
-expected in-game! (Almost.) See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish.
-
-## User documentation
-
-Soulsy lets you set hotkeys for managing what you have equipped or readied in four equipment slots:
-
-- right hand: weapons, spells, two-handed weapons, scrolls
-- left hand: one-handed weapons, spells, shields, torches, lanterns
-- shouts and minor powers, scrolls
-- a utility slot: potions, poisons, food, armor
-
-Soulsy sets up _cycles_ for each of these equipment slots. For example, if you want to switch between Flames and Healing spells in your left hand, you'd add each of them to your left hand cycle. For your right hand, you might set up a long sword with an anti-undead enchantment, a dagger with Soul Trap, and a bow. Pressing the key assigned to a slot moves to the next item in your cycle and equips it (or readies it, in the case of the utility slot). If you tap the key several times quickly, you'll advance through the cycle and then equip the item you were on when you stopped tapping the button.
-
-The maximum cycle length is configurable, but caps out at 20. 20 items is a lot of items to cycle through this way, and if you have that many you'd probably be better off using the inventory or favorites menu.
-
-To add or remove an item from a cycle, bring up the inventory, magic or favorites menu, hover over the item, and press the hotkey for the cycle you want to change. If the item is not in the cycle for that slot and it's appropriate for the slot, it'll be added. If it's already in that cycle, it'll be removed. Soulsy prints text feedback on the screen about what it did.
-
-Soulsy also has a hotkey for activating your selected utility item. This is the only category of item that Soulsy will try to activate for you; everything else needs to used the same way the base game has you use them. The last hotkey-able shortcut is for hiding and showing the HUD. There is an MCM setting if you want the HUD to fade out when you're not in combat or don't have your weapons readied.
-
-That's it for the feature set. Soulsy does not (yet?) attempt to select the best ammo, potion or poison the way iEquip does. It equips what you tell it to equip, as quickly and reliably as it can. Soulsy also does not offer in-game layout editing, though you can modify the layout by editing a toml file outside the game. There's a refresh key that you can set and use to reload on the fly to
-look at your changes.
-
-### Settings options
-
-TKTK: screenshot of MCM, explanation of defaults, etc
-
-## How to theme the HUD
-
-TKTKTK
-
-The HUD look can be changed by modifying files in `SKSE/plugins`.
-
-```text
-SoulsyHUD/SKSE/plugins
-├── resources
-│  ├── animations/highlight/
-│  ├── backgrounds/*
-│  ├── buttons/*
-│  ├── fonts/*
-│  └── icons/*
-└── SoulsyHUD_Layout.toml
-```
-
-- `SoulsyHud_Layout.toml` - The HUD layout, in TOML format. Set colors, transparencies, sizes, and locations for every HUD element.
-- `backgrounds/hud_bg.svg` - The background for the entire HUD.
-- `backgrounds/slot_bg.svg` - The background for a single cycle element (left hand, power, etc).
-- `backgrounds/key_bg.svg` - The background for hotkey hints.
-- `animations/highlight` - An animation to play on a highlighted slot. NOT YET FUNCTIONAL.
-- `SKSE/plugins/resources/buttons` - Xbox and Playstation button art.
-- `SKSE/plugins/resources/fonts` - A TrueType font to use for display. The HUD comes with `futura-book-bt` to match Untarnished UI.
-- `SKSE/plugins/resources/icons` - Icon files in SVG format, each named for the item. The HUD comes with the usual SkyUI icons.
+This project is complete enough to use in-game, though there are a couple of bugs I'd like to fix. See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish.
 
 ## Building
 
@@ -92,7 +43,18 @@ The icons for the built-in theme are the usual SkyUI icons, plus the `futura-boo
 
 ## TODO
 
-Ceej's development to-do list:
+Remaining before I release:
+
+- [ ] Figure out what I'm doing wrong with translation files. UTF-16 LE, one tab. What else?
+- [ ] I18n: fonts.
+- [ ] Is there an official way to show a textual feedback message in SkyUI?
+- [ ] Make a *good-looking* layout. Find a designer if necessary.
+- [ ] Review the 20-or-so TODO items noted in code comments.
+- [ ] User docs, for the readme and for the Nexus page.
+- [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
+- [ ] Consider getting more testers.
+
+DONE:
 
 - [x] Figure out how to compile papyrus scripts. Answer: Pyro.
 - [x] Edit the `.esp`` if necessary. Check it in.
@@ -106,9 +68,7 @@ Ceej's development to-do list:
 - [x] Debounce keys. Especially the show/hide button.
 - [x] Wire up the mod to MCM to show its config & write user settings.
 - [x] Figure out what I'm doing wrong with MCM config settings. No really.
-- [ ] Figure out what I'm doing wrong with translation files. UTF-16 LE, one tab. What else?
 - [x] Why is consuming potions unstable? Sometimes fine, sometimes lockup.
-- [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [x] Make re-equipping the left-hand item work.
 - [x] Wire up the inventory-changed hooks.
 - [x] Inform Rust about equip changes.
@@ -118,28 +78,23 @@ Ceej's development to-do list:
 - [x] Figure out why activating potions makes the game lock up.
 - [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
 - [x] Come up with an adequate default layout for the HUD.
-- [ ] Make a *good-looking* layout. Find a designer if necessary.
-- [ ] Decide what to do about highlight animations.
-- [ ] I18n: fonts.
 - [x] I18n: translation files.
 - [x] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
-- [ ] Cycle serialization files should include the player name so character-hopping doesn't lose dta.
-- [ ] Review the 20-or-so TODO items noted in code comments.
+- [x] Cycle serialization files should include the player name so character-hopping doesn't lose dta.
 - [x] Sort out `gear.h` vs `utility_items.h`. Merge?
 - [x] Improve the CMake files so rebuilding is reliable.
-- [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
-- [ ] Consider getting more testers.
-- [ ] Track highlight status in the controller to support animating a highlighted slot.
 - [x] Make Rust log to a second file in the same directory as SKSE.
 - [x] Add more Rust debug-level logging for happy-path cases.
 
 Second phase goals:
 
-- [ ] Add support for debug builds to CMake, or at least remove the half-done option.
 - [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
 - [ ] Move imgui rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
 - [ ] Make image loading on-demand, to save memory. (Maybe an unimportant optimization? Measure.)
 - [ ] Update to CommonLibSSE-NG?
+- [ ] Add support for debug builds to CMake, or at least remove the half-done option.
+- [ ] Decide what to do about highlight animations.
+- [ ] Track highlight status in the controller to support animating a highlighted slot.
 
 ## License
 

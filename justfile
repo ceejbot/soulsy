@@ -81,9 +81,7 @@ tag VERSION:
 archive:
     #!/usr/bin/env bash
     set -e
-    mkdir -p archive/SKSE/plugins
-    cp -rp resources archive/SKSE/plugins
-    mv archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml archive/SKSE/plugins/
+    mkdir -p archive
     cp -rp data/* archive/
     cp -p data/SoulsyHUD.esl archive/
     cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
@@ -92,12 +90,11 @@ archive:
     cp -p build/Release/SoulsyHUD.dll /mnt/g/VortexStaging/SoulsyHUD/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb /mnt/g/VortexStaging/SoulsyHUD/SKSE/plugins/SoulsyHUD.pdb
 
-
 # Build a full mod archive; cross-platform.
 archive-win:
     #!{{shbang}}
-    //! I would write this in bash, but I cannot do that from pwsh.
-    //! So I inflict a rust-script on the world instead.
+    //! I refuse to write long pwsh scripts, so I inflict a rust-script
+    //! on the world instead.
     //!
     //! ```cargo
     //! [dependencies]
@@ -110,20 +107,15 @@ archive-win:
             std::process::exit(1);
         }
         println!("Copying source files to `./archive`...");
-        let options = fs_extra::dir::CopyOptions::new();
-
-        std::fs::create_dir_all("archive/SKSE/plugins/resources").expect("couldn't create archive directory");
-        // recursive copy into a deeper location
-        fs_extra::dir::copy("resources", "archive/SKSE/plugins", &options).expect("fail");
-        std::fs::rename("archive/SKSE/plugins/resources/SoulsyHUD_Layout.toml",
-            "archive/SKSE/plugins/SoulsyHUD_Layout.toml")
-            .expect("don't make lemonade");
+        std::fs::create_dir_all("archive").expect("couldn't create archive directory");
 
         // recursive copy stripping off the first path segment
         let mut sources = Vec::new();
         sources.push("data/Interface");
         sources.push("data/mcm");
         sources.push("data/scripts");
+        sources.push("data/SKSE");
+        let options = fs_extra::dir::CopyOptions::new();
         fs_extra::copy_items(&sources, "archive", &options).expect("make life take the lemons back");
 
         std::fs::copy("data/SoulsyHUD.esl", "archive/SoulsyHUD.esl").expect("couldn't copy plugin file");
