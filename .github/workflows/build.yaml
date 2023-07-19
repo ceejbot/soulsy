@@ -1,0 +1,66 @@
+name: Build SoulsyHUD
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  VCPKG_COMMIT_ID: 93895b28ea7bc8cda10f156c5d336f3fc070f8b1
+  CMAKE_BUILD_TYPE: Release
+
+jobs:
+  compile:
+    name: build plugin
+    runs-on: windows-latest
+    steps:
+        - uses: actions/checkout@v3
+        - uses: actions-rs/toolchain@v1
+          with:
+              toolchain: stable
+              override: true
+        - uses: actions/cache@v3
+          with:
+              path: |
+                  ~/.cargo/registry
+                  ~/.cargo/git
+                  target
+              key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+              restore-keys: |
+                  ${{ runner.os }}-cargo-
+        - uses: ilammy/msvc-dev-cmd@v1.10.0
+        - uses: lukka/run-vcpkg@v10.0
+          with:
+              vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+
+        - name: build the the DLL
+          uses: lukka/run-cmake@v10.0
+          with:
+              cmakeListsTxtPath: CMakeLists.txt
+              configurePreset: 'vs2022-windows'
+              buildPreset: 'vs2022-windows'
+              buildPresetCmdString: "['--build', '--preset', '$[env.BUILD_PRESET_NAME]', '--config', 'Release']"
+
+        - name: build mod directory
+          shell: bash
+          run: |
+              mkdir -p soulsyhud
+              cp -r data/* soulsyhud/
+              cp build/Release/SoulsyHUD.dll soulsyhud/SKSE/plugins/SoulsyHUD.dll
+              cp build/Release/SoulsyHUD.pdb soulsyhud/SKSE/plugins/SoulsyHUD.pdb
+
+        - name: 7zip compress it
+          run: 7z a soulsyhud.7z ./soulsyhud
+
+        - name: create a tagged release and upload the archive
+          uses: ncipollo/release-action@v1
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            name: SoulsyHUD ${{ github.ref }}
+            tag: ${{ github.ref }}
+            draft: true
+            artifacts: "soulsyhud.7z"

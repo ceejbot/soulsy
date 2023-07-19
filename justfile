@@ -75,7 +75,6 @@ archive:
     outdir=SoulsyHUD_v${version}
     mkdir -p "$outdir"
     cp -rp data/* "$outdir"/
-    cp -p data/SoulsyHUD.esl "$outdir"/
     cp -p build/Release/SoulsyHUD.dll "$outdir"/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb "$outdir"/SKSE/plugins/SoulsyHUD.pdb
     echo "Mod directory ready at ${outdir}"
@@ -115,6 +114,12 @@ archive-win:
         sevenz_rust::compress_to_path("archive/", "archive.7z").expect("7zip compression failed");
         println!("Archive created! `archive.7z` ready to be uploaded or tested.")
     }
+
+archive-less-precious:
+    New-Item -Path "." -Name "soulsyhud" -ItemType "directory"
+    Copy-Item -Path "data/*" -Destination "soulsyhud" -Recurse
+    Copy-Item "build/Release/SoulsyHUD.dll" -Destination "soulsyhud/SKSE/plugins/"
+    Copy-Item "build/Release/SoulsyHUD.pdb" -Destination "soulsyhud/SKSE/plugins/"
 
 # The traditional
 @clean:
