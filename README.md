@@ -2,7 +2,9 @@
 
 Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It is in fact a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD)! It is simpler than LamasTinyHud is, however.
 
-Check out the remarkably terse [user docs](./docs/usage.md).
+Check out the remarkably terse [user docs](./docs/usage.md). Or take a peek at a [short video of the HUD in action](https://youtu.be/rys9QjC9eak).
+
+![Screenshot of the hud](./docs/SoulsyHUD_preview.jpeg)
 
 ## Development goals
 
@@ -12,7 +14,7 @@ This project is almost ready to release. There are a couple of bugs I'd like to 
 
 ## Building
 
-Soulsy is a Rust and C++ project, using CMake to drive Cargo to build the Rust parts. The application logic is implemented in Rust, with a bridge to the C++ libraries required to implement an SKSE plugin. I have not attempted to build it anywhere other than on Windows. (The Rust side builds anywhere, but the C++ side does not.)
+Soulsy is a Rust and C++ project, using CMake to drive Cargo to build the Rust parts. The application logic is implemented in Rust, with a bridge to the C++ libraries required to implement an SKSE plugin. It requires the following to build:
 
 - [Rust](https://rustup.rs) set up for Windows (not for WSL)
 - [Visual Studio 2022](https://visualstudio.microsoft.com) with C++ compilers installed
@@ -24,14 +26,14 @@ The plugin requires the following vcpkg libraries, which will be installed for y
 - [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG)
 - [spdlog](https://github.com/gabime/spdlog)
 - [simpleini](https://github.com/brofield/simpleini)
-- [nanosvg](https://github.com/memononen/nanosvg) (for rastering the svgfiles)
-- [imgui](https://github.com/ocornut/imgui) (for displaying ui elements)
+- [nanosvg](https://github.com/memononen/nanosvg)
+- [imgui](https://github.com/ocornut/imgui)
 
-There are a number of development conveniences in the [justfile](https://just.systems), including build and archive recipes for Powershell. `cargo install just` if you do not have it.
+There are a number of development conveniences in the [justfile](https://just.systems), including build and archive recipes for Powershell. `cargo install just` if you do not have it. Because I am more comfortable on Unixes than on Windows, some recipes are written in Bash.
 
 `cargo --doc open` displays programmer documentation for the Rust side of the plugin. The C++ side is commented, but not to the same degree.
 
-This project follows the standard [Contributor's Covenant](./CODE_OF_CONDUCT.md).
+You are absolutely invited to contribute. This project follows the standard [Contributor's Covenant](./CODE_OF_CONDUCT.md).
 
 ## Credits
 
@@ -45,13 +47,22 @@ The icons for the built-in theme are the usual SkyUI icons, plus the `futura-boo
 
 Remaining before I release:
 
-- [ ] I18n: fonts.
+- [ ] I18n: fonts. ??
 - [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
 - [x] Review the 20-or-so TODO items noted in code comments.
 - [ ] User docs, for the readme and for the Nexus page.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Consider getting more testers.
+
+Second phase goals:
+
+- [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
+- [ ] Move imgui rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
+- [ ] Make image loading on-demand, to save memory. (Maybe an unimportant optimization? Measure.)
+- [ ] Add support for debug builds to CMake, or at least remove the half-done option.
+- [ ] Decide what to do about highlight animations.
+- [ ] Track highlight status in the controller to support animating a highlighted slot.
 
 DONE:
 
@@ -85,15 +96,6 @@ DONE:
 - [x] Improve the CMake files so rebuilding is reliable.
 - [x] Make Rust log to a second file in the same directory as SKSE.
 - [x] Add more Rust debug-level logging for happy-path cases.
-
-Second phase goals:
-
-- [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
-- [ ] Move imgui rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
-- [ ] Make image loading on-demand, to save memory. (Maybe an unimportant optimization? Measure.)
-- [ ] Add support for debug builds to CMake, or at least remove the half-done option.
-- [ ] Decide what to do about highlight animations.
-- [ ] Track highlight status in the controller to support animating a highlighted slot.
 
 ## License
 
