@@ -93,15 +93,15 @@ namespace game
 			unequipLeftOrRightSlot(slot, player);
 			return;
 		}
-
+		else if (form->Is(RE::FormType::Spell))
+		{
+			// We do not want to look for a bound object for spells.
+			return;
+		}
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		auto item_count               = 2;  // we can equip a spell in both hands
-
-		if (item_form->Is(RE::FormType::Spell)) { bound_obj = item_form; }
-		else { item_count = boundObjectForForm(form, player, bound_obj, extra); }
-
+		auto item_count               = boundObjectForForm(form, player, bound_obj, extra);
 		if (!bound_obj)
 		{
 			logger::debug("unable to find bound object for name='{}'"sv, form->GetName());
@@ -150,6 +150,50 @@ namespace game
 		{
 			task->AddTask(
 				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, slot); });
+		}
+	}
+
+	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	{
+		auto slot_is_left = slot == left_hand_equip_slot();
+		logger::debug("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
+			form->GetName(),
+			slot_is_left,
+			form->GetFormType());
+
+		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+
+		const auto obj_equipped_left  = obj_left && obj_left->formID == form->formID;
+		const auto obj_equipped_right = obj_right && obj_right->formID == form->formID;
+
+		if (slot_is_left && obj_equipped_left)
+		{
+			logger::debug("spell already equipped in left hand. name='{}'"sv, form->GetName());
+			return;
+		}
+
+		if (!slot_is_left && obj_equipped_right)
+		{
+			logger::debug("spell already equipped in right hand. name='{}'"sv, form->GetName());
+			return;
+		}
+
+		auto* spell = form->As<RE::SpellItem>();
+		if (!player->HasSpell(spell))
+		{
+			logger::warn("player does not have spell {}. return."sv, spell->GetName());
+			return;
+		}
+
+		logger::debug("queuing task to equip '{}'; left={}; formID={};"sv,
+			form->GetName(),
+			slot_is_left,
+			util::string_util::int_to_hex(form->formID));
+		auto* task = SKSE::GetTaskInterface();
+		if (task)
+		{
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell); });
 		}
 	}
 }

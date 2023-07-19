@@ -430,8 +430,9 @@ namespace ui
 
 			if (entry_kind != TesItemKind::Arrow && slot_layout.hotkey_color.a > 0)
 			{
+				// NOTE! Hotkey offsets are RELATIVE TO THE HUD OVERALL, not relative to the slot.
 				const auto hk_im_center =
-					ImVec2(slot_center.x + slot_layout.hotkey_offset.x, slot_center.y + slot_layout.hotkey_offset.y);
+					ImVec2(anchor.x + slot_layout.hotkey_offset.x, anchor.y + slot_layout.hotkey_offset.y);
 
 				if (slot_layout.hotkey_bg_color.a > 0)
 				{

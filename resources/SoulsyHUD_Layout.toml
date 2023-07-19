@@ -13,10 +13,10 @@ x = 300.0
 y = 300.0
 
 [bg_color]
-r = 255
-g = 255
-b = 255
-a = 255
+r = 0
+g = 0
+b = 0
+a = 64
 
 [[layouts]]
 name = "Shouts/Powers"
@@ -26,7 +26,7 @@ count_font_size = 15.0
 repr = 0
 
 [layouts.offset]
-x = 5.0
+x = 0.0
 y = -83.0
 
 [layouts.size]
@@ -86,7 +86,7 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 130.0
+x = 110.0
 y = 110.0
 
 [[layouts]]
@@ -157,7 +157,7 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 50.0
+x = 30.0
 y = 40.0
 
 [[layouts]]
@@ -228,7 +228,7 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 195.0
+x = 175.0
 y = 50.0
 
 [[layouts]]
@@ -299,7 +299,7 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 5.0
+x = -15.0
 y = 75.0
 
 [[layouts]]
@@ -354,7 +354,7 @@ b = 255
 a = 0
 
 [layouts.count_offset]
-x = 70.0
+x = 50.0
 y = 100.0
 
 [layouts.count_color]
@@ -370,5 +370,5 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 95.0
+x = 75.0
 y = 100.0

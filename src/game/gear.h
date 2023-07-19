@@ -12,7 +12,8 @@ namespace game
 		RE::TESBoundObject*& outval,
 		RE::ExtraDataList*& outextra);
 
-	bool isItemWorn(RE::TESBoundObject*& a_obj, RE::PlayerCharacter*& a_player);
+	bool isItemWorn(RE::TESBoundObject*& object, RE::PlayerCharacter*& the_player);
 	// bottleneck for equipping everything
-	void equipItemByFormAndSlot(const RE::TESForm* a_form, RE::BGSEquipSlot*& a_slot, RE::PlayerCharacter*& a_player);
+	void equipItemByFormAndSlot(const RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
+	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 }

@@ -126,7 +126,7 @@ namespace player
 		if (!form) { return; }
 		auto* player     = RE::PlayerCharacter::GetSingleton();
 		auto* equip_slot = (slot == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot());
-		game::equipItemByFormAndSlot(form, equip_slot, player);
+		game::equipSpellByFormAndSlot(form, equip_slot, player);
 	}
 
 	void equipWeapon(const std::string& form_spec, Action slot)
@@ -206,7 +206,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		logger::info("player has: {}; name='{}'; formID={};"sv,
+		logger::debug("player has: {}; name='{}'; formID={};"sv,
 			has_it,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));

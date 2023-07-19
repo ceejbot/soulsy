@@ -81,8 +81,8 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 
 	if (hud.debug)
 	{
-		spdlog::set_level(spdlog::level::debug);
-		spdlog::flush_on(spdlog::level::debug);
+		spdlog::set_level(spdlog::level::trace);
+		spdlog::flush_on(spdlog::level::trace);
 	}
 
 	Init(a_skse);

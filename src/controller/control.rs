@@ -495,6 +495,14 @@ impl Controller {
             which,
             Action::Power | Action::Left | Action::Right | Action::Utility
         ) {
+            if matches!(which, Action::Left) && self.two_hander_equipped {
+                log::info!("declining to advance left-hand cycle while two-hander equipped");
+                return KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                };
+            }
+
             let hud = HudElement::from(which);
             if self.cycles.cycle_len(which) > 1 {
                 if let Some(next) = self.cycles.advance(which, 1) {
