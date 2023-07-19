@@ -4,7 +4,7 @@ use anyhow::Result;
 use ini::Ini;
 use once_cell::sync::Lazy;
 
-use crate::plugin::HudElement;
+use crate::plugin::{HudElement, showHUD};
 
 /// This is the path to players's modified settings.
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
@@ -26,6 +26,7 @@ pub fn refresh_user_settings() {
     match UserSettings::refresh() {
         Ok(_) => {
             log::info!("refreshed user settings after MCM edits");
+            showHUD();
         }
         Err(e) => {
             log::warn!("failed to refresh user settings; using defaults; {e:?}");
