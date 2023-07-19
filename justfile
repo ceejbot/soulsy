@@ -12,7 +12,7 @@ help:
 @install:
     rustup install nightly
     cargo install nextest
-    cargo install tomato
+    cargo install tomato-toml
     cargo install rust-script
 
 # Run initial cmake step.
@@ -25,7 +25,7 @@ setup:
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
 
-# Lint Rust. (TODO find the modern C++ linter.)
+# Lint Rust.
 @lint:
     cargo clippy
 
@@ -78,6 +78,7 @@ archive:
     cp -p data/SoulsyHUD.esl "$outdir"/
     cp -p build/Release/SoulsyHUD.dll "$outdir"/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb "$outdir"/SKSE/plugins/SoulsyHUD.pdb
+    echo "Mod directory ready at ${outdir}"
 
 # Build a full mod archive; cross-platform.
 archive-win:

@@ -229,8 +229,6 @@ namespace player
 		logger::info("re-equipping item in left hand; name='{}'; formID={}"sv,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
-		// TODO this is buggy. It might have to do with how I'm equipping the right, not the left.
-		// Still investigating.
 		auto* left_slot = game::left_hand_equip_slot();
 		auto* task      = SKSE::GetTaskInterface();
 		if (task)

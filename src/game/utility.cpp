@@ -231,7 +231,7 @@ the MCM setting will be left for overwrite handling
 		}
 	}
 
-	// TODO dry this up for sure. not yet in use.
+	// Not yet in use. Remove if I decide to definitely never do a choose-consumable feature.
 	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& the_player)
 	{
 		// get player missing value

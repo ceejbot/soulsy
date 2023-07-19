@@ -43,13 +43,6 @@ namespace hooks
 				if (button->idCode == keycodes::k_invalid) { continue; }
 
 				auto key = keycodes::get_key_id(button);
-
-				if (button->IsUp())
-				{
-					// TODO anything?
-				}
-
-				// Early return after we're finished processing button-up events.
 				if (!button->IsDown()) { continue; }
 
 				if (button->IsPressed() && hotkeys->is_cycle_button(key))

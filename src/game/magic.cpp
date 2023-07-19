@@ -90,7 +90,6 @@ namespace game
 
 			//could trigger an animation here
 			//might need to set some things
-			//TODO make an animation to play here
 			//player->NotifyAnimationGraph("IdleMagic_01"); //works
 			auto is_self_target = spell->GetDelivery() == RE::MagicSystem::Delivery::kSelf;
 			auto* target        = is_self_target ? actor : actor->GetActorRuntimeData().currentCombatTarget.get().get();

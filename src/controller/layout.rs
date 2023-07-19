@@ -70,7 +70,6 @@ impl HudLayout {
     }
 
     pub fn init() -> HudLayout {
-        // solving my problem this way is cheesy. TODO fix
         match HudLayout::read_from_file() {
             Ok(v) => {
                 log::info!("successfully initialized HUD layout from player file");

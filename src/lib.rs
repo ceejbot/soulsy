@@ -10,7 +10,7 @@ use controller::*;
 /// the matching Rust code.
 #[cxx::bridge]
 pub mod plugin {
-    // ceejbot TODO: organize into namespaces; getting pretty cluttered
+    // ceejbot says: organize into namespaces; getting pretty cluttered
 
     /// Hud elements to draw.
     #[derive(Deserialize, Serialize, Debug, Clone, Hash)]
@@ -80,7 +80,7 @@ pub mod plugin {
         name: String,
         /// An offset from the overall hud anchor point to draw this element at.
         offset: Point,
-        /// The size of this element, to scale everything to. Partially TODO.
+        /// The size of this element, to scale everything to.
         size: Point,
         /// The color of any background for this element. If its alpha is 0, the bg is not drawn.
         bg_color: Color,

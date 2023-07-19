@@ -108,8 +108,7 @@ impl TesItemData {
         self.count
     }
 
-    // TODO remove this; we only ever want to change this via local control
-    /// If the player's inventory changes, we update the item count.
+    /// Update the count following an inventory-count-changed event.
     pub fn set_count(&mut self, v: u32) {
         self.count = v;
     }

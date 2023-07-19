@@ -161,7 +161,6 @@ impl TesItemKind {
 }
 
 static ICON_MAP: Lazy<HashMap<TesItemKind, String>> = Lazy::new(|| {
-    // TODO TesItemKind::Empty
     HashMap::from([
         (TesItemKind::Alteration, "alteration.svg".to_string()),
         (TesItemKind::ArmorClothing, "armor_clothing.svg".to_string()),

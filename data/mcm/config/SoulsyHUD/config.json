@@ -11,8 +11,8 @@
     },
     {
       "id": "uPowerCycleKey:Controls",
-      "text": "$SoulsyHUD_Controls_PowerCycleKey_OptionText",
-      "help": "$SoulsyHUD_Controls_PowerCycleKey_InfoText",
+      "text": "$SoulsyHUD_Controls_PowerCycleKey_Text",
+      "help": "$SoulsyHUD_Controls_PowerCycleKey_Help",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -20,8 +20,8 @@
     },
     {
       "id": "uUtilityCycleKey:Controls",
-      "text": "$SoulsyHUD_Controls_UtilityCycleKey_OptionText",
-      "help": "$SoulsyHUD_Controls_UtilityCycleKey_InfoText",
+      "text": "$SoulsyHUD_Controls_UtilityCycleKey_Text",
+      "help": "$SoulsyHUD_Controls_UtilityCycleKey_Help",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -29,8 +29,8 @@
     },
     {
       "id": "uLeftCycleKey:Controls",
-      "text": "$SoulsyHUD_Controls_LeftCycleKey_OptionText",
-      "help": "$SoulsyHUD_Controls_LeftCycleKey_InfoText",
+      "text": "$SoulsyHUD_Controls_LeftCycleKey_Text",
+      "help": "$SoulsyHUD_Controls_LeftCycleKey_Help",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -38,8 +38,8 @@
     },
     {
       "id": "uRightCycleKey:Controls",
-      "text": "$SoulsyHUD_Controls_RightCycleKey_OptionText",
-      "help": "$SoulsyHUD_Controls_RightCycleKey_InfoText",
+      "text": "$SoulsyHUD_Controls_RightCycleKey_Text",
+      "help": "$SoulsyHUD_Controls_RightCycleKey_Help",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -47,8 +47,8 @@
     },
     {
       "id": "uUtilityActivateKey:Controls",
-      "text": "$SoulsyHUD_Controls_ActivateKey_OptionText",
-      "help": "$SoulsyHUD_Controls_ActivateKey_InfoText",
+      "text": "$SoulsyHUD_Controls_ActivateKey_Text",
+      "help": "$SoulsyHUD_Controls_ActivateKey_Help",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -56,8 +56,8 @@
     },
     {
       "id": "uShowHideKey:Controls",
-      "text": "$SoulsyHUD_Controls_ShowHideKey_OptionText",
-      "help": "$SoulsyHUD_Controls_ShowHideKey_InfoText",
+      "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
+      "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -65,22 +65,22 @@
     },
     {
       "id": "uRefreshKey:Controls",
-      "text": "$SoulsyHUD_Controls_RefreshKey_OptionText",
-      "help": "$SoulsyHUD_Controls_RefreshKey_InfoText",
+      "text": "$SoulsyHUD_Controls_RefreshKey_Text",
+      "help": "$SoulsyHUD_Controls_RefreshKey_Help",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
     },
     {
-      "text": "$SoulsyHUD_Options_Options_HeaderText",
+      "text": "$SoulsyHUD_Options_HeaderText",
       "type": "header",
       "position": 1
     },
     {
       "id": "uMaxCycleLength:Options",
-      "text": "$SoulsyHUD_Options_Length_OptionText",
-      "help": "$SoulsyHUD_Options_Length_InfoText",
+      "text": "$SoulsyHUD_Options_Length_Text",
+      "help": "$SoulsyHUD_Options_Length_Help",
       "type": "slider",
       "valueOptions": {
         "min": 2,
@@ -91,8 +91,8 @@
     },
     {
       "id": "uEquipDelay:Options",
-      "text": "$SoulsyHUD_Options_EquipDelay_OptionText",
-      "help": "$SoulsyHUD_Options_EquipDelay_InfoText",
+      "text": "$SoulsyHUD_Options_EquipDelay_Text",
+      "help": "$SoulsyHUD_Options_EquipDelay_Help",
       "type": "slider",
       "valueOptions": {
         "min": 0,
@@ -103,17 +103,17 @@
     },
     {
       "id": "bFade:Options",
-      "text": "$SoulsyHUD_Options_Fade_OptionText",
+      "text": "$SoulsyHUD_Options_Fade_Text",
       "type": "toggle",
-      "help": "$SoulsyHUD_Options_Fade_InfoText",
+      "help": "$SoulsyHUD_Options_Fade_Help",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
     },
     {
       "id": "uFadeDelay:Options",
-      "text": "$SoulsyHUD_Options_FadeDelay_OptionText",
-      "help": "$SoulsyHUD_Options_FadeDelay_InfoText",
+      "text": "$SoulsyHUD_Options_FadeDelay_Text",
+      "help": "$SoulsyHUD_Options_FadeDelay_Help",
       "type": "slider",
       "valueOptions": {
         "min": 0,
@@ -124,9 +124,9 @@
     },
     {
       "id": "uControllerKind:Options",
-      "text": "$SoulsyHUD_Options_Controller_OptionText",
+      "text": "$SoulsyHUD_Options_Controller_Text",
       "type": "enum",
-      "help": "$SoulsyHUD_Options_Controller_InfoText.",
+      "help": "$SoulsyHUD_Options_Controller_Help.",
       "valueOptions": {
         "options": [
           "$SoulsyHUD_Controls_PC",

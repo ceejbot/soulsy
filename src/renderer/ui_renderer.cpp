@@ -390,7 +390,6 @@ namespace ui
 			// If this item is highlighted, we draw an animation for it.
 			if (entry->highlighted())
 			{
-				// TODO tighten up this function signature
 				init_animation(animation_type::highlight,
 					anchor.x,
 					anchor.y,
@@ -401,7 +400,7 @@ namespace ui
 					draw_full,
 					top_layout.animation_alpha,
 					top_layout.animation_duration);
-				// TODO turn highlight off on the entry
+				// TODO turn highlight off on the entry; needs highlight feature
 			}
 
 			// Now decide if we should draw the text showing the item's name.
@@ -508,29 +507,23 @@ namespace ui
 
 		ImGui::End();
 
-		if (hide_out_of_combat)
+		if (fade_in && fade < 1.0f)
 		{
-			if (fade_in && fade != 1.0f)
+			fade_out_timer = static_cast<float>(settings->fade_delay() / 1000);
+			fade += 0.01f;
+			if (fade > 1.0f) { fade = 1.0f; }
+		}
+		else if (fade > 0.0f)
+		{
+			if (fade_out_timer > 0.0f) { fade_out_timer -= ImGui::GetIO().DeltaTime; }
+			else
 			{
-				// I'm not sure how long our ticks are, but I want the fade delay
-				// to be expressed in milliseconds in the UI. Let's guess a tick == 10ms.
-				fade_out_timer = static_cast<float>(settings->fade_delay()) / 100.0f;
-				fade += 0.01f;
-				if (fade > 1.0f) { fade = 1.0f; }
-			}
-			else if (!fade_in && fade != 0.0f)
-			{
-				if (fade_out_timer > 0.0f) { fade_out_timer -= ImGui::GetIO().DeltaTime; }
-				else
-				{
-					fade -= 0.01f;
-					if (fade < 0.0f) { fade = 0.0f; }
-				}
+				fade -= 0.005f; // fade out more slowly than we fade in
+				if (fade < 0.0f) { fade = 0.0f; }
 			}
 		}
 	}
 
-	// I regret all of my life choices.
 	void ui_renderer::load_icon_images(std::map<uint32_t, image>& a_struct, std::string& file_path)
 	{
 		const auto res_width = 1.0f;

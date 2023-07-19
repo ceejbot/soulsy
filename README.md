@@ -8,7 +8,7 @@ Check out the remarkably terse [user docs](./docs/usage.md).
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project is complete enough to use in-game, though there are a couple of bugs I'd like to fix. See the TODO list at the end of this README for details about its current status. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish.
+This project is almost ready to release. There are a couple of bugs I'd like to fix. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish. See the TODO list at the end of this readme for details about my next steps.
 
 ## Building
 
@@ -48,7 +48,7 @@ Remaining before I release:
 - [ ] I18n: fonts.
 - [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
-- [ ] Review the 20-or-so TODO items noted in code comments.
+- [x] Review the 20-or-so TODO items noted in code comments.
 - [ ] User docs, for the readme and for the Nexus page.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Consider getting more testers.
