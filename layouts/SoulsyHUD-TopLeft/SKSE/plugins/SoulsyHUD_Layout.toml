@@ -1,0 +1,374 @@
+animation_alpha = 51
+animation_duration = 0.2
+font = "futura-book-bt.ttf"
+font_size = 20.0
+debug = true
+
+[anchor]
+x = 200.0
+y = 150.0
+
+[size]
+x = 400.0
+y = 300.0
+
+[bg_color]
+r = 0
+g = 0
+b = 0
+a = 64
+
+[[layouts]]
+name = "Shouts/Powers"
+count_font_size = 15.0
+
+[layouts.element]
+repr = 0
+
+[layouts.offset]
+x = -150.0
+y = 0.0
+
+[layouts.size]
+x = 94.0
+y = 94.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 200
+a = 255
+
+[layouts.icon_size]
+x = 50.0
+y = 50.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 128
+
+[layouts.hotkey_offset]
+x = 50.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = -25.0
+y = 50.0
+
+[[layouts]]
+name = "Consumables"
+count_font_size = 20.0
+
+[layouts.element]
+repr = 1
+
+[layouts.offset]
+x = -150.0
+y = -100.0
+
+[layouts.size]
+x = 94.0
+y = 94.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 210
+a = 255
+
+[layouts.icon_size]
+x = 50.0
+y = 50.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 128
+
+[layouts.hotkey_offset]
+x = 50.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 25.0
+y = 50.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 150.0
+y = -38.0
+
+[[layouts]]
+name = "Left Hand"
+count_font_size = 20.0
+
+[layouts.element]
+repr = 2
+
+[layouts.offset]
+x = -50.0
+y = 0.0
+
+[layouts.size]
+x = 94.0
+y = 94.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 210
+a = 255
+
+[layouts.icon_size]
+x = 50.0
+y = 50.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 128
+
+[layouts.hotkey_offset]
+x = 50.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = -125.0
+y = 75.0
+
+[[layouts]]
+name = "Right Hand"
+count_font_size = 20.0
+
+[layouts.element]
+repr = 3
+
+[layouts.offset]
+x = 50.0
+y = 0.0
+
+[layouts.size]
+x = 94.0
+y = 94.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 210
+a = 255
+
+[layouts.icon_size]
+x = 50.0
+y = 50.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 128
+
+[layouts.hotkey_offset]
+x = 50.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = -225.0
+y = 100.0
+
+[[layouts]]
+name = "Ammo"
+count_font_size = 20.0
+
+[layouts.element]
+repr = 4
+
+[layouts.offset]
+x = -50.0
+y = -100.0
+
+[layouts.size]
+x = 100.0
+y = 100.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 200
+a = 255
+
+[layouts.icon_size]
+x = 50.0
+y = 50.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.hotkey_offset]
+x = 50.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 20.0
+y = 20.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 50.0
+y = 12.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 50.0
+y = -13.0
