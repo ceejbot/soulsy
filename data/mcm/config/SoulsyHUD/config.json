@@ -6,13 +6,13 @@
   "cursorFillMode": "topToBottom",
   "content": [
     {
-      "text": "Key bindings",
+      "text": "$SoulsyHUD_Controls_HeaderText",
       "type": "header"
     },
     {
       "id": "uPowerCycleKey:Controls",
-      "text": "Powers",
-      "help": "The hotkey for cycling shouts and powers",
+      "text": "$SoulsyHUD_Controls_PowerCycleKey_OptionText",
+      "help": "$SoulsyHUD_Controls_PowerCycleKey_InfoText",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -20,8 +20,8 @@
     },
     {
       "id": "uUtilityCycleKey:Controls",
-      "text": "Utility",
-      "help": "The hotkey for cycling consumables, like potions and poisons",
+      "text": "$SoulsyHUD_Controls_UtilityCycleKey_OptionText",
+      "help": "$SoulsyHUD_Controls_UtilityCycleKey_InfoText",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -29,8 +29,8 @@
     },
     {
       "id": "uLeftCycleKey:Controls",
-      "text": "Left",
-      "help": "The hotkey for cycling left-hand items",
+      "text": "$SoulsyHUD_Controls_LeftCycleKey_OptionText",
+      "help": "$SoulsyHUD_Controls_LeftCycleKey_InfoText",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -38,8 +38,8 @@
     },
     {
       "id": "uRightCycleKey:Controls",
-      "text": "Right",
-      "help": "The hotkey for cycling right-hand items",
+      "text": "$SoulsyHUD_Controls_RightCycleKey_OptionText",
+      "help": "$SoulsyHUD_Controls_RightCycleKey_InfoText",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -47,41 +47,41 @@
     },
     {
       "id": "uUtilityActivateKey:Controls",
-      "text": "Activate utility item",
+      "text": "$SoulsyHUD_Controls_ActivateKey_OptionText",
+      "help": "$SoulsyHUD_Controls_ActivateKey_InfoText",
       "type": "keymap",
-      "help": "The hotkey for using the selected utility item",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
     },
     {
       "id": "uShowHideKey:Controls",
-      "text": "Show/Hide",
+      "text": "$SoulsyHUD_Controls_ShowHideKey_OptionText",
+      "help": "$SoulsyHUD_Controls_ShowHideKey_InfoText",
       "type": "keymap",
-      "help": "The hotkey for toggling HUD widget visibility",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
     },
     {
       "id": "uRefreshKey:Controls",
-      "text": "Refresh layout",
+      "text": "$SoulsyHUD_Controls_RefreshKey_OptionText",
+      "help": "$SoulsyHUD_Controls_RefreshKey_InfoText",
       "type": "keymap",
-      "help": "The hotkey for reading a new layout from the TOML file.",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
     },
     {
-      "text": "HUD behavior options",
+      "text": "$SoulsyHUD_Options_Options_HeaderText",
       "type": "header",
       "position": 1
     },
     {
       "id": "uMaxCycleLength:Options",
-      "text": "Cycle length",
+      "text": "$SoulsyHUD_Options_Length_OptionText",
+      "help": "$SoulsyHUD_Options_Length_InfoText",
       "type": "slider",
-      "help": "The longest to allow your cycles to be. This defaults to 10, but even that length is likely unwieldy.",
       "valueOptions": {
         "min": 2,
         "max": 15,
@@ -91,9 +91,9 @@
     },
     {
       "id": "uEquipDelay:Options",
-      "text": "Equip delay",
+      "text": "$SoulsyHUD_Options_EquipDelay_OptionText",
+      "help": "$SoulsyHUD_Options_EquipDelay_InfoText",
       "type": "slider",
-      "help": "The milliseconds to delay after tapping a cycle button before activating the item. A short value, like 500ms, is good.",
       "valueOptions": {
         "min": 0,
         "max": 2500,
@@ -103,18 +103,18 @@
     },
     {
       "id": "bFade:Options",
-      "text": "Fade out",
+      "text": "$SoulsyHUD_Options_Fade_OptionText",
       "type": "toggle",
-      "help": "Enable to make the HUD widget fade out if you're not in combat or don't have your weapons readied.",
+      "help": "$SoulsyHUD_Options_Fade_InfoText",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
     },
     {
       "id": "uFadeDelay:Options",
-      "text": "Fade delay",
+      "text": "$SoulsyHUD_Options_FadeDelay_OptionText",
+      "help": "$SoulsyHUD_Options_FadeDelay_InfoText",
       "type": "slider",
-      "help": "The milliseconds to delay before fading the widget out when you exit combat or stow your weapons.",
       "valueOptions": {
         "min": 0,
         "max": 5000,
@@ -124,14 +124,14 @@
     },
     {
       "id": "uControllerKind:Options",
-      "text": "Controller display",
+      "text": "$SoulsyHUD_Options_Controller_OptionText",
       "type": "enum",
-      "help": "Which controller style to use for hotkey hints.",
+      "help": "$SoulsyHUD_Options_Controller_InfoText.",
       "valueOptions": {
         "options": [
-          "Keyboard",
-          "Playstation",
-          "XBox"
+          "$SoulsyHUD_Controls_PC",
+          "$SoulsyHUD_Controls_PS",
+          "$SoulsyHUD_Controls_Xbox"
         ],
         "sourceType": "ModSettingInt",
         "defaultValue": 0
