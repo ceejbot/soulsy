@@ -25,16 +25,6 @@ setup:
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
 
-# Build for debugging. The CMake build needs work before this will be good.
-@debug:
-    cargo build
-    cmake --build --preset vs2022-windows --config Debug
-
-# Run the same tests we run in CI.
-@ci:
-    cargo nextest run
-    cargo clippy
-
 # Lint Rust. (TODO find the modern C++ linter.)
 @lint:
     cargo clippy
@@ -81,14 +71,13 @@ tag VERSION:
 archive:
     #!/usr/bin/env bash
     set -e
-    mkdir -p archive
-    cp -rp data/* archive/
-    cp -p data/SoulsyHUD.esl archive/
-    cp -p build/Release/SoulsyHUD.dll archive/SKSE/plugins/SoulsyHUD.dll
-    cp -p build/Release/SoulsyHUD.pdb archive/SKSE/plugins/SoulsyHUD.pdb
-    # todo remove at some point
-    cp -p build/Release/SoulsyHUD.dll /mnt/g/VortexStaging/SoulsyHUD/SKSE/plugins/SoulsyHUD.dll
-    cp -p build/Release/SoulsyHUD.pdb /mnt/g/VortexStaging/SoulsyHUD/SKSE/plugins/SoulsyHUD.pdb
+    version=$(tomato get package.version Cargo.toml)
+    outdir=SoulsyHUD_v${version}
+    mkdir -p "$outdir"
+    cp -rp data/* "$outdir"/
+    cp -p data/SoulsyHUD.esl "$outdir"/
+    cp -p build/Release/SoulsyHUD.dll "$outdir"/SKSE/plugins/SoulsyHUD.dll
+    cp -p build/Release/SoulsyHUD.pdb "$outdir"/SKSE/plugins/SoulsyHUD.pdb
 
 # Build a full mod archive; cross-platform.
 archive-win:
