@@ -5,7 +5,7 @@ pub mod controller;
 use controller::*;
 
 /// Rust defines the bridge between it and C++ in this mod, using the
-/// affordances of the `cxx` crate. At build time `cxx_build` will generate the
+/// affordances of the `cxx` crate. At build time `cxx_build` generates the
 /// header files required by the C++ side. The macros expand in-line to generate
 /// the matching Rust code.
 #[cxx::bridge]
@@ -242,17 +242,17 @@ pub mod plugin {
 
         /// This is an entry in the cycle. The UI will ask questions of it.
         type TesItemData;
-        /// The item category, fine-grained to help with icon choices.
+        /// Get the item category, fine-grained to help with icon choices.
         fn kind(self: &TesItemData) -> TesItemKind;
-        /// True if any UI for this item should be drawn highlight. UNUSED.
+        /// Check if any UI for this item should be drawn highlighted. UNUSED.
         fn highlighted(self: &TesItemData) -> bool;
-        /// The game's name for this item.
+        /// Get the game's human-readable name for this item.
         fn name(self: &TesItemData) -> String;
-        /// Whether this item has a relevant count.
+        /// Check whether this item is stacked in inventory, like potions are.
         fn has_count(self: &TesItemData) -> bool;
-        /// How many of this item the player has last time we checked. Updated on inventory changes.
+        /// Get how many of this item the player has. Updated on inventory changes.
         fn count(self: &TesItemData) -> u32;
-        /// Call to create a brand-new cycle entry, with a cache of game data we'll need
+        /// Create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
         fn make_tesitem(
             kind: TesItemKind,
@@ -274,7 +274,7 @@ pub mod plugin {
 
         // These are called by plugin hooks and sinks.
 
-        /// Handle an incoming key press event from the game. An enum encoding how it was handled.
+        /// Handle an incoming key press event, responding with how it was handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
         fn handle_menu_event(key: u32, item: Box<TesItemData>);
@@ -286,8 +286,8 @@ pub mod plugin {
         fn update_hud() -> bool;
         /// Handle equipment-changed events from the game.
         fn handle_item_equipped(equipped: bool, item: Box<TesItemData>) -> bool;
-        /// The player's inventory changed. Update if necessary.
-        fn handle_inventory_changed(item: Box<TesItemData>, count: i32);
+        /// Handle inventory-count changed events from the game.
+        fn handle_inventory_changed(item: Box<TesItemData>, delta: i32);
     }
 
     #[namespace = "RE"]
@@ -306,9 +306,9 @@ pub mod plugin {
         type BGSEquipSlot;
         /// A keyboard, mouse, or gamepad button event. Imported from CommonLibSE.
         type ButtonEvent;
-        /// Exposes to Rust the is-down method on the button event object.
+        /// Check if this is a button-down event.
         fn IsDown(self: &ButtonEvent) -> bool;
-        /// Exposes to Rust the is-up method on the button event object.
+        /// Check if this is a button-up event.
         fn IsUp(self: &ButtonEvent) -> bool;
     }
 

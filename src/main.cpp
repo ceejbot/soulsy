@@ -1,4 +1,3 @@
-
 #include "hooks.h"
 #include "papyrus.h"
 #include "sinks.h"
@@ -122,7 +121,6 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI
 	pluginInfo->name        = SKSEPlugin_Version.pluginName;
 	pluginInfo->infoVersion = SKSE::PluginInfo::kVersion;
 	pluginInfo->version     = SKSEPlugin_Version.pluginVersion;
-
 
 	if (a_skse->IsEditor())
 	{

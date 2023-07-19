@@ -150,9 +150,8 @@ impl CycleData {
     fn cycle_storage() -> PathBuf {
         let name = playerName()
             .trim()
-            .replace(" ", "_")
-            .replace("'", "")
-            .replace("\"", "");
+            .replace(' ', "_")
+            .replace(['\\', '\''], "");
         PathBuf::from(CYCLE_PATH).join(format!("SoulsyHUD_{}_Cycles.toml", name))
     }
 

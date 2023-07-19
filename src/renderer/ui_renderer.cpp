@@ -518,7 +518,7 @@ namespace ui
 			if (fade_out_timer > 0.0f) { fade_out_timer -= ImGui::GetIO().DeltaTime; }
 			else
 			{
-				fade -= 0.005f; // fade out more slowly than we fade in
+				fade -= 0.005f;  // fade out more slowly than we fade in
 				if (fade < 0.0f) { fade = 0.0f; }
 			}
 		}

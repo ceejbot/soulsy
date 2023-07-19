@@ -198,7 +198,7 @@ the MCM setting will be left for overwrite handling
 			sound_descriptor = RE::TESForm::LookupByID(0x00106614)->As<RE::BGSSoundDescriptorForm>()->soundDescriptor;
 		}
 
-		auto used = 0;
+		auto used             = 0;
 		auto* equipped_object = the_player->GetEquippedEntryData(false);
 		if (equipped_object && equipped_object->object->IsWeapon() && !equipped_object->IsPoisoned() && a_count > 0)
 		{
@@ -227,7 +227,8 @@ the MCM setting will be left for overwrite handling
 		if (task)
 		{
 			logger::trace("queuing remove item tasks..."sv);
-			task->AddTask([=]() {  the_player->RemoveItem(a_poison, used, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr); });
+			task->AddTask(
+				[=]() { the_player->RemoveItem(a_poison, used, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr); });
 		}
 	}
 

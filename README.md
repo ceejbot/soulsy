@@ -67,7 +67,7 @@ Second phase goals:
 DONE:
 
 - [x] Figure out how to compile papyrus scripts. Answer: Pyro.
-- [x] Edit the `.esp`` if necessary. Check it in.
+- [x] Edit the `.esp` if necessary. Check it in.
 - [x] Rewrite or merely just tweak the script that builds the mod archive itself, with correctly-placed files.
 - [x] Test to see if the mod loads at all into the game. Fix whatever's broken.
 - [x] Finish up the icon data loading function.

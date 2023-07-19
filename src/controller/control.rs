@@ -594,14 +594,15 @@ impl Controller {
             log::debug!(
                 "persisted cycle data after change; verb='{}'; item='{}';",
                 verb,
-                item.name());
+                item.name()
+            );
             self.flush_cycle_data();
         }
     }
 
     fn flush_cycle_data(&self) {
         match self.cycles.write() {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 log::warn!("failed to persist cycle data, but gamely continuing; {e:?}");
             }

@@ -4,7 +4,7 @@ use anyhow::Result;
 use ini::Ini;
 use once_cell::sync::Lazy;
 
-use crate::plugin::{HudElement, showHUD};
+use crate::plugin::{showHUD, HudElement};
 
 /// This is the path to players's modified settings.
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
