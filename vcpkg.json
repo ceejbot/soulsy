@@ -1,8 +1,8 @@
 {
-    "name": "lamastinyhud",
-    "version-string": "1.4.4",
-    "description": "hud element for skyrim",
-    "homepage": "https://github.com/mlthelama/LamasTinyHUD",
+    "name": "soulsyhud",
+    "version-string": "1.0.0",
+    "description": "hotkey and hud for Skyrim AE",
+    "homepage": "https://github.com/ceejbot/soulsy",
     "license": "GPL-2.0-or-later",
     "dependencies": [
         "simpleini",
