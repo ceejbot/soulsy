@@ -487,7 +487,7 @@ impl Controller {
         if matches!(which, Action::Irrelevant) {
             return KeyEventResponse::default();
         }
-        log::debug!("entering handle_key_event(); action={which:?}");
+        // log::trace!("entering handle_key_event(); action={which:?}");
 
         // It's not really tidier rewritten as a match.
 

@@ -52,13 +52,7 @@ namespace game
 
 	void equipShoutByForm(RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
-		logger::trace("tring to equip shout; name='{}';"sv, form->GetName());
-
-		if (!form->Is(RE::FormType::Shout))
-		{
-			logger::warn("this is not a shout! name='{}';"sv, form->GetName());
-			return;
-		}
+		// logger::trace("tring to equip shout; name='{}';"sv, form->GetName());
 
 		if (const auto selected_power = player->GetActorRuntimeData().selectedPower; selected_power)
 		{
@@ -73,6 +67,26 @@ namespace game
 			}
 		}
 
+		if (form->Is(RE::FormType::Spell))
+		{
+			logger::debug("equipping lesser power name='{}';"sv, form->GetName());
+			auto* spell = form->As<RE::SpellItem>();
+			if (!player->HasSpell(spell))
+			{
+				logger::warn("player does not know lesser power; name='{}';"sv, spell->GetName());
+				return;
+			}
+
+			auto* task = SKSE::GetTaskInterface();
+			if (task)
+			{
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell); });
+			}
+
+			return;
+		}
+
+
 		auto* shout = form->As<RE::TESShout>();
 		if (!player::has_shout(player, shout))
 		{
@@ -80,7 +94,11 @@ namespace game
 			return;
 		}
 
-		RE::ActorEquipManager::GetSingleton()->EquipShout(player, shout);
+		auto* task = SKSE::GetTaskInterface();
+		if (task)
+		{
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipShout(player, shout); });
+		}
 		logger::debug("shout equipped! name='{}'"sv, form->GetName());
 	}
 }
