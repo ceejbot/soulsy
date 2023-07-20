@@ -20,7 +20,7 @@ use std::path::PathBuf;
 pub use control::public::*;
 pub use cycles::{default_tes_item, get_icon_file, make_tesitem, TesItemData};
 pub use layout::hud_layout;
-pub use settings::{refresh_user_settings, user_settings, UserSettings};
+pub use settings::{user_settings, UserSettings};
 use simplelog::*;
 pub use tesitemkind::{kind_has_count, kind_is_magic}; // hmm, is this for settings? I'm confused...
 

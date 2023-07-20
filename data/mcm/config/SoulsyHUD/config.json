@@ -78,6 +78,15 @@
       "position": 1
     },
     {
+      "id": "bIncludeUnarmed:Options",
+      "text": "$SoulsyHUD_Options_Unarmed_Text",
+      "type": "toggle",
+      "help": "$SoulsyHUD_Options_Unarmed_Help",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
       "id": "uMaxCycleLength:Options",
       "text": "$SoulsyHUD_Options_Length_Text",
       "help": "$SoulsyHUD_Options_Length_Help",

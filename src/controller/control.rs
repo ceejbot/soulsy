@@ -1,10 +1,11 @@
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::sync::Mutex;
 
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
-use super::settings::user_settings;
+use super::settings::{user_settings, UserSettings};
 use crate::hud_layout;
 use crate::plugin::*;
 
@@ -90,6 +91,28 @@ pub mod public {
         let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.cycles.truncate_if_needed(new as usize);
     }
+
+    pub fn refresh_user_settings() {
+        if let Some(e) = UserSettings::refresh().err() {
+            log::warn!("Failed to read user settings! using defaults; {e:?}");
+            return;
+        }
+        let mut ctrl = CONTROLLER.lock().unwrap();
+        let settings = user_settings();
+        if settings.include_unarmed() {
+            let h2h = make_hand_to_hand();
+            let h2h = *h2h;
+            ctrl.cycles.include_item(Action::Left, h2h.clone());
+            ctrl.cycles.include_item(Action::Right, h2h);
+        } else {
+            // remove any item with h2h type from cycles
+            ctrl.cycles
+                .filter_kind(Action::Left, TesItemKind::HandToHand);
+            ctrl.cycles
+                .filter_kind(Action::Right, TesItemKind::HandToHand);
+        }
+        showHUD();
+    }
 }
 
 /// What, model/view/controller? In my UI application? oh no
@@ -173,13 +196,16 @@ impl Controller {
             return;
         }
 
-        // We equip whatever the HUD is showing right now.
         let Some(item) = &self.visible.get(&hud) else {
-            return; // TODO should equipped unarmed?
+            log::warn!("visible item in hud slot was None, which should not happen; slot={:?};", hud);
+            unequipSlot(which);
+            return;
         };
 
+        // We equip whatever the HUD is showing right now.
         let kind = item.kind();
-        if matches!(kind, TesItemKind::Empty) && which != Action::Utility {
+        if matches!(kind, TesItemKind::HandToHand) {
+            log::info!("melee time! unequipping slot {which:?}");
             unequipSlot(which);
             return;
         }
@@ -201,7 +227,12 @@ impl Controller {
         }
         let kind = item.kind();
         cxx::let_cxx_string!(form_spec = item.form_string());
-        log::trace!("equip_item: which={:?}; form_spec={}; name='{}'", which, item.form_string(), item.name());
+        log::trace!(
+            "equip_item: which={:?}; form_spec={}; name='{}'",
+            which,
+            item.form_string(),
+            item.name()
+        );
 
         // These are all different because the game API is a bit of an evolved thing.
         if kind.is_magic() {
@@ -343,13 +374,13 @@ impl Controller {
             return false;
         }
 
-        let rightie  = if !item.kind().is_weapon() {
+        let rightie = if !item.kind().is_weapon() {
             equippedRightHand()
         } else {
             boundObjectRightHand()
         };
 
-        let leftie  = if !item.kind().is_weapon() {
+        let leftie = if !item.kind().is_weapon() {
             equippedLeftHand()
         } else {
             boundObjectLeftHand()
@@ -647,6 +678,19 @@ impl From<Action> for HudElement {
             HudElement::Right
         } else {
             HudElement::Ammo
+        }
+    }
+}
+
+impl Display for HudElement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            HudElement::Ammo => write!(f, "Ammo"),
+            HudElement::Left => write!(f, "Left"),
+            HudElement::Power => write!(f, "Power"),
+            HudElement::Right => write!(f, "Right"),
+            HudElement::Utility => write!(f, "Utility"),
+            _ => write!(f, "unknown"),
         }
     }
 }

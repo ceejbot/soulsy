@@ -62,6 +62,17 @@ pub fn make_tesitem(
     ))
 }
 
+pub fn make_hand_to_hand() -> Box<TesItemData> {
+    Box::new(TesItemData::new(
+        TesItemKind::HandToHand,
+        false,
+        false,
+        1,
+        "Unarmed",
+        "",
+    ))
+}
+
 /// Construct a default TesItemData struct, which is displayed as
 /// an empty spot on the HUD.
 pub fn default_tes_item() -> Box<TesItemData> {
@@ -364,6 +375,37 @@ impl CycleData {
             }
         }
         false
+    }
+
+    pub fn include_item(&mut self, which: Action, item: TesItemData) {
+        let cycle = match which {
+            Action::Power => &mut self.power,
+            Action::Left => &mut self.left,
+            Action::Right => &mut self.right,
+            Action::Utility => &mut self.utility,
+            _ => {
+                return;
+            }
+        };
+        if !cycle
+            .iter()
+            .any(|xs| xs.kind() == item.kind() || xs.form_string() == item.form_string())
+        {
+            cycle.push(item);
+        }
+    }
+
+    pub fn filter_kind(&mut self, which: Action, kind: TesItemKind) {
+        let cycle = match which {
+            Action::Power => &mut self.power,
+            Action::Left => &mut self.left,
+            Action::Right => &mut self.right,
+            Action::Utility => &mut self.utility,
+            _ => {
+                return;
+            }
+        };
+        cycle.retain(|xs| xs.kind() != kind);
     }
 }
 

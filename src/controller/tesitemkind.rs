@@ -15,7 +15,7 @@ pub fn kind_is_magic(kind: TesItemKind) -> bool {
 /// We cannot derive default for shared enums, so we define it here.
 impl Default for TesItemKind {
     fn default() -> Self {
-        TesItemKind::Empty
+        TesItemKind::NotFound
     }
 }
 

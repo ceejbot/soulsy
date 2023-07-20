@@ -65,6 +65,8 @@ pub struct UserSettings {
     pub fade_delay: u32,
     /// The controller kind to show in the UX. Matches the controller_set enum in key_path.h
     pub controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
+    /// Whether to include unarmed as a cycle entry for each hand.
+    pub include_unarmed: bool,
 }
 
 impl Default for UserSettings {
@@ -83,6 +85,7 @@ impl Default for UserSettings {
             fade: true,
             fade_delay: 1000,   // in milliseconds
             controller_kind: 0, // PC
+            include_unarmed: true,
         }
     }
 }
@@ -154,6 +157,11 @@ impl UserSettings {
             0,
             2,
         );
+        self.include_unarmed = if let Some(str_val) = options.get("bIncludeUnarmed") {
+            str_val != "0"
+        } else {
+            self.include_unarmed
+        };
 
         Ok(())
     }
@@ -206,9 +214,11 @@ impl UserSettings {
     pub fn refresh_layout(&self) -> u32 {
         self.refresh_layout
     }
-
     pub fn controller_kind(&self) -> u32 {
         clamp(self.controller_kind, 0, 2)
+    }
+    pub fn include_unarmed(&self) -> bool {
+        self.include_unarmed
     }
 }
 

@@ -80,7 +80,7 @@ namespace equippable
 
 	TesItemKind itemKindFromForm(RE::TESForm*& item_form)
 	{
-		if (!item_form) { return TesItemKind::Empty; }
+		if (!item_form) { return TesItemKind::NotFound; }
 
 		if (item_form->IsWeapon())
 		{
