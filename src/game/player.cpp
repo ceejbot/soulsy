@@ -17,11 +17,11 @@ namespace player
 {
 	using string_util = util::string_util;
 
-	rust::String playerName()
-	{
-		auto name = RE::PlayerCharacter::GetSingleton()->GetName();
-		return name;
-	}
+	rust::String playerName() { return RE::PlayerCharacter::GetSingleton()->GetName(); }
+
+	bool isInCombat() { return RE::PlayerCharacter::GetSingleton()->IsInCombat(); }
+
+	bool weaponsAreDrawn() { return RE::PlayerCharacter::GetSingleton()->AsActorState()->IsWeaponDrawn(); }
 
 	rust::Box<TesItemData> equippedLeftHand()
 	{

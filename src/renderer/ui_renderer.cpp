@@ -455,19 +455,8 @@ namespace ui
 
 		if (!show_ui_) return;
 
-		if (auto* ui = RE::UI::GetSingleton(); !ui || ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() ||
-											   !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>() ||
-											   ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME))
-		{
-			return;
-		}
-
-		if (const auto* control_map = RE::ControlMap::GetSingleton();
-			!control_map || !control_map->IsMovementControlsEnabled() ||
-			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay)
-		{
-			return;
-		}
+		if (helpers::hudMustNotBeDrawn()) { return; }
+		if (helpers::playerNotInControl()) { return; }
 
 		const auto settings           = user_settings();
 		const auto hide_out_of_combat = settings->fade();

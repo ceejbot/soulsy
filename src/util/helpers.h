@@ -15,4 +15,6 @@ namespace helpers
 	bool getIsFading();
 	void toggleHUD();
 	void showHUD();
+	bool hudMustNotBeDrawn();
+	bool playerNotInControl();
 }

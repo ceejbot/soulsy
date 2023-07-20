@@ -329,13 +329,18 @@ pub mod plugin {
         fn showHUD();
     }
 
-    // Selected player data fetchers.
+    /// A verbose shim between Rust and the PlayerCharacter type.
     #[namespace = "player"]
     unsafe extern "C++" {
         include!("player.h");
 
         /// Get the player's name.
         fn playerName() -> String;
+
+        /// Is the player in combat?
+        fn isInCombat() -> bool;
+        /// Are the player's weapons drawn?
+        fn weaponsAreDrawn() -> bool;
 
         /// Get the parent form item for the object equipped in the left hand.
         fn equippedLeftHand() -> Box<TesItemData>;

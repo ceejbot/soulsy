@@ -28,6 +28,10 @@ namespace player
 	rust::Box<TesItemData> boundObjectRightHand();
 
 	rust::String playerName();
+
+	bool isInCombat();
+	bool weaponsAreDrawn();
+
 	void unequipSlot(Action slot);
 	void unequipShout();
 	void equipShout(const std::string& form_spec);
