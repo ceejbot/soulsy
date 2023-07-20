@@ -121,6 +121,14 @@ archive-less-precious:
     Copy-Item "build/Release/SoulsyHUD.dll" -Destination "soulsyhud/SKSE/plugins/"
     Copy-Item "build/Release/SoulsyHUD.pdb" -Destination "soulsyhud/SKSE/plugins/"
 
+# Copy English translation to other translation files.
+translations:
+    #!/bin/bash
+    declare -a langs=(czech french german italian japanese polish russian spanish)
+    for lang in "${langs[@]}"; do
+        cp data/Interface/Translations/SoulsyHUD_english.txt data/Interface/Translations/SoulsyHUD_$lang.txt
+    done
+
 # The traditional
 @clean:
     rm -f archive.7z
