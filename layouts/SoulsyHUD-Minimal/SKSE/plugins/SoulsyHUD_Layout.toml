@@ -1,17 +1,27 @@
+# unused right now
 animation_alpha = 51
+# unused right now
 animation_duration = 0.2
+# Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "futura-book-bt.ttf"
+# Point size to use for all name text. Scales with the global_scale.
 font_size = 20.0
+# Global scaling factor: the whole hud size changes when you change this.
+global_scale = 1.0
+# Enable to turn on debug logging. Requires a restart.
 debug = false
 
+# The location of the *center* of the HUD, in pixels. This does not scale.
 [anchor]
 x = 150.0
 y = 1375.0
 
+# The size of the hud, before the global scaling factor is applied.
 [size]
 x = 300.0
 y = 250.0
 
+# The color of the HUD background file. Set to 0 to skip.
 [bg_color]
 r = 0
 g = 0

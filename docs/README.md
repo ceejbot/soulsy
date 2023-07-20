@@ -51,3 +51,11 @@ SoulsyHUD/SKSE/plugins
 - `SKSE/plugins/resources/buttons` - Xbox and Playstation button art.
 - `SKSE/plugins/resources/fonts` - TrueType fonts to use for display. The HUD comes with `futura-book-bt` to match Untarnished UI. Change the `font =` line in the layout file to point to a different font in this directory.
 - `SKSE/plugins/resources/icons` - Icon files in SVG format, each named for the item. The HUD comes with the usual SkyUI icons.
+
+## The TOML file
+
+The [TOML file for the default layout](../data/SKSE/plugins/SoulsyHUD_Layout.toml) is commented to help you figure out what is what. It's long, but there are only two things to learn about it. First, there's bit at the top that applies to the whole HUD. Next, there are five entries in the "layouts" table, which each start with the name of the entry. This name is not shown in the UI, but it's there to help figure out which slot is which. The slots are, in default order: powers, consumables, left hand, right hand, ammo. The order does NOT matter.
+
+You can change values for each slot to anything you like-- they're independent of each other. So you could, for example, have the left slot on the left edge of your screen, and the right all the way at the right.
+
+All slot locations are *relative to the anchor point of the HUD.* All offsets are *relative to the center* of the item that encloses them. This is a quirk that this mod inherits from LamasTinyHud.
