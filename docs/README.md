@@ -26,7 +26,7 @@ TKTK: screenshot of MCM, explanation of defaults, etc
 
 Soulsy does not have any in-game way to edit the UI. However, almost everything about how it looks can be modified outside the game. Here's the mimimal layout I use in my own game:
 
-![mimimal layout, bottom left corner](minimal-layout.jpeg)
+![mimimal layout, bottom left corner](./minimal-layout.jpeg)
 
 You can modify your layout on the fly by editing values in `SoulsyHUD_Layout.toml`, saving the file, and pressing the refresh hotkey in-game. The HUD will update itself.
 
