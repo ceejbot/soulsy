@@ -84,7 +84,7 @@
       "type": "slider",
       "valueOptions": {
         "min": 2,
-        "max": 15,
+        "max": 20,
         "step": 1,
         "sourceType": "ModSettingInt"
       }
