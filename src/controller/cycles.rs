@@ -62,7 +62,7 @@ pub fn make_tesitem(
     ))
 }
 
-pub fn make_hand_to_hand() -> Box<TesItemData> {
+pub fn hand_to_hand_item() -> Box<TesItemData> {
     Box::new(TesItemData::new(
         TesItemKind::HandToHand,
         false,
@@ -251,6 +251,7 @@ impl CycleData {
     /// Remove any items that have vanished from the game or from the player's
     /// inventory.
     pub fn validate(&mut self) {
+        // This is looking special-case-y. Find an abstraction maybe?
         self.power.retain(|xs| {
             cxx::let_cxx_string!(form_spec = xs.form_string());
             hasItemOrSpell(&form_spec)
@@ -260,10 +261,16 @@ impl CycleData {
             hasItemOrSpell(&form_spec)
         });
         self.left.retain(|xs| {
+            if xs.kind() == TesItemKind::HandToHand {
+                return true;
+            }
             cxx::let_cxx_string!(form_spec = xs.form_string());
             hasItemOrSpell(&form_spec)
         });
         self.right.retain(|xs| {
+            if xs.kind() == TesItemKind::HandToHand {
+                return true;
+            }
             cxx::let_cxx_string!(form_spec = xs.form_string());
             hasItemOrSpell(&form_spec)
         });

@@ -205,8 +205,12 @@ namespace game
 			return;
 		}
 
+		auto* task = SKSE::GetTaskInterface();
+		if (task)
+		{
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell); });
+		}
 
-		RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell);
 		logger::trace("worked power {} action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 

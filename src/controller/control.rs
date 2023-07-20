@@ -100,7 +100,7 @@ pub mod public {
         let mut ctrl = CONTROLLER.lock().unwrap();
         let settings = user_settings();
         if settings.include_unarmed() {
-            let h2h = make_hand_to_hand();
+            let h2h = hand_to_hand_item();
             let h2h = *h2h;
             ctrl.cycles.include_item(Action::Left, h2h.clone());
             ctrl.cycles.include_item(Action::Right, h2h);
@@ -111,6 +111,7 @@ pub mod public {
             ctrl.cycles
                 .filter_kind(Action::Right, TesItemKind::HandToHand);
         }
+        ctrl.flush_cycle_data();
         showHUD();
     }
 }

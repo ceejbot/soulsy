@@ -58,7 +58,11 @@ namespace game
 		if (ammo->GetRuntimeData().data.flags.all(RE::AMMO_DATA::Flag::kNonBolt) ||
 			ammo->GetRuntimeData().data.flags.none(RE::AMMO_DATA::Flag::kNonBolt))
 		{
-			RE::ActorEquipManager::GetSingleton()->UnequipObject(player, ammo);
+			auto* task = SKSE::GetTaskInterface();
+			if (task)
+			{
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->UnequipObject(player, ammo); });
+			}
 			logger::debug("ammo unequipped; name='{}'; formID={}"sv,
 				ammo->GetName(),
 				util::string_util::int_to_hex(ammo->formID));
@@ -72,7 +76,11 @@ namespace game
 		const auto is_worn = isItemWorn(item, player);
 		if (is_worn)
 		{
-			equip_manager->UnequipObject(player, item);
+			auto* task = SKSE::GetTaskInterface();
+			if (task)
+			{
+				task->AddTask([=]() { equip_manager->UnequipObject(player, item); });
+			}
 			logger::trace("unequipped armor; name='{}';"sv, item->GetName());
 		}
 		return is_worn;

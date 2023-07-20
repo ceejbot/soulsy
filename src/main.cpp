@@ -74,6 +74,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 {
 	init_logger();
 
+	logger::info("---------- game launched!"sv);
 	logger::info("{} loading"sv, Version::PROJECT);
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
 	auto hud = hud_layout();

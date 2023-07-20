@@ -270,6 +270,7 @@ pub mod plugin {
         ) -> Box<TesItemData>;
         /// Make a default item, representing an empty choice.
         fn default_tes_item() -> Box<TesItemData>;
+        fn hand_to_hand_item() -> Box<TesItemData>;
 
         /// Check if this item category can be stacked in inventory.
         fn kind_has_count(kind: TesItemKind) -> bool;

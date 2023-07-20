@@ -32,8 +32,8 @@ namespace game
 	void unequipHand(RE::PlayerCharacter*& player, Action which)
 	{
 		RE::BGSEquipSlot* slot = nullptr;
-		if (which == Action::Right) { slot = left_hand_equip_slot(); }
-		else if (which == Action::Left) { slot = right_hand_equip_slot(); }
+		if (which == Action::Left) { slot = left_hand_equip_slot(); }
+		else if (which == Action::Right) { slot = right_hand_equip_slot(); }
 		else
 		{
 			logger::debug("somebody called unequipHand() with slot={};"sv, static_cast<uint8_t>(which));
@@ -44,47 +44,17 @@ namespace game
 
 	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
-		bool did_call       = false;
 		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-
-		RE::TESForm* equipped_object = nullptr;
-		if (slot == left_hand_equip_slot())
-		{
-			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		}
-		else if (slot == right_hand_equip_slot())
-		{
-			equipped_object = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		}
-		if (!equipped_object) return;
-
-		if (equipped_object->IsWeapon())
-		{
-			const auto weapon = equipped_object->As<RE::TESObjectWEAP>();
-			equip_manager->UnequipObject(player, weapon, nullptr, 1, slot);
-			did_call = true;
-		}
-		else if (equipped_object->Is(RE::FormType::Armor))
-		{
-			if (const auto armor = equipped_object->As<RE::TESObjectARMO>(); armor->IsShield())
-			{
-				equip_manager->UnequipObject(player, armor, nullptr, 1, slot);
-				did_call = true;
-			}
-		}
-		else if (equipped_object->Is(RE::FormType::Spell))
-		{
-			unequip_object_ft_dummy_dagger(slot, player, equip_manager);
-			did_call = true;
-		}
-		else if (equipped_object->Is(RE::FormType::Light))
-		{
-			const auto light = equipped_object->As<RE::TESObjectLIGH>();
-			equip_manager->UnequipObject(player, light, nullptr, 1, slot);
-			did_call = true;
+		auto* task = SKSE::GetTaskInterface();
+		if (!task) {
+			logger::warn("unable to get SKSE task interface! Cannot equip or unequip anything."sv);
+			return;
 		}
 
-		logger::trace("unequipped item from slot; item={}; did_call={};"sv, equipped_object->GetName(), did_call);
+		auto* dummy = RE::TESForm::LookupByID<RE::TESForm>(0x00020163)->As<RE::TESObjectWEAP>();
+		// no extra data, count 1, slot, queue false, force true, sound false, apply now defaults to false
+		task->AddTask([=]() { equip_manager->EquipObject(player, dummy, nullptr, 1, slot, false, true, false); });
+		task->AddTask([=]() { equip_manager->UnequipObject(player, dummy, nullptr, 1, slot, false, true, false); });
 	}
 
 	void unequip_object_ft_dummy_dagger(RE::BGSEquipSlot*& slot,
@@ -92,7 +62,7 @@ namespace game
 		RE::ActorEquipManager*& equip_manager)
 	{
 		auto* dummy = RE::TESForm::LookupByID<RE::TESForm>(0x00020163)->As<RE::TESObjectWEAP>();
-		//sound false, queue false, force true
+		// no extra data, count 1, slot, queue false, force true, sound false, apply now defaults to false
 		equip_manager->EquipObject(player, dummy, nullptr, 1, slot, false, true, false);
 		equip_manager->UnequipObject(player, dummy, nullptr, 1, slot, false, true, false);
 	}

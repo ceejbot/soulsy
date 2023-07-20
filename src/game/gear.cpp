@@ -21,7 +21,7 @@ namespace game
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(the_player, form->GetFormType());
 
-		logger::trace("found count={} candidates for name='{}';"sv, candidates.size(), form->GetName());
+		logger::trace("found count={} candidates of same type as name='{}';"sv, candidates.size(), form->GetName());
 
 		auto item_count = 0;
 		for (const auto& [item, inv_data] : candidates)

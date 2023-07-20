@@ -27,9 +27,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return default_tes_item();
+		if (!obj) return hand_to_hand_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_tes_item();
+		if (!item_form) return hand_to_hand_item();
 		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
@@ -38,9 +38,9 @@ namespace player
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return default_tes_item();
+		if (!obj) return hand_to_hand_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_tes_item();
+		if (!item_form) return hand_to_hand_item();
 		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
@@ -48,9 +48,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return default_tes_item();
+		if (!obj) return hand_to_hand_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_tes_item();
+		if (!item_form) return hand_to_hand_item();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
@@ -64,9 +64,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return default_tes_item();
+		if (!obj) return hand_to_hand_item();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_tes_item();
+		if (!item_form) return hand_to_hand_item();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
@@ -99,6 +99,7 @@ namespace player
 
 	void unequipSlot(Action which)
 	{
+		logger::info("entering unequipSlot()"sv);
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
 		if (which == Action::Power) { game::unequipShoutSlot(player); }
