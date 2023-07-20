@@ -82,6 +82,7 @@ impl TesItemKind {
                 | TesItemKind::Rapier
                 | TesItemKind::Staff
                 | TesItemKind::SwordOneHanded
+                | TesItemKind::SwordTwoHanded
                 | TesItemKind::Whip
         )
     }

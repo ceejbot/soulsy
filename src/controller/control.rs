@@ -32,9 +32,7 @@ pub mod public {
         );
 
         ctrl.validate_cycles();
-        if ctrl.update_hud() {
-            showHUD();
-        }
+        showHUD();
         log::info!("HUD data should be fresh; ready to cycle!")
     }
 
@@ -85,6 +83,7 @@ pub mod public {
     pub fn handle_inventory_changed(item: Box<TesItemData>, count: i32) {
         let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.handle_inventory_changed(item, count);
+        ctrl.update_hud();
     }
 
     pub fn truncate_cycles(new: u32) {
@@ -120,6 +119,7 @@ impl Controller {
     pub fn validate_cycles(&mut self) {
         self.cycles.validate();
         log::info!("after validation, cycles are: {}", self.cycles);
+        self.update_hud();
     }
 
     /// The player's inventory changed! Act on it if we need to.
@@ -147,7 +147,9 @@ impl Controller {
                 }
             }
         } else {
-            self.cycles.update_count(*item, new_count);
+            if self.cycles.update_count(*item, new_count) {
+                self.update_hud();
+            }
         }
     }
 
@@ -287,7 +289,7 @@ impl Controller {
     /// they were done out-of-band of the HUD or because we want to
     /// do more work in reaction to changes we initiated.
     fn handle_item_equipped(&mut self, equipped: bool, item: Box<TesItemData>) -> bool {
-        log::info!(
+        log::trace!(
             "entering handle_item_equipped(); equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; cached={:?}",
             equipped,
             item.name(),
@@ -304,7 +306,7 @@ impl Controller {
         let item = *item; // insert unboxing video
 
         if matches!(item.kind(), TesItemKind::Arrow) {
-            log::debug!("handling ammo");
+            log::trace!("handling ammo");
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
                 if visible.form_string() != item.form_string() {
                     log::debug!("updating visible ammo; name='{}';", item.name());
@@ -320,7 +322,7 @@ impl Controller {
         }
 
         if item.kind().is_power() {
-            log::debug!("handling power/shout");
+            log::trace!("handling power/shout");
             if let Some(visible) = self.visible.get(&HudElement::Power) {
                 if visible.form_string() != item.form_string() {
                     log::debug!("updating visible power; name='{}';", item.name());
@@ -343,7 +345,7 @@ impl Controller {
         let rightie = boundObjectRightHand();
         let leftie = boundObjectLeftHand();
 
-        log::debug!(
+        log::trace!(
             "form strings: item={}; right={}; left={}; two-hander-equipped={};",
             item.form_string(),
             rightie.form_string(),
@@ -420,11 +422,11 @@ impl Controller {
         // We don't care if it's visible or not. If we've equipped
         // a one-hander in the left hand, we record it.
         if !item.two_handed() && self.two_hander_equipped {
-            log::debug!("forcing left-hand re-equip");
+            log::trace!("forcing left-hand re-equip");
             self.two_hander_equipped = false;
             cxx::let_cxx_string!(form_spec = item.form_string());
             reequipLeftHand(&form_spec);
-            log::debug!("updating cached left hand item");
+            log::trace!("updating cached left hand item");
             self.left_hand_cached = Some(item.clone());
         }
 
@@ -479,7 +481,7 @@ impl Controller {
         // It's not really tidier rewritten as a match.
 
         if matches!(which, Action::ShowHide) {
-            log::debug!("doing Action:ShowHide");
+            log::trace!("doing Action:ShowHide");
             toggleHUD();
             return KeyEventResponse {
                 handled: true,
@@ -543,7 +545,7 @@ impl Controller {
 
     /// Activate whatever we have in the utility slot.
     fn use_utility_item(&mut self) -> KeyEventResponse {
-        log::debug!("using utility item (possibly crashy)");
+        log::trace!("using utility item");
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind().is_potion()
                 || matches!(item.kind(), TesItemKind::PoisonDefault | TesItemKind::Food)

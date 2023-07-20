@@ -240,42 +240,22 @@ impl CycleData {
     /// Remove any items that have vanished from the game or from the player's
     /// inventory.
     pub fn validate(&mut self) {
-        self.power = self
-            .power
-            .iter_mut()
-            .filter(|xs| {
-                cxx::let_cxx_string!(form_spec = xs.form_string());
-                hasItemOrSpell(&form_spec)
-            })
-            .map(|xs| xs.clone())
-            .collect();
-        self.utility = self
-            .utility
-            .iter_mut()
-            .filter(|xs| {
-                cxx::let_cxx_string!(form_spec = xs.form_string());
-                hasItemOrSpell(&form_spec)
-            })
-            .map(|xs| xs.clone())
-            .collect();
-        self.left = self
-            .left
-            .iter_mut()
-            .filter(|xs| {
-                cxx::let_cxx_string!(form_spec = xs.form_string());
-                hasItemOrSpell(&form_spec)
-            })
-            .map(|xs| xs.clone())
-            .collect();
-        self.right = self
-            .right
-            .iter_mut()
-            .filter(|xs| {
-                cxx::let_cxx_string!(form_spec = xs.form_string());
-                hasItemOrSpell(&form_spec)
-            })
-            .map(|xs| xs.clone())
-            .collect();
+        self.power.retain(|xs| {
+            cxx::let_cxx_string!(form_spec = xs.form_string());
+            hasItemOrSpell(&form_spec)
+        });
+        self.utility.retain(|xs| {
+            cxx::let_cxx_string!(form_spec = xs.form_string());
+            hasItemOrSpell(&form_spec)
+        });
+        self.left.retain(|xs| {
+            cxx::let_cxx_string!(form_spec = xs.form_string());
+            hasItemOrSpell(&form_spec)
+        });
+        self.right.retain(|xs| {
+            cxx::let_cxx_string!(form_spec = xs.form_string());
+            hasItemOrSpell(&form_spec)
+        });
     }
 
     /// Attempt to set the current item in a cycle to the given form spec (mod.esp|formid).
@@ -369,7 +349,7 @@ impl CycleData {
         }
     }
 
-    pub fn update_count(&mut self, item: TesItemData, count: u32) {
+    pub fn update_count(&mut self, item: TesItemData, count: u32) -> bool {
         if item.kind().is_utility() {
             if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
                 log::debug!(
@@ -378,7 +358,12 @@ impl CycleData {
                 );
                 candidate.set_count(count);
             }
+            if count == 0 {
+                self.utility.retain(|xs| xs.count() > 0);
+                return true;
+            }
         }
+        false
     }
 }
 
