@@ -39,14 +39,16 @@ pub mod plugin {
         /// One slot layout for each element. This wants to be map, not a vec,
         /// but the map types are not shareable.
         layouts: Vec<SlotLayout>,
-        /// How intense the slot-change animation is.
-        animation_alpha: u8,
-        /// How long the slot-change animation runs.
-        animation_duration: f32,
         /// The font file to load to use for all text.
         font: String,
         /// The font size for most things.
         font_size: f32,
+        #[serde(default)]
+        /// How intense the slot-change animation is. Unused.
+        animation_alpha: u8,
+        #[serde(default)]
+        /// How long the slot-change animation runs. Unused.
+        animation_duration: f32,
 
         /// Enable debug logging for the plugin.
         debug: bool,

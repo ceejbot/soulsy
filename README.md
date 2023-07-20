@@ -39,7 +39,7 @@ You are absolutely invited to contribute. This project follows the standard [Con
 
 I could not have approached the rendering code without the work in [LamasTinyHud](https://www.nexusmods.com/skyrimspecialedition/mods/82545), so [mlthelama](https://github.com/mlthelama) gets all the props. I also learned a lot about how to make an SKSE plugin by reading their source. Give that HUD a try if you don't like the souls-game style, or want a UI you can edit in-game. The original has more features than this one does! It's also the only hotkeys hud mod I tried that worked well in my game, so that's a testimonial.
 
-The icons for the built-in theme are the usual SkyUI icons, plus the `futura-book-bt` true-type font. The other layout data is adapted from the [Untarnished UI skin](https://www.nexusmods.com/skyrimspecialedition/mods/82545) for LamasTinyHUD by [MinhazMurks](https://www.nexusmods.com/skyrimspecialedition/users/26341279).
+The icons for the built-in theme are the usual SkyUI icons, plus the `futura-book-bt` true-type font. The background assets were built from scratch but were inspired by the [Untarnished UI skin](https://www.nexusmods.com/skyrimspecialedition/mods/82545) for LamasTinyHUD by [MinhazMurks](https://www.nexusmods.com/skyrimspecialedition/users/26341279). The icons are the SkyUI icons by psychosteve, which are used in so many places I am not sure how to credit them.
 
 [cxx](https://cxx.rs/) made developing the C++/Rust bridge a snap. This crate unlocks Rust as a viable language for all of your modding needs. The only drawback is that async Rust is not yet supported, but there are workarounds described in the docs.
 
@@ -50,8 +50,6 @@ Remaining before I release:
 - [ ] I18n: fonts. ??
 - [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
-- [x] Review the 20-or-so TODO items noted in code comments.
-- [ ] User docs, for the readme and for the Nexus page.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Consider getting more testers.
 
@@ -96,6 +94,8 @@ DONE:
 - [x] Improve the CMake files so rebuilding is reliable.
 - [x] Make Rust log to a second file in the same directory as SKSE.
 - [x] Add more Rust debug-level logging for happy-path cases.
+- [x] Review the 20-or-so TODO items noted in code comments.
+- [x] User docs, for the readme and for the Nexus page.
 
 ## License
 
