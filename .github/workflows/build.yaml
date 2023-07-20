@@ -47,13 +47,14 @@ jobs:
         - name: build mod directory
           shell: bash
           run: |
-              mkdir -p soulsyhud
-              cp -r data/* soulsyhud/
-              cp build/Release/SoulsyHUD.dll soulsyhud/SKSE/plugins/SoulsyHUD.dll
-              cp build/Release/SoulsyHUD.pdb soulsyhud/SKSE/plugins/SoulsyHUD.pdb
+              mkdir -p SoulsyHUD
+              cp -r data/* SoulsyHUD/
+              cp build/Release/SoulsyHUD.dll SoulsyHUD/SKSE/plugins/SoulsyHUD.dll
+              cp build/Release/SoulsyHUD.pdb SoulsyHUD/SKSE/plugins/SoulsyHUD.pdb
+              rm -rf SoulsyHUD/scripts/source
 
         - name: 7zip compress it
-          run: 7z a soulsyhud.7z ./soulsyhud
+          run: 7z a SoulsyHUD.7z ./SoulsyHUD
 
         - name: create a tagged release and upload the archive
           uses: ncipollo/release-action@v1
@@ -63,4 +64,4 @@ jobs:
             name: SoulsyHUD ${{ github.ref }}
             tag: ${{ github.ref }}
             draft: true
-            artifacts: "soulsyhud.7z"
+            artifacts: "SoulsyHUD.7z"

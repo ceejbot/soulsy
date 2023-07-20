@@ -2,15 +2,15 @@
 
 Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It is in fact a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD)! It is simpler than LamasTinyHud is, however.
 
-Check out the remarkably terse [user docs](./docs/usage.md). Or take a peek at a [short video of the HUD in action](https://youtu.be/rys9QjC9eak).
-
 ![Screenshot of the hud](./docs/SoulsyHUD_preview.jpeg)
+
+Check out the remarkably terse [user docs](./docs/). Or take a peek at a [this tour of the HUD](https://youtu.be/4Y2lpa-GcCA). If you like it, you can download it for your favorite mod manager [from NexusMods](https://www.nexusmods.com/skyrimspecialedition/mods/96210/).
 
 ## Development goals
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project is almost ready to release. There are a couple of bugs I'd like to fix. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish. See the TODO list at the end of this readme for details about my next steps.
+This project has just had its first release. I expect to hear about bugs or mistakes in my use of the APIs. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish. See the TODO list at the end of this readme for details about my next steps.
 
 ## Building
 
