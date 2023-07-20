@@ -45,22 +45,21 @@ The icons for the built-in theme are the usual SkyUI icons, plus the `futura-boo
 
 ## TODO
 
-Remaining before I release:
+Current tasks:
 
 - [ ] I18n: fonts. ??
-- [ ] Is there an official way to show a textual feedback message in SkyUI?
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
 - [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
-- [ ] Consider getting more testers.
+- [ ] Fix filed issues.
 
 Second phase goals:
 
 - [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
-- [ ] Move imgui rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
+- [ ] Move `imgui` rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
 - [ ] Make image loading on-demand, to save memory. (Maybe an unimportant optimization? Measure.)
 - [ ] Add support for debug builds to CMake, or at least remove the half-done option.
 - [ ] Decide what to do about highlight animations.
-- [ ] Track highlight status in the controller to support animating a highlighted slot.
+- [ ] If I decide to highlight, track highlight status in the controller to support it.
 
 DONE:
 
@@ -96,6 +95,8 @@ DONE:
 - [x] Add more Rust debug-level logging for happy-path cases.
 - [x] Review the 20-or-so TODO items noted in code comments.
 - [x] User docs, for the readme and for the Nexus page.
+- [x] Is there an official way to show a textual feedback message in SkyUI? I'm using it.
+- [x] Consider getting more testers.
 
 ## License
 

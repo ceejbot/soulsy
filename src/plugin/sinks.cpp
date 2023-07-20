@@ -86,7 +86,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 			continue;
 		}
 
-		// consider not acting when loot menu is open
+		if (RE::UI::GetSingleton()->IsMenuOpen("LootMenu")) { continue; }
 
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
 		const auto* control_map = RE::ControlMap::GetSingleton();
@@ -109,22 +109,17 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		if (button->IsPressed() || button->IsDown() || button->IsHeld()) { continue; }
 		//logger::trace("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
 		const KeyEventResponse response = handle_key_event(key, *button);
-		// logger::trace("controller responded to button event; key={}; handled={}; start={}; stop={}"sv,
-		// 	key,
-		// 	response.handled,
-		// 	static_cast<uint8_t>(response.start_timer),
-		// 	static_cast<uint8_t>(response.stop_timer));
 		if (!response.handled) { continue; }
 
 		if (response.stop_timer != Action::Irrelevant)
 		{
-			logger::info("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
+			logger::debug("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
 			ui::ui_renderer::stopTimer(response.stop_timer);
 		}
 
 		if (response.start_timer != Action::Irrelevant)
 		{
-			logger::info("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
+			logger::debug("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
 			ui::ui_renderer::startTimer(response.start_timer);
 		}
 
