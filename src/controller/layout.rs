@@ -210,6 +210,7 @@ impl Default for HudLayout {
             ammo_default,
         ];
         Self {
+            global_scale: 1.0,
             anchor: Point {
                 x: 100.0,
                 y: 1400.0,

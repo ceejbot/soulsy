@@ -354,9 +354,40 @@ namespace ui
 
 	void ui_renderer::drawAllSlots()
 	{
-		const auto top_layout = hud_layout();
-		const auto settings   = user_settings();
-		const auto anchor     = top_layout.anchor;
+		auto top_layout         = hud_layout();
+		auto anchor             = top_layout.anchor;
+		auto hudsize            = top_layout.size;
+		const auto settings     = user_settings();
+		const auto screenWidth  = get_resolution_width();
+		const auto screenHeight = get_resolution_height();
+
+		auto global_scale = top_layout.global_scale;
+		if (global_scale == 0.0f)
+		{
+			global_scale = 1.0f;  // serde's default for missing f32 fields is 0
+		}
+
+		// If the layout is larger than the HUD, clamp it to screen size.
+		hudsize.x = std::min(screenWidth, global_scale * hudsize.x);
+		hudsize.y = std::min(screenHeight, global_scale * hudsize.y);
+
+		// If the layout is trying to draw the HUD offscreen, clamp it to an edge.
+		anchor.x = std::max(hudsize.x / 2.0f, anchor.x);  // anchor point is center
+		anchor.x = std::min(screenWidth - hudsize.x / 2.0f, anchor.x);
+		anchor.y = std::max(hudsize.y / 2.0f, anchor.y);
+		anchor.y = std::min(screenHeight - hudsize.y / 2.0f, anchor.y);
+
+
+		// Draw the HUD background if requested.
+		if (top_layout.bg_color.a > 0)
+		{
+			constexpr auto angle                = 0.f;
+			const auto center                   = ImVec2(anchor.x, anchor.y);
+			const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::hud)];
+			const auto size                     = ImVec2(hudsize.x, hudsize.y);
+			drawElement(texture, center, size, angle, top_layout.bg_color);
+		}
+
 
 		for (auto slot_layout : top_layout.layouts)
 		{
@@ -365,12 +396,11 @@ namespace ui
 			const auto entry_name        = entry->name();
 			auto* name                   = new std::string(entry_name);
 			const auto hotkey            = settings->hotkey_for(slot_layout.element);
-			const auto slot_center       = ImVec2(anchor.x + slot_layout.offset.x, anchor.y + slot_layout.offset.y);
-			// logger::trace("drawing slot {} at x={}; y={}; name='{}'",
-			// 	static_cast<uint8_t>(slot_layout.element),
-			// 	(anchor.x + slot_layout.offset.x),
-			// 	(anchor.y + slot_layout.offset.y),
-			// 	name->c_str());
+			const auto slot_center =
+				ImVec2(anchor.x + slot_layout.offset.x * global_scale, anchor.y + slot_layout.offset.y * global_scale);
+
+			slot_layout.size.x *= global_scale;
+			slot_layout.size.y *= global_scale;
 
 			if (slot_layout.bg_color.a > 0)
 			{
@@ -383,11 +413,13 @@ namespace ui
 			if (slot_layout.icon_color.a > 0)
 			{
 				const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(entry_kind)];
-				const auto size                     = ImVec2(slot_layout.icon_size.x, slot_layout.icon_size.y);
+				const auto size =
+					ImVec2(slot_layout.icon_size.x * global_scale, slot_layout.icon_size.y * global_scale);
 				drawElement(texture, slot_center, size, 0.f, slot_layout.icon_color);
 			}
 
 			// If this item is highlighted, we draw an animation for it.
+			/*
 			if (entry->highlighted())
 			{
 				init_animation(animation_type::highlight,
@@ -402,51 +434,56 @@ namespace ui
 					top_layout.animation_duration);
 				// TODO turn highlight off on the entry; needs highlight feature
 			}
+			*/
 
 			// Now decide if we should draw the text showing the item's name.
 			if (slot_layout.name_color.a > 0 && !entry_name.empty())
 			{
-				const auto text_pos =
-					ImVec2(slot_center.x + slot_layout.name_offset.x, slot_center.y + slot_layout.name_offset.y);
+				const auto text_pos = ImVec2(slot_center.x + slot_layout.name_offset.x * global_scale,
+					slot_center.y + slot_layout.name_offset.y * global_scale);
 
-				drawText(name->c_str(), text_pos, top_layout.font_size, slot_layout.name_color);
+				drawText(name->c_str(), text_pos, top_layout.font_size * global_scale, slot_layout.name_color);
 			}
 
 			// next up: do we have extra text to show on this puppy?
 			if (entry->has_count())
 			{
-				auto count     = entry->count();
-				auto slot_text = std::to_string(count);
-				const auto text_pos =
-					ImVec2(slot_center.x + slot_layout.count_offset.x, slot_center.y + slot_layout.count_offset.y);
+				auto count          = entry->count();
+				auto slot_text      = std::to_string(count);
+				const auto text_pos = ImVec2(slot_center.x + slot_layout.count_offset.x * global_scale,
+					slot_center.y + slot_layout.count_offset.y * global_scale);
 
 				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
-					drawText(slot_text.c_str(), text_pos, slot_layout.count_font_size, slot_layout.count_color);
+					drawText(slot_text.c_str(),
+						text_pos,
+						slot_layout.count_font_size * global_scale,
+						slot_layout.count_color);
 				}
 			}
 
 			if (entry_kind != TesItemKind::Arrow && slot_layout.hotkey_color.a > 0)
 			{
-				const auto hk_im_center =
-					ImVec2(slot_center.x + slot_layout.hotkey_offset.x, slot_center.y + slot_layout.hotkey_offset.y);
+				const auto hk_im_center = ImVec2(slot_center.x + slot_layout.hotkey_offset.x * global_scale,
+					slot_center.y + slot_layout.hotkey_offset.y * global_scale);
 
 				if (slot_layout.hotkey_bg_color.a > 0)
 				{
 					const auto [texture, width, height] = image_struct[static_cast<uint32_t>(image_type::key)];
-					const auto size                     = ImVec2(slot_layout.hotkey_size.x, slot_layout.hotkey_size.y);
+					const auto size =
+						ImVec2(slot_layout.hotkey_size.x * global_scale, slot_layout.hotkey_size.y * global_scale);
 					drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_bg_color);
 				}
 
 				const auto [texture, width, height] = get_key_icon(hotkey);
-				const auto size                     = ImVec2(static_cast<float>(slot_layout.hotkey_size.x - 2.0),
-                    static_cast<float>(slot_layout.hotkey_size.y - 2.0));
+				const auto size = ImVec2(static_cast<float>(slot_layout.hotkey_size.x * global_scale - 2.0f),
+					static_cast<float>(slot_layout.hotkey_size.y * global_scale - 2.0f));
 				drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_color);
 			}
 		}
 
-		draw_animations_frame();
+		// draw_animations_frame();
 	}
 
 	void ui_renderer::draw_ui()
@@ -478,19 +515,6 @@ namespace ui
 
 		ImGui::Begin(hud_name, nullptr, window_flag);
 
-		const HudLayout hudl = hud_layout();
-		const auto anchor    = hudl.anchor;
-		const auto hudsize   = hudl.size;
-
-		// Draw the HUD background if requested.
-		if (hudl.bg_color.a > 0)
-		{
-			constexpr auto angle                = 0.f;
-			const auto center                   = ImVec2(anchor.x, anchor.y);
-			const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::hud)];
-			const auto size                     = ImVec2(hudsize.x, hudsize.y);
-			drawElement(texture, center, size, angle, hudl.bg_color);
-		}
 		drawAllSlots();
 
 		ImGui::End();

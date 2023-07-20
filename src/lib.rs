@@ -27,6 +27,9 @@ pub mod plugin {
     /// This data is serialized to the SoulsyHUD_HudLayout.toml file.
     #[derive(Deserialize, Serialize, Debug, Clone)]
     struct HudLayout {
+        #[serde(default)]
+        /// A global scaling factor for the entire hud.
+        global_scale: f32,
         /// Where to draw the HUD; an offset from the top left corner.
         anchor: Point,
         /// The dimensions of a bounding box for the HUD.
