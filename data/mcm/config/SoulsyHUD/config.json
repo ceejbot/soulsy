@@ -126,7 +126,7 @@
       "id": "uControllerKind:Options",
       "text": "$SoulsyHUD_Options_Controller_Text",
       "type": "enum",
-      "help": "$SoulsyHUD_Options_Controller_Help.",
+      "help": "$SoulsyHUD_Options_Controller_Help",
       "valueOptions": {
         "options": [
           "$SoulsyHUD_Controls_PC",

@@ -389,6 +389,7 @@ impl Controller {
             // only set; do not unset.
             log::info!("right-hand item is 2-handed; setting var");
             self.two_hander_equipped = true;
+            self.update_slot(HudElement::Left, &TesItemData::default());
         }
 
         if let Some(visible) = self.visible.get(&HudElement::Right) {
