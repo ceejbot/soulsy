@@ -142,7 +142,8 @@ impl TesItemData {
 }
 
 /// Manage the player's configured item cycles. Track changes, persist data in
-/// files, and advance the cycle when the player presses a cycle button.
+/// files, and advance the cycle when the player presses a cycle button. This
+/// struct now holds all data we need to persist across game starts.
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct CycleData {
     // I really want these to be maps, but toml can't serialize that.
@@ -151,6 +152,8 @@ pub struct CycleData {
     right: Vec<TesItemData>,
     power: Vec<TesItemData>,
     utility: Vec<TesItemData>,
+    #[serde(default)]
+    hud_visible: bool,
 }
 
 // where to persist
@@ -170,7 +173,7 @@ impl CycleData {
     pub fn write(&self) -> Result<()> {
         let buf = toml::to_string(self)?;
         std::fs::write(CycleData::cycle_storage(), buf)?;
-        log::debug!(
+        log::trace!(
             "wrote cycle data to {}",
             CycleData::cycle_storage().display()
         );
@@ -413,6 +416,26 @@ impl CycleData {
             }
         };
         cycle.retain(|xs| xs.kind() != kind);
+    }
+
+    pub fn set_hud_visible(&mut self, visible: bool) {
+        if visible != self.hud_visible {
+            self.hud_visible = visible;
+            match self.write() {
+                Ok(_) => {}
+                Err(e) => {
+                    log::warn!("failed to persist cycle data on visibility change; {e:?}");
+                }
+            }
+        }
+    }
+
+    pub fn toggle_hud(&mut self) {
+        self.set_hud_visible(!self.hud_visible);
+    }
+
+    pub fn hud_visible(&mut self) -> bool {
+        self.hud_visible
     }
 }
 

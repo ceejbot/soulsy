@@ -81,7 +81,6 @@ namespace ui
 			std::int32_t& out_width,
 			std::int32_t& out_height);
 
-		static inline bool show_ui_                 = false;
 		static inline ID3D11Device* device_         = nullptr;
 		static inline ID3D11DeviceContext* context_ = nullptr;
 
@@ -105,9 +104,6 @@ namespace ui
 
 		static void set_fade(bool a_in, float a_value);
 		static bool get_fade();
-
-		static void toggle_show_ui();
-		static void set_show_ui(bool a_show);
 
 		static void load_all_images();
 

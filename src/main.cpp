@@ -59,7 +59,6 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 		case SKSE::MessagingInterface::kNewGame:
 			logger::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
 			initialize_hud();
-			ui::ui_renderer::set_show_ui(true);
 			logger::info("SKSE post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
 			break;
 		default: break;

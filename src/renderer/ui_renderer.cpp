@@ -490,18 +490,7 @@ namespace ui
 	{
 		advanceTimers(ImGui::GetIO().DeltaTime);
 
-		if (!show_ui_) return;
-
-		if (helpers::hudMustNotBeDrawn()) { return; }
-		if (helpers::playerNotInControl()) { return; }
-
-		const auto settings           = user_settings();
-		const auto hide_out_of_combat = settings->fade();
-		const auto player             = RE::PlayerCharacter::GetSingleton();
-		const bool inCombat           = player->IsInCombat();
-		const auto weaponsDrawn       = player->AsActorState()->IsWeaponDrawn();
-
-		fade_in = hide_out_of_combat ? (inCombat || weaponsDrawn) : true;
+		if (!helpers::hudShouldBeDrawn()) return;
 
 		static constexpr ImGuiWindowFlags window_flag =
 			ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs;
@@ -519,6 +508,9 @@ namespace ui
 
 		ImGui::End();
 
+		const auto settings           = user_settings();
+		// TODO The fade delta values here really want to be on a nice curve
+		// instead of linear. Lower priority tho.
 		if (fade_in && fade < 1.0f)
 		{
 			fade_out_timer = static_cast<float>(settings->fade_delay() / 1000);
@@ -717,20 +709,6 @@ namespace ui
 				return;
 			}
 		}
-	}
-
-	void ui_renderer::toggle_show_ui()
-	{
-		show_ui_ = !show_ui_;
-		// todo cache this ourselves
-		// file_setting::set_show_ui(show_ui_);
-		logger::trace("ui visibility set; show_ui_={}"sv, show_ui_);
-	}
-
-	void ui_renderer::set_show_ui(bool visible)
-	{
-		show_ui_ = visible;
-		logger::trace("ui visibility set; show_ui_={}"sv, show_ui_);
 	}
 
 	// TODO ceej: rewrite in rust

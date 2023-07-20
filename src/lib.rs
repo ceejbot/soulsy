@@ -219,6 +219,8 @@ pub mod plugin {
         /// Trigger rust to read config, figure out what the player has equipped,
         /// and figure out what it should draw.
         fn initialize_hud();
+        /// Check if the user wants the HUD visible right now or not.
+        fn show_ui() -> bool;
 
         /// Give access to the settings to the C++ side.
         type UserSettings;
@@ -328,12 +330,6 @@ pub mod plugin {
         fn notifyPlayer(message: &CxxString);
         /// Start the HUD widget fading in or out to the goal transparency.
         fn fadeToAlpha(do_fade: bool, alpha: f32);
-        /// Check if the HUD widget is in the middle of a fade in or out.
-        fn getIsFading() -> bool;
-        /// Show or hide the HUD widget.
-        fn toggleHUD();
-        /// Show the hud no matter what.
-        fn showHUD();
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.

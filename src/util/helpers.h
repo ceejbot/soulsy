@@ -12,9 +12,5 @@ namespace helpers
 
 	void notifyPlayer(const std::string& message);
 	void fadeToAlpha(const bool shift, const float target);
-	bool getIsFading();
-	void toggleHUD();
-	void showHUD();
-	bool hudMustNotBeDrawn();
-	bool playerNotInControl();
+	bool hudShouldBeDrawn(); // the authority on whether we should show the hud or not
 }

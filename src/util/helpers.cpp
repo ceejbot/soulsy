@@ -12,18 +12,29 @@ namespace helpers
 {
 	using string_util = util::string_util;
 
-	bool hudMustNotBeDrawn()
+	bool hudShouldBeDrawn()
 	{
-		auto* ui = RE::UI::GetSingleton();
-		return !ui || ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
-		       !ui->GetMenu<RE::HUDMenu>() || ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
-	}
+		// There are some circumstances where we never want to draw it.
+		auto* ui              = RE::UI::GetSingleton();
+		bool hudInappropriate = !ui || ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() ||
+		                        !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>() ||
+		                        ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
+		if (hudInappropriate) { return false; }
 
-	bool playerNotInControl()
-	{
 		const auto* control_map = RE::ControlMap::GetSingleton();
-		return !control_map || !control_map->IsMovementControlsEnabled() ||
+		bool playerNotInControl = !control_map || !control_map->IsMovementControlsEnabled() ||
 		       control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
+		if (playerNotInControl) { return false; }
+
+		rust::Box<UserSettings> settings = user_settings();
+		const auto player                = RE::PlayerCharacter::GetSingleton();
+		const bool inCombat              = player->IsInCombat();
+		const auto weaponsDrawn          = player->AsActorState()->IsWeaponDrawn();
+
+		if (settings->fade() && (inCombat || weaponsDrawn)) { return true; }
+
+		// otherwise, we just depend on what the user just said
+		return show_ui();
 	}
 
 	void notifyPlayer(const std::string& message)
@@ -33,12 +44,6 @@ namespace helpers
 	}
 
 	void fadeToAlpha(const bool shift, const float target) { ui::ui_renderer::set_fade(shift, target); }
-
-	bool getIsFading() { return ui::ui_renderer::get_fade(); }
-
-	void toggleHUD() { ui::ui_renderer::toggle_show_ui(); }
-
-	void showHUD() { ui::ui_renderer::set_show_ui(true); }
 
 	std::string makeFormSpecString(RE::TESForm* form)
 	{

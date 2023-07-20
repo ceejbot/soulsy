@@ -33,7 +33,6 @@ pub mod public {
         );
 
         ctrl.validate_cycles();
-        showHUD();
         log::info!("HUD data should be fresh; ready to cycle!")
     }
 
@@ -46,6 +45,10 @@ pub mod public {
             log::trace!("incoming key event; key={key}; action={action:?}");
             CONTROLLER.lock().unwrap().handle_key_event(action, button)
         }
+    }
+
+    pub fn show_ui() -> bool {
+        CONTROLLER.lock().unwrap().cycles.hud_visible()
     }
 
     /// Function for C++ to call to send a relevant menu button-event to us.
@@ -112,7 +115,6 @@ pub mod public {
                 .filter_kind(Action::Right, TesItemKind::HandToHand);
         }
         ctrl.flush_cycle_data();
-        showHUD();
     }
 }
 
@@ -524,17 +526,12 @@ impl Controller {
         // It's not really tidier rewritten as a match.
 
         if matches!(which, Action::ShowHide) {
-            log::trace!("doing Action:ShowHide");
-            toggleHUD();
+            log::trace!("----> toggling hud visibility; was {}", self.cycles.hud_visible());
+            self.cycles.toggle_hud();
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()
             };
-        } else {
-            // If we're faded out in any way, show ourselves again, because we're about to do something.
-            if user_settings().fade() && getIsFading() {
-                showHUD();
-            }
         }
 
         if matches!(
@@ -554,7 +551,6 @@ impl Controller {
                 if let Some(next) = self.cycles.advance(which, 1) {
                     self.update_slot(hud, &next);
                     self.flush_cycle_data();
-                    showHUD();
                 }
                 return KeyEventResponse {
                     handled: true,
@@ -575,7 +571,6 @@ impl Controller {
             return self.use_utility_item();
         } else if matches!(which, Action::RefreshLayout) {
             HudLayout::refresh();
-            showHUD();
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()
