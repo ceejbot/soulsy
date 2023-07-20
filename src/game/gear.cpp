@@ -79,7 +79,7 @@ namespace game
 		return worn;
 	}
 
-	void equipItemByFormAndSlot(const RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		logger::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
@@ -96,6 +96,7 @@ namespace game
 		else if (form->Is(RE::FormType::Spell))
 		{
 			// We do not want to look for a bound object for spells.
+			equipSpellByFormAndSlot(form, slot, player);
 			return;
 		}
 
@@ -193,7 +194,7 @@ namespace game
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell, slot); });
 		}
 	}
 }

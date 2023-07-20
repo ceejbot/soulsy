@@ -175,7 +175,7 @@ impl Controller {
 
         // We equip whatever the HUD is showing right now.
         let Some(item) = &self.visible.get(&hud) else {
-            return;
+            return; // TODO should equipped unarmed?
         };
 
         let kind = item.kind();
@@ -201,6 +201,7 @@ impl Controller {
         }
         let kind = item.kind();
         cxx::let_cxx_string!(form_spec = item.form_string());
+        log::trace!("equip_item: which={:?}; form_spec={}; name='{}'", which, item.form_string(), item.name());
 
         // These are all different because the game API is a bit of an evolved thing.
         if kind.is_magic() {
@@ -253,7 +254,7 @@ impl Controller {
         let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
 
         let utility_changed = if let Some(utility) = self.cycles.get_top(Action::Utility) {
-            log::info!("utility item starts at name='{}';", utility.name());
+            log::debug!("utility item starts at name='{}';", utility.name());
             self.update_slot(HudElement::Utility, &utility);
             true
         } else {
@@ -289,8 +290,8 @@ impl Controller {
     /// they were done out-of-band of the HUD or because we want to
     /// do more work in reaction to changes we initiated.
     fn handle_item_equipped(&mut self, equipped: bool, item: Box<TesItemData>) -> bool {
-        log::trace!(
-            "entering handle_item_equipped(); equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; cached={:?}",
+        log::info!(
+            "item equip status changed; we don't know which hand yet; equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; cached={:?}",
             equipped,
             item.name(),
             item.kind(),
@@ -306,7 +307,7 @@ impl Controller {
         let item = *item; // insert unboxing video
 
         if matches!(item.kind(), TesItemKind::Arrow) {
-            log::trace!("handling ammo");
+            log::debug!("handling ammo");
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
                 if visible.form_string() != item.form_string() {
                     log::debug!("updating visible ammo; name='{}';", item.name());
@@ -322,7 +323,7 @@ impl Controller {
         }
 
         if item.kind().is_power() {
-            log::trace!("handling power/shout");
+            log::debug!("handling power/shout");
             if let Some(visible) = self.visible.get(&HudElement::Power) {
                 if visible.form_string() != item.form_string() {
                     log::debug!("updating visible power; name='{}';", item.name());
@@ -342,8 +343,17 @@ impl Controller {
             return false;
         }
 
-        let rightie = boundObjectRightHand();
-        let leftie = boundObjectLeftHand();
+        let rightie  = if !item.kind().is_weapon() {
+            equippedRightHand()
+        } else {
+            boundObjectRightHand()
+        };
+
+        let leftie  = if !item.kind().is_weapon() {
+            equippedLeftHand()
+        } else {
+            boundObjectLeftHand()
+        };
 
         log::trace!(
             "form strings: item={}; right={}; left={}; two-hander-equipped={};",
@@ -358,7 +368,7 @@ impl Controller {
             let right_changed = self.handle_right_hand_event(item.clone());
             if self.two_hander_equipped && !item.two_handed() {
                 if let Some(prev_left) = self.left_hand_cached.clone() {
-                    log::info!(
+                    log::debug!(
                         "contemplating forcing re-equip here; name='{}';",
                         prev_left.name()
                     );
@@ -379,7 +389,8 @@ impl Controller {
 
     fn handle_right_hand_event(&mut self, item: TesItemData) -> bool {
         log::debug!(
-            "entering handle RIGHT; item is two-handed: {}; two_hander_equipped={}",
+            "entering RIGHT hand event; name='{}'; item is two-handed={}; two_hander_equipped={}",
+            item.name(),
             item.two_handed(),
             self.two_hander_equipped
         );
@@ -389,7 +400,6 @@ impl Controller {
         // do that bookkeeping here.
         if item.two_handed() {
             // only set; do not unset.
-            log::info!("right-hand item is 2-handed; setting var");
             self.two_hander_equipped = true;
             self.update_slot(HudElement::Left, &TesItemData::default());
         }
@@ -414,7 +424,8 @@ impl Controller {
     fn handle_left_hand_event(&mut self, item: TesItemData) -> bool {
         let left_prev = self.visible.get(&HudElement::Left);
         log::debug!(
-            "entering handle LEFT; item is two-handed: {}; two_hander_equipped={}",
+            "entering LEFT hand event; name='{}'; item is two-handed={}; two_hander_equipped={}",
+            item.name(),
             item.two_handed(),
             self.two_hander_equipped
         );

@@ -14,6 +14,6 @@ namespace game
 
 	bool isItemWorn(RE::TESBoundObject*& object, RE::PlayerCharacter*& the_player);
 	// bottleneck for equipping everything
-	void equipItemByFormAndSlot(const RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
+	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 }

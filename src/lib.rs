@@ -172,6 +172,7 @@ pub mod plugin {
         Torch,
         WeaponDefault,
         Whip,
+        NotFound
     }
 
     /// This enum maps key presses to the desired action. More like a C/java

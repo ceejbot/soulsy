@@ -124,8 +124,8 @@ namespace player
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
-		auto* player     = RE::PlayerCharacter::GetSingleton();
-		auto* equip_slot = (slot == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot());
+		auto* player         = RE::PlayerCharacter::GetSingleton();
+		auto* equip_slot = (slot == Action::Right ? game::right_hand_equip_slot() : game::left_hand_equip_slot());
 		game::equipSpellByFormAndSlot(form, equip_slot, player);
 	}
 
