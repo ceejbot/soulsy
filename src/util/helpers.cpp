@@ -15,20 +15,15 @@ namespace helpers
 	bool hudMustNotBeDrawn()
 	{
 		auto* ui = RE::UI::GetSingleton();
-		return 	!ui
-		  || ui->GameIsPaused()
-		  || !ui->IsCursorHiddenWhenTopmost()
-		  || !ui->IsShowingMenus()
-		|| !ui->GetMenu<RE::HUDMenu>()
-		|| ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME));
+		return !ui || ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
+		       !ui->GetMenu<RE::HUDMenu>() || ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
 	}
 
 	bool playerNotInControl()
 	{
 		const auto* control_map = RE::ControlMap::GetSingleton();
-		return !control_map
-		  || !control_map->IsMovementControlsEnabled()
-		  || control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay);
+		return !control_map || !control_map->IsMovementControlsEnabled() ||
+		       control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
 	}
 
 	void notifyPlayer(const std::string& message)

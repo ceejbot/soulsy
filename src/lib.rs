@@ -329,7 +329,7 @@ pub mod plugin {
         fn showHUD();
     }
 
-    /// A verbose shim between Rust and the PlayerCharacter type.
+    // A verbose shim between Rust and the PlayerCharacter type.
     #[namespace = "player"]
     unsafe extern "C++" {
         include!("player.h");
