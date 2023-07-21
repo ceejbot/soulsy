@@ -38,7 +38,17 @@ impl HudLayout {
             Ok(HudLayout::default())
         } else if let Ok(buf) = fs::read_to_string(PathBuf::from(LAYOUT_PATH)) {
             match toml::from_str::<HudLayout>(&buf) {
-                Ok(v) => Ok(v),
+                Ok(v) => {
+                    log::info!(
+                        "hud layout read: loc={},{}; size={},{}; global scale={}",
+                        v.anchor.x,
+                        v.anchor.y,
+                        v.size.x,
+                        v.size.y,
+                        v.global_scale
+                    );
+                    Ok(v)
+                }
                 Err(e) => {
                     // We are *not* overwriting a bad TOML file, but we are logging it.
                     // The player might be editing it and experimenting.
@@ -59,7 +69,6 @@ impl HudLayout {
     pub fn refresh() {
         match HudLayout::read_from_file() {
             Ok(v) => {
-                log::info!("refreshed HUD layout; triggering redraw...");
                 let mut hudl = LAYOUT.lock().unwrap();
                 *hudl = v;
             }
