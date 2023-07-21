@@ -23,15 +23,7 @@ pub mod public {
         let mut ctrl = CONTROLLER.lock().unwrap();
         let settings = user_settings();
         log::info!("{settings:?}");
-        let hud = hud_layout();
-        log::info!(
-            "hud layout: loc={},{}; size={},{};",
-            hud.anchor.x,
-            hud.anchor.y,
-            hud.size.x,
-            hud.size.y
-        );
-
+        let _hud = hud_layout();
         ctrl.validate_cycles();
         log::info!("HUD data should be fresh; ready to cycle!")
     }
@@ -170,10 +162,8 @@ impl Controller {
                     candidate.set_count(new_count);
                 }
             }
-        } else {
-            if self.cycles.update_count(*item, new_count) {
-                self.update_hud();
-            }
+        } else if self.cycles.update_count(*item, new_count) {
+            self.update_hud();
         }
     }
 
@@ -198,7 +188,10 @@ impl Controller {
         }
 
         let Some(item) = &self.visible.get(&hud) else {
-            log::warn!("visible item in hud slot was None, which should not happen; slot={:?};", hud);
+            log::warn!(
+                "visible item in hud slot was None, which should not happen; slot={:?};",
+                hud
+            );
             unequipSlot(which);
             return;
         };
@@ -517,22 +510,32 @@ impl Controller {
     /// start a tick timer for cycle delay.
     fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
         let settings = user_settings();
+        if !button.IsUp() && !button.IsDown() {
+            return KeyEventResponse::default();
+        }
+
+        log::trace!(
+            "key={}; is-down={}; is-pressed={}; is-up={}; cycle mod down={}; unequip mod down={};",
+            key,
+            button.IsDown(),
+            button.IsPressed(),
+            button.IsUp(),
+            self.cycle_modifier_pressed,
+            self.unequip_modifier_pressed
+        );
 
         if settings.is_cycle_modifier(key) {
-            if button.IsDown() {
-                self.cycle_modifier_pressed = true;
-            } else if button.IsUp() {
-                self.cycle_modifier_pressed = false;
-            }
+            self.cycle_modifier_pressed = button.IsDown();
             return KeyEventResponse::default();
         }
 
         if settings.is_unequip_modifier(key) {
-            if button.IsDown() {
-                self.unequip_modifier_pressed = true;
-            } else if button.IsUp() {
-                self.unequip_modifier_pressed = false;
-            }
+            self.unequip_modifier_pressed = button.IsDown();
+            return KeyEventResponse::default();
+        }
+
+        // From here on, we only respond to button-up events.
+        if !button.IsUp() {
             return KeyEventResponse::default();
         }
 
@@ -563,23 +566,41 @@ impl Controller {
             _ => {} // continue
         }
 
-        // so much for branchless programming. I need to sort this out.
-        if settings.is_cycle_button(key) {
-            if settings.unequip_with_modifier() && self.unequip_modifier_pressed {
-                unequipSlot(action);
-                return KeyEventResponse {
-                    handled: true,
-                    start_timer: Action::Irrelevant,
-                    stop_timer: action,
-                };
-            } else if !settings.cycle_with_modifier() || self.cycle_modifier_pressed {
-                return self.advance_cycle(action);
-            } else {
-                log::debug!("action requires modifier key; declining to act");
-                return KeyEventResponse::default();
-            }
-        } else {
+        // so much for branchless programming.
+        if !settings.is_cycle_button(key) {
             return KeyEventResponse::default();
+        }
+
+        // We have two modifiers to check
+        let unequip_requested = settings.unequip_with_modifier() && self.unequip_modifier_pressed;
+        let cycle_requested = if settings.cycle_with_modifier() {
+            !unequip_requested && self.cycle_modifier_pressed
+        } else {
+            !unequip_requested
+        };
+
+        let hudslot = HudElement::from(action);
+
+        if unequip_requested {
+            log::info!("unequipping slot {:?} by request!", Action::Left);
+            let empty_item = if matches!(action, Action::Left | Action::Right) {
+                *hand_to_hand_item()
+            } else {
+                TesItemData::default()
+            };
+            unequipSlot(action);
+            self.update_slot(hudslot, &empty_item);
+            self.cycles.set_top(action, empty_item);
+            KeyEventResponse {
+                handled: true,
+                start_timer: Action::Irrelevant,
+                stop_timer: action,
+            }
+        } else if cycle_requested {
+            self.advance_cycle(action)
+        } else {
+            log::info!("you need a modifier key down for {action:?}");
+            KeyEventResponse::default()
         }
     }
 
@@ -733,19 +754,19 @@ impl From<u32> for Action {
     fn from(value: u32) -> Self {
         let settings = user_settings();
 
-        if value == settings.left {
+        if value == settings.left as u32 {
             Action::Left
-        } else if value == settings.right {
+        } else if value == settings.right as u32 {
             Action::Right
-        } else if value == settings.power {
+        } else if value == settings.power as u32 {
             Action::Power
-        } else if value == settings.utility {
+        } else if value == settings.utility as u32 {
             Action::Utility
-        } else if value == settings.activate {
+        } else if value == settings.activate as u32 {
             Action::Activate
-        } else if value == settings.showhide {
+        } else if value == settings.showhide as u32 {
             Action::ShowHide
-        } else if value == settings.refresh_layout {
+        } else if value == settings.refresh_layout as u32 {
             Action::RefreshLayout
         } else {
             Action::Irrelevant

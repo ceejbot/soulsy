@@ -13,7 +13,7 @@ static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
 /// static INI_PATH: &str = "./data/MCM/Config/SoulsyHUD/settings.ini";
 
 /// There can be only one. Not public because we want access managed.
-static SETTINGS: Lazy<Mutex<UserSettings>> = Lazy::new(|| Mutex::new(UserSettings::default()));
+static SETTINGS: Lazy<Mutex<UserSettings>> = Lazy::new(|| Mutex::new(UserSettings::new_from_file()));
 
 /// We hand a read-only copy to C++ for use.
 pub fn user_settings() -> Box<UserSettings> {
@@ -41,9 +41,9 @@ pub fn refresh_user_settings() {
 #[derive(Debug, Clone)]
 pub struct UserSettings {
     /// An optional modifier key for all cycle hotkeys. E.g., shift + key.
-    pub cycle_modifier: u32,
+    pub cycle_modifier: i32,
     /// An optional modifier key for unequipping a specific slot
-    pub unequip_modifier: u32,
+    pub unequip_modifier: i32,
     /// The key for the left hand's cycle.
     pub left: u32,
     /// The key for the right hand's cycle.
@@ -75,8 +75,8 @@ pub struct UserSettings {
 impl Default for UserSettings {
     fn default() -> Self {
         Self {
-            cycle_modifier: 0,
-            unequip_modifier: 0,
+            cycle_modifier: -1,
+            unequip_modifier: -1,
             // The map in key_path.h starts with numeral 1 => 2.
             left: 5,
             right: 7,
@@ -106,7 +106,21 @@ fn read_int_from(section: &ini::Properties, key: &str, default: u32) -> u32 {
     }
 }
 
+fn read_signed_int_from(section: &ini::Properties, key: &str, default: i32) -> i32 {
+    if let Some(str_val) = section.get(key) {
+        str_val.parse::<i32>().unwrap_or(default)
+    } else {
+        default
+    }
+}
+
 impl UserSettings {
+    pub fn new_from_file() -> Self {
+        let mut s = UserSettings::default();
+        s.read_from_file().unwrap();
+        s
+    }
+
     pub fn refresh() -> Result<()> {
         let mut settings = SETTINGS.lock().unwrap();
         settings.read_from_file()
@@ -124,8 +138,8 @@ impl UserSettings {
         } else {
             &empty
         };
-        self.cycle_modifier = read_int_from(controls, "uCycleModifierKey", self.left);
-        self.unequip_modifier = read_int_from(controls, "uUnequipModifierKey", self.left);
+        self.cycle_modifier = read_signed_int_from(controls, "iCycleModifierKey", self.cycle_modifier);
+        self.unequip_modifier = read_signed_int_from(controls, "iUnequipModifierKey", self.unequip_modifier);
         self.left = read_int_from(controls, "uLeftCycleKey", self.left);
         self.right = read_int_from(controls, "uRightCycleKey", self.right);
         self.power = read_int_from(controls, "uPowerCycleKey", self.power);
@@ -175,19 +189,19 @@ impl UserSettings {
 
     pub fn unequip_with_modifier(&self) -> bool {
         // hiding the implementation here, possibly pointlessly
-        self.unequip_modifier != 0
+        self.unequip_modifier > 0
     }
 
     pub fn is_unequip_modifier(&self, key: u32) -> bool {
-        self.unequip_with_modifier() && self.unequip_modifier == key
+        self.unequip_modifier as u32 == key
     }
 
     pub fn cycle_with_modifier(&self) -> bool {
-        self.cycle_modifier != 0
+        self.cycle_modifier > 0
     }
 
     pub fn is_cycle_modifier(&self, key: u32) -> bool {
-        self.cycle_with_modifier() && self.cycle_modifier == key
+        self.cycle_modifier as u32 == key
     }
 
     pub fn is_cycle_button(&self, key: u32) -> bool {
@@ -223,6 +237,9 @@ impl UserSettings {
     pub fn showhide(&self) -> u32 {
         self.showhide
     }
+    pub fn refresh_layout(&self) -> u32 {
+        self.refresh_layout
+    }
     pub fn maxlen(&self) -> u32 {
         clamp(self.maxlen, 2, 15)
     }
@@ -234,9 +251,6 @@ impl UserSettings {
     }
     pub fn fade_delay(&self) -> u32 {
         self.fade_delay
-    }
-    pub fn refresh_layout(&self) -> u32 {
-        self.refresh_layout
     }
     pub fn controller_kind(&self) -> u32 {
         clamp(self.controller_kind, 0, 2)

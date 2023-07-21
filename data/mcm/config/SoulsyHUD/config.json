@@ -10,7 +10,7 @@
       "type": "header"
     },
     {
-      "id": "uCycleModifierKey:Controls",
+      "id": "iCycleModifierKey:Controls",
       "text": "$SoulsyHUD_Controls_CycleModifierKey_Text",
       "help": "$SoulsyHUD_Controls_CycleModifierKey_Help",
       "type": "keymap",
@@ -19,7 +19,7 @@
       }
     },
     {
-      "id": "uUnequipModifierKey:Controls",
+      "id": "iUnequipModifierKey:Controls",
       "text": "$SoulsyHUD_Controls_UnequipModifierKey_Text",
       "help": "$SoulsyHUD_Controls_UnequipModifierKey_Help",
       "type": "keymap",
