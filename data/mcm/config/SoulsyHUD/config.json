@@ -1,5 +1,4 @@
 {
-  "$schema": "https://raw.githubusercontent.com/Exit-9B/MCM-Helper/main/docs/config.schema.json",
   "modName": "SoulsyHUD",
   "displayName": "SoulsyHUD",
   "minMcmVersion": 13,
