@@ -35,17 +35,24 @@ namespace game
 		auto* selected_power = player->GetActorRuntimeData().selectedPower;
 		if (selected_power)
 		{
+			auto* task = SKSE::GetTaskInterface();
+			if (!task) return;
 			logger::trace(
 				"unequipping shout/power formID={};"sv, util::string_util::int_to_hex(selected_power->formID));
 			if (selected_power->Is(RE::FormType::Shout))
 			{
-				un_equip_shout(nullptr, 0, player, selected_power->As<RE::TESShout>());
+				task->AddTask(
+					[=]()
+					{
+						un_equip_shout(nullptr, 0, player, selected_power->As<RE::TESShout>());
+						;
+					});
 			}
 			else if (selected_power->Is(RE::FormType::Spell))
 			{
 				//power
 				//2=other
-				unequip_spell(nullptr, 0, player, selected_power->As<RE::SpellItem>(), 2);
+				task->AddTask([=]() { unequip_spell(nullptr, 0, player, selected_power->As<RE::SpellItem>(), 2); });
 			}
 		}
 	}

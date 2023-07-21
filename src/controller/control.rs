@@ -349,6 +349,9 @@ impl Controller {
 
         if item.kind().is_power() {
             log::debug!("handling power/shout");
+            if !equipped {
+                return false;
+            }
             if let Some(visible) = self.visible.get(&HudElement::Power) {
                 if visible.form_string() != item.form_string() {
                     log::debug!("updating visible power; name='{}';", item.name());
@@ -572,7 +575,9 @@ impl Controller {
         }
 
         // We have two modifiers to check
-        let unequip_requested = settings.unequip_with_modifier() && self.unequip_modifier_pressed;
+        let unequip_requested = settings.unequip_with_modifier()
+            && self.unequip_modifier_pressed
+            && (action != Action::Utility);
         let cycle_requested = if settings.cycle_with_modifier() {
             !unequip_requested && self.cycle_modifier_pressed
         } else {
@@ -582,7 +587,7 @@ impl Controller {
         let hudslot = HudElement::from(action);
 
         if unequip_requested {
-            log::info!("unequipping slot {:?} by request!", Action::Left);
+            log::info!("unequipping slot {:?} by request!", action);
             let empty_item = if matches!(action, Action::Left | Action::Right) {
                 *hand_to_hand_item()
             } else {
