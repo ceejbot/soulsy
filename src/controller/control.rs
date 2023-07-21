@@ -20,7 +20,9 @@ pub mod public {
     /// C++ tells us when it's safe to start pulling together the data we need.
     pub fn initialize_hud() {
         log::info!("initializing hud controller");
-        let mut ctrl = CONTROLLER.lock().unwrap();
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         let settings = user_settings();
         log::info!("{settings:?}");
         let _hud = hud_layout();
@@ -30,11 +32,18 @@ pub mod public {
 
     /// Function for C++ to call to send a relevant button event to us.
     pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
-        CONTROLLER.lock().unwrap().handle_key_event(key, button)
+        CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
+            .handle_key_event(key, button)
     }
 
     pub fn show_ui() -> bool {
-        CONTROLLER.lock().unwrap().cycles.hud_visible()
+        CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
+            .cycles
+            .hud_visible()
     }
 
     /// Function for C++ to call to send a relevant menu button-event to us.
@@ -42,42 +51,58 @@ pub mod public {
     /// We get a fully-filled out TesItemData struct to use as we see fit.
     pub fn handle_menu_event(key: u32, menu_item: Box<TesItemData>) {
         let action = Action::from(key);
-        CONTROLLER.lock().unwrap().toggle_item(action, *menu_item)
+        CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
+            .toggle_item(action, *menu_item)
     }
 
     /// Get information about the item equipped in a specific slot.
     pub fn entry_to_show_in_slot(element: HudElement) -> Box<TesItemData> {
-        CONTROLLER.lock().unwrap().entry_to_show_in_slot(element)
+        CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
+            .entry_to_show_in_slot(element)
     }
 
     // Handle an equip delay timer expiring.
     pub fn timer_expired(slot: Action) {
         // Fun time! We get to equip an item now!
-        let mut ctrl = CONTROLLER.lock().unwrap();
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.timer_expired(slot);
     }
 
     /// Update our view of the player's equipment.
     pub fn update_hud() -> bool {
-        let mut ctrl = CONTROLLER.lock().unwrap();
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.update_hud()
     }
 
     /// We know for sure the player just equipped this item.
     pub fn handle_item_equipped(equipped: bool, item: Box<TesItemData>) -> bool {
-        let mut ctrl = CONTROLLER.lock().unwrap();
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.handle_item_equipped(equipped, item)
     }
 
     /// A consumable's count changed. Record if relevant.
     pub fn handle_inventory_changed(item: Box<TesItemData>, count: i32) {
-        let mut ctrl = CONTROLLER.lock().unwrap();
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.handle_inventory_changed(item, count);
         ctrl.update_hud();
     }
 
     pub fn truncate_cycles(new: u32) {
-        let mut ctrl = CONTROLLER.lock().unwrap();
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.cycles.truncate_if_needed(new as usize);
     }
 
@@ -86,7 +111,9 @@ pub mod public {
             log::warn!("Failed to read user settings! using defaults; {e:?}");
             return;
         }
-        let mut ctrl = CONTROLLER.lock().unwrap();
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         let settings = user_settings();
         if settings.include_unarmed() {
             let h2h = hand_to_hand_item();

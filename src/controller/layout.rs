@@ -21,7 +21,9 @@ static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::init(
 /// Read our layout data from the file, or fall back to defaults if the file
 /// is not present or is invalid TOML.
 pub fn hud_layout() -> HudLayout {
-    let layout = LAYOUT.lock().unwrap();
+    let layout = LAYOUT
+        .lock()
+        .expect("Unrecoverable runtime problem: cannot acquire layout lock.");
     layout.clone()
 }
 
@@ -38,9 +40,7 @@ impl HudLayout {
             Ok(HudLayout::default())
         } else if let Ok(buf) = fs::read_to_string(PathBuf::from(LAYOUT_PATH)) {
             match toml::from_str::<HudLayout>(&buf) {
-                Ok(v) => {
-                    Ok(v)
-                }
+                Ok(v) => Ok(v),
                 Err(e) => {
                     // We are *not* overwriting a bad TOML file, but we are logging it.
                     // The player might be editing it and experimenting.
@@ -69,7 +69,9 @@ impl HudLayout {
                     v.size.y,
                     v.global_scale
                 );
-                let mut hudl = LAYOUT.lock().unwrap();
+                let mut hudl = LAYOUT
+                    .lock()
+                    .expect("Unrecoverable runtime problem: cannot acquire layout lock.");
                 *hudl = v;
             }
             Err(e) => {

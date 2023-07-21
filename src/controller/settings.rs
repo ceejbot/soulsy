@@ -18,7 +18,9 @@ static SETTINGS: Lazy<Mutex<UserSettings>> =
 
 /// We hand a read-only copy to C++ for use.
 pub fn user_settings() -> Box<UserSettings> {
-    let settings = SETTINGS.lock().unwrap();
+    let settings = SETTINGS
+        .lock()
+        .expect("Unrecoverable runtime problem: cannot acquire settings lock.");
     Box::new(settings.clone())
 }
 
@@ -123,7 +125,9 @@ impl UserSettings {
     }
 
     pub fn refresh() -> Result<()> {
-        let mut settings = SETTINGS.lock().unwrap();
+        let mut settings = SETTINGS
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire settings lock.");
         settings.read_from_file()
     }
 
