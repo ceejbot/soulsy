@@ -10,6 +10,24 @@
       "type": "header"
     },
     {
+      "id": "uCycleModifierKey:Controls",
+      "text": "$SoulsyHUD_Controls_CycleModifierKey_Text",
+      "help": "$SoulsyHUD_Controls_CycleModifierKey_Help",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uUnequipModifierKey:Controls",
+      "text": "$SoulsyHUD_Controls_UnequipModifierKey_Text",
+      "help": "$SoulsyHUD_Controls_UnequipModifierKey_Help",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
       "id": "uPowerCycleKey:Controls",
       "text": "$SoulsyHUD_Controls_PowerCycleKey_Text",
       "help": "$SoulsyHUD_Controls_PowerCycleKey_Help",

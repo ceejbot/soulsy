@@ -106,8 +106,8 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		const uint32_t key = keycodes::get_key_id(button);
 		if (key == -1) { continue; }
 
-		if (button->IsPressed() || button->IsDown() || button->IsHeld()) { continue; }
-		//logger::trace("handling button event; idcode={}; after offset key={}; is-up={}'"sv, button->idCode, key, button->IsUp());
+		// We need to be a little bit stateful to handle modifier keys, because we don't
+		// get chording events, so all the logic is now in the controller. That's its job!
 		const KeyEventResponse response = handle_key_event(key, *button);
 		if (!response.handled) { continue; }
 

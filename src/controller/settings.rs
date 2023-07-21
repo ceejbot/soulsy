@@ -40,6 +40,10 @@ pub fn refresh_user_settings() {
 /// write it.
 #[derive(Debug, Clone)]
 pub struct UserSettings {
+    /// An optional modifier key for all cycle hotkeys. E.g., shift + key.
+    pub cycle_modifier: u32,
+    /// An optional modifier key for unequipping a specific slot
+    pub unequip_modifier: u32,
     /// The key for the left hand's cycle.
     pub left: u32,
     /// The key for the right hand's cycle.
@@ -71,6 +75,8 @@ pub struct UserSettings {
 impl Default for UserSettings {
     fn default() -> Self {
         Self {
+            cycle_modifier: 0,
+            unequip_modifier: 0,
             // The map in key_path.h starts with numeral 1 => 2.
             left: 5,
             right: 7,
@@ -118,6 +124,8 @@ impl UserSettings {
         } else {
             &empty
         };
+        self.cycle_modifier = read_int_from(controls, "uCycleModifierKey", self.left);
+        self.unequip_modifier = read_int_from(controls, "uUnequipModifierKey", self.left);
         self.left = read_int_from(controls, "uLeftCycleKey", self.left);
         self.right = read_int_from(controls, "uRightCycleKey", self.right);
         self.power = read_int_from(controls, "uPowerCycleKey", self.power);
@@ -163,6 +171,23 @@ impl UserSettings {
         };
 
         Ok(())
+    }
+
+    pub fn unequip_with_modifier(&self) -> bool {
+        // hiding the implementation here, possibly pointlessly
+        self.unequip_modifier != 0
+    }
+
+    pub fn is_unequip_modifier(&self, key: u32) -> bool {
+        self.unequip_with_modifier() && self.unequip_modifier == key
+    }
+
+    pub fn cycle_with_modifier(&self) -> bool {
+        self.cycle_modifier != 0
+    }
+
+    pub fn is_cycle_modifier(&self, key: u32) -> bool {
+        self.cycle_with_modifier() && self.cycle_modifier == key
     }
 
     pub fn is_cycle_button(&self, key: u32) -> bool {

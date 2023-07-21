@@ -18,7 +18,7 @@ use std::fs::File;
 use std::path::PathBuf;
 
 pub use control::public::*;
-pub use cycles::{default_tes_item, get_icon_file, make_tesitem, hand_to_hand_item, TesItemData};
+pub use cycles::{default_tes_item, get_icon_file, hand_to_hand_item, make_tesitem, TesItemData};
 pub use layout::hud_layout;
 pub use settings::{user_settings, UserSettings};
 use simplelog::*;

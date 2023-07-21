@@ -38,13 +38,7 @@ pub mod public {
 
     /// Function for C++ to call to send a relevant button event to us.
     pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
-        let action = Action::from(key);
-        if matches!(action, Action::Irrelevant) {
-            KeyEventResponse::default()
-        } else {
-            log::trace!("incoming key event; key={key}; action={action:?}");
-            CONTROLLER.lock().unwrap().handle_key_event(action, button)
-        }
+        CONTROLLER.lock().unwrap().handle_key_event(key, button)
     }
 
     pub fn show_ui() -> bool {
@@ -129,6 +123,10 @@ pub struct Controller {
     two_hander_equipped: bool,
     /// We cache the left-hand item we had before a two-hander arrived.
     left_hand_cached: Option<TesItemData>,
+    /// True if the last time we saw this key in an event, it was down.
+    cycle_modifier_pressed: bool,
+    /// True if the last time we saw this key in an event, it was down.
+    unequip_modifier_pressed: bool,
 }
 
 impl Controller {
@@ -515,43 +513,90 @@ impl Controller {
 
     /// Handle a key-press event that the event system decided we need to know about.
     ///
-    /// Returns an enum indicating what we did in response, in case one of the calling
-    /// layers wants to show UI or play sounds in response.
-    fn handle_key_event(&mut self, which: Action, _button: &ButtonEvent) -> KeyEventResponse {
-        if matches!(which, Action::Irrelevant) {
+    /// Returns an enum indicating what we did in response, so that the C++ layer can
+    /// start a tick timer for cycle delay.
+    fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
+        let settings = user_settings();
+
+        if settings.is_cycle_modifier(key) {
+            if button.IsDown() {
+                self.cycle_modifier_pressed = true;
+            } else if button.IsUp() {
+                self.cycle_modifier_pressed = false;
+            }
             return KeyEventResponse::default();
         }
-        // log::trace!("entering handle_key_event(); action={which:?}");
 
-        // It's not really tidier rewritten as a match.
+        if settings.is_unequip_modifier(key) {
+            if button.IsDown() {
+                self.unequip_modifier_pressed = true;
+            } else if button.IsUp() {
+                self.unequip_modifier_pressed = false;
+            }
+            return KeyEventResponse::default();
+        }
 
-        if matches!(which, Action::ShowHide) {
-            log::trace!("----> toggling hud visibility; was {}", self.cycles.hud_visible());
-            self.cycles.toggle_hud();
+        let action = Action::from(key);
+        match action {
+            Action::Irrelevant => {
+                return KeyEventResponse::default();
+            }
+            Action::Activate => return self.use_utility_item(),
+            Action::RefreshLayout => {
+                HudLayout::refresh();
+                return KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                };
+            }
+            Action::ShowHide => {
+                log::trace!(
+                    "----> toggling hud visibility; was {}",
+                    self.cycles.hud_visible()
+                );
+                self.cycles.toggle_hud();
+                return KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                };
+            }
+            _ => {} // continue
+        }
+
+        // so much for branchless programming. I need to sort this out.
+        if settings.is_cycle_button(key) {
+            if settings.unequip_with_modifier() && self.unequip_modifier_pressed {
+                unequipSlot(action);
+                return KeyEventResponse {
+                    handled: true,
+                    start_timer: Action::Irrelevant,
+                    stop_timer: action,
+                };
+            } else if !settings.cycle_with_modifier() || self.cycle_modifier_pressed {
+                return self.advance_cycle(action);
+            } else {
+                log::debug!("action requires modifier key; declining to act");
+                return KeyEventResponse::default();
+            }
+        } else {
+            return KeyEventResponse::default();
+        }
+    }
+
+    fn advance_cycle(&mut self, which: Action) -> KeyEventResponse {
+        if matches!(which, Action::Left) && self.two_hander_equipped {
+            log::info!("declining to advance left-hand cycle while two-hander equipped");
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()
             };
         }
 
-        if matches!(
-            which,
-            Action::Power | Action::Left | Action::Right | Action::Utility
-        ) {
-            if matches!(which, Action::Left) && self.two_hander_equipped {
-                log::info!("declining to advance left-hand cycle while two-hander equipped");
-                return KeyEventResponse {
-                    handled: true,
-                    ..Default::default()
-                };
-            }
-
-            let hud = HudElement::from(which);
-            if self.cycles.cycle_len(which) > 1 {
-                if let Some(next) = self.cycles.advance(which, 1) {
-                    self.update_slot(hud, &next);
-                    self.flush_cycle_data();
-                }
+        let hud = HudElement::from(which);
+        if self.cycles.cycle_len(which) > 1 {
+            if let Some(next) = self.cycles.advance(which, 1) {
+                self.update_slot(hud, &next);
+                self.flush_cycle_data();
                 return KeyEventResponse {
                     handled: true,
                     start_timer: if !matches!(which, Action::Utility) {
@@ -561,16 +606,8 @@ impl Controller {
                     },
                     stop_timer: Action::Irrelevant,
                 };
-            } else {
-                return KeyEventResponse {
-                    handled: true,
-                    ..Default::default()
-                };
             }
-        } else if matches!(which, Action::Activate) {
-            return self.use_utility_item();
-        } else if matches!(which, Action::RefreshLayout) {
-            HudLayout::refresh();
+        } else {
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()

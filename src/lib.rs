@@ -172,7 +172,7 @@ pub mod plugin {
         Torch,
         WeaponDefault,
         Whip,
-        NotFound
+        NotFound,
     }
 
     /// This enum maps key presses to the desired action. More like a C/java
@@ -319,6 +319,8 @@ pub mod plugin {
         fn IsDown(self: &ButtonEvent) -> bool;
         /// Check if this is a button-up event.
         fn IsUp(self: &ButtonEvent) -> bool;
+        /// Check if this button is pressed.
+        fn IsPressed(self: &ButtonEvent) -> bool;
     }
 
     // Selected helpers.
