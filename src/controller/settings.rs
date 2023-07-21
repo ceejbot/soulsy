@@ -13,7 +13,8 @@ static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
 /// static INI_PATH: &str = "./data/MCM/Config/SoulsyHUD/settings.ini";
 
 /// There can be only one. Not public because we want access managed.
-static SETTINGS: Lazy<Mutex<UserSettings>> = Lazy::new(|| Mutex::new(UserSettings::new_from_file()));
+static SETTINGS: Lazy<Mutex<UserSettings>> =
+    Lazy::new(|| Mutex::new(UserSettings::new_from_file()));
 
 /// We hand a read-only copy to C++ for use.
 pub fn user_settings() -> Box<UserSettings> {
@@ -117,7 +118,7 @@ fn read_signed_int_from(section: &ini::Properties, key: &str, default: i32) -> i
 impl UserSettings {
     pub fn new_from_file() -> Self {
         let mut s = UserSettings::default();
-        s.read_from_file().unwrap();
+        s.read_from_file().unwrap_or_default();
         s
     }
 
@@ -138,8 +139,10 @@ impl UserSettings {
         } else {
             &empty
         };
-        self.cycle_modifier = read_signed_int_from(controls, "iCycleModifierKey", self.cycle_modifier);
-        self.unequip_modifier = read_signed_int_from(controls, "iUnequipModifierKey", self.unequip_modifier);
+        self.cycle_modifier =
+            read_signed_int_from(controls, "iCycleModifierKey", self.cycle_modifier);
+        self.unequip_modifier =
+            read_signed_int_from(controls, "iUnequipModifierKey", self.unequip_modifier);
         self.left = read_int_from(controls, "uLeftCycleKey", self.left);
         self.right = read_int_from(controls, "uRightCycleKey", self.right);
         self.power = read_int_from(controls, "uPowerCycleKey", self.power);
