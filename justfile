@@ -77,6 +77,7 @@ archive:
     cp -rp data/* "$outdir"/
     cp -p build/Release/SoulsyHUD.dll "$outdir"/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb "$outdir"/SKSE/plugins/SoulsyHUD.pdb
+    rm "${outdir}"/scripts/source/TESV_Papyrus_Flags.flg
     #7z a "$outdir".7z "$outdir"
     echo "Mod directory ready at ${outdir}; archive at ${outdir}.7z"
     echo "don't check this in, but copying to live mod..."

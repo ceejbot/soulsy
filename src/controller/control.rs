@@ -53,7 +53,7 @@ pub mod public {
     // Handle an equip delay timer expiring.
     pub fn timer_expired(slot: Action) {
         // Fun time! We get to equip an item now!
-        let ctrl = CONTROLLER.lock().unwrap();
+        let mut ctrl = CONTROLLER.lock().unwrap();
         ctrl.timer_expired(slot);
     }
 
@@ -178,7 +178,7 @@ impl Controller {
     ///
     /// We do not act here on cascading changes. Instead, we let the equipped-change
     /// callback decide what to do when, e.g., a two-handed item is equipped.
-    fn timer_expired(&self, which: Action) {
+    fn timer_expired(&mut self, which: Action) {
         let hud = HudElement::from(which);
 
         if matches!(which, Action::Left) && self.two_hander_equipped {
@@ -200,12 +200,16 @@ impl Controller {
         let kind = item.kind();
         if matches!(kind, TesItemKind::HandToHand) {
             log::info!("melee time! unequipping slot {which:?}");
+            if which == Action::Left {
+                self.left_hand_cached = Some(*hand_to_hand_item());
+            }
             unequipSlot(which);
             return;
         }
 
         if matches!(which, Action::Power) {
             // Equip that fus-ro-dah, dovahkin!
+            log::info!("Fus-ro-dah!");
             cxx::let_cxx_string!(form_spec = item.form_string());
             equipShout(&form_spec);
             return;
@@ -397,9 +401,13 @@ impl Controller {
             if self.two_hander_equipped && !item.two_handed() {
                 if let Some(prev_left) = self.left_hand_cached.clone() {
                     log::debug!(
-                        "contemplating forcing re-equip here; name='{}';",
+                        "might want to update the left hand; previously equipped name='{}';",
                         prev_left.name()
                     );
+                    if prev_left.kind() == TesItemKind::HandToHand {
+                        self.update_slot(HudElement::Left, &prev_left);
+                        self.two_hander_equipped = false;
+                    }
                     // cxx::let_cxx_string!(form_spec = prev_left.form_string());
                     // reequipLeftHand(&form_spec);
                 }
