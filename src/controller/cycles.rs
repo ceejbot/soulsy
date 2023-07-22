@@ -216,6 +216,35 @@ impl CycleData {
         cycle.first().cloned()
     }
 
+    pub fn advance_skipping(&mut self, which: Action, skip: TesItemData) -> Option<TesItemData> {
+        let cycle = match which {
+            Action::Power => &mut self.power,
+            Action::Left => &mut self.left,
+            Action::Right => &mut self.right,
+            Action::Utility => &mut self.utility,
+            _ => {
+                log::warn!("It is a programmer error to call advance() with {which:?}");
+                return None;
+            }
+        };
+        if cycle.is_empty() {
+            return None;
+        }
+
+        if let Some(previous) = cycle.first_mut() {
+            previous.highlighted = false;
+        }
+        cycle.rotate_left(1);
+        let candidate = cycle
+            .iter()
+            .find(|xs| xs.form_string() != skip.form_string());
+        if candidate.is_some() {
+            candidate.cloned()
+        } else {
+            None
+        }
+    }
+
     /// Get the length of the given cycle.
     pub fn cycle_len(&self, which: Action) -> usize {
         match which {
@@ -284,7 +313,7 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, which: Action, item: TesItemData) {
+    pub fn set_top(&mut self, which: Action, item: &TesItemData) {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -295,7 +324,7 @@ impl CycleData {
             }
         };
 
-        if let Some(idx) = cycle.iter().position(|xs| *xs == item) {
+        if let Some(idx) = cycle.iter().position(|xs| xs == item) {
             cycle.rotate_left(idx);
         }
     }

@@ -87,6 +87,21 @@ impl TesItemKind {
         )
     }
 
+    pub fn is_one_handed_weapon(&self) -> bool {
+        matches!(
+            *self,
+            TesItemKind::AxeOneHanded
+                | TesItemKind::Claw
+                | TesItemKind::Dagger
+                | TesItemKind::HandToHand
+                | TesItemKind::Katana
+                | TesItemKind::Mace
+                | TesItemKind::Rapier
+                | TesItemKind::SwordOneHanded
+                | TesItemKind::Whip
+        )
+    }
+
     /// Check if this item is wearable armor.
     pub fn is_armor(&self) -> bool {
         matches!(
@@ -119,7 +134,7 @@ impl TesItemKind {
     ///
     /// Returns true for weapons, magic, lights, and shields.
     pub fn left_hand_ok(&self) -> bool {
-        self.is_weapon()
+        self.is_one_handed_weapon()
             || self.is_magic()
             || matches!(*self, TesItemKind::Shield | TesItemKind::Torch)
     }
@@ -244,9 +259,3 @@ static ICON_MAP: Lazy<HashMap<TesItemKind, String>> = Lazy::new(|| {
         (TesItemKind::Whip, "whip.svg".to_string()),
     ])
 });
-
-// Sketching out what moving image data management to rust would look like.
-// - we need to rasterize svgs
-// - we need to return structs with Vec<u8>, width, and height when requested
-// - there are additional images beyond just entry icons (hotkey images, hud bg, etc)
-// - we might want to lazy-load and cache but implement the stupid version first

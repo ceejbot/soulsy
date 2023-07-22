@@ -1,4 +1,4 @@
-#![deny(future_incompatible)]
+#![deny(future_incompatible, clippy::unwrap_used)]
 #![warn(rust_2018_idioms, trivial_casts)]
 
 pub mod controller;
