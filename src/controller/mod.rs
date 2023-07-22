@@ -9,6 +9,7 @@
 //! is available to be bridged to C++ in the `plugin` module.
 pub mod control;
 pub mod cycles;
+pub mod keys;
 pub mod layout;
 pub mod settings;
 pub mod tesitemkind;
@@ -22,12 +23,12 @@ pub use cycles::{default_tes_item, get_icon_file, hand_to_hand_item, make_tesite
 pub use layout::hud_layout;
 pub use settings::{user_settings, UserSettings};
 use simplelog::*;
-pub use tesitemkind::{kind_has_count, kind_is_magic}; // hmm, is this for settings? I'm confused...
+pub use tesitemkind::{kind_has_count, kind_is_magic};
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
-    let hudl = hud_layout(); // yeah, it's in here, sorry. we can reload this at runtime.
+    let hudl = hud_layout(); // yeah, it's in here, sorry.
     let log_level = if hudl.debug {
-        LevelFilter::Debug
+        LevelFilter::Trace
     } else {
         LevelFilter::Info
     };

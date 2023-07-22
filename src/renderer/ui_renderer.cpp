@@ -388,7 +388,6 @@ namespace ui
 			drawElement(texture, center, size, angle, top_layout.bg_color);
 		}
 
-
 		for (auto slot_layout : top_layout.layouts)
 		{
 			rust::Box<TesItemData> entry = entry_to_show_in_slot(slot_layout.element);
@@ -508,7 +507,7 @@ namespace ui
 
 		ImGui::End();
 
-		const auto settings           = user_settings();
+		const auto settings = user_settings();
 		// TODO The fade delta values here really want to be on a nice curve
 		// instead of linear. Lower priority tho.
 		if (fade_in && fade < 1.0f)

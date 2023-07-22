@@ -20,6 +20,7 @@ pub mod plugin {
         Left,
         Right,
         Ammo,
+        None, // not drawn
     }
 
     /// Where to arrange the HUD elements and what color to draw them in.
@@ -180,7 +181,7 @@ pub mod plugin {
     #[derive(Debug, Clone, Hash)]
     enum Action {
         /// We do not need to do anything, possibly because the key was not one of our hotkeys.
-        Irrelevant,
+        None,
         /// We're acting on the power/shouts hotkey.
         Power,
         /// The left-hand cycle hotkey.

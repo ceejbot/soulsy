@@ -57,6 +57,8 @@ pub struct UserSettings {
     pub utility: u32,
     /// The key to activate or use a utility item.
     pub activate: u32,
+    /// An optional modifier key for activating the utility item.
+    pub activate_modifier: i32,
     /// Show/hide shortcut key.
     pub showhide: u32,
     /// A hotkey for re-reading the layout from toml and redrawing.
@@ -86,6 +88,7 @@ impl Default for UserSettings {
             power: 3,
             utility: 6,
             activate: 4,
+            activate_modifier: -1,
             refresh_layout: 8,
             showhide: 2,
             maxlen: 10,       // this not a key code but an int
@@ -152,6 +155,8 @@ impl UserSettings {
         self.power = read_int_from(controls, "uPowerCycleKey", self.power);
         self.utility = read_int_from(controls, "uUtilityCycleKey", self.utility);
         self.activate = read_int_from(controls, "uUtilityActivateKey", self.activate);
+        self.activate_modifier =
+            read_signed_int_from(controls, "uUtilityActivateModifier", self.activate_modifier);
         self.showhide = read_int_from(controls, "uShowHideKey", self.showhide);
         self.refresh_layout = read_int_from(controls, "uRefreshKey", self.refresh_layout);
 
@@ -237,6 +242,9 @@ impl UserSettings {
     }
     pub fn utility(&self) -> u32 {
         self.utility
+    }
+    pub fn activate_modifier(&self) -> i32 {
+        self.activate_modifier
     }
     pub fn activate(&self) -> u32 {
         self.activate

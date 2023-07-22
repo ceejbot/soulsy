@@ -111,13 +111,13 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		const KeyEventResponse response = handle_key_event(key, *button);
 		if (!response.handled) { continue; }
 
-		if (response.stop_timer != Action::Irrelevant)
+		if (response.stop_timer != Action::None)
 		{
 			logger::debug("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
 			ui::ui_renderer::stopTimer(response.stop_timer);
 		}
 
-		if (response.start_timer != Action::Irrelevant)
+		if (response.start_timer != Action::None)
 		{
 			logger::debug("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
 			ui::ui_renderer::startTimer(response.start_timer);

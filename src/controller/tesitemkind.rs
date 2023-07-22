@@ -8,6 +8,7 @@ use crate::plugin::TesItemKind;
 pub fn kind_has_count(kind: TesItemKind) -> bool {
     kind.show_count()
 }
+
 pub fn kind_is_magic(kind: TesItemKind) -> bool {
     kind.is_magic()
 }
@@ -139,6 +140,11 @@ impl TesItemKind {
     /// Check if this entry is a shout or power. Fus-ro-dah!
     pub fn is_power(&self) -> bool {
         matches!(*self, TesItemKind::Shout | TesItemKind::Power)
+    }
+
+    /// Check if this entry is a kind of ammo.
+    pub fn is_ammo(&self) -> bool {
+        matches!(*self, TesItemKind::Arrow)
     }
 
     /// Check if this entry is a utility item, aka the bottom slot.

@@ -63,6 +63,15 @@
       }
     },
     {
+      "id": "iUtilityActivateModifier:Controls",
+      "text": "$SoulsyHUD_Controls_ActivateModifier_Text",
+      "help": "$SoulsyHUD_Controls_ActivateModifier_Help",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
       "id": "uUtilityActivateKey:Controls",
       "text": "$SoulsyHUD_Controls_ActivateKey_Text",
       "help": "$SoulsyHUD_Controls_ActivateKey_Help",

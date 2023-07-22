@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
+use super::keys::*;
 use super::settings::{user_settings, UserSettings};
 use crate::hud_layout;
 use crate::plugin::*;
@@ -146,10 +147,10 @@ pub struct Controller {
     left_hand_cached: Option<TesItemData>,
     /// We cache the right-hand item we had similarly.
     right_hand_cached: Option<TesItemData>,
-    /// True if the last time we saw this key in an event, it was down.
-    cycle_modifier_pressed: bool,
-    /// True if the last time we saw this key in an event, it was down.
-    unequip_modifier_pressed: bool,
+    /// State of the cycle modifier hotkey
+    cycle_modifier: TrackedKey,
+    unequip_modifier: TrackedKey,
+    activate_modifier: TrackedKey,
 }
 
 impl Controller {
@@ -207,105 +208,96 @@ impl Controller {
     /// Returns an enum indicating what we did in response, so that the C++ layer can
     /// start a tick timer for cycle delay.
     fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
-        let settings = user_settings();
+        let keyevent = TrackedKey {
+            key: HotkeyKind::from(key),
+            state: KeyState::from(button),
+        };
+        if matches!(keyevent.key, HotkeyKind::None) {
+            return KeyEventResponse::default();
+        }
         if !button.IsUp() && !button.IsDown() {
             return KeyEventResponse::default();
         }
 
-        log::trace!(
-            "key={}; is-down={}; is-pressed={}; is-up={}; cycle mod down={}; unequip mod down={};",
-            key,
-            button.IsDown(),
-            button.IsPressed(),
-            button.IsUp(),
-            self.cycle_modifier_pressed,
-            self.unequip_modifier_pressed
-        );
+        log::trace!("incoming key={};", keyevent);
 
-        if settings.is_cycle_modifier(key) {
-            self.cycle_modifier_pressed = button.IsDown();
+        if matches!(keyevent.key, HotkeyKind::CycleModifier) {
+            self.cycle_modifier = keyevent;
+            return KeyEventResponse::default();
+        }
+        if matches!(keyevent.key, HotkeyKind::UnequipModifier) {
+            self.unequip_modifier = keyevent;
+            return KeyEventResponse::default();
+        }
+        if matches!(keyevent.key, HotkeyKind::ActivateModifier) {
+            self.activate_modifier = keyevent;
             return KeyEventResponse::default();
         }
 
-        if settings.is_unequip_modifier(key) {
-            self.unequip_modifier_pressed = button.IsDown();
-            return KeyEventResponse::default();
-        }
-
-        // From here on, we only respond to button-up events.
-        if !button.IsUp() {
-            return KeyEventResponse::default();
-        }
-
-        let action = Action::from(key);
-        match action {
-            Action::Irrelevant => {
-                return KeyEventResponse::default();
-            }
-            Action::Activate => return self.use_utility_item(),
-            Action::RefreshLayout => {
+        match keyevent.key {
+            HotkeyKind::Power => return self.handle_cycle_power(),
+            HotkeyKind::Utility => return self.handle_cycle_utility(),
+            HotkeyKind::Left => return self.handle_cycle_hand(keyevent),
+            HotkeyKind::Right => return self.handle_cycle_hand(keyevent),
+            HotkeyKind::Activate => return self.use_utility_item(),
+            HotkeyKind::Refresh => {
                 HudLayout::refresh();
                 return KeyEventResponse {
                     handled: true,
                     ..Default::default()
                 };
             }
-            Action::ShowHide => {
-                log::trace!(
-                    "----> toggling hud visibility; was {}",
-                    self.cycles.hud_visible()
-                );
+            HotkeyKind::ShowHide => {
                 self.cycles.toggle_hud();
                 return KeyEventResponse {
                     handled: true,
                     ..Default::default()
                 };
             }
-            _ => {} // continue
-        }
-
-        // so much for branchless programming.
-        if !settings.is_cycle_button(key) {
-            return KeyEventResponse::default();
-        }
-
-        // We have two modifiers to check
-        let unequip_requested = settings.unequip_with_modifier()
-            && self.unequip_modifier_pressed
-            && (action != Action::Utility);
-        let cycle_requested = if settings.cycle_with_modifier() {
-            !unequip_requested && self.cycle_modifier_pressed
-        } else {
-            !unequip_requested
-        };
-
-        let hudslot = HudElement::from(action);
-
-        if unequip_requested {
-            log::info!("unequipping slot {:?} by request!", action);
-            let empty_item = if matches!(action, Action::Left | Action::Right) {
-                *hand_to_hand_item()
-            } else {
-                TesItemData::default()
-            };
-            unequipSlot(action);
-            self.update_slot(hudslot, &empty_item);
-            self.cycles.set_top(action, &empty_item);
-            KeyEventResponse {
-                handled: true,
-                start_timer: Action::Irrelevant,
-                stop_timer: action,
+            HotkeyKind::UnequipModifier => {
+                self.unequip_modifier = keyevent;
+                return KeyEventResponse::default();
             }
-        } else if cycle_requested {
-            self.advance_cycle(action)
+            HotkeyKind::CycleModifier => {
+                self.cycle_modifier = keyevent;
+                return KeyEventResponse::default();
+            }
+            HotkeyKind::ActivateModifier => {
+                self.activate_modifier = keyevent;
+                return KeyEventResponse::default();
+            }
+            HotkeyKind::None => {
+                return KeyEventResponse::default();
+            }
+        }
+    }
+
+    fn handle_cycle_power(&mut self) -> KeyEventResponse {
+        if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
+            self.advance_simple_cycle(Action::Power)
         } else {
-            // TODO honk
-            log::info!("you need a modifier key down for {action:?}");
+            log::info!("declining to advance power/shouts cycle without the modifier key down");
             KeyEventResponse::default()
         }
     }
 
-    fn advance_cycle(&mut self, which: Action) -> KeyEventResponse {
+    fn handle_cycle_utility(&mut self) -> KeyEventResponse {
+        if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
+            self.advance_simple_cycle(Action::Utility)
+        } else {
+            log::info!(
+                "declining to advance utility/consumables cycle without the modifier key down"
+            );
+            KeyEventResponse::default()
+        }
+    }
+
+    fn advance_simple_cycle(&mut self, which: Action) -> KeyEventResponse {
+        // Programmer error to call this for left/right.
+        if matches!(which, Action::Power | Action::Utility) {
+            log::info!("Programmer error! This is not a simple cycle. cycle={which:?}",);
+            return KeyEventResponse::default();
+        }
         if self.cycles.cycle_len(which) <= 1 {
             // TODO failure sound
             return KeyEventResponse {
@@ -314,34 +306,95 @@ impl Controller {
             };
         }
 
-        let candidate = if matches!(which, Action::Power | Action::Utility) {
-            // consumables and shouts/powers
-            self.cycles.advance(which, 1)
+        let candidate = self.cycles.advance(which, 1);
+        if let Some(next) = candidate {
+            let hud = HudElement::from(which);
+            self.update_slot(hud, &next);
+            self.flush_cycle_data();
+            KeyEventResponse {
+                handled: true,
+                start_timer: if !matches!(which, Action::Utility) {
+                    which
+                } else {
+                    Action::None
+                },
+                stop_timer: Action::None,
+            }
         } else {
-            // Yes, this is horrifying, but I found unrolling it all
-            // to be the only thing that allowed me to think about it.
-            // This is one of the hard parts of the mod.
-            if matches!(which, Action::Left) {
-                if !self.two_hander_equipped {
-                    let rightie = equippedRightHand();
-                    log::info!("right equipped count: {};", rightie.count());
-                    if rightie.has_count() && rightie.count() == 1 {
-                        self.cycles.advance_skipping(which, *rightie)
-                    } else {
-                        self.cycles.advance(which, 1)
-                    }
-                } else if let Some(cached_right) = &self.right_hand_cached {
-                    log::info!("right cached count: {};", cached_right.count());
-                    if cached_right.has_count() && cached_right.count() == 1 {
-                        self.cycles.advance_skipping(which, cached_right.clone())
-                    } else {
-                        self.cycles.advance(which, 1)
-                    }
+            KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            }
+        }
+    }
+
+    fn handle_cycle_hand(&mut self, event: TrackedKey) -> KeyEventResponse {
+        // We have two modifiers to check
+        let unequip_requested =
+            self.unequip_modifier.ignore() || self.unequip_modifier.is_pressed();
+        let cycle_requested = if self.cycle_modifier.ignore() {
+            !unequip_requested
+        } else {
+            !unequip_requested && self.cycle_modifier.is_pressed()
+        };
+
+        // ETOOMANYENUMS
+        // The root problem is that shared enums are not sum types, and I want sum types.
+        let hudslot = HudElement::from(&event.key);
+        let action = Action::from(&event.key);
+
+        if unequip_requested {
+            log::info!("unequipping slot {:?} by request!", action);
+            let empty_item = *hand_to_hand_item();
+            unequipSlot(action);
+            self.update_slot(hudslot, &empty_item);
+            self.cycles.set_top(action, &empty_item);
+            KeyEventResponse {
+                handled: true,
+                start_timer: Action::None,
+                stop_timer: action,
+            }
+        } else if cycle_requested {
+            self.advance_hand_cycle(action)
+        } else {
+            // TODO honk
+            log::info!("you need a modifier key down for {action:?}");
+            KeyEventResponse::default()
+        }
+    }
+
+    fn advance_hand_cycle(&mut self, which: Action) -> KeyEventResponse {
+        if self.cycles.cycle_len(which) <= 1 {
+            // TODO failure sound
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
+        }
+
+        let candidate = if matches!(which, Action::Left) {
+            if !self.two_hander_equipped {
+                let rightie = equippedRightHand();
+                log::info!("right equipped count: {};", rightie.count());
+                if rightie.has_count() && rightie.count() == 1 {
+                    self.cycles.advance_skipping(which, *rightie)
                 } else {
                     self.cycles.advance(which, 1)
                 }
-            } else if !self.two_hander_equipped {
-                // this is the matches!(Right) block
+            } else if let Some(cached_right) = &self.right_hand_cached {
+                // We skip whatever the right hand is going to re-equip if we have only 1.
+                log::info!("right cached count: {};", cached_right.count());
+                if cached_right.has_count() && cached_right.count() == 1 {
+                    self.cycles.advance_skipping(which, cached_right.clone())
+                } else {
+                    self.cycles.advance(which, 1)
+                }
+            } else {
+                self.cycles.advance(which, 1)
+            }
+        } else {
+            // this is the matches!(Right) block
+            if !self.two_hander_equipped {
                 let leftie = equippedLeftHand();
                 log::info!("left equipped count: {};", leftie.count());
                 if leftie.has_count() && leftie.count() == 1 {
@@ -350,6 +403,7 @@ impl Controller {
                     self.cycles.advance(which, 1)
                 }
             } else if let Some(cached_left) = &self.left_hand_cached {
+                // We skip whatever the left hand is going to re-equip if there's only 1
                 log::info!("left cached count: {};", cached_left.count());
                 if cached_left.has_count() && cached_left.count() == 1 {
                     self.cycles.advance_skipping(which, cached_left.clone())
@@ -357,6 +411,7 @@ impl Controller {
                     self.cycles.advance(which, 1)
                 }
             } else {
+                // Nothing cached, two-hander equipped.
                 self.cycles.advance(which, 1)
             }
         };
@@ -370,9 +425,9 @@ impl Controller {
                 start_timer: if !matches!(which, Action::Utility) {
                     which
                 } else {
-                    Action::Irrelevant
+                    Action::None
                 },
-                stop_timer: Action::Irrelevant,
+                stop_timer: Action::None,
             }
         } else {
             KeyEventResponse {
@@ -394,13 +449,15 @@ impl Controller {
             } else if item.kind().is_armor() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 equipArmor(&form_spec);
+            } else if item.kind().is_ammo() {
+                // TODO equip ammo
             }
         }
 
         // No matter what we did, we stop the timer. Not that a timer should exist.
         KeyEventResponse {
             handled: true,
-            start_timer: Action::Irrelevant,
+            start_timer: Action::None,
             stop_timer: Action::Utility,
         }
     }
@@ -575,10 +632,16 @@ impl Controller {
             self.two_hander_equipped
         );
 
-        let leftvis = self.visible.get(&HudElement::Left).map_or("".to_string(), |xs| xs.form_string());
-        let rightvis =  self.visible.get(&HudElement::Right).map_or("".to_string(), |xs| xs.form_string());
+        let leftvis = self
+            .visible
+            .get(&HudElement::Left)
+            .map_or("".to_string(), |xs| xs.form_string());
+        let rightvis = self
+            .visible
+            .get(&HudElement::Right)
+            .map_or("".to_string(), |xs| xs.form_string());
 
-        // This logic is more complicated than you'd think. 
+        // This logic is more complicated than you'd think.
         let is_right_hand = if item.two_handed() == self.two_hander_equipped {
             rightvis == item.form_string()
         } else {
@@ -587,7 +650,6 @@ impl Controller {
             leftvis != item.form_string()
         };
 
-        
         log::debug!("====== is right hand={is_right_hand}");
 
         // First, update the hud as usual.
@@ -805,8 +867,8 @@ impl Default for KeyEventResponse {
     fn default() -> Self {
         Self {
             handled: false,
-            stop_timer: Action::Irrelevant,
-            start_timer: Action::Irrelevant,
+            stop_timer: Action::None,
+            start_timer: Action::None,
         }
     }
 }
@@ -861,7 +923,7 @@ impl From<u32> for Action {
         } else if value == settings.refresh_layout {
             Action::RefreshLayout
         } else {
-            Action::Irrelevant
+            Action::None
         }
     }
 }
