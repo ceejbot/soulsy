@@ -338,9 +338,9 @@ impl Controller {
 
             // If any of our equipped items is in a cycle, make that item the top item
             // so advancing the cycles works as expected.
-            self.cycles.set_top(Action::Power, &*power);
-            self.cycles.set_top(Action::Left, &*left_entry);
-            self.cycles.set_top(Action::Right, &*right_entry);
+            self.cycles.set_top(Action::Power, &power);
+            self.cycles.set_top(Action::Left, &left_entry);
+            self.cycles.set_top(Action::Right, &right_entry);
         }
 
         changed
@@ -441,7 +441,6 @@ impl Controller {
 
         // First, update the hud as usual.
         let (hudslot, action) = if is_right_hand {
-
             (HudElement::Right, Action::Right)
         } else {
             (HudElement::Left, Action::Left)
@@ -492,8 +491,7 @@ impl Controller {
                         self.two_hander_equipped = false;
                     }
                 }
-            }
-            ;
+            };
         }
         self.two_hander_equipped = item.two_handed();
         changed
@@ -618,49 +616,47 @@ impl Controller {
             };
         }
 
-        let candidate = if matches!(which, Action::Left | Action::Right) {
+        let candidate = if matches!(which, Action::Power | Action::Utility) {
+            // consumables and shouts/powers
+            self.cycles.advance(which, 1)
+        } else {
+            // Yes, this is horrifying, but I found unrolling it all
+            // to be the only thing that allowed me to think about it.
+            // The
             if matches!(which, Action::Left) {
                 if !self.two_hander_equipped {
                     let rightie = equippedRightHand();
                     if rightie.has_count() && rightie.count() == 1 {
-                        self.cycles.advance_skipping(which, *rightie.clone())
+                        self.cycles.advance_skipping(which, *rightie)
+                    } else {
+                        self.cycles.advance(which, 1)
+                    }
+                } else if let Some(cached_right) = &self.right_hand_cached {
+                    if cached_right.has_count() && cached_right.count() == 1 {
+                        self.cycles.advance_skipping(which, cached_right.clone())
                     } else {
                         self.cycles.advance(which, 1)
                     }
                 } else {
-                    if let Some(cached_right) = &self.right_hand_cached {
-                        if cached_right.has_count() && cached_right.count() == 1 {
-                            self.cycles.advance_skipping(which, cached_right.clone())
-                        } else {
-                            self.cycles.advance(which, 1)
-                        }
-                    } else {
-                        self.cycles.advance(which, 1)
-                    }
+                    self.cycles.advance(which, 1)
+                }
+            } else if !self.two_hander_equipped {
+                // this is the matches!(Right) block
+                let leftie = equippedLeftHand();
+                if leftie.has_count() && leftie.count() == 1 {
+                    self.cycles.advance_skipping(which, *leftie)
+                } else {
+                    self.cycles.advance(which, 1)
+                }
+            } else if let Some(cached_left) = &self.left_hand_cached {
+                if cached_left.has_count() && cached_left.count() == 1 {
+                    self.cycles.advance_skipping(which, cached_left.clone())
+                } else {
+                    self.cycles.advance(which, 1)
                 }
             } else {
-                if !self.two_hander_equipped {
-                    let leftie = equippedLeftHand();
-                    if leftie.has_count() && leftie.count() == 1 {
-                        self.cycles.advance_skipping(which, *leftie.clone())
-                    } else {
-                        self.cycles.advance(which, 1)
-                    }
-                } else {
-                    if let Some(cached_left) = &self.left_hand_cached {
-                        if cached_left.has_count() && cached_left.count() == 1 {
-                            self.cycles.advance_skipping(which, cached_left.clone())
-                        } else {
-                            self.cycles.advance(which, 1)
-                        }
-                    } else {
-                        self.cycles.advance(which, 1)
-                    }
-                }
+                self.cycles.advance(which, 1)
             }
-        } else {
-            // consumables and shouts/powers
-            self.cycles.advance(which, 1)
         };
 
         if let Some(next) = candidate {
