@@ -348,6 +348,23 @@ impl CycleData {
         cycle.first().cloned()
     }
 
+    pub fn peek_next(&self, which: Action) -> Option<TesItemData> {
+        let cycle = match which {
+            Action::Power => &self.power,
+            Action::Left => &self.left,
+            Action::Right => &self.right,
+            Action::Utility => &self.utility,
+            _ => {
+                log::warn!("It is a programmer error to call get_top() with {which:?}");
+                return None;
+            }
+        };
+        match cycle.get(1) {
+            Some(v) => Some(v.clone()),
+            None => None,
+        }
+    }
+
     /// Toggle the presence of the given item in the given cycle.
     ///
     /// Called from menu views when the player presses a hotkey matching a cycle.

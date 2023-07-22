@@ -365,75 +365,109 @@ impl Controller {
 
     fn advance_hand_cycle(&mut self, which: Action) -> KeyEventResponse {
         if self.cycles.cycle_len(which) <= 1 {
-            // TODO failure sound
+            // TODO failure sound honk
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()
             };
         }
 
-        let candidate = if matches!(which, Action::Left) {
-            if !self.two_hander_equipped {
-                let rightie = equippedRightHand();
-                log::info!("right equipped count: {};", rightie.count());
-                if rightie.has_count() && rightie.count() == 1 {
-                    self.cycles.advance_skipping(which, *rightie)
-                } else {
-                    self.cycles.advance(which, 1)
-                }
-            } else if let Some(cached_right) = &self.right_hand_cached {
-                // We skip whatever the right hand is going to re-equip if we have only 1.
-                log::info!("right cached count: {};", cached_right.count());
-                if cached_right.has_count() && cached_right.count() == 1 {
-                    self.cycles.advance_skipping(which, cached_right.clone())
-                } else {
-                    self.cycles.advance(which, 1)
-                }
-            } else {
-                self.cycles.advance(which, 1)
-            }
-        } else {
-            // this is the matches!(Right) block
-            if !self.two_hander_equipped {
-                let leftie = equippedLeftHand();
-                log::info!("left equipped count: {};", leftie.count());
-                if leftie.has_count() && leftie.count() == 1 {
-                    self.cycles.advance_skipping(which, *leftie)
-                } else {
-                    self.cycles.advance(which, 1)
-                }
-            } else if let Some(cached_left) = &self.left_hand_cached {
-                // We skip whatever the left hand is going to re-equip if there's only 1
-                log::info!("left cached count: {};", cached_left.count());
-                if cached_left.has_count() && cached_left.count() == 1 {
-                    self.cycles.advance_skipping(which, cached_left.clone())
-                } else {
-                    self.cycles.advance(which, 1)
-                }
-            } else {
-                // Nothing cached, two-hander equipped.
-                self.cycles.advance(which, 1)
-            }
-        };
+        // This is one of two tricky decision points in the mod. (The other
+        // is when timers expire and we have to act on decisions made here.)
+        // We have decided we want to advance the left or right cycle.
+        // What is an allowed next choice in the spot? This code deliberately
+        // repeats itself to make the logic clear.
 
-        if let Some(next) = candidate {
-            let hud = HudElement::from(which);
-            self.update_slot(hud, &next);
-            self.flush_cycle_data();
-            KeyEventResponse {
-                handled: true,
-                start_timer: if !matches!(which, Action::Utility) {
-                    which
-                } else {
-                    Action::None
-                },
-                stop_timer: Action::None,
+        if self.two_hander_equipped {
+            // Here either hand may cycle, and the other hand must bounce back
+            // to what was previously equipped. We update both slots in the HUD.
+
+            // this should not be None given the first check, but we need to check anyway
+            let Some(candidate) = self.cycles.peek_next(which) else {
+                return KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                };
+            };
+
+            if candidate.two_handed() {
+                // no problem. just cycle to it.
+                self.cycles.advance(which, 1);
+                return self.update_and_record(which, &candidate);
             }
-        } else {
-            KeyEventResponse {
-                handled: true,
-                ..Default::default()
+
+            // Now we got fun. Do we have something to bounce back to in the other hand?
+            let other_cached = if matches!(which, Action::Left) {
+                &self.right_hand_cached
+            } else {
+                &self.left_hand_cached
+            };
+
+            let Some(return_to) = other_cached else {
+                // The other hand has no opinions. Cycle to it.
+                self.cycles.advance(which, 1);
+                return self.update_and_record(which, &candidate);
+            };
+
+            let other_hud = if which == Action::Left {
+                HudElement::Right
+            } else {
+                HudElement::Left
+            };
+
+            // What do we want to return to? If it's completely different from us,
+            // we are golden. We update both HUD slots and start a timer.
+            if candidate.form_string() != return_to.form_string() {
+                self.cycles.advance(which, 1);
+                let _changed = &self.update_slot(other_hud, &return_to.clone());
+                return self.update_and_record(which, &candidate);
             }
+
+            // They are the same. Do we have more than one? If so, we're good.
+            if candidate.has_count() && candidate.count() > 1 {
+                self.cycles.advance(which, 1);
+                let _changed = &self.update_slot(other_hud, &return_to.clone());
+                return self.update_and_record(which, &candidate);
+            }
+
+            // The worst case! Somebody's got to lose, and in this case it's the
+            // hand trying to cycle forward.
+            let Some(candidate) = self.cycles.advance_skipping(which, return_to.clone()) else {
+                // We have no good options. TODO honk
+                return KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                };
+            };
+
+            if candidate.two_handed() {
+                // How lucky we are.
+                return self.update_and_record(which, &candidate);
+            } else {
+                let _changed = &self.update_slot(other_hud, &return_to.clone());
+                return self.update_and_record(which, &candidate);
+            }
+        }
+
+        // If we got here, we got nothin'.
+        KeyEventResponse {
+            handled: true,
+            ..Default::default()
+        }
+    }
+
+    fn update_and_record(&mut self, which: Action, next: &TesItemData) -> KeyEventResponse {
+        let hud = HudElement::from(which);
+        self.update_slot(hud, next);
+        self.flush_cycle_data();
+        KeyEventResponse {
+            handled: true,
+            start_timer: if !matches!(which, Action::Utility) {
+                which
+            } else {
+                Action::None
+            },
+            stop_timer: Action::None,
         }
     }
 
@@ -450,7 +484,8 @@ impl Controller {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 equipArmor(&form_spec);
             } else if item.kind().is_ammo() {
-                // TODO equip ammo
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                equipAmmo(&form_spec)
             }
         }
 
@@ -543,10 +578,10 @@ impl Controller {
 
     /// The game informs us that our equipment has changed. Update.
     ///
-    /// The item we're handed was either equipped or UNequipped.
-    /// There are some changes we do need to react to, either because
-    /// they were done out-of-band of the HUD or because we want to
-    /// do more work in reaction to changes we initiated.
+    /// The item we're handed was either equipped or UNequipped. There are some
+    /// changes we do need to react to, either because they were done
+    /// out-of-band of the HUD or because we want to do more work in reaction to
+    /// changes we initiated.
     fn handle_item_equipped(
         &mut self,
         equipped: bool,
@@ -606,11 +641,25 @@ impl Controller {
             }
         }
 
-        // ---------- The hard part starts. Left hand vs right hand.
+        // ----------
+        // The hard part starts. Left hand vs right hand. Earlier, we did our
+        // best to set up the HUD to show what we want in each hand. So we look
+        // at the item equipped: does it match an earlier decision? If so, make
+        // the other decision happen as well. If the equip event was NOT driven
+        // by the HUD, we have some more work to do.
 
-        if !item.kind().left_hand_ok() && !item.kind().right_hand_ok() {
-            return false;
+        if item.two_handed() {
+            let changed = self.update_slot(HudElement::Right, &item);
+            if changed {
+                // Change was out of band. We need to react.
+                self.cycles.set_top(Action::Right, &item);
+                self.update_slot(HudElement::Left, &TesItemData::default());
+            }
+            self.two_hander_equipped = true;
+            return changed;
         }
+
+        // It's a one-hander. Does it match an earlier decision?
 
         let rightie = if !item.kind().is_weapon() {
             equippedRightHand()
@@ -625,7 +674,7 @@ impl Controller {
         };
 
         log::debug!(
-            "form strings: item={}; right={}; left={}; two-hander-equipped={};",
+            "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={};",
             item.form_string(),
             rightie.form_string(),
             leftie.form_string(),
@@ -641,106 +690,75 @@ impl Controller {
             .get(&HudElement::Right)
             .map_or("".to_string(), |xs| xs.form_string());
 
-        // This logic is more complicated than you'd think.
-        let is_right_hand = if item.two_handed() == self.two_hander_equipped {
-            rightvis == item.form_string()
-        } else {
-            // if we're swapping from having only 1 item equipped to 2, prev test
-            // will always come back as true.
-            leftvis != item.form_string()
-        };
+        let leftvis_matches_equipped = leftvis == leftie.form_string();
+        log::info!("left hand good={leftvis_matches_equipped}");
 
-        log::debug!("====== is right hand={is_right_hand}");
+        let rightvis_matches_equipped = rightvis == rightie.form_string();
+        log::info!("right hand good={rightvis_matches_equipped}");
 
-        // First, update the hud as usual.
-        let (hudslot, action) = if is_right_hand {
-            (HudElement::Right, Action::Right)
-        } else {
-            (HudElement::Left, Action::Left)
-        };
-
-        let changed = if let Some(visible) = self.visible.get(&hudslot) {
-            if visible.form_string() != item.form_string() {
-                log::debug!(
-                    "shown item in hand; name='{}'; is-right-hand={}",
-                    item.name(),
-                    is_right_hand
-                );
-                self.cycles.set_top(action, &item);
-                self.update_slot(hudslot, &item);
-                true
-            } else {
-                false
-            }
-        } else {
-            // somehow nothing was in there
-            self.cycles.set_top(action, &item);
-            self.update_slot(hudslot, &item);
-            true
-        };
-
-        if !item.two_handed() {
-            log::info!(
-                "updating is-right={} cached item to {}",
-                is_right_hand,
-                item.name()
-            );
-            if is_right_hand {
-                self.right_hand_cached = Some(item.clone());
-            } else {
-                self.left_hand_cached = Some(item.clone());
-            }
-        }
-
-        if item.two_handed() && !self.two_hander_equipped {
-            self.two_hander_equipped = true;
-            // and show the left hand as empty
-            self.update_slot(HudElement::Left, &TesItemData::default());
-        }
-
-        if !item.two_handed() && self.two_hander_equipped {
-            log::info!("transitioning from 2-hander to 1-hander.");
+        if leftvis_matches_equipped && rightvis_matches_equipped {
             self.two_hander_equipped = false;
-
-            if is_right_hand {
-                log::info!("right hand transitioning case");
-                if let Some(prev_left) = self.left_hand_cached.clone() {
-                    // We won't get a good event to let us trigger this later.
-                    log::info!("considering re-requipping or unequipping LEFT");
-                    if prev_left.kind() == TesItemKind::HandToHand {
-                        unequipSlot(Action::Left);
-                        self.update_slot(HudElement::Left, &prev_left);
-                    } else {
-                        log::info!(
-                            "!!!!!!!! should be re-equipping left; name='{}';",
-                            prev_left.name()
-                        );
-                        cxx::let_cxx_string!(form_spec = prev_left.form_string());
-                        reequipHand(Action::Left, &form_spec);
-                        self.update_slot(HudElement::Left, &prev_left);
-                    }
-                }
-            } else {
-                if let Some(prev_right) = self.right_hand_cached.clone() {
-                    // We won't get a good event to let us trigger this later.
-                    log::info!("considering re-requipping or unequipping RIGHT");
-                    if prev_right.kind() == TesItemKind::HandToHand {
-                        unequipSlot(Action::Right);
-                        self.update_slot(HudElement::Right, &prev_right);
-                    } else {
-                        log::info!(
-                            "!!!!!!!! should be re-equipping right; name='{}';",
-                            prev_right.name()
-                        );
-                        cxx::let_cxx_string!(form_spec = prev_right.form_string());
-                        reequipHand(Action::Right, &form_spec);
-                    }
-                }
-            };
+            return false; // no work to do
         }
-        self.two_hander_equipped = item.two_handed();
+
+        let item_slotted_left = item.form_string() == leftie.form_string();
+        let item_slotted_right = item.form_string() == rightie.form_string();
+
+        let l_changed = if item_slotted_left {
+            // HUD update. This was out of band.
+            self.update_slot(HudElement::Left, &item)
+        } else {
+            false
+        };
+
+        let r_changed = if item_slotted_right {
+            // HUD update. This was out of band.
+            self.update_slot(HudElement::Right, &item)
+        } else {
+            false
+        };
+
+        if !self.two_hander_equipped {
+            // We are done. Phew.
+            return r_changed || l_changed;
+        }
+
+        if r_changed {
+            if let Some(prev_left) = self.left_hand_cached.clone() {
+                log::info!("considering re-requipping or unequipping LEFT");
+                if prev_left.kind() == TesItemKind::HandToHand {
+                    unequipSlot(Action::Left);
+                    self.update_slot(HudElement::Left, &prev_left);
+                } else {
+                    log::info!(
+                        "!!!!!!!! should be re-equipping left; name='{}';",
+                        prev_left.name()
+                    );
+                    cxx::let_cxx_string!(form_spec = prev_left.form_string());
+                    reequipHand(Action::Left, &form_spec);
+                    self.update_slot(HudElement::Left, &prev_left);
+                }
+            }
+        } else {
+            if let Some(prev_right) = self.right_hand_cached.clone() {
+                log::info!("considering re-requipping or unequipping RIGHT");
+                if prev_right.kind() == TesItemKind::HandToHand {
+                    unequipSlot(Action::Right);
+                    self.update_slot(HudElement::Right, &prev_right);
+                } else {
+                    log::info!(
+                        "!!!!!!!! should be re-equipping right; name='{}';",
+                        prev_right.name()
+                    );
+                    cxx::let_cxx_string!(form_spec = prev_right.form_string());
+                    reequipHand(Action::Right, &form_spec);
+                }
+            }
+        }
+
         log::info!("---------- exiting handle_item_equipped");
-        changed
+        self.two_hander_equipped = item.two_handed();
+        return r_changed || l_changed;
     }
 
     /// Get the item equipped in a specific slot.
@@ -808,6 +826,7 @@ impl Controller {
         changed
     }
 
+    /// Update the displayed slot for the specified HUD element.
     fn update_slot(&mut self, slot: HudElement, new_item: &TesItemData) -> bool {
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
