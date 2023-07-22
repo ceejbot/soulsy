@@ -622,7 +622,7 @@ impl Controller {
         } else {
             // Yes, this is horrifying, but I found unrolling it all
             // to be the only thing that allowed me to think about it.
-            // The
+            // This is one of the hard parts of the mod.
             if matches!(which, Action::Left) {
                 if !self.two_hander_equipped {
                     let rightie = equippedRightHand();

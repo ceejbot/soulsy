@@ -227,12 +227,6 @@ impl CycleData {
                 return None;
             }
         };
-        log::info!(
-            "entering advance_skip() for cycle {which:?} looking to skip {}; name='{}';",
-            skip.form_string(),
-            skip.name()
-        );
-        log::info!("cycle= {}", vec_to_debug_string(cycle));
         if cycle.is_empty() {
             return None;
         }
@@ -241,15 +235,13 @@ impl CycleData {
             previous.highlighted = false;
         }
         cycle.rotate_left(1);
-        let mut counter = 0;
-        let candidate = cycle.iter().find(|xs| {
-            counter += 1;
-            xs.form_string() != skip.form_string()
-        });
+        let candidate = cycle
+            .iter()
+            .find(|xs| xs.form_string() != skip.form_string());
         if candidate.is_some() {
             log::info!("found {candidate:?}");
             let result = candidate.cloned();
-            cycle.rotate_left(counter);
+            self.set_top(which, &result.as_ref().unwrap());
             result
         } else {
             log::info!("advance skip found nothing?????");
