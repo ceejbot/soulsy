@@ -243,7 +243,7 @@ impl CycleData {
             self.set_top(which, &result);
             Some(result)
         } else {
-            log::info!("advance skip found nothing?????");
+            log::trace!("advance skip found nothing?????");
             None
         }
     }
@@ -359,7 +359,7 @@ impl CycleData {
                 return None;
             }
         };
-        cycle.get(1).map(|xs| xs.clone())
+        cycle.get(1).cloned()
     }
 
     /// Toggle the presence of the given item in the given cycle.

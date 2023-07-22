@@ -235,44 +235,45 @@ impl Controller {
         }
 
         if keyevent.state != KeyState::Up {
-            return KeyEventResponse { handled: true, ..Default::default()};
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
         }
 
         match keyevent.key {
-            HotkeyKind::Power => return self.handle_cycle_power(),
-            HotkeyKind::Utility => return self.handle_cycle_utility(),
-            HotkeyKind::Left => return self.handle_cycle_hand(keyevent),
-            HotkeyKind::Right => return self.handle_cycle_hand(keyevent),
-            HotkeyKind::Activate => return self.use_utility_item(),
+            HotkeyKind::Power => self.handle_cycle_power(),
+            HotkeyKind::Utility => self.handle_cycle_utility(),
+            HotkeyKind::Left => self.handle_cycle_hand(keyevent),
+            HotkeyKind::Right => self.handle_cycle_hand(keyevent),
+            HotkeyKind::Activate => self.use_utility_item(),
             HotkeyKind::Refresh => {
                 HudLayout::refresh();
-                return KeyEventResponse {
+                KeyEventResponse {
                     handled: true,
                     ..Default::default()
-                };
+                }
             }
             HotkeyKind::ShowHide => {
                 self.cycles.toggle_hud();
-                return KeyEventResponse {
+                KeyEventResponse {
                     handled: true,
                     ..Default::default()
-                };
+                }
             }
             HotkeyKind::UnequipModifier => {
                 self.unequip_modifier = keyevent;
-                return KeyEventResponse::default();
+                KeyEventResponse::default()
             }
             HotkeyKind::CycleModifier => {
                 self.cycle_modifier = keyevent;
-                return KeyEventResponse::default();
+                KeyEventResponse::default()
             }
             HotkeyKind::ActivateModifier => {
                 self.activate_modifier = keyevent;
-                return KeyEventResponse::default();
+                KeyEventResponse::default()
             }
-            HotkeyKind::None => {
-                return KeyEventResponse::default();
-            }
+            HotkeyKind::None => KeyEventResponse::default(),
         }
     }
 
@@ -372,7 +373,6 @@ impl Controller {
     }
 
     fn advance_hand_cycle(&mut self, which: Action) -> KeyEventResponse {
-        log::info!("entering new advance_hand_cycle()");
         if self.cycles.cycle_len(which) <= 1 {
             // TODO failure sound honk
             return KeyEventResponse {
@@ -477,7 +477,6 @@ impl Controller {
     }
 
     fn update_and_record(&mut self, which: Action, next: &TesItemData) -> KeyEventResponse {
-        log::info!("entering update_and_record() with which={:?}; next='{}';", which, next.name());
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
         self.flush_cycle_data();
@@ -748,40 +747,29 @@ impl Controller {
 
         if r_changed {
             if let Some(prev_left) = self.left_hand_cached.clone() {
-                log::info!("considering re-requipping or unequipping LEFT");
+                log::debug!("considering re-requipping or unequipping LEFT");
                 if prev_left.kind() == TesItemKind::HandToHand {
                     unequipSlot(Action::Left);
                     self.update_slot(HudElement::Left, &prev_left);
                 } else {
-                    log::info!(
-                        "!!!!!!!! should be re-equipping left; name='{}';",
-                        prev_left.name()
-                    );
                     cxx::let_cxx_string!(form_spec = prev_left.form_string());
                     reequipHand(Action::Left, &form_spec);
                     self.update_slot(HudElement::Left, &prev_left);
                 }
             }
-        } else {
-            if let Some(prev_right) = self.right_hand_cached.clone() {
-                log::info!("considering re-requipping or unequipping RIGHT");
-                if prev_right.kind() == TesItemKind::HandToHand {
-                    unequipSlot(Action::Right);
-                    self.update_slot(HudElement::Right, &prev_right);
-                } else {
-                    log::info!(
-                        "!!!!!!!! should be re-equipping right; name='{}';",
-                        prev_right.name()
-                    );
-                    cxx::let_cxx_string!(form_spec = prev_right.form_string());
-                    reequipHand(Action::Right, &form_spec);
-                }
+        } else if let Some(prev_right) = self.right_hand_cached.clone() {
+            log::debug!("considering re-requipping or unequipping RIGHT");
+            if prev_right.kind() == TesItemKind::HandToHand {
+                unequipSlot(Action::Right);
+                self.update_slot(HudElement::Right, &prev_right);
+            } else {
+                cxx::let_cxx_string!(form_spec = prev_right.form_string());
+                reequipHand(Action::Right, &form_spec);
             }
         }
 
-        log::info!("---------- exiting handle_item_equipped");
         self.two_hander_equipped = item.two_handed();
-        return r_changed || l_changed;
+        r_changed || l_changed
     }
 
     /// Get the item equipped in a specific slot.
