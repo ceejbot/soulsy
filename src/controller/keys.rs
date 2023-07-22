@@ -34,8 +34,10 @@ impl From<u32> for HotkeyKind {
             HotkeyKind::Left
         } else if v == settings.right {
             HotkeyKind::Right
-        } else if v == settings.right {
-            HotkeyKind::Right
+        } else if v == settings.refresh_layout {
+            HotkeyKind::Refresh
+        } else if v == settings.showhide {
+            HotkeyKind::ShowHide
         } else if v == settings.activate {
             HotkeyKind::Activate
         } else if settings.activate_modifier.is_positive()
@@ -66,10 +68,10 @@ pub enum KeyState {
 
 impl From<&ButtonEvent> for KeyState {
     fn from(event: &ButtonEvent) -> Self {
-        if event.IsPressed() {
-            KeyState::Pressed
-        } else if event.IsDown() {
+        if event.IsDown() {
             KeyState::Down
+        } else if event.IsPressed() {
+            KeyState::Pressed
         } else {
             KeyState::Up
         }
@@ -84,7 +86,7 @@ pub struct TrackedKey {
 
 impl TrackedKey {
     pub fn ignore(&self) -> bool {
-        self.key == HotkeyKind::None
+        matches!(self.key, HotkeyKind::None)
     }
 
     pub fn update(&mut self, event: &ButtonEvent) {
@@ -131,9 +133,9 @@ impl From<&HotkeyKind> for HudElement {
     fn from(value: &HotkeyKind) -> Self {
         match value {
             HotkeyKind::Power => HudElement::Power,
-            HotkeyKind::Utility => HudElement::Power,
-            HotkeyKind::Left => HudElement::Power,
-            HotkeyKind::Right => HudElement::Power,
+            HotkeyKind::Utility => HudElement::Utility,
+            HotkeyKind::Left => HudElement::Left,
+            HotkeyKind::Right => HudElement::Right,
             _ => HudElement::None,
         }
     }

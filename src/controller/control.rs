@@ -234,6 +234,10 @@ impl Controller {
             return KeyEventResponse::default();
         }
 
+        if keyevent.state != KeyState::Up {
+            return KeyEventResponse { handled: true, ..Default::default()};
+        }
+
         match keyevent.key {
             HotkeyKind::Power => return self.handle_cycle_power(),
             HotkeyKind::Utility => return self.handle_cycle_utility(),
@@ -294,7 +298,7 @@ impl Controller {
 
     fn advance_simple_cycle(&mut self, which: Action) -> KeyEventResponse {
         // Programmer error to call this for left/right.
-        if matches!(which, Action::Power | Action::Utility) {
+        if !matches!(which, Action::Power | Action::Utility) {
             log::info!("Programmer error! This is not a simple cycle. cycle={which:?}",);
             return KeyEventResponse::default();
         }
@@ -329,13 +333,17 @@ impl Controller {
     }
 
     fn handle_cycle_hand(&mut self, event: TrackedKey) -> KeyEventResponse {
+        if !matches!(event.key, HotkeyKind::Left | HotkeyKind::Right) {
+            return KeyEventResponse::default();
+        }
+
         // We have two modifiers to check
         let unequip_requested =
-            self.unequip_modifier.ignore() || self.unequip_modifier.is_pressed();
+            !self.unequip_modifier.ignore() && self.unequip_modifier.is_pressed();
         let cycle_requested = if self.cycle_modifier.ignore() {
             !unequip_requested
         } else {
-            !unequip_requested && self.cycle_modifier.is_pressed()
+            self.cycle_modifier.is_pressed()
         };
 
         // ETOOMANYENUMS
@@ -364,6 +372,7 @@ impl Controller {
     }
 
     fn advance_hand_cycle(&mut self, which: Action) -> KeyEventResponse {
+        log::info!("entering new advance_hand_cycle()");
         if self.cycles.cycle_len(which) <= 1 {
             // TODO failure sound honk
             return KeyEventResponse {
@@ -377,6 +386,12 @@ impl Controller {
         // We have decided we want to advance the left or right cycle.
         // What is an allowed next choice in the spot? This code deliberately
         // repeats itself to make the logic clear.
+
+        let other_hud = if which == Action::Left {
+            HudElement::Right
+        } else {
+            HudElement::Left
+        };
 
         if self.two_hander_equipped {
             // Here either hand may cycle, and the other hand must bounce back
@@ -407,12 +422,6 @@ impl Controller {
                 // The other hand has no opinions. Cycle to it.
                 self.cycles.advance(which, 1);
                 return self.update_and_record(which, &candidate);
-            };
-
-            let other_hud = if which == Action::Left {
-                HudElement::Right
-            } else {
-                HudElement::Left
             };
 
             // What do we want to return to? If it's completely different from us,
@@ -447,6 +456,17 @@ impl Controller {
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
                 return self.update_and_record(which, &candidate);
             }
+        } else {
+            // Phew. Okay. Now we're on to the one-handers equipped cases. These are easier.
+            let maybe_candidate = if let Some(other_equipped) = self.visible.get(&other_hud) {
+                self.cycles.advance_skipping(which, other_equipped.clone())
+            } else {
+                self.cycles.advance(which, 1)
+            };
+
+            if let Some(candidate) = maybe_candidate {
+                return self.update_and_record(which, &candidate);
+            }
         }
 
         // If we got here, we got nothin'.
@@ -457,6 +477,7 @@ impl Controller {
     }
 
     fn update_and_record(&mut self, which: Action, next: &TesItemData) -> KeyEventResponse {
+        log::info!("entering update_and_record() with which={:?}; next='{}';", which, next.name());
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
         self.flush_cycle_data();
@@ -691,14 +712,16 @@ impl Controller {
             .map_or("".to_string(), |xs| xs.form_string());
 
         let leftvis_matches_equipped = leftvis == leftie.form_string();
-        log::info!("left hand good={leftvis_matches_equipped}");
 
         let rightvis_matches_equipped = rightvis == rightie.form_string();
-        log::info!("right hand good={rightvis_matches_equipped}");
-
         if leftvis_matches_equipped && rightvis_matches_equipped {
+            if self.two_hander_equipped {
+                // force re-equip the left anyway, or it won't show up.
+                cxx::let_cxx_string!(form_spec = leftvis);
+                reequipHand(Action::Left, &form_spec);
+            }
             self.two_hander_equipped = false;
-            return false; // no work to do
+            return false; // no more work to do
         }
 
         let item_slotted_left = item.form_string() == leftie.form_string();

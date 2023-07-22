@@ -359,10 +359,7 @@ impl CycleData {
                 return None;
             }
         };
-        match cycle.get(1) {
-            Some(v) => Some(v.clone()),
-            None => None,
-        }
+        cycle.get(1).map(|xs| xs.clone())
     }
 
     /// Toggle the presence of the given item in the given cycle.
