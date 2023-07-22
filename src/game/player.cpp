@@ -215,7 +215,7 @@ namespace player
 		return has_it;
 	}
 
-	void reequipLeftHand(const std::string& form_spec)
+	void reequipHand(Action which, const std::string& form_spec)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
@@ -230,12 +230,21 @@ namespace player
 		logger::info("re-equipping item in left hand; name='{}'; formID={}"sv,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
-		auto* left_slot = game::left_hand_equip_slot();
+		RE::BGSEquipSlot* slot;
+		
+		if (which == Action::Left) {
+			slot = game::left_hand_equip_slot();
+		} else {
+			slot = game::right_hand_equip_slot();
+		}
+		
+		
+	
 		auto* task      = SKSE::GetTaskInterface();
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, left_slot); });
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, slot); });
 		}
 	}
 

@@ -238,11 +238,10 @@ impl CycleData {
         let candidate = cycle
             .iter()
             .find(|xs| xs.form_string() != skip.form_string());
-        if candidate.is_some() {
-            log::info!("found {candidate:?}");
-            let result = candidate.cloned();
-            self.set_top(which, &result.as_ref().unwrap());
-            result
+        if let Some(v) = candidate {
+            let result = v.clone();
+            self.set_top(which, &result);
+            Some(result)
         } else {
             log::info!("advance skip found nothing?????");
             None

@@ -42,7 +42,7 @@ namespace player
 	void equipAmmo(const std::string& form_spec);
 	void consumePotion(const std::string& form_spec);
 	bool hasItemOrSpell(const std::string& form_spec);
-	void reequipLeftHand(const std::string& form_spec);
+	void reequipHand(Action which, const std::string& form_spec);
 
 	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& a_player);
 	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count);

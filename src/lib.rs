@@ -379,6 +379,6 @@ pub mod plugin {
         /// Consume a potion matching the form spec. Skips dynamic items (for now).
         fn consumePotion(form_spec: &CxxString);
         /// Re-equip an item in the left hand. This forces an un-equip first.
-        fn reequipLeftHand(form_spec: &CxxString);
+        fn reequipHand(which: Action, form_spec: &CxxString);
     }
 }

@@ -307,6 +307,7 @@ impl Controller {
 
     fn advance_cycle(&mut self, which: Action) -> KeyEventResponse {
         if self.cycles.cycle_len(which) <= 1 {
+            // TODO failure sound
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()
@@ -323,12 +324,14 @@ impl Controller {
             if matches!(which, Action::Left) {
                 if !self.two_hander_equipped {
                     let rightie = equippedRightHand();
+                    log::info!("right equipped count: {};", rightie.count());
                     if rightie.has_count() && rightie.count() == 1 {
                         self.cycles.advance_skipping(which, *rightie)
                     } else {
                         self.cycles.advance(which, 1)
                     }
                 } else if let Some(cached_right) = &self.right_hand_cached {
+                    log::info!("right cached count: {};", cached_right.count());
                     if cached_right.has_count() && cached_right.count() == 1 {
                         self.cycles.advance_skipping(which, cached_right.clone())
                     } else {
@@ -340,12 +343,14 @@ impl Controller {
             } else if !self.two_hander_equipped {
                 // this is the matches!(Right) block
                 let leftie = equippedLeftHand();
+                log::info!("left equipped count: {};", leftie.count());
                 if leftie.has_count() && leftie.count() == 1 {
                     self.cycles.advance_skipping(which, *leftie)
                 } else {
                     self.cycles.advance(which, 1)
                 }
             } else if let Some(cached_left) = &self.left_hand_cached {
+                log::info!("left cached count: {};", cached_left.count());
                 if cached_left.has_count() && cached_left.count() == 1 {
                     self.cycles.advance_skipping(which, cached_left.clone())
                 } else {
@@ -490,6 +495,7 @@ impl Controller {
         equipped: bool,
         #[allow(clippy::boxed_local)] item: Box<TesItemData>, // boxed because arriving from C++
     ) -> bool {
+        log::debug!("========== start handle_item_equipped() ==========");
         log::debug!("is-now-equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
             equipped,
             item.name(),
@@ -569,7 +575,19 @@ impl Controller {
             self.two_hander_equipped
         );
 
-        let is_right_hand = rightie.form_string() == item.form_string();
+        let leftvis = self.visible.get(&HudElement::Left).map_or("".to_string(), |xs| xs.form_string());
+        let rightvis =  self.visible.get(&HudElement::Right).map_or("".to_string(), |xs| xs.form_string());
+
+        // This logic is more complicated than you'd think. 
+        let is_right_hand = if item.two_handed() == self.two_hander_equipped {
+            rightvis == item.form_string()
+        } else {
+            // if we're swapping from having only 1 item equipped to 2, prev test
+            // will always come back as true.
+            leftvis != item.form_string()
+        };
+
+        
         log::debug!("====== is right hand={is_right_hand}");
 
         // First, update the hud as usual.
@@ -599,34 +617,67 @@ impl Controller {
             true
         };
 
-        if changed && item.two_handed() && !self.two_hander_equipped {
+        if !item.two_handed() {
+            log::info!(
+                "updating is-right={} cached item to {}",
+                is_right_hand,
+                item.name()
+            );
+            if is_right_hand {
+                self.right_hand_cached = Some(item.clone());
+            } else {
+                self.left_hand_cached = Some(item.clone());
+            }
+        }
+
+        if item.two_handed() && !self.two_hander_equipped {
             self.two_hander_equipped = true;
             // and show the left hand as empty
             self.update_slot(HudElement::Left, &TesItemData::default());
         }
 
-        if changed && !item.two_handed() && self.two_hander_equipped && equipped {
+        if !item.two_handed() && self.two_hander_equipped {
+            log::info!("transitioning from 2-hander to 1-hander.");
+            self.two_hander_equipped = false;
+
             if is_right_hand {
-                self.right_hand_cached = Some(item.clone());
+                log::info!("right hand transitioning case");
                 if let Some(prev_left) = self.left_hand_cached.clone() {
                     // We won't get a good event to let us trigger this later.
+                    log::info!("considering re-requipping or unequipping LEFT");
                     if prev_left.kind() == TesItemKind::HandToHand {
+                        unequipSlot(Action::Left);
                         self.update_slot(HudElement::Left, &prev_left);
-                        self.two_hander_equipped = false;
+                    } else {
+                        log::info!(
+                            "!!!!!!!! should be re-equipping left; name='{}';",
+                            prev_left.name()
+                        );
+                        cxx::let_cxx_string!(form_spec = prev_left.form_string());
+                        reequipHand(Action::Left, &form_spec);
+                        self.update_slot(HudElement::Left, &prev_left);
                     }
                 }
             } else {
-                self.left_hand_cached = Some(item.clone());
                 if let Some(prev_right) = self.right_hand_cached.clone() {
                     // We won't get a good event to let us trigger this later.
+                    log::info!("considering re-requipping or unequipping RIGHT");
                     if prev_right.kind() == TesItemKind::HandToHand {
+                        unequipSlot(Action::Right);
                         self.update_slot(HudElement::Right, &prev_right);
-                        self.two_hander_equipped = false;
+                    } else {
+                        log::info!(
+                            "!!!!!!!! should be re-equipping right; name='{}';",
+                            prev_right.name()
+                        );
+                        cxx::let_cxx_string!(form_spec = prev_right.form_string());
+                        reequipHand(Action::Right, &form_spec);
                     }
                 }
             };
         }
         self.two_hander_equipped = item.two_handed();
+        log::info!("---------- exiting handle_item_equipped");
         changed
     }
 
@@ -694,7 +745,6 @@ impl Controller {
 
         changed
     }
-
 
     fn update_slot(&mut self, slot: HudElement, new_item: &TesItemData) -> bool {
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
