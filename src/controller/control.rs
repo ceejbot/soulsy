@@ -357,8 +357,7 @@ impl Controller {
         equipped: bool,
         #[allow(clippy::boxed_local)] item: Box<TesItemData>, // boxed because arriving from C++
     ) -> bool {
-        log::debug!("item equip status changed; we don't know which slot yet");
-        log::debug!("equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+        log::debug!("is-now-equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
             equipped,
             item.name(),
             item.kind(),
@@ -369,6 +368,10 @@ impl Controller {
 
         if item.kind().is_utility() {
             // We do nothing. We are the source of truth on the utility view.
+            return false;
+        }
+
+        if !equipped {
             return false;
         }
 
@@ -392,9 +395,6 @@ impl Controller {
 
         if item.kind().is_power() {
             log::debug!("handling power/shout");
-            if !equipped {
-                return false;
-            }
             if let Some(visible) = self.visible.get(&HudElement::Power) {
                 if visible.form_string() != item.form_string() {
                     log::debug!("updating visible power; name='{}';", item.name());
@@ -409,6 +409,8 @@ impl Controller {
                 return true;
             }
         }
+
+        // ---------- The hard part starts. Left hand vs right hand.
 
         if !item.kind().left_hand_ok() && !item.kind().right_hand_ok() {
             return false;
@@ -426,7 +428,7 @@ impl Controller {
             boundObjectLeftHand()
         };
 
-        log::trace!(
+        log::debug!(
             "form strings: item={}; right={}; left={}; two-hander-equipped={};",
             item.form_string(),
             rightie.form_string(),
@@ -435,18 +437,14 @@ impl Controller {
         );
 
         let is_right_hand = rightie.form_string() == item.form_string();
+        log::debug!("====== is right hand={is_right_hand}");
 
         // First, update the hud as usual.
-        let hudslot = if is_right_hand {
-            HudElement::Right
-        } else {
-            HudElement::Left
-        };
+        let (hudslot, action) = if is_right_hand {
 
-        let action = if is_right_hand {
-            Action::Right
+            (HudElement::Right, Action::Right)
         } else {
-            Action::Left
+            (HudElement::Left, Action::Left)
         };
 
         let changed = if let Some(visible) = self.visible.get(&hudslot) {
@@ -477,6 +475,7 @@ impl Controller {
 
         if changed && !item.two_handed() && self.two_hander_equipped && equipped {
             if is_right_hand {
+                self.right_hand_cached = Some(item.clone());
                 if let Some(prev_left) = self.left_hand_cached.clone() {
                     // We won't get a good event to let us trigger this later.
                     if prev_left.kind() == TesItemKind::HandToHand {
@@ -485,6 +484,7 @@ impl Controller {
                     }
                 }
             } else {
+                self.left_hand_cached = Some(item.clone());
                 if let Some(prev_right) = self.right_hand_cached.clone() {
                     // We won't get a good event to let us trigger this later.
                     if prev_right.kind() == TesItemKind::HandToHand {
@@ -493,8 +493,9 @@ impl Controller {
                     }
                 }
             }
-            self.two_hander_equipped = false;
+            ;
         }
+        self.two_hander_equipped = item.two_handed();
         changed
     }
 
@@ -618,12 +619,45 @@ impl Controller {
         }
 
         let candidate = if matches!(which, Action::Left | Action::Right) {
-            let equipped = if which == Action::Left {
-                equippedLeftHand()
+            if matches!(which, Action::Left) {
+                if !self.two_hander_equipped {
+                    let rightie = equippedRightHand();
+                    if rightie.has_count() && rightie.count() == 1 {
+                        self.cycles.advance_skipping(which, *rightie.clone())
+                    } else {
+                        self.cycles.advance(which, 1)
+                    }
+                } else {
+                    if let Some(cached_right) = &self.right_hand_cached {
+                        if cached_right.has_count() && cached_right.count() == 1 {
+                            self.cycles.advance_skipping(which, cached_right.clone())
+                        } else {
+                            self.cycles.advance(which, 1)
+                        }
+                    } else {
+                        self.cycles.advance(which, 1)
+                    }
+                }
             } else {
-                equippedRightHand()
-            };
-            self.cycles.advance_skipping(which, *equipped)
+                if !self.two_hander_equipped {
+                    let leftie = equippedLeftHand();
+                    if leftie.has_count() && leftie.count() == 1 {
+                        self.cycles.advance_skipping(which, *leftie.clone())
+                    } else {
+                        self.cycles.advance(which, 1)
+                    }
+                } else {
+                    if let Some(cached_left) = &self.left_hand_cached {
+                        if cached_left.has_count() && cached_left.count() == 1 {
+                            self.cycles.advance_skipping(which, cached_left.clone())
+                        } else {
+                            self.cycles.advance(which, 1)
+                        }
+                    } else {
+                        self.cycles.advance(which, 1)
+                    }
+                }
+            }
         } else {
             // consumables and shouts/powers
             self.cycles.advance(which, 1)

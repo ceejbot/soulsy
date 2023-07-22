@@ -47,20 +47,10 @@ impl TesItemKind {
     }
 
     pub fn show_count(&self) -> bool {
-        matches!(
-            *self,
-            TesItemKind::PoisonDefault
-                | TesItemKind::PotionDefault
-                | TesItemKind::PotionFireResist
-                | TesItemKind::PotionFrostResist
-                | TesItemKind::PotionHealth
-                | TesItemKind::PotionMagicka
-                | TesItemKind::PotionMagicResist
-                | TesItemKind::PotionShockResist
-                | TesItemKind::PotionStamina
-                | TesItemKind::Scroll
-                | TesItemKind::Arrow
-        )
+        self.is_armor()
+            || self.is_weapon()
+            || self.is_potion()
+            || matches!(*self, TesItemKind::Arrow | TesItemKind::Scroll)
     }
 
     /// Check if this entry is a weapon of any kind.
@@ -157,7 +147,8 @@ impl TesItemKind {
     pub fn is_utility(&self) -> bool {
         matches!(
             *self,
-            TesItemKind::ArmorClothing
+            TesItemKind::Arrow
+                | TesItemKind::ArmorClothing
                 | TesItemKind::ArmorHeavy
                 | TesItemKind::ArmorLight
                 | TesItemKind::Food
