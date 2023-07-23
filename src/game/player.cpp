@@ -27,9 +27,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return hand_to_hand_item();
+		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand_to_hand_item();
+		if (!item_form) return hand2hand_itemdata();
 		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
@@ -38,9 +38,9 @@ namespace player
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return hand_to_hand_item();
+		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand_to_hand_item();
+		if (!item_form) return hand2hand_itemdata();
 		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
@@ -48,9 +48,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return hand_to_hand_item();
+		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand_to_hand_item();
+		if (!item_form) return hand2hand_itemdata();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
@@ -64,9 +64,9 @@ namespace player
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return hand_to_hand_item();
+		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand_to_hand_item();
+		if (!item_form) return hand2hand_itemdata();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
@@ -80,9 +80,9 @@ namespace player
 	{
 		auto* player    = RE::PlayerCharacter::GetSingleton();
 		const auto* obj = player->GetActorRuntimeData().selectedPower;
-		if (!obj) return default_tes_item();
+		if (!obj) return empty_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_tes_item();
+		if (!item_form) return empty_itemdata();
 		return equippable::makeTESItemDataFromForm(item_form);
 	}
 
@@ -90,11 +90,11 @@ namespace player
 	{
 		auto player        = RE::PlayerCharacter::GetSingleton();
 		auto* current_ammo = player->GetCurrentAmmo();
-		if (!current_ammo || !current_ammo->IsAmmo()) { return default_tes_item(); }
+		if (!current_ammo || !current_ammo->IsAmmo()) { return empty_itemdata(); }
 
 		const auto formspec = helpers::makeFormSpecString(current_ammo);
 		auto count          = inventoryCount(current_ammo, RE::FormType::Ammo, player);
-		return make_tesitem(TesItemKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
+		return itemdata_from_formdata(TesItemKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
 	}
 
 	void unequipSlot(Action which)
@@ -125,7 +125,7 @@ namespace player
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
-		auto* player         = RE::PlayerCharacter::GetSingleton();
+		auto* player     = RE::PlayerCharacter::GetSingleton();
 		auto* equip_slot = (slot == Action::Right ? game::right_hand_equip_slot() : game::left_hand_equip_slot());
 		game::equipSpellByFormAndSlot(form, equip_slot, player);
 	}
@@ -231,16 +231,12 @@ namespace player
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
 		RE::BGSEquipSlot* slot;
-		
-		if (which == Action::Left) {
-			slot = game::left_hand_equip_slot();
-		} else {
-			slot = game::right_hand_equip_slot();
-		}
-		
-		
-	
-		auto* task      = SKSE::GetTaskInterface();
+
+		if (which == Action::Left) { slot = game::left_hand_equip_slot(); }
+		else { slot = game::right_hand_equip_slot(); }
+
+
+		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
 			task->AddTask(

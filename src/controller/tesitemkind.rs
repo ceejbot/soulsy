@@ -3,24 +3,30 @@ use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
 
-use crate::plugin::TesItemKind;
+use crate::plugin::ItemKind;
 
-pub fn kind_has_count(kind: TesItemKind) -> bool {
+/// Given an entry kind, return the filename of the icon to use for it.
+/// Exposed to C++.
+pub fn get_icon_file(kind: &ItemKind) -> String {
+    kind.icon_file()
+}
+
+pub fn kind_has_count(kind: ItemKind) -> bool {
     kind.show_count()
 }
 
-pub fn kind_is_magic(kind: TesItemKind) -> bool {
+pub fn kind_is_magic(kind: ItemKind) -> bool {
     kind.is_magic()
 }
 
 /// We cannot derive default for shared enums, so we define it here.
-impl Default for TesItemKind {
+impl Default for ItemKind {
     fn default() -> Self {
-        TesItemKind::NotFound
+        ItemKind::NotFound
     }
 }
 
-impl TesItemKind {
+impl ItemKind {
     /// Get the filename of the icon to use for this entry kind.
     pub fn icon_file(&self) -> String {
         if let Some(i) = ICON_MAP.get(self) {
@@ -34,16 +40,16 @@ impl TesItemKind {
     pub fn is_magic(&self) -> bool {
         matches!(
             *self,
-            TesItemKind::Alteration
-                | TesItemKind::Conjuration
-                | TesItemKind::Destruction
-                | TesItemKind::DestructionFire
-                | TesItemKind::DestructionFrost
-                | TesItemKind::DestructionShock
-                | TesItemKind::Illusion
-                | TesItemKind::Restoration
-                | TesItemKind::SpellDefault
-                | TesItemKind::Scroll
+            ItemKind::Alteration
+                | ItemKind::Conjuration
+                | ItemKind::Destruction
+                | ItemKind::DestructionFire
+                | ItemKind::DestructionFrost
+                | ItemKind::DestructionShock
+                | ItemKind::Illusion
+                | ItemKind::Restoration
+                | ItemKind::SpellDefault
+                | ItemKind::Scroll
         )
     }
 
@@ -51,45 +57,45 @@ impl TesItemKind {
         self.is_armor()
             || self.is_weapon()
             || self.is_potion()
-            || matches!(*self, TesItemKind::Arrow | TesItemKind::Scroll)
+            || matches!(*self, ItemKind::Arrow | ItemKind::Scroll)
     }
 
     /// Check if this entry is a weapon of any kind.
     pub fn is_weapon(&self) -> bool {
         matches!(
             *self,
-            TesItemKind::AxeOneHanded
-                | TesItemKind::AxeTwoHanded
-                | TesItemKind::Bow
-                | TesItemKind::Claw
-                | TesItemKind::Crossbow
-                | TesItemKind::Dagger
-                | TesItemKind::Halberd
-                | TesItemKind::HandToHand
-                | TesItemKind::Katana
-                | TesItemKind::Mace
-                | TesItemKind::Pike
-                | TesItemKind::QuarterStaff
-                | TesItemKind::Rapier
-                | TesItemKind::Staff
-                | TesItemKind::SwordOneHanded
-                | TesItemKind::SwordTwoHanded
-                | TesItemKind::Whip
+            ItemKind::AxeOneHanded
+                | ItemKind::AxeTwoHanded
+                | ItemKind::Bow
+                | ItemKind::Claw
+                | ItemKind::Crossbow
+                | ItemKind::Dagger
+                | ItemKind::Halberd
+                | ItemKind::HandToHand
+                | ItemKind::Katana
+                | ItemKind::Mace
+                | ItemKind::Pike
+                | ItemKind::QuarterStaff
+                | ItemKind::Rapier
+                | ItemKind::Staff
+                | ItemKind::SwordOneHanded
+                | ItemKind::SwordTwoHanded
+                | ItemKind::Whip
         )
     }
 
     pub fn is_one_handed_weapon(&self) -> bool {
         matches!(
             *self,
-            TesItemKind::AxeOneHanded
-                | TesItemKind::Claw
-                | TesItemKind::Dagger
-                | TesItemKind::HandToHand
-                | TesItemKind::Katana
-                | TesItemKind::Mace
-                | TesItemKind::Rapier
-                | TesItemKind::SwordOneHanded
-                | TesItemKind::Whip
+            ItemKind::AxeOneHanded
+                | ItemKind::Claw
+                | ItemKind::Dagger
+                | ItemKind::HandToHand
+                | ItemKind::Katana
+                | ItemKind::Mace
+                | ItemKind::Rapier
+                | ItemKind::SwordOneHanded
+                | ItemKind::Whip
         )
     }
 
@@ -97,11 +103,11 @@ impl TesItemKind {
     pub fn is_armor(&self) -> bool {
         matches!(
             *self,
-            TesItemKind::ArmorClothing
-                | TesItemKind::ArmorHeavy
-                | TesItemKind::ArmorLight
-                | TesItemKind::Lantern
-                | TesItemKind::Mask
+            ItemKind::ArmorClothing
+                | ItemKind::ArmorHeavy
+                | ItemKind::ArmorLight
+                | ItemKind::Lantern
+                | ItemKind::Mask
         )
     }
 
@@ -110,14 +116,14 @@ impl TesItemKind {
     pub fn is_potion(&self) -> bool {
         matches!(
             *self,
-            TesItemKind::PotionDefault
-                | TesItemKind::PotionFireResist
-                | TesItemKind::PotionFrostResist
-                | TesItemKind::PotionHealth
-                | TesItemKind::PotionMagicka
-                | TesItemKind::PotionMagicResist
-                | TesItemKind::PotionShockResist
-                | TesItemKind::PotionStamina
+            ItemKind::PotionDefault
+                | ItemKind::PotionFireResist
+                | ItemKind::PotionFrostResist
+                | ItemKind::PotionHealth
+                | ItemKind::PotionMagicka
+                | ItemKind::PotionMagicResist
+                | ItemKind::PotionShockResist
+                | ItemKind::PotionStamina
         )
     }
 
@@ -127,7 +133,7 @@ impl TesItemKind {
     pub fn left_hand_ok(&self) -> bool {
         self.is_one_handed_weapon()
             || self.is_magic()
-            || matches!(*self, TesItemKind::Shield | TesItemKind::Torch)
+            || matches!(*self, ItemKind::Shield | ItemKind::Torch)
     }
 
     /// Check if this entry can be equipped in the right hand.
@@ -139,12 +145,12 @@ impl TesItemKind {
 
     /// Check if this entry is a shout or power. Fus-ro-dah!
     pub fn is_power(&self) -> bool {
-        matches!(*self, TesItemKind::Shout | TesItemKind::Power)
+        matches!(*self, ItemKind::Shout | ItemKind::Power)
     }
 
     /// Check if this entry is a kind of ammo.
     pub fn is_ammo(&self) -> bool {
-        matches!(*self, TesItemKind::Arrow)
+        matches!(*self, ItemKind::Arrow)
     }
 
     /// Check if this entry is a utility item, aka the bottom slot.
@@ -153,106 +159,97 @@ impl TesItemKind {
     pub fn is_utility(&self) -> bool {
         matches!(
             *self,
-            TesItemKind::Arrow
-                | TesItemKind::ArmorClothing
-                | TesItemKind::ArmorHeavy
-                | TesItemKind::ArmorLight
-                | TesItemKind::Food
-                | TesItemKind::Lantern
-                | TesItemKind::Mask
-                | TesItemKind::PoisonDefault
-                | TesItemKind::PotionDefault
-                | TesItemKind::PotionFireResist
-                | TesItemKind::PotionFrostResist
-                | TesItemKind::PotionHealth
-                | TesItemKind::PotionMagicka
-                | TesItemKind::PotionMagicResist
-                | TesItemKind::PotionShockResist
-                | TesItemKind::PotionStamina
+            ItemKind::Arrow
+                | ItemKind::ArmorClothing
+                | ItemKind::ArmorHeavy
+                | ItemKind::ArmorLight
+                | ItemKind::Food
+                | ItemKind::Lantern
+                | ItemKind::Mask
+                | ItemKind::PoisonDefault
+                | ItemKind::PotionDefault
+                | ItemKind::PotionFireResist
+                | ItemKind::PotionFrostResist
+                | ItemKind::PotionHealth
+                | ItemKind::PotionMagicka
+                | ItemKind::PotionMagicResist
+                | ItemKind::PotionShockResist
+                | ItemKind::PotionStamina
         )
     }
 }
 
-static ICON_MAP: Lazy<HashMap<TesItemKind, String>> = Lazy::new(|| {
+static ICON_MAP: Lazy<HashMap<ItemKind, String>> = Lazy::new(|| {
     HashMap::from([
-        (TesItemKind::Alteration, "alteration.svg".to_string()),
-        (TesItemKind::ArmorClothing, "armor_clothing.svg".to_string()),
-        (TesItemKind::ArmorHeavy, "armor_heavy.svg".to_string()),
-        (TesItemKind::ArmorLight, "armor_light.svg".to_string()),
-        (TesItemKind::Arrow, "arrow.svg".to_string()),
-        (TesItemKind::AxeOneHanded, "axe_one_handed.svg".to_string()),
-        (TesItemKind::AxeTwoHanded, "axe_two_handed.svg".to_string()),
-        (TesItemKind::Bow, "bow.svg".to_string()),
-        (TesItemKind::Claw, "claw.svg".to_string()),
-        (TesItemKind::Conjuration, "conjuration.svg".to_string()),
-        (TesItemKind::Crossbow, "crossbow.svg".to_string()),
-        (TesItemKind::Dagger, "dagger.svg".to_string()),
+        (ItemKind::Alteration, "alteration.svg".to_string()),
+        (ItemKind::ArmorClothing, "armor_clothing.svg".to_string()),
+        (ItemKind::ArmorHeavy, "armor_heavy.svg".to_string()),
+        (ItemKind::ArmorLight, "armor_light.svg".to_string()),
+        (ItemKind::Arrow, "arrow.svg".to_string()),
+        (ItemKind::AxeOneHanded, "axe_one_handed.svg".to_string()),
+        (ItemKind::AxeTwoHanded, "axe_two_handed.svg".to_string()),
+        (ItemKind::Bow, "bow.svg".to_string()),
+        (ItemKind::Claw, "claw.svg".to_string()),
+        (ItemKind::Conjuration, "conjuration.svg".to_string()),
+        (ItemKind::Crossbow, "crossbow.svg".to_string()),
+        (ItemKind::Dagger, "dagger.svg".to_string()),
         (
-            TesItemKind::DestructionFire,
+            ItemKind::DestructionFire,
             "destruction_fire.svg".to_string(),
         ),
         (
-            TesItemKind::DestructionFrost,
+            ItemKind::DestructionFrost,
             "destruction_frost.svg".to_string(),
         ),
         (
-            TesItemKind::DestructionShock,
+            ItemKind::DestructionShock,
             "destruction_shock.svg".to_string(),
         ),
-        (TesItemKind::Destruction, "destruction.svg".to_string()),
-        (TesItemKind::Food, "food.svg".to_string()),
-        (TesItemKind::Halberd, "halberd.svg".to_string()),
-        (TesItemKind::HandToHand, "hand_to_hand.svg".to_string()),
-        (TesItemKind::IconDefault, "icon_default.svg".to_string()),
-        (TesItemKind::Illusion, "illusion.svg".to_string()),
-        (TesItemKind::Katana, "katana.svg".to_string()),
-        (TesItemKind::Lantern, "lantern.svg".to_string()),
-        (TesItemKind::Mace, "mace.svg".to_string()),
-        (TesItemKind::Mask, "mask.svg".to_string()),
-        (TesItemKind::Pike, "pike.svg".to_string()),
-        (TesItemKind::PoisonDefault, "poison_default.svg".to_string()),
-        (TesItemKind::PotionDefault, "default_potion.svg".to_string()),
+        (ItemKind::Destruction, "destruction.svg".to_string()),
+        (ItemKind::Food, "food.svg".to_string()),
+        (ItemKind::Halberd, "halberd.svg".to_string()),
+        (ItemKind::HandToHand, "hand_to_hand.svg".to_string()),
+        (ItemKind::IconDefault, "icon_default.svg".to_string()),
+        (ItemKind::Illusion, "illusion.svg".to_string()),
+        (ItemKind::Katana, "katana.svg".to_string()),
+        (ItemKind::Lantern, "lantern.svg".to_string()),
+        (ItemKind::Mace, "mace.svg".to_string()),
+        (ItemKind::Mask, "mask.svg".to_string()),
+        (ItemKind::Pike, "pike.svg".to_string()),
+        (ItemKind::PoisonDefault, "poison_default.svg".to_string()),
+        (ItemKind::PotionDefault, "default_potion.svg".to_string()),
         (
-            TesItemKind::PotionFireResist,
+            ItemKind::PotionFireResist,
             "potion_fire_resist.svg".to_string(),
         ),
         (
-            TesItemKind::PotionFrostResist,
+            ItemKind::PotionFrostResist,
             "potion_frost_resist.svg".to_string(),
         ),
-        (TesItemKind::PotionHealth, "potion_health.svg".to_string()),
-        (TesItemKind::PotionMagicka, "potion_magicka.svg".to_string()),
+        (ItemKind::PotionHealth, "potion_health.svg".to_string()),
+        (ItemKind::PotionMagicka, "potion_magicka.svg".to_string()),
         (
-            TesItemKind::PotionMagicResist,
+            ItemKind::PotionMagicResist,
             "potion_magic_resist.svg".to_string(),
         ),
         (
-            TesItemKind::PotionShockResist,
+            ItemKind::PotionShockResist,
             "potion_shock_resist.svg".to_string(),
         ),
-        (TesItemKind::PotionStamina, "potion_stamina.svg".to_string()),
-        (TesItemKind::Power, "power.svg".to_string()),
-        (TesItemKind::QuarterStaff, "quarter_staff.svg".to_string()),
-        (TesItemKind::Rapier, "rapier.svg".to_string()),
-        (TesItemKind::Restoration, "restoration.svg".to_string()),
-        (TesItemKind::Scroll, "scroll.svg".to_string()),
-        (TesItemKind::Shield, "shield.svg".to_string()),
-        (TesItemKind::Shout, "shout.svg".to_string()),
-        (TesItemKind::SpellDefault, "spell_default.svg".to_string()),
-        (TesItemKind::Staff, "staff.svg".to_string()),
-        (
-            TesItemKind::SwordOneHanded,
-            "sword_one_handed.svg".to_string(),
-        ),
-        (
-            TesItemKind::SwordTwoHanded,
-            "sword_two_handed.svg".to_string(),
-        ),
-        (TesItemKind::Torch, "torch.svg".to_string()),
-        (
-            TesItemKind::WeaponDefault,
-            "sword_one_handed.svg".to_string(),
-        ),
-        (TesItemKind::Whip, "whip.svg".to_string()),
+        (ItemKind::PotionStamina, "potion_stamina.svg".to_string()),
+        (ItemKind::Power, "power.svg".to_string()),
+        (ItemKind::QuarterStaff, "quarter_staff.svg".to_string()),
+        (ItemKind::Rapier, "rapier.svg".to_string()),
+        (ItemKind::Restoration, "restoration.svg".to_string()),
+        (ItemKind::Scroll, "scroll.svg".to_string()),
+        (ItemKind::Shield, "shield.svg".to_string()),
+        (ItemKind::Shout, "shout.svg".to_string()),
+        (ItemKind::SpellDefault, "spell_default.svg".to_string()),
+        (ItemKind::Staff, "staff.svg".to_string()),
+        (ItemKind::SwordOneHanded, "sword_one_handed.svg".to_string()),
+        (ItemKind::SwordTwoHanded, "sword_two_handed.svg".to_string()),
+        (ItemKind::Torch, "torch.svg".to_string()),
+        (ItemKind::WeaponDefault, "sword_one_handed.svg".to_string()),
+        (ItemKind::Whip, "whip.svg".to_string()),
     ])
 });

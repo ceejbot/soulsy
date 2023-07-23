@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
+use super::itemdata::*;
 use super::keys::*;
 use super::settings::{user_settings, UserSettings};
 use crate::hud_layout;
@@ -118,16 +119,14 @@ pub mod public {
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         let settings = user_settings();
         if settings.include_unarmed() {
-            let h2h = hand_to_hand_item();
+            let h2h = hand2hand_itemdata();
             let h2h = *h2h;
             ctrl.cycles.include_item(Action::Left, h2h.clone());
             ctrl.cycles.include_item(Action::Right, h2h);
         } else {
             // remove any item with h2h type from cycles
-            ctrl.cycles
-                .filter_kind(Action::Left, TesItemKind::HandToHand);
-            ctrl.cycles
-                .filter_kind(Action::Right, TesItemKind::HandToHand);
+            ctrl.cycles.filter_kind(Action::Left, ItemKind::HandToHand);
+            ctrl.cycles.filter_kind(Action::Right, ItemKind::HandToHand);
         }
         ctrl.flush_cycle_data();
     }
@@ -190,7 +189,6 @@ impl Controller {
         } else {
             current + delta as u32
         };
-
 
         if item.kind().is_ammo() {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
@@ -354,7 +352,7 @@ impl Controller {
 
         if unequip_requested {
             log::info!("unequipping slot {:?} by request!", action);
-            let empty_item = *hand_to_hand_item();
+            let empty_item = *hand2hand_itemdata();
             unequipSlot(action);
             self.update_slot(hudslot, &empty_item);
             self.cycles.set_top(action, &empty_item);
@@ -496,7 +494,7 @@ impl Controller {
         log::trace!("using utility item");
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind().is_potion()
-                || matches!(item.kind(), TesItemKind::PoisonDefault | TesItemKind::Food)
+                || matches!(item.kind(), ItemKind::PoisonDefault | ItemKind::Food)
             {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 consumePotion(&form_spec);
@@ -542,12 +540,12 @@ impl Controller {
 
         // We equip whatever the HUD is showing right now.
         let kind = item.kind();
-        if matches!(kind, TesItemKind::HandToHand) {
+        if matches!(kind, ItemKind::HandToHand) {
             log::info!("melee time! unequipping slot {which:?}");
             if which == Action::Left {
-                self.left_hand_cached = Some(*hand_to_hand_item());
+                self.left_hand_cached = Some(*hand2hand_itemdata());
             } else {
-                self.right_hand_cached = Some(*hand_to_hand_item());
+                self.right_hand_cached = Some(*hand2hand_itemdata());
             }
             unequipSlot(which);
             return;
@@ -586,7 +584,7 @@ impl Controller {
             equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
-        } else if kind == TesItemKind::Arrow {
+        } else if kind == ItemKind::Arrow {
             equipAmmo(&form_spec);
         } else {
             log::info!(
@@ -745,7 +743,7 @@ impl Controller {
         if r_changed {
             if let Some(prev_left) = self.left_hand_cached.clone() {
                 log::debug!("considering re-requipping or unequipping LEFT");
-                if prev_left.kind() == TesItemKind::HandToHand {
+                if prev_left.kind() == ItemKind::HandToHand {
                     unequipSlot(Action::Left);
                     self.update_slot(HudElement::Left, &prev_left);
                 } else {
@@ -756,7 +754,7 @@ impl Controller {
             }
         } else if let Some(prev_right) = self.right_hand_cached.clone() {
             log::debug!("considering re-requipping or unequipping RIGHT");
-            if prev_right.kind() == TesItemKind::HandToHand {
+            if prev_right.kind() == ItemKind::HandToHand {
                 unequipSlot(Action::Right);
                 self.update_slot(HudElement::Right, &prev_right);
             } else {

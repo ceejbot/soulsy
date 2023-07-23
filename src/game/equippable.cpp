@@ -14,7 +14,7 @@ namespace equippable
 		bool show_count         = kind_has_count(kind);
 		std::string name        = item_form->GetName();
 
-		return make_tesitem(kind, two_handed, show_count, count, name, form_string);
+		return itemdata_from_formdata(kind, two_handed, show_count, count, name, form_string);
 	}
 
 	bool canInstantCast(RE::TESForm* item_form, const TesItemKind kind)

@@ -122,7 +122,7 @@ pub mod plugin {
     /// This lets us determine the icon as well as which cycle slot an item can
     /// be added to.
     #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
-    enum TesItemKind {
+    enum ItemKind {
         Empty,
         Alteration,
         ArmorClothing,
@@ -252,7 +252,7 @@ pub mod plugin {
         /// This is an entry in the cycle. The UI will ask questions of it.
         type TesItemData;
         /// Get the item category, fine-grained to help with icon choices.
-        fn kind(self: &TesItemData) -> TesItemKind;
+        fn kind(self: &TesItemData) -> ItemKind;
         /// Check if any UI for this item should be drawn highlighted. UNUSED.
         fn highlighted(self: &TesItemData) -> bool;
         /// Get the game's human-readable name for this item.
@@ -263,8 +263,8 @@ pub mod plugin {
         fn count(self: &TesItemData) -> u32;
         /// Create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
-        fn make_tesitem(
-            kind: TesItemKind,
+        fn itemdata_from_formdata(
+            kind: ItemKind,
             two_handed: bool,
             has_count: bool,
             count: u32,
@@ -272,15 +272,15 @@ pub mod plugin {
             form_string: &str,
         ) -> Box<TesItemData>;
         /// Make a default item, representing an empty choice.
-        fn default_tes_item() -> Box<TesItemData>;
-        fn hand_to_hand_item() -> Box<TesItemData>;
+        fn empty_itemdata() -> Box<TesItemData>;
+        fn hand2hand_itemdata() -> Box<TesItemData>;
 
         /// Check if this item category can be stacked in inventory.
-        fn kind_has_count(kind: TesItemKind) -> bool;
+        fn kind_has_count(kind: ItemKind) -> bool;
         /// Check if this item category counts as magic for the HUD.
-        fn kind_is_magic(kind: TesItemKind) -> bool;
+        fn kind_is_magic(kind: ItemKind) -> bool;
         /// Get the filename of the svg icon matching this item. Not a full path.
-        fn get_icon_file(kind: &TesItemKind) -> String;
+        fn get_icon_file(kind: &ItemKind) -> String;
 
         // These are called by plugin hooks and sinks.
 
