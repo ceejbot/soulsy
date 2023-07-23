@@ -653,7 +653,7 @@ impl Controller {
         // These are all different because the game API is a bit of an evolved thing.
         if kind.is_magic() {
             // My name is John Wellington Wells / I'm a dealer in...
-            equipMagic(&form_spec, which);
+            equipWeapon(&form_spec, which);
         } else if kind.left_hand_ok() || kind.right_hand_ok() {
             equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
