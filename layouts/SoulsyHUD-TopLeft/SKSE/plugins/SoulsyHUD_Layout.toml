@@ -3,6 +3,7 @@ animation_duration = 0.2
 font = "futura-book-bt.ttf"
 font_size = 20.0
 debug = true
+global_scale = 1.0
 
 [anchor]
 x = 200.0
