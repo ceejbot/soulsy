@@ -431,7 +431,7 @@ impl Controller {
             }
 
             // They are the same. Do we have more than one? If so, we're good.
-            if candidate.has_count() && candidate.count() > 1 {
+            if !candidate.kind().show_count() || candidate.count() > 1 {
                 self.cycles.advance(which, 1);
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
                 return self.update_and_record(which, &candidate);
