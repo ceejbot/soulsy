@@ -35,11 +35,7 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
         LevelFilter::Info
     };
 
-    #[cfg(target_os = "windows")]
-    let cleaned_log = logdir.to_string_lossy().encode_wide().collect();
-    #[cfg(not(target_os = "windows"))]
     let cleaned_log = logdir.to_string_lossy();
-
     let mut pathbuf = PathBuf::from(cleaned_log.to_string());
     pathbuf.set_file_name("SoulsyHUD_rust.log");
 
@@ -48,9 +44,5 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
         log::info!("rust side logging standing by");
     } else {
         // Welp, we failed and I have nowhere to write the darn error. Ha ha.
-        panic!(
-            "run in circles scream and shout: rust can't log; {}",
-            pathbuf.display()
-        );
     }
 }
