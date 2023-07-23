@@ -12,7 +12,7 @@ pub fn get_icon_file(kind: &ItemKind) -> String {
 }
 
 pub fn kind_has_count(kind: ItemKind) -> bool {
-    kind.show_count()
+    kind.count_matters()
 }
 
 pub fn kind_is_magic(kind: ItemKind) -> bool {
@@ -53,11 +53,11 @@ impl ItemKind {
         )
     }
 
-    pub fn show_count(&self) -> bool {
-        self.is_armor()
-            || self.is_weapon()
+    pub fn count_matters(&self) -> bool {
+        self.is_weapon()
             || self.is_potion()
-            || matches!(*self, ItemKind::Arrow | ItemKind::Scroll)
+            || self.is_ammo()
+            || matches!(*self, ItemKind::Scroll)
     }
 
     /// Check if this entry is a weapon of any kind.

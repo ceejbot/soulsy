@@ -431,7 +431,7 @@ impl Controller {
             }
 
             // They are the same. Do we have more than one? If so, we're good.
-            if !candidate.kind().show_count() || candidate.count() > 1 {
+            if !candidate.kind().count_matters() || candidate.count() > 1 {
                 self.cycles.advance(which, 1);
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
                 return self.update_and_record(which, &candidate);
@@ -457,7 +457,11 @@ impl Controller {
         } else {
             // Phew. Okay. Now we're on to the one-handers equipped cases. These are easier.
             let maybe_candidate = if let Some(other_equipped) = self.visible.get(&other_hud) {
-                self.cycles.advance_skipping(which, other_equipped.clone())
+                if !other_equipped.kind().count_matters() || other_equipped.count() > 1 {
+                    self.cycles.advance(which, 1)
+                } else {
+                    self.cycles.advance_skipping(which, other_equipped.clone())
+                }
             } else {
                 self.cycles.advance(which, 1)
             };
