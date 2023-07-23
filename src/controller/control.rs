@@ -21,12 +21,32 @@ pub mod public {
 
     /// C++ tells us when it's safe to start pulling together the data we need.
     pub fn initialize_hud() {
+        let settings = user_settings();
         log::info!("initializing hud controller");
         let mut ctrl = CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        let settings = user_settings();
         log::info!("{settings:?}");
+
+        if settings.activate_modifier > 0 {
+            ctrl.activate_modifier = TrackedKey {
+                key: HotkeyKind::from(settings.activate_modifier as u32),
+                state: KeyState::Up,
+            };
+        }
+        if settings.cycle_modifier > 0 {
+            ctrl.cycle_modifier = TrackedKey {
+                key: HotkeyKind::from(settings.cycle_modifier as u32),
+                state: KeyState::Up,
+            };
+        }
+        if settings.unequip_modifier > 0 {
+            ctrl.unequip_modifier = TrackedKey {
+                key: HotkeyKind::from(settings.unequip_modifier as u32),
+                state: KeyState::Up,
+            };
+        }
+
         let _hud = hud_layout();
         ctrl.validate_cycles();
         log::info!("HUD data should be fresh; ready to cycle!")
@@ -129,6 +149,33 @@ pub mod public {
             ctrl.cycles.filter_kind(Action::Right, ItemKind::HandToHand);
         }
         ctrl.flush_cycle_data();
+
+        // This loses any is-up/is-down state, but the user just closed the config page.
+        // Niche bug. 
+        ctrl.activate_modifier = if settings.activate_modifier > 0 {
+             TrackedKey {
+                key: HotkeyKind::from(settings.activate_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
+        ctrl.cycle_modifier = if settings.cycle_modifier > 0 {
+            TrackedKey {
+                key: HotkeyKind::from(settings.cycle_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
+        ctrl.unequip_modifier = if settings.unequip_modifier > 0 {
+            TrackedKey {
+                key: HotkeyKind::from(settings.unequip_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
     }
 }
 
@@ -277,6 +324,7 @@ impl Controller {
 
     fn handle_cycle_power(&mut self) -> KeyEventResponse {
         if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
+            log::debug!("cycling shouts/powers");
             self.advance_simple_cycle(Action::Power)
         } else {
             log::info!("declining to advance power/shouts cycle without the modifier key down");
@@ -286,6 +334,7 @@ impl Controller {
 
     fn handle_cycle_utility(&mut self) -> KeyEventResponse {
         if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
+            log::debug!("cycling utilities/consumables");
             self.advance_simple_cycle(Action::Utility)
         } else {
             log::info!(
@@ -336,6 +385,8 @@ impl Controller {
             return KeyEventResponse::default();
         }
 
+        log::debug!("cycling item in {} hand", event.key);
+
         // We have two modifiers to check
         let unequip_requested =
             !self.unequip_modifier.ignore() && self.unequip_modifier.is_pressed();
@@ -351,7 +402,7 @@ impl Controller {
         let action = Action::from(&event.key);
 
         if unequip_requested {
-            log::info!("unequipping slot {:?} by request!", action);
+            log::info!("unequipping slot {:?} by request", action);
             let empty_item = *hand2hand_itemdata();
             unequipSlot(action);
             self.update_slot(hudslot, &empty_item);
@@ -410,14 +461,14 @@ impl Controller {
             }
 
             // Now we got fun. Do we have something to bounce back to in the other hand?
-            let other_cached = if matches!(which, Action::Left) {
-                &self.right_hand_cached
+            let (other_cached, other_action) = if matches!(which, Action::Left) {
+                (self.right_hand_cached.clone(), Action::Right)
             } else {
-                &self.left_hand_cached
+                (self.left_hand_cached.clone(), Action::Left)
             };
 
             let Some(return_to) = other_cached else {
-                // The other hand has no opinions. Cycle to it.
+                // The other hand has no opinions. Advance without fear.
                 self.cycles.advance(which, 1);
                 return self.update_and_record(which, &candidate);
             };
@@ -426,7 +477,8 @@ impl Controller {
             // we are golden. We update both HUD slots and start a timer.
             if candidate.form_string() != return_to.form_string() {
                 self.cycles.advance(which, 1);
-                let _changed = &self.update_slot(other_hud, &return_to.clone());
+                let _changed = self.update_slot(other_hud, &return_to.clone());
+                self.cycles.set_top(other_action, &return_to.clone());
                 return self.update_and_record(which, &candidate);
             }
 
@@ -495,7 +547,15 @@ impl Controller {
 
     /// Activate whatever we have in the utility slot.
     fn use_utility_item(&mut self) -> KeyEventResponse {
-        log::trace!("using utility item");
+        log::debug!("using utility item");
+        if !self.activate_modifier.ignore() && !self.activate_modifier.is_pressed() {
+            log::info!("got the activate key, but no modifier with it; doing nothing");
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
+        }
+
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind().is_potion()
                 || matches!(item.kind(), ItemKind::PoisonDefault | ItemKind::Food)
@@ -563,6 +623,13 @@ impl Controller {
             return;
         }
 
+        if !item.two_handed() {
+            if which == Action::Left {
+                self.left_hand_cached = Some(*item).cloned();
+            } else {
+                self.right_hand_cached = Some(*item).cloned();
+            }
+        }
         self.equip_item(item, which);
     }
 
