@@ -180,21 +180,38 @@ namespace game
 			return;
 		}
 
-		auto* spell = form->As<RE::SpellItem>();
-		if (!player->HasSpell(spell))
+		auto* task = SKSE::GetTaskInterface();
+		if (!task) return;
+
+		if (form->Is(RE::FormType::Scroll))
 		{
-			logger::warn("player does not have spell {}. return."sv, spell->GetName());
-			return;
+			if (player::inventoryCount(form, RE::FormType::Scroll, player) > 0)
+			{
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, form, slot); });
+			}
+			else
+			{
+				logger::info("player tried to equip a scroll they don't have; upstream bug?"sv);
+				return;
+			}
+		}
+		else if (form->Is(RE::FormType::Spell) || form->Is(RE::FormType::LeveledSpell))
+		{
+			auto* spell = form->As<RE::SpellItem>();
+			if (player->HasSpell(spell))
+			{
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell, slot); });
+			}
+			else
+			{
+				logger::info("player tried to equip a spell they don't know; upstream bug?"sv);
+				return;
+			}
 		}
 
-		logger::debug("queuing task to equip '{}'; left={}; formID={};"sv,
+		logger::debug("queued task to equip '{}'; left={}; formID={};"sv,
 			form->GetName(),
 			slot_is_left,
 			util::string_util::int_to_hex(form->formID));
-		auto* task = SKSE::GetTaskInterface();
-		if (task)
-		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell, slot); });
-		}
 	}
 }
