@@ -10,6 +10,7 @@ font_size = 20.0
 animation_alpha = 51
 # unused right now
 animation_duration = 0.2
+# Enable any of these you need text rendering for.
 chinese_full_glyphs = false
 simplified_chinese_glyphs = true
 cyrillic_glyphs = true

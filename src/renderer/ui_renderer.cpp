@@ -695,20 +695,20 @@ namespace ui
 			ImFontGlyphRangesBuilder builder;
 
 			builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
-			if (hud.fonts.chinese_full_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull()); }
-			if (hud.fonts.simplified_chinese_glyphs)
+			if (hud.chinese_full_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull()); }
+			if (hud.simplified_chinese_glyphs)
 			{
 				builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 			}
-			if (hud.fonts.cyrillic_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic()); }
+			if (hud.cyrillic_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic()); }
 
-			if (hud.fonts.japanese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesJapanese()); }
+			if (hud.japanese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesJapanese()); }
 
-			if (hud.fonts.korean_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesKorean()); }
+			if (hud.korean_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesKorean()); }
 
-			if (hud.fonts.thai_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesThai()); }
+			if (hud.thai_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesThai()); }
 
-			if (hud.fonts.vietnamese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese()); }
+			if (hud.vietnamese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese()); }
 
 			builder.BuildRanges(&ranges);
 

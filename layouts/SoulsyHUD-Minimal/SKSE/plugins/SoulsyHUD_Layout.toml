@@ -1,15 +1,23 @@
-# unused right now
-animation_alpha = 51
-# unused right now
-animation_duration = 0.2
-# Typeface to use. Must be truetype. Must be in resources/fonts.
-font = "futura-book-bt.ttf"
-# Point size to use for all name text. Scales with the global_scale.
-font_size = 20.0
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
 # Enable to turn on debug logging. Requires a restart.
 debug = false
+# Typeface to use. Must be truetype. Must be in resources/fonts.
+font = "futura-book-bt.ttf"
+# Point size to use for all name text. Scales with the global_scale.
+font_size = 20.0
+# unused right now
+animation_alpha = 51
+# unused right now
+animation_duration = 0.2
+# Enable any of these you need text rendering for.
+chinese_full_glyphs = false
+simplified_chinese_glyphs = true
+cyrillic_glyphs = true
+japanese_glyphs = false
+korean_glyphs = false
+thai_glyphs = false
+vietnamese_glyphs = false
 
 # The location of the *center* of the HUD, in pixels. This does not scale.
 [anchor]
