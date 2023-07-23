@@ -18,10 +18,10 @@ use crate::plugin::{hasItemOrSpell, notifyPlayer, playerName, Action, ItemKind};
 pub struct CycleData {
     // I really want these to be maps, but toml can't serialize that.
     // Guess I could write to json instead.
-    left: Vec<TesItemData>,
-    right: Vec<TesItemData>,
-    power: Vec<TesItemData>,
-    utility: Vec<TesItemData>,
+    left: Vec<ItemData>,
+    right: Vec<ItemData>,
+    power: Vec<ItemData>,
+    utility: Vec<ItemData>,
     #[serde(default)]
     hud_visible: bool,
 }
@@ -65,7 +65,7 @@ impl CycleData {
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
     /// This does not equip or try to use the item in any way. It's pure management.
-    pub fn advance(&mut self, which: Action, amount: usize) -> Option<TesItemData> {
+    pub fn advance(&mut self, which: Action, amount: usize) -> Option<ItemData> {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -86,7 +86,7 @@ impl CycleData {
         cycle.first().cloned()
     }
 
-    pub fn advance_skipping(&mut self, which: Action, skip: TesItemData) -> Option<TesItemData> {
+    pub fn advance_skipping(&mut self, which: Action, skip: ItemData) -> Option<ItemData> {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -189,7 +189,7 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, which: Action, item: &TesItemData) {
+    pub fn set_top(&mut self, which: Action, item: &ItemData) {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -206,7 +206,7 @@ impl CycleData {
     }
 
     // the programmer error is annoying, but it's a shared struct...
-    pub fn get_top(&self, which: Action) -> Option<TesItemData> {
+    pub fn get_top(&self, which: Action) -> Option<ItemData> {
         let cycle = match which {
             Action::Power => &self.power,
             Action::Left => &self.left,
@@ -221,7 +221,7 @@ impl CycleData {
         cycle.first().cloned()
     }
 
-    pub fn peek_next(&self, which: Action) -> Option<TesItemData> {
+    pub fn peek_next(&self, which: Action) -> Option<ItemData> {
         let cycle = match which {
             Action::Power => &self.power,
             Action::Left => &self.left,
@@ -244,7 +244,7 @@ impl CycleData {
     ///
     /// Does not change the current item in the cycle, unless the current item is
     /// the one removed. Adds at the end.
-    pub fn toggle(&mut self, which: Action, item: TesItemData) -> MenuEventResponse {
+    pub fn toggle(&mut self, which: Action, item: ItemData) -> MenuEventResponse {
         let cycle = match which {
             Action::Power => {
                 if !item.kind().is_power() {
@@ -289,7 +289,7 @@ impl CycleData {
         }
     }
 
-    pub fn update_count(&mut self, item: TesItemData, count: u32) -> bool {
+    pub fn update_count(&mut self, item: ItemData, count: u32) -> bool {
         if item.kind().is_utility() {
             if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
                 log::trace!(
@@ -306,7 +306,7 @@ impl CycleData {
         false
     }
 
-    pub fn include_item(&mut self, which: Action, item: TesItemData) {
+    pub fn include_item(&mut self, which: Action, item: ItemData) {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -371,7 +371,7 @@ impl Display for CycleData {
     }
 }
 
-fn vec_to_debug_string(input: &[TesItemData]) -> String {
+fn vec_to_debug_string(input: &[ItemData]) -> String {
     format!(
         "[{}]",
         input
@@ -382,7 +382,7 @@ fn vec_to_debug_string(input: &[TesItemData]) -> String {
     )
 }
 
-impl Display for TesItemData {
+impl Display for ItemData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name())
     }

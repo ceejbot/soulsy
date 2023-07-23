@@ -4,7 +4,7 @@ use crate::plugin::ItemKind;
 
 /// TesItemData, exposed to C++ as an opaque type.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
-pub struct TesItemData {
+pub struct ItemData {
     /// Player-visible name.
     name: String,
     /// A string that can be turned back into form data; for serializing.
@@ -23,7 +23,7 @@ pub struct TesItemData {
 
 // Testing the formstring is sufficient for our needs, which is figuring out if
 // this form item is in a cycle already.
-impl PartialEq for TesItemData {
+impl PartialEq for ItemData {
     fn eq(&self, other: &Self) -> bool {
         self.form_string == other.form_string
     }
@@ -37,8 +37,8 @@ pub fn itemdata_from_formdata(
     count: u32,
     name: &str,
     form_string: &str,
-) -> Box<TesItemData> {
-    Box::new(TesItemData::new(
+) -> Box<ItemData> {
+    Box::new(ItemData::new(
         icon_kind,
         two_handed,
         has_count,
@@ -48,8 +48,8 @@ pub fn itemdata_from_formdata(
     ))
 }
 
-pub fn hand2hand_itemdata() -> Box<TesItemData> {
-    Box::new(TesItemData::new(
+pub fn hand2hand_itemdata() -> Box<ItemData> {
+    Box::new(ItemData::new(
         ItemKind::HandToHand,
         false,
         false,
@@ -61,11 +61,11 @@ pub fn hand2hand_itemdata() -> Box<TesItemData> {
 
 /// Construct a default TesItemData struct, which is displayed as
 /// an empty spot on the HUD.
-pub fn empty_itemdata() -> Box<TesItemData> {
-    Box::<TesItemData>::default()
+pub fn empty_itemdata() -> Box<ItemData> {
+    Box::<ItemData>::default()
 }
 
-impl TesItemData {
+impl ItemData {
     /// This is called from C++ when handing us a new item.
     pub fn new(
         icon_kind: ItemKind,
@@ -75,7 +75,7 @@ impl TesItemData {
         name: &str,
         form_string: &str,
     ) -> Self {
-        TesItemData {
+        ItemData {
             name: name.to_string(),
             form_string: form_string.to_string(),
             kind: icon_kind,

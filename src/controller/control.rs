@@ -53,7 +53,7 @@ pub mod public {
     /// We get a fully-filled out TesItemData struct to use as we see fit.
     // menu_item is boxed because it's arriving from C++.
     #[allow(clippy::boxed_local)]
-    pub fn handle_menu_event(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<TesItemData>) {
+    pub fn handle_menu_event(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<ItemData>) {
         let action = Action::from(key);
         CONTROLLER
             .lock()
@@ -62,7 +62,7 @@ pub mod public {
     }
 
     /// Get information about the item equipped in a specific slot.
-    pub fn entry_to_show_in_slot(element: HudElement) -> Box<TesItemData> {
+    pub fn entry_to_show_in_slot(element: HudElement) -> Box<ItemData> {
         CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
@@ -87,7 +87,7 @@ pub mod public {
     }
 
     /// We know for sure the player just equipped this item.
-    pub fn handle_item_equipped(equipped: bool, item: Box<TesItemData>) -> bool {
+    pub fn handle_item_equipped(equipped: bool, item: Box<ItemData>) -> bool {
         let mut ctrl = CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
@@ -95,7 +95,7 @@ pub mod public {
     }
 
     /// A consumable's count changed. Record if relevant.
-    pub fn handle_inventory_changed(item: Box<TesItemData>, count: i32) {
+    pub fn handle_inventory_changed(item: Box<ItemData>, count: i32) {
         let mut ctrl = CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
@@ -138,13 +138,13 @@ pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
     /// The items the HUD should show right now.
-    visible: HashMap<HudElement, TesItemData>,
+    visible: HashMap<HudElement, ItemData>,
     /// True if we've got a two-handed weapon equipped right now.
     two_hander_equipped: bool,
     /// We cache the left-hand item we had before a two-hander was equipped.
-    left_hand_cached: Option<TesItemData>,
+    left_hand_cached: Option<ItemData>,
     /// We cache the right-hand item we had similarly.
-    right_hand_cached: Option<TesItemData>,
+    right_hand_cached: Option<ItemData>,
     /// State of the cycle modifier hotkey
     cycle_modifier: TrackedKey,
     unequip_modifier: TrackedKey,
@@ -171,7 +171,7 @@ impl Controller {
     /// The player's inventory changed! Act on it if we need to.
     fn handle_inventory_changed(
         &mut self,
-        #[allow(clippy::boxed_local)] item: Box<TesItemData>, // boxed because arriving from C++
+        #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
         delta: i32,
     ) {
         log::info!(
@@ -474,7 +474,7 @@ impl Controller {
         }
     }
 
-    fn update_and_record(&mut self, which: Action, next: &TesItemData) -> KeyEventResponse {
+    fn update_and_record(&mut self, which: Action, next: &ItemData) -> KeyEventResponse {
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
         self.flush_cycle_data();
@@ -563,7 +563,7 @@ impl Controller {
     }
 
     /// Convenience function for equipping any equippable.
-    fn equip_item(&self, item: &TesItemData, which: Action) {
+    fn equip_item(&self, item: &ItemData, which: Action) {
         if !matches!(which, Action::Right | Action::Left | Action::Utility) {
             return;
         }
@@ -603,7 +603,7 @@ impl Controller {
     fn handle_item_equipped(
         &mut self,
         equipped: bool,
-        #[allow(clippy::boxed_local)] item: Box<TesItemData>, // boxed because arriving from C++
+        #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
     ) -> bool {
         log::trace!("is-now-equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
             equipped,
@@ -668,7 +668,7 @@ impl Controller {
             if changed {
                 // Change was out of band. We need to react.
                 self.cycles.set_top(Action::Right, &item);
-                self.update_slot(HudElement::Left, &TesItemData::default());
+                self.update_slot(HudElement::Left, &ItemData::default());
             }
             self.two_hander_equipped = true;
             return changed;
@@ -769,9 +769,9 @@ impl Controller {
 
     /// Get the item equipped in a specific slot.
     /// Called by the HUD rendering loop in the ImGui code.
-    fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<TesItemData> {
+    fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<ItemData> {
         let Some(candidate) = self.visible.get(&slot) else {
-            return Box::<TesItemData>::default();
+            return Box::<ItemData>::default();
         };
 
         Box::new(candidate.clone())
@@ -833,7 +833,7 @@ impl Controller {
     }
 
     /// Update the displayed slot for the specified HUD element.
-    fn update_slot(&mut self, slot: HudElement, new_item: &TesItemData) -> bool {
+    fn update_slot(&mut self, slot: HudElement, new_item: &ItemData) -> bool {
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
         } else {
@@ -844,7 +844,7 @@ impl Controller {
     /// This function is called when the player has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    fn toggle_item(&mut self, action: Action, item: TesItemData) {
+    fn toggle_item(&mut self, action: Action, item: ItemData) {
         let result = self.cycles.toggle(action, item.clone());
 
         // notify the player what happened...
