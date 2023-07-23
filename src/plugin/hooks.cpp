@@ -43,9 +43,9 @@ namespace hooks
 				if (button->idCode == keycodes::k_invalid) { continue; }
 
 				auto key = keycodes::get_key_id(button);
-				if (!button->IsDown()) { continue; }
+				auto do_toggle = handle_menu_event(key, *button);
 
-				if (button->IsPressed() && hotkeys->is_cycle_button(key))
+				if (do_toggle)
 				{
 					auto menu_form = helpers::getSelectedFormFromMenu(ui);
 					if (!menu_form) continue;
@@ -54,7 +54,7 @@ namespace hooks
 					if (!item_form) continue;
 
 					auto entry = equippable::makeItemDataFromForm(item_form);
-					handle_menu_event(key, std::move(entry));
+					toggle_item(key, std::move(entry));
 				}
 			}
 		}

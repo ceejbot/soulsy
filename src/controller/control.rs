@@ -73,12 +73,19 @@ pub mod public {
     /// We get a fully-filled out ItemData struct to use as we see fit.
     // menu_item is boxed because it's arriving from C++.
     #[allow(clippy::boxed_local)]
-    pub fn handle_menu_event(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<ItemData>) {
+    pub fn toggle_item(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<ItemData>) {
         let action = Action::from(key);
         CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
             .toggle_item(action, *menu_item)
+    }
+
+    pub fn handle_menu_event(key: u32, button: &ButtonEvent) -> bool {
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
+        ctrl.handle_menu_event(key, button)
     }
 
     /// Get information about the item equipped in a specific slot.
@@ -916,16 +923,57 @@ impl Controller {
         }
     }
 
+    fn handle_menu_event(&mut self, key: u32, button: &ButtonEvent) -> bool {
+        // Much simpler than the game loop. We care if the cycle modifier key
+        // is down (if one is set), and we care if the cycle button itself has
+        // been pressed.
+        let keyevent = TrackedKey {
+            key: HotkeyKind::from(key),
+            state: KeyState::from(button),
+        };
+        if matches!(keyevent.key, HotkeyKind::None) {
+            return false;
+        }
+
+        if matches!(keyevent.key, HotkeyKind::CycleModifier) {
+            self.cycle_modifier = keyevent;
+            return false;
+        }
+
+        if keyevent.key.is_cycle_key() && button.IsDown() {
+            if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
+                true
+            } else {
+                log::info!("Not toggling in menu because your modifier key isn't pressed.");
+                false
+            }
+        } else {
+            false
+        }
+    }
+
     /// This function is called when the player has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
     fn toggle_item(&mut self, action: Action, item: ItemData) {
+        // clear the modifier key in case strange things happen
+        let settings = user_settings();
+        if settings.cycle_modifier > 0 {
+            self.cycle_modifier = TrackedKey {
+                key: HotkeyKind::from(settings.cycle_modifier as u32),
+                state: KeyState::Up,
+            };
+        }
+        drop(settings);
+
         let result = self.cycles.toggle(action, item.clone());
 
         // notify the player what happened...
         let verb = match result {
             MenuEventResponse::ItemAdded => "added to",
             MenuEventResponse::ItemRemoved => "removed from",
+            MenuEventResponse::ItemInappropriate => "can't go into the",
+            MenuEventResponse::TooManyItems => "would overflow the",
             _ => "not changed in",
         };
         let cyclename = match action {

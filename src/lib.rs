@@ -307,7 +307,9 @@ pub mod plugin {
         /// Handle an incoming key press event, responding with how it was handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
-        fn handle_menu_event(key: u32, item: Box<ItemData>);
+        fn handle_menu_event(key: u32, button: &ButtonEvent) -> bool;
+        /// Toggle a menu item in the given cycle.
+        fn toggle_item(key: u32, item: Box<ItemData>);
         /// Get the item readied in the given slot, if any.
         fn entry_to_show_in_slot(slot: HudElement) -> Box<ItemData>;
         /// A cycle delay timer has expired. Time to equip!

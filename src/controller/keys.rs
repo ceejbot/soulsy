@@ -23,6 +23,12 @@ pub enum HotkeyKind {
     None,
 }
 
+impl HotkeyKind {
+    pub fn is_cycle_key(&self) -> bool {
+        matches!(*self, HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right | HotkeyKind::Utility)
+    }
+}
+
 impl From<u32> for HotkeyKind {
     fn from(v: u32) -> Self {
         let settings = user_settings();
