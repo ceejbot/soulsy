@@ -306,6 +306,19 @@ impl CycleData {
         false
     }
 
+    pub fn includes(&self, which: Action, item: &ItemData) -> bool {
+        let cycle = match which {
+            Action::Power => &self.power,
+            Action::Left => &self.left,
+            Action::Right => &self.right,
+            Action::Utility => &self.utility,
+            _ => {
+                return false;
+            }
+        };
+        cycle.iter().any(|xs| xs.form_string() == item.form_string())
+    }
+
     pub fn include_item(&mut self, which: Action, item: ItemData) {
         let cycle = match which {
             Action::Power => &mut self.power,
@@ -380,10 +393,4 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
             .collect::<Vec<String>>()
             .join(", ")
     )
-}
-
-impl Display for ItemData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name())
-    }
 }

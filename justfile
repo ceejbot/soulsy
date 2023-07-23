@@ -69,7 +69,7 @@ tag VERSION:
     git tag "v{{VERSION}}"
     echo "Release tagged for version v{{VERSION}}"
 
-# Bash version of archive creation, sans 7zip step for now.
+# Create a mod archive and 7zip it. Requires bash.
 archive:
     #!/usr/bin/env bash
     set -e
@@ -85,49 +85,6 @@ archive:
     echo "don't check this in, but copying to live mod..."
     cp -p build/Release/SoulsyHUD.dll "/mnt/g/VortexStaging/Soulsy HUD/SKSE/plugins/SoulsyHUD.dll"
     cp -p build/Release/SoulsyHUD.pdb "/mnt/g/VortexStaging/Soulsy HUD/SKSE/plugins/SoulsyHUD.pdb"
-
-
-# Build a full mod archive; cross-platform.
-archive-win:
-    #!{{shbang}}
-    //! I refuse to write long pwsh scripts, so I inflict a rust-script
-    //! on the world instead.
-    //!
-    //! ```cargo
-    //! [dependencies]
-    //! fs_extra="1.3.0"
-    //! sevenz-rust={version="0.4.3", features=["compress"]}
-    //! ```
-    fn main() {
-        if std::path::Path::new("archive").exists() {
-            println!("Existing archive directory found. Bailing.");
-            std::process::exit(1);
-        }
-        println!("Copying source files to `./archive`...");
-        std::fs::create_dir_all("archive").expect("couldn't create archive directory");
-
-        // recursive copy stripping off the first path segment
-        let mut sources = Vec::new();
-        sources.push("data/Interface");
-        sources.push("data/mcm");
-        sources.push("data/scripts");
-        sources.push("data/SKSE");
-        let options = fs_extra::dir::CopyOptions::new();
-        fs_extra::copy_items(&sources, "archive", &options).expect("make life take the lemons back");
-
-        std::fs::copy("data/SoulsyHUD.esl", "archive/SoulsyHUD.esl").expect("couldn't copy plugin file");
-        std::fs::copy("build/Release/SoulsyHUD.dll", "archive/SKSE/plugins/SoulsyHUD.dll").expect("couldn't copy DLL");
-        std::fs::copy("build/Release/SoulsyHUD.pdb", "archive/SKSE/plugins/SoulsyHUD.pdb").expect("couldn't copy PDB");
-
-        sevenz_rust::compress_to_path("archive/", "archive.7z").expect("7zip compression failed");
-        println!("Archive created! `archive.7z` ready to be uploaded or tested.")
-    }
-
-archive-less-precious:
-    New-Item -Path "." -Name "soulsyhud" -ItemType "directory"
-    Copy-Item -Path "data/*" -Destination "soulsyhud" -Recurse
-    Copy-Item "build/Release/SoulsyHUD.dll" -Destination "soulsyhud/SKSE/plugins/"
-    Copy-Item "build/Release/SoulsyHUD.pdb" -Destination "soulsyhud/SKSE/plugins/"
 
 # Copy English translation to other translation files.
 translations:

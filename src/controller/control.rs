@@ -151,9 +151,9 @@ pub mod public {
         ctrl.flush_cycle_data();
 
         // This loses any is-up/is-down state, but the user just closed the config page.
-        // Niche bug. 
+        // Niche bug.
         ctrl.activate_modifier = if settings.activate_modifier > 0 {
-             TrackedKey {
+            TrackedKey {
                 key: HotkeyKind::from(settings.activate_modifier as u32),
                 state: KeyState::Up,
             }
@@ -350,17 +350,20 @@ impl Controller {
             log::info!("Programmer error! This is not a simple cycle. cycle={which:?}",);
             return KeyEventResponse::default();
         }
-        if self.cycles.cycle_len(which) <= 1 {
-            // TODO failure sound
-            return KeyEventResponse {
-                handled: true,
-                ..Default::default()
-            };
-        }
 
-        let candidate = self.cycles.advance(which, 1);
+        let hud = HudElement::from(which);
+        let current_not_in_cycle = if let Some(visible) = self.visible.get(&hud) {
+            !self.cycles.includes(which, visible)
+        } else {
+            false
+        };
+        let candidate = if current_not_in_cycle {
+            self.cycles.get_top(which)
+        } else {
+            self.cycles.advance(which, 1)
+        };
+
         if let Some(next) = candidate {
-            let hud = HudElement::from(which);
             self.update_slot(hud, &next);
             self.flush_cycle_data();
             KeyEventResponse {

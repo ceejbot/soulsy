@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 use crate::plugin::ItemKind;
@@ -26,6 +28,12 @@ pub struct ItemData {
 impl PartialEq for ItemData {
     fn eq(&self, other: &Self) -> bool {
         self.form_string == other.form_string
+    }
+}
+
+impl Display for ItemData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name())
     }
 }
 
