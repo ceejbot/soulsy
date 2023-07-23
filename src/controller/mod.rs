@@ -10,10 +10,10 @@
 pub mod control;
 pub mod cycles;
 pub mod itemdata;
+pub mod itemkind;
 pub mod keys;
 pub mod layout;
 pub mod settings;
-pub mod tesitemkind;
 
 // We don't have much logging setup code, so just shove it in here.
 use std::fs::File;
@@ -23,9 +23,9 @@ use simplelog::*;
 
 pub use control::public::*;
 pub use itemdata::{empty_itemdata, hand2hand_itemdata, itemdata_from_formdata, TesItemData};
+pub use itemkind::{get_icon_file, kind_has_count, kind_is_magic};
 pub use layout::hud_layout;
 pub use settings::{user_settings, UserSettings};
-pub use tesitemkind::{get_icon_file, kind_has_count, kind_is_magic};
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
     let hudl = hud_layout(); // yeah, it's in here, sorry.
