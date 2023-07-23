@@ -83,8 +83,8 @@ archive:
     #7z a "$outdir".7z "$outdir"
     echo "Mod directory ready at ${outdir}; archive at ${outdir}.7z"
     echo "don't check this in, but copying to live mod..."
-    cp -p build/Release/SoulsyHUD.dll "/mnt/g/VortexStaging/Soulsy HUD/SKSE/plugins/SoulsyHUD.dll"
-    cp -p build/Release/SoulsyHUD.pdb "/mnt/g/VortexStaging/Soulsy HUD/SKSE/plugins/SoulsyHUD.pdb"
+    cp -p build/Release/SoulsyHUD.dll "/mnt/g/VortexStaging/Soulsy HUD dev version/SKSE/plugins/SoulsyHUD.dll"
+    cp -p build/Release/SoulsyHUD.pdb "/mnt/g/VortexStaging/Soulsy HUD dev version/SKSE/plugins/SoulsyHUD.pdb"
 
 # Copy English translation to other translation files.
 translations:
