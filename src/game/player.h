@@ -4,9 +4,9 @@
 
 #include "rust/cxx.h"
 
-struct TesItemData;
+struct ItemData;
 enum class Action : ::std::uint8_t;
-enum class TesItemKind : ::std::uint8_t;
+enum class ItemKind : ::std::uint8_t;
 
 namespace player
 {
@@ -20,12 +20,12 @@ namespace player
 	// Here I start carving out an API that the rust controller can call to
 	// manipulate things about the player, as well as ask questions of it.
 
-	rust::Box<TesItemData> equippedLeftHand();
-	rust::Box<TesItemData> equippedRightHand();
-	rust::Box<TesItemData> equippedPower();
-	rust::Box<TesItemData> equippedAmmo();
-	rust::Box<TesItemData> boundObjectLeftHand();
-	rust::Box<TesItemData> boundObjectRightHand();
+	rust::Box<ItemData> equippedLeftHand();
+	rust::Box<ItemData> equippedRightHand();
+	rust::Box<ItemData> equippedPower();
+	rust::Box<ItemData> equippedAmmo();
+	rust::Box<ItemData> boundObjectLeftHand();
+	rust::Box<ItemData> boundObjectRightHand();
 
 	rust::String playerName();
 
@@ -42,7 +42,7 @@ namespace player
 	void equipAmmo(const std::string& form_spec);
 	void consumePotion(const std::string& form_spec);
 	bool hasItemOrSpell(const std::string& form_spec);
-	void reequipLeftHand(const std::string& form_spec);
+	void reequipHand(Action which, const std::string& form_spec);
 
 	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& a_player);
 	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count);

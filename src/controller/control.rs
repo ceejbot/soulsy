@@ -5,6 +5,8 @@ use std::sync::Mutex;
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
+use super::itemdata::*;
+use super::keys::*;
 use super::settings::{user_settings, UserSettings};
 use crate::hud_layout;
 use crate::plugin::*;
@@ -19,12 +21,32 @@ pub mod public {
 
     /// C++ tells us when it's safe to start pulling together the data we need.
     pub fn initialize_hud() {
+        let settings = user_settings();
         log::info!("initializing hud controller");
         let mut ctrl = CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        let settings = user_settings();
         log::info!("{settings:?}");
+
+        if settings.activate_modifier > 0 {
+            ctrl.activate_modifier = TrackedKey {
+                key: HotkeyKind::from(settings.activate_modifier as u32),
+                state: KeyState::Up,
+            };
+        }
+        if settings.cycle_modifier > 0 {
+            ctrl.cycle_modifier = TrackedKey {
+                key: HotkeyKind::from(settings.cycle_modifier as u32),
+                state: KeyState::Up,
+            };
+        }
+        if settings.unequip_modifier > 0 {
+            ctrl.unequip_modifier = TrackedKey {
+                key: HotkeyKind::from(settings.unequip_modifier as u32),
+                state: KeyState::Up,
+            };
+        }
+
         let _hud = hud_layout();
         ctrl.validate_cycles();
         log::info!("HUD data should be fresh; ready to cycle!")
@@ -48,8 +70,10 @@ pub mod public {
 
     /// Function for C++ to call to send a relevant menu button-event to us.
     ///
-    /// We get a fully-filled out TesItemData struct to use as we see fit.
-    pub fn handle_menu_event(key: u32, menu_item: Box<TesItemData>) {
+    /// We get a fully-filled out ItemData struct to use as we see fit.
+    // menu_item is boxed because it's arriving from C++.
+    #[allow(clippy::boxed_local)]
+    pub fn handle_menu_event(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<ItemData>) {
         let action = Action::from(key);
         CONTROLLER
             .lock()
@@ -58,7 +82,7 @@ pub mod public {
     }
 
     /// Get information about the item equipped in a specific slot.
-    pub fn entry_to_show_in_slot(element: HudElement) -> Box<TesItemData> {
+    pub fn entry_to_show_in_slot(element: HudElement) -> Box<ItemData> {
         CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
@@ -83,7 +107,7 @@ pub mod public {
     }
 
     /// We know for sure the player just equipped this item.
-    pub fn handle_item_equipped(equipped: bool, item: Box<TesItemData>) -> bool {
+    pub fn handle_item_equipped(equipped: bool, item: Box<ItemData>) -> bool {
         let mut ctrl = CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
@@ -91,12 +115,11 @@ pub mod public {
     }
 
     /// A consumable's count changed. Record if relevant.
-    pub fn handle_inventory_changed(item: Box<TesItemData>, count: i32) {
+    pub fn handle_inventory_changed(item: Box<ItemData>, count: i32) {
         let mut ctrl = CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.handle_inventory_changed(item, count);
-        ctrl.update_hud();
     }
 
     pub fn truncate_cycles(new: u32) {
@@ -116,18 +139,43 @@ pub mod public {
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         let settings = user_settings();
         if settings.include_unarmed() {
-            let h2h = hand_to_hand_item();
+            let h2h = hand2hand_itemdata();
             let h2h = *h2h;
             ctrl.cycles.include_item(Action::Left, h2h.clone());
             ctrl.cycles.include_item(Action::Right, h2h);
         } else {
             // remove any item with h2h type from cycles
-            ctrl.cycles
-                .filter_kind(Action::Left, TesItemKind::HandToHand);
-            ctrl.cycles
-                .filter_kind(Action::Right, TesItemKind::HandToHand);
+            ctrl.cycles.filter_kind(Action::Left, ItemKind::HandToHand);
+            ctrl.cycles.filter_kind(Action::Right, ItemKind::HandToHand);
         }
         ctrl.flush_cycle_data();
+
+        // This loses any is-up/is-down state, but the user just closed the config page.
+        // Niche bug. 
+        ctrl.activate_modifier = if settings.activate_modifier > 0 {
+             TrackedKey {
+                key: HotkeyKind::from(settings.activate_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
+        ctrl.cycle_modifier = if settings.cycle_modifier > 0 {
+            TrackedKey {
+                key: HotkeyKind::from(settings.cycle_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
+        ctrl.unequip_modifier = if settings.unequip_modifier > 0 {
+            TrackedKey {
+                key: HotkeyKind::from(settings.unequip_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
     }
 }
 
@@ -137,15 +185,17 @@ pub struct Controller {
     /// Our currently-active cycles.
     cycles: CycleData,
     /// The items the HUD should show right now.
-    visible: HashMap<HudElement, TesItemData>,
+    visible: HashMap<HudElement, ItemData>,
     /// True if we've got a two-handed weapon equipped right now.
     two_hander_equipped: bool,
-    /// We cache the left-hand item we had before a two-hander arrived.
-    left_hand_cached: Option<TesItemData>,
-    /// True if the last time we saw this key in an event, it was down.
-    cycle_modifier_pressed: bool,
-    /// True if the last time we saw this key in an event, it was down.
-    unequip_modifier_pressed: bool,
+    /// We cache the left-hand item we had before a two-hander was equipped.
+    left_hand_cached: Option<ItemData>,
+    /// We cache the right-hand item we had similarly.
+    right_hand_cached: Option<ItemData>,
+    /// State of the cycle modifier hotkey
+    cycle_modifier: TrackedKey,
+    unequip_modifier: TrackedKey,
+    activate_modifier: TrackedKey,
 }
 
 impl Controller {
@@ -166,7 +216,11 @@ impl Controller {
     }
 
     /// The player's inventory changed! Act on it if we need to.
-    fn handle_inventory_changed(&mut self, item: Box<TesItemData>, delta: i32) {
+    fn handle_inventory_changed(
+        &mut self,
+        #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
+        delta: i32,
+    ) {
         log::info!(
             "inventory count changed; formID={}; count={delta}",
             item.form_string()
@@ -183,14 +237,345 @@ impl Controller {
             current + delta as u32
         };
 
-        if item.kind() == TesItemKind::Arrow {
+        if item.kind().is_ammo() {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
-                if *candidate == *item {
+                if *candidate.form_string() == *item.form_string() {
                     candidate.set_count(new_count);
                 }
             }
-        } else if self.cycles.update_count(*item, new_count) {
-            self.update_hud();
+        }
+
+        _ = self.cycles.update_count(*item, new_count);
+    }
+
+    /// Handle a key-press event that the event system decided we need to know about.
+    ///
+    /// Returns an enum indicating what we did in response, so that the C++ layer can
+    /// start a tick timer for cycle delay.
+    fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
+        let keyevent = TrackedKey {
+            key: HotkeyKind::from(key),
+            state: KeyState::from(button),
+        };
+        if matches!(keyevent.key, HotkeyKind::None) {
+            return KeyEventResponse::default();
+        }
+        if !button.IsUp() && !button.IsDown() {
+            return KeyEventResponse::default();
+        }
+
+        log::trace!("incoming key={};", keyevent);
+
+        if matches!(keyevent.key, HotkeyKind::CycleModifier) {
+            self.cycle_modifier = keyevent;
+            return KeyEventResponse::default();
+        }
+        if matches!(keyevent.key, HotkeyKind::UnequipModifier) {
+            self.unequip_modifier = keyevent;
+            return KeyEventResponse::default();
+        }
+        if matches!(keyevent.key, HotkeyKind::ActivateModifier) {
+            self.activate_modifier = keyevent;
+            return KeyEventResponse::default();
+        }
+
+        if keyevent.state != KeyState::Up {
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
+        }
+
+        match keyevent.key {
+            HotkeyKind::Power => self.handle_cycle_power(),
+            HotkeyKind::Utility => self.handle_cycle_utility(),
+            HotkeyKind::Left => self.handle_cycle_hand(keyevent),
+            HotkeyKind::Right => self.handle_cycle_hand(keyevent),
+            HotkeyKind::Activate => self.use_utility_item(),
+            HotkeyKind::Refresh => {
+                HudLayout::refresh();
+                KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                }
+            }
+            HotkeyKind::ShowHide => {
+                self.cycles.toggle_hud();
+                KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                }
+            }
+            HotkeyKind::UnequipModifier => {
+                self.unequip_modifier = keyevent;
+                KeyEventResponse::default()
+            }
+            HotkeyKind::CycleModifier => {
+                self.cycle_modifier = keyevent;
+                KeyEventResponse::default()
+            }
+            HotkeyKind::ActivateModifier => {
+                self.activate_modifier = keyevent;
+                KeyEventResponse::default()
+            }
+            HotkeyKind::None => KeyEventResponse::default(),
+        }
+    }
+
+    fn handle_cycle_power(&mut self) -> KeyEventResponse {
+        if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
+            log::debug!("cycling shouts/powers");
+            self.advance_simple_cycle(Action::Power)
+        } else {
+            log::info!("declining to advance power/shouts cycle without the modifier key down");
+            KeyEventResponse::default()
+        }
+    }
+
+    fn handle_cycle_utility(&mut self) -> KeyEventResponse {
+        if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
+            log::debug!("cycling utilities/consumables");
+            self.advance_simple_cycle(Action::Utility)
+        } else {
+            log::info!(
+                "declining to advance utility/consumables cycle without the modifier key down"
+            );
+            KeyEventResponse::default()
+        }
+    }
+
+    fn advance_simple_cycle(&mut self, which: Action) -> KeyEventResponse {
+        // Programmer error to call this for left/right.
+        if !matches!(which, Action::Power | Action::Utility) {
+            log::info!("Programmer error! This is not a simple cycle. cycle={which:?}",);
+            return KeyEventResponse::default();
+        }
+        if self.cycles.cycle_len(which) <= 1 {
+            // TODO failure sound
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
+        }
+
+        let candidate = self.cycles.advance(which, 1);
+        if let Some(next) = candidate {
+            let hud = HudElement::from(which);
+            self.update_slot(hud, &next);
+            self.flush_cycle_data();
+            KeyEventResponse {
+                handled: true,
+                start_timer: if !matches!(which, Action::Utility) {
+                    which
+                } else {
+                    Action::None
+                },
+                stop_timer: Action::None,
+            }
+        } else {
+            KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            }
+        }
+    }
+
+    fn handle_cycle_hand(&mut self, event: TrackedKey) -> KeyEventResponse {
+        if !matches!(event.key, HotkeyKind::Left | HotkeyKind::Right) {
+            return KeyEventResponse::default();
+        }
+
+        log::debug!("cycling item in {} hand", event.key);
+
+        // We have two modifiers to check
+        let unequip_requested =
+            !self.unequip_modifier.ignore() && self.unequip_modifier.is_pressed();
+        let cycle_requested = if self.cycle_modifier.ignore() {
+            !unequip_requested
+        } else {
+            self.cycle_modifier.is_pressed()
+        };
+
+        // ETOOMANYENUMS
+        // The root problem is that shared enums are not sum types, and I want sum types.
+        let hudslot = HudElement::from(&event.key);
+        let action = Action::from(&event.key);
+
+        if unequip_requested {
+            log::info!("unequipping slot {:?} by request", action);
+            let empty_item = *hand2hand_itemdata();
+            unequipSlot(action);
+            self.update_slot(hudslot, &empty_item);
+            self.cycles.set_top(action, &empty_item);
+            KeyEventResponse {
+                handled: true,
+                start_timer: Action::None,
+                stop_timer: action,
+            }
+        } else if cycle_requested {
+            self.advance_hand_cycle(action)
+        } else {
+            // TODO honk
+            log::info!("you need a modifier key down for {action:?}");
+            KeyEventResponse::default()
+        }
+    }
+
+    fn advance_hand_cycle(&mut self, which: Action) -> KeyEventResponse {
+        if self.cycles.cycle_len(which) <= 1 {
+            // TODO failure sound honk
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
+        }
+
+        // This is one of two tricky decision points in the mod. (The other
+        // is when timers expire and we have to act on decisions made here.)
+        // We have decided we want to advance the left or right cycle.
+        // What is an allowed next choice in the spot? This code deliberately
+        // repeats itself to make the logic clear.
+
+        let other_hud = if which == Action::Left {
+            HudElement::Right
+        } else {
+            HudElement::Left
+        };
+
+        if self.two_hander_equipped {
+            // Here either hand may cycle, and the other hand must bounce back
+            // to what was previously equipped. We update both slots in the HUD.
+
+            // this should not be None given the first check, but we need to check anyway
+            let Some(candidate) = self.cycles.peek_next(which) else {
+                return KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                };
+            };
+
+            if candidate.two_handed() {
+                // no problem. just cycle to it.
+                self.cycles.advance(which, 1);
+                return self.update_and_record(which, &candidate);
+            }
+
+            // Now we got fun. Do we have something to bounce back to in the other hand?
+            let (other_cached, other_action) = if matches!(which, Action::Left) {
+                (self.right_hand_cached.clone(), Action::Right)
+            } else {
+                (self.left_hand_cached.clone(), Action::Left)
+            };
+
+            let Some(return_to) = other_cached else {
+                // The other hand has no opinions. Advance without fear.
+                self.cycles.advance(which, 1);
+                return self.update_and_record(which, &candidate);
+            };
+
+            // What do we want to return to? If it's completely different from us,
+            // we are golden. We update both HUD slots and start a timer.
+            if candidate.form_string() != return_to.form_string() {
+                self.cycles.advance(which, 1);
+                let _changed = self.update_slot(other_hud, &return_to.clone());
+                self.cycles.set_top(other_action, &return_to.clone());
+                return self.update_and_record(which, &candidate);
+            }
+
+            // They are the same. Do we have more than one? If so, we're good.
+            if !candidate.kind().count_matters() || candidate.count() > 1 {
+                self.cycles.advance(which, 1);
+                let _changed = &self.update_slot(other_hud, &return_to.clone());
+                return self.update_and_record(which, &candidate);
+            }
+
+            // The worst case! Somebody's got to lose, and in this case it's the
+            // hand trying to cycle forward.
+            let Some(candidate) = self.cycles.advance_skipping(which, return_to.clone()) else {
+                // We have no good options. TODO honk
+                return KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                };
+            };
+
+            if candidate.two_handed() {
+                // How lucky we are.
+                return self.update_and_record(which, &candidate);
+            } else {
+                let _changed = &self.update_slot(other_hud, &return_to.clone());
+                return self.update_and_record(which, &candidate);
+            }
+        } else {
+            // Phew. Okay. Now we're on to the one-handers equipped cases. These are easier.
+            let maybe_candidate = if let Some(other_equipped) = self.visible.get(&other_hud) {
+                if !other_equipped.kind().count_matters() || other_equipped.count() > 1 {
+                    self.cycles.advance(which, 1)
+                } else {
+                    self.cycles.advance_skipping(which, other_equipped.clone())
+                }
+            } else {
+                self.cycles.advance(which, 1)
+            };
+
+            if let Some(candidate) = maybe_candidate {
+                return self.update_and_record(which, &candidate);
+            }
+        }
+
+        // If we got here, we got nothin'.
+        KeyEventResponse {
+            handled: true,
+            ..Default::default()
+        }
+    }
+
+    fn update_and_record(&mut self, which: Action, next: &ItemData) -> KeyEventResponse {
+        let hud = HudElement::from(which);
+        self.update_slot(hud, next);
+        self.flush_cycle_data();
+        KeyEventResponse {
+            handled: true,
+            start_timer: if !matches!(which, Action::Utility) {
+                which
+            } else {
+                Action::None
+            },
+            stop_timer: Action::None,
+        }
+    }
+
+    /// Activate whatever we have in the utility slot.
+    fn use_utility_item(&mut self) -> KeyEventResponse {
+        log::debug!("using utility item");
+        if !self.activate_modifier.ignore() && !self.activate_modifier.is_pressed() {
+            log::info!("got the activate key, but no modifier with it; doing nothing");
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
+        }
+
+        if let Some(item) = self.cycles.get_top(Action::Utility) {
+            if item.kind().is_potion()
+                || matches!(item.kind(), ItemKind::PoisonDefault | ItemKind::Food)
+            {
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                consumePotion(&form_spec);
+            } else if item.kind().is_armor() {
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                equipArmor(&form_spec);
+            } else if item.kind().is_ammo() {
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                equipAmmo(&form_spec)
+            }
+        }
+
+        // No matter what we did, we stop the timer. Not that a timer should exist.
+        KeyEventResponse {
+            handled: true,
+            start_timer: Action::None,
+            stop_timer: Action::Utility,
         }
     }
 
@@ -208,12 +593,6 @@ impl Controller {
     fn timer_expired(&mut self, which: Action) {
         let hud = HudElement::from(which);
 
-        if matches!(which, Action::Left) && self.two_hander_equipped {
-            // The left hand is blocked because the right hand is equipping a two-hander.
-            // TODO honk
-            return;
-        }
-
         let Some(item) = &self.visible.get(&hud) else {
             log::warn!(
                 "visible item in hud slot was None, which should not happen; slot={:?};",
@@ -225,10 +604,12 @@ impl Controller {
 
         // We equip whatever the HUD is showing right now.
         let kind = item.kind();
-        if matches!(kind, TesItemKind::HandToHand) {
+        if matches!(kind, ItemKind::HandToHand) {
             log::info!("melee time! unequipping slot {which:?}");
             if which == Action::Left {
-                self.left_hand_cached = Some(*hand_to_hand_item());
+                self.left_hand_cached = Some(*hand2hand_itemdata());
+            } else {
+                self.right_hand_cached = Some(*hand2hand_itemdata());
             }
             unequipSlot(which);
             return;
@@ -242,11 +623,18 @@ impl Controller {
             return;
         }
 
+        if !item.two_handed() {
+            if which == Action::Left {
+                self.left_hand_cached = Some(*item).cloned();
+            } else {
+                self.right_hand_cached = Some(*item).cloned();
+            }
+        }
         self.equip_item(item, which);
     }
 
     /// Convenience function for equipping any equippable.
-    fn equip_item(&self, item: &TesItemData, which: Action) {
+    fn equip_item(&self, item: &ItemData, which: Action) {
         if !matches!(which, Action::Right | Action::Left | Action::Utility) {
             return;
         }
@@ -267,7 +655,7 @@ impl Controller {
             equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
-        } else if kind == TesItemKind::Arrow {
+        } else if kind == ItemKind::Arrow {
             equipAmmo(&form_spec);
         } else {
             log::info!(
@@ -277,11 +665,184 @@ impl Controller {
         }
     }
 
+    /// The game informs us that our equipment has changed. Update.
+    ///
+    /// The item we're handed was either equipped or UNequipped. There are some
+    /// changes we do need to react to, either because they were done
+    /// out-of-band of the HUD or because we want to do more work in reaction to
+    /// changes we initiated.
+    fn handle_item_equipped(
+        &mut self,
+        equipped: bool,
+        #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
+    ) -> bool {
+        log::trace!("is-now-equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+            equipped,
+            item.name(),
+            item.kind(),
+            self.two_hander_equipped,
+            self.left_hand_cached.clone().map_or("".to_string(), |xs| xs.name()),
+            self.right_hand_cached.clone().map_or("".to_string(), |xs| xs.name())
+        );
+
+        if !equipped {
+            return false;
+        }
+
+        let item = *item; // insert unboxing video
+
+        if item.kind().is_ammo() {
+            if let Some(visible) = self.visible.get(&HudElement::Ammo) {
+                if visible.form_string() != item.form_string() {
+                    log::debug!("updating visible ammo; name='{}';", item.name());
+                    self.update_slot(HudElement::Ammo, &item);
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                self.update_slot(HudElement::Ammo, &item);
+                return true;
+            }
+        }
+
+        if item.kind().is_utility() {
+            // We do nothing. We are the source of truth for non-ammo on the utility view.
+            return false;
+        }
+
+        if item.kind().is_power() {
+            if let Some(visible) = self.visible.get(&HudElement::Power) {
+                if visible.form_string() != item.form_string() {
+                    log::debug!("updating visible power/shout; name='{}';", item.name());
+                    self.update_slot(HudElement::Power, &item);
+                    self.cycles.set_top(Action::Power, &item);
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                self.update_slot(HudElement::Power, &item);
+                return true;
+            }
+        }
+
+        // ----------
+        // The hard part starts. Left hand vs right hand. Earlier, we did our
+        // best to set up the HUD to show what we want in each hand. So we look
+        // at the item equipped: does it match an earlier decision? If so, make
+        // the other decision happen as well. If the equip event was NOT driven
+        // by the HUD, we have some more work to do.
+
+        if item.two_handed() {
+            let changed = self.update_slot(HudElement::Right, &item);
+            if changed {
+                // Change was out of band. We need to react.
+                self.cycles.set_top(Action::Right, &item);
+                self.update_slot(HudElement::Left, &ItemData::default());
+            }
+            self.two_hander_equipped = true;
+            return changed;
+        }
+
+        // It's a one-hander. Does it match an earlier decision?
+
+        let rightie = if !item.kind().is_weapon() {
+            equippedRightHand()
+        } else {
+            boundObjectRightHand()
+        };
+
+        let leftie = if !item.kind().is_weapon() {
+            equippedLeftHand()
+        } else {
+            boundObjectLeftHand()
+        };
+
+        log::trace!(
+            "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={};",
+            item.form_string(),
+            rightie.form_string(),
+            leftie.form_string(),
+            self.two_hander_equipped
+        );
+
+        let leftvis = self
+            .visible
+            .get(&HudElement::Left)
+            .map_or("".to_string(), |xs| xs.form_string());
+        let rightvis = self
+            .visible
+            .get(&HudElement::Right)
+            .map_or("".to_string(), |xs| xs.form_string());
+
+        let leftvis_matches_equipped = leftvis == leftie.form_string();
+
+        let rightvis_matches_equipped = rightvis == rightie.form_string();
+        if leftvis_matches_equipped && rightvis_matches_equipped {
+            if self.two_hander_equipped {
+                // force re-equip the left anyway, or it won't show up.
+                cxx::let_cxx_string!(form_spec = leftvis);
+                reequipHand(Action::Left, &form_spec);
+            }
+            self.two_hander_equipped = false;
+            return false; // no more work to do
+        }
+
+        let item_slotted_left = item.form_string() == leftie.form_string();
+        let item_slotted_right = item.form_string() == rightie.form_string();
+
+        let l_changed = if item_slotted_left {
+            // HUD update. This was out of band.
+            self.update_slot(HudElement::Left, &item)
+        } else {
+            false
+        };
+
+        let r_changed = if item_slotted_right {
+            // HUD update. This was out of band.
+            self.update_slot(HudElement::Right, &item)
+        } else {
+            false
+        };
+
+        if !self.two_hander_equipped {
+            // We are done. Phew.
+            return r_changed || l_changed;
+        }
+
+        if r_changed {
+            if let Some(prev_left) = self.left_hand_cached.clone() {
+                log::debug!("considering re-requipping or unequipping LEFT");
+                if prev_left.kind() == ItemKind::HandToHand {
+                    unequipSlot(Action::Left);
+                    self.update_slot(HudElement::Left, &prev_left);
+                } else {
+                    cxx::let_cxx_string!(form_spec = prev_left.form_string());
+                    reequipHand(Action::Left, &form_spec);
+                    self.update_slot(HudElement::Left, &prev_left);
+                }
+            }
+        } else if let Some(prev_right) = self.right_hand_cached.clone() {
+            log::debug!("considering re-requipping or unequipping RIGHT");
+            if prev_right.kind() == ItemKind::HandToHand {
+                unequipSlot(Action::Right);
+                self.update_slot(HudElement::Right, &prev_right);
+            } else {
+                cxx::let_cxx_string!(form_spec = prev_right.form_string());
+                reequipHand(Action::Right, &form_spec);
+            }
+        }
+
+        self.two_hander_equipped = item.two_handed();
+        r_changed || l_changed
+    }
+
     /// Get the item equipped in a specific slot.
     /// Called by the HUD rendering loop in the ImGui code.
-    fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<TesItemData> {
+    fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<ItemData> {
         let Some(candidate) = self.visible.get(&slot) else {
-            return Box::<TesItemData>::default();
+            return Box::<ItemData>::default();
         };
 
         Box::new(candidate.clone())
@@ -295,13 +856,16 @@ impl Controller {
     fn update_hud(&mut self) -> bool {
         let right_entry = boundObjectRightHand();
         let right_changed = self.update_slot(HudElement::Right, &right_entry);
+        if !right_entry.two_handed() {
+            self.right_hand_cached = Some(*right_entry.clone());
+        }
 
         let left_entry = boundObjectLeftHand();
         let left_changed = self.update_slot(HudElement::Left, &left_entry);
         if !left_entry.two_handed() {
             self.left_hand_cached = Some(*left_entry.clone());
         }
-        self.two_hander_equipped = left_entry.two_handed();
+        self.two_hander_equipped = right_entry.two_handed(); // same item will be in both hands
 
         let power = equippedPower();
         let power_changed = self.update_slot(HudElement::Power, &power);
@@ -331,210 +895,16 @@ impl Controller {
 
             // If any of our equipped items is in a cycle, make that item the top item
             // so advancing the cycles works as expected.
-            self.cycles.set_top(Action::Power, *power);
-            self.cycles.set_top(Action::Left, *left_entry);
-            self.cycles.set_top(Action::Right, *right_entry);
+            self.cycles.set_top(Action::Power, &power);
+            self.cycles.set_top(Action::Left, &left_entry);
+            self.cycles.set_top(Action::Right, &right_entry);
         }
 
         changed
     }
 
-    /// The game informs us that our equipment has changed. Update.
-    ///
-    /// The item we're handed was either equipped or UNequipped.
-    /// There are some changes we do need to react to, either because
-    /// they were done out-of-band of the HUD or because we want to
-    /// do more work in reaction to changes we initiated.
-    fn handle_item_equipped(&mut self, equipped: bool, item: Box<TesItemData>) -> bool {
-        log::info!(
-            "item equip status changed; we don't know which hand yet; equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; cached={:?}",
-            equipped,
-            item.name(),
-            item.kind(),
-            self.two_hander_equipped,
-            self.left_hand_cached
-        );
-
-        if item.kind().is_utility() {
-            // We do nothing. We are the source of truth on the utility view.
-            return false;
-        }
-
-        let item = *item; // insert unboxing video
-
-        if matches!(item.kind(), TesItemKind::Arrow) {
-            log::debug!("handling ammo");
-            if let Some(visible) = self.visible.get(&HudElement::Ammo) {
-                if visible.form_string() != item.form_string() {
-                    log::debug!("updating visible ammo; name='{}';", item.name());
-                    self.update_slot(HudElement::Ammo, &item);
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                self.update_slot(HudElement::Ammo, &item);
-                return true;
-            }
-        }
-
-        if item.kind().is_power() {
-            log::debug!("handling power/shout");
-            if !equipped {
-                return false;
-            }
-            if let Some(visible) = self.visible.get(&HudElement::Power) {
-                if visible.form_string() != item.form_string() {
-                    log::debug!("updating visible power; name='{}';", item.name());
-                    self.update_slot(HudElement::Power, &item);
-                    self.cycles.set_top(Action::Power, item.clone());
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                self.update_slot(HudElement::Power, &item);
-                return true;
-            }
-        }
-
-        if !item.kind().left_hand_ok() && !item.kind().right_hand_ok() {
-            return false;
-        }
-
-        let rightie = if !item.kind().is_weapon() {
-            equippedRightHand()
-        } else {
-            boundObjectRightHand()
-        };
-
-        let leftie = if !item.kind().is_weapon() {
-            equippedLeftHand()
-        } else {
-            boundObjectLeftHand()
-        };
-
-        log::trace!(
-            "form strings: item={}; right={}; left={}; two-hander-equipped={};",
-            item.form_string(),
-            rightie.form_string(),
-            leftie.form_string(),
-            self.two_hander_equipped
-        );
-
-        if rightie.form_string() == item.form_string() {
-            // We are equipping this item in the right hand.
-            let right_changed = self.handle_right_hand_event(item.clone());
-            if self.two_hander_equipped && !item.two_handed() {
-                if let Some(prev_left) = self.left_hand_cached.clone() {
-                    log::debug!(
-                        "might want to update the left hand; previously equipped name='{}';",
-                        prev_left.name()
-                    );
-                    if prev_left.kind() == TesItemKind::HandToHand {
-                        self.update_slot(HudElement::Left, &prev_left);
-                        self.two_hander_equipped = false;
-                    }
-                    // cxx::let_cxx_string!(form_spec = prev_left.form_string());
-                    // reequipLeftHand(&form_spec);
-                }
-            }
-            return right_changed;
-        }
-
-        if leftie.form_string() == item.form_string() {
-            // We are equipping this item in the left hand.
-            return self.handle_left_hand_event(item);
-        }
-
-        false // we really shouldn't reach this, but
-    }
-
-    fn handle_right_hand_event(&mut self, item: TesItemData) -> bool {
-        log::debug!(
-            "entering RIGHT hand event; name='{}'; item is two-handed={}; two_hander_equipped={}",
-            item.name(),
-            item.two_handed(),
-            self.two_hander_equipped
-        );
-
-        // Tracking two-handed/one-handed transitions.
-        // We get 2-handed equip events for the right hand only, so we
-        // do that bookkeeping here.
-        if item.two_handed() {
-            // only set; do not unset.
-            self.two_hander_equipped = true;
-            self.update_slot(HudElement::Left, &TesItemData::default());
-        }
-
-        if let Some(visible) = self.visible.get(&HudElement::Right) {
-            if visible.form_string() != item.form_string() {
-                log::debug!("updating visible right-hand item; name='{}';", item.name());
-                self.cycles.set_top(Action::Right, item.clone());
-                self.update_slot(HudElement::Right, &item);
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        // somehow nothing was in there
-        self.cycles.set_top(Action::Right, item.clone());
-        self.update_slot(HudElement::Right, &item);
-        true
-    }
-
-    fn handle_left_hand_event(&mut self, item: TesItemData) -> bool {
-        let left_prev = self.visible.get(&HudElement::Left);
-        log::debug!(
-            "entering LEFT hand event; name='{}'; item is two-handed={}; two_hander_equipped={}",
-            item.name(),
-            item.two_handed(),
-            self.two_hander_equipped
-        );
-
-        // We don't care if it's visible or not. If we've equipped
-        // a one-hander in the left hand, we record it.
-        if !item.two_handed() && self.two_hander_equipped {
-            log::trace!("forcing left-hand re-equip");
-            self.two_hander_equipped = false;
-            cxx::let_cxx_string!(form_spec = item.form_string());
-            reequipLeftHand(&form_spec);
-            log::trace!("updating cached left hand item");
-            self.left_hand_cached = Some(item.clone());
-        }
-
-        // We do not show two-handed items in the left hand, though.
-        if item.two_handed() {
-            if let Some(visible) = left_prev {
-                if visible.form_string().is_empty() {
-                    return false; // no change from previous state
-                }
-            }
-            let insert_this = TesItemData::default();
-            self.update_slot(HudElement::Left, &insert_this);
-            return true;
-        }
-
-        let update = if let Some(visible) = left_prev {
-            if visible.form_string() != item.form_string() {
-                log::debug!("equipped left-hand item; name='{}';", item.name());
-                true
-            } else {
-                false
-            }
-        } else {
-            true
-        };
-
-        if update {
-            self.cycles.set_top(Action::Left, item.clone());
-            self.update_slot(HudElement::Left, &item);
-        }
-        update
-    }
-
-    fn update_slot(&mut self, slot: HudElement, new_item: &TesItemData) -> bool {
+    /// Update the displayed slot for the specified HUD element.
+    fn update_slot(&mut self, slot: HudElement, new_item: &ItemData) -> bool {
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
         } else {
@@ -542,170 +912,10 @@ impl Controller {
         }
     }
 
-    /// Handle a key-press event that the event system decided we need to know about.
-    ///
-    /// Returns an enum indicating what we did in response, so that the C++ layer can
-    /// start a tick timer for cycle delay.
-    fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
-        let settings = user_settings();
-        if !button.IsUp() && !button.IsDown() {
-            return KeyEventResponse::default();
-        }
-
-        log::trace!(
-            "key={}; is-down={}; is-pressed={}; is-up={}; cycle mod down={}; unequip mod down={};",
-            key,
-            button.IsDown(),
-            button.IsPressed(),
-            button.IsUp(),
-            self.cycle_modifier_pressed,
-            self.unequip_modifier_pressed
-        );
-
-        if settings.is_cycle_modifier(key) {
-            self.cycle_modifier_pressed = button.IsDown();
-            return KeyEventResponse::default();
-        }
-
-        if settings.is_unequip_modifier(key) {
-            self.unequip_modifier_pressed = button.IsDown();
-            return KeyEventResponse::default();
-        }
-
-        // From here on, we only respond to button-up events.
-        if !button.IsUp() {
-            return KeyEventResponse::default();
-        }
-
-        let action = Action::from(key);
-        match action {
-            Action::Irrelevant => {
-                return KeyEventResponse::default();
-            }
-            Action::Activate => return self.use_utility_item(),
-            Action::RefreshLayout => {
-                HudLayout::refresh();
-                return KeyEventResponse {
-                    handled: true,
-                    ..Default::default()
-                };
-            }
-            Action::ShowHide => {
-                log::trace!(
-                    "----> toggling hud visibility; was {}",
-                    self.cycles.hud_visible()
-                );
-                self.cycles.toggle_hud();
-                return KeyEventResponse {
-                    handled: true,
-                    ..Default::default()
-                };
-            }
-            _ => {} // continue
-        }
-
-        // so much for branchless programming.
-        if !settings.is_cycle_button(key) {
-            return KeyEventResponse::default();
-        }
-
-        // We have two modifiers to check
-        let unequip_requested = settings.unequip_with_modifier()
-            && self.unequip_modifier_pressed
-            && (action != Action::Utility);
-        let cycle_requested = if settings.cycle_with_modifier() {
-            !unequip_requested && self.cycle_modifier_pressed
-        } else {
-            !unequip_requested
-        };
-
-        let hudslot = HudElement::from(action);
-
-        if unequip_requested {
-            log::info!("unequipping slot {:?} by request!", action);
-            let empty_item = if matches!(action, Action::Left | Action::Right) {
-                *hand_to_hand_item()
-            } else {
-                TesItemData::default()
-            };
-            unequipSlot(action);
-            self.update_slot(hudslot, &empty_item);
-            self.cycles.set_top(action, empty_item);
-            KeyEventResponse {
-                handled: true,
-                start_timer: Action::Irrelevant,
-                stop_timer: action,
-            }
-        } else if cycle_requested {
-            self.advance_cycle(action)
-        } else {
-            log::info!("you need a modifier key down for {action:?}");
-            KeyEventResponse::default()
-        }
-    }
-
-    fn advance_cycle(&mut self, which: Action) -> KeyEventResponse {
-        if matches!(which, Action::Left) && self.two_hander_equipped {
-            log::info!("declining to advance left-hand cycle while two-hander equipped");
-            return KeyEventResponse {
-                handled: true,
-                ..Default::default()
-            };
-        }
-
-        let hud = HudElement::from(which);
-        if self.cycles.cycle_len(which) > 1 {
-            if let Some(next) = self.cycles.advance(which, 1) {
-                self.update_slot(hud, &next);
-                self.flush_cycle_data();
-                return KeyEventResponse {
-                    handled: true,
-                    start_timer: if !matches!(which, Action::Utility) {
-                        which
-                    } else {
-                        Action::Irrelevant
-                    },
-                    stop_timer: Action::Irrelevant,
-                };
-            }
-        } else {
-            return KeyEventResponse {
-                handled: true,
-                ..Default::default()
-            };
-        }
-
-        // unreachable tbh
-        KeyEventResponse::default()
-    }
-
-    /// Activate whatever we have in the utility slot.
-    fn use_utility_item(&mut self) -> KeyEventResponse {
-        log::trace!("using utility item");
-        if let Some(item) = self.cycles.get_top(Action::Utility) {
-            if item.kind().is_potion()
-                || matches!(item.kind(), TesItemKind::PoisonDefault | TesItemKind::Food)
-            {
-                cxx::let_cxx_string!(form_spec = item.form_string());
-                consumePotion(&form_spec);
-            } else if item.kind().is_armor() {
-                cxx::let_cxx_string!(form_spec = item.form_string());
-                equipArmor(&form_spec);
-            }
-        }
-
-        // No matter what we did, we stop the timer. Not that a timer should exist.
-        KeyEventResponse {
-            handled: true,
-            start_timer: Action::Irrelevant,
-            stop_timer: Action::Utility,
-        }
-    }
-
     /// This function is called when the player has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    fn toggle_item(&mut self, action: Action, item: TesItemData) {
+    fn toggle_item(&mut self, action: Action, item: ItemData) {
         let result = self.cycles.toggle(action, item.clone());
 
         // notify the player what happened...
@@ -753,8 +963,8 @@ impl Default for KeyEventResponse {
     fn default() -> Self {
         Self {
             handled: false,
-            stop_timer: Action::Irrelevant,
-            start_timer: Action::Irrelevant,
+            stop_timer: Action::None,
+            start_timer: Action::None,
         }
     }
 }
@@ -794,22 +1004,22 @@ impl From<u32> for Action {
     fn from(value: u32) -> Self {
         let settings = user_settings();
 
-        if value == settings.left as u32 {
+        if value == settings.left {
             Action::Left
-        } else if value == settings.right as u32 {
+        } else if value == settings.right {
             Action::Right
-        } else if value == settings.power as u32 {
+        } else if value == settings.power {
             Action::Power
-        } else if value == settings.utility as u32 {
+        } else if value == settings.utility {
             Action::Utility
-        } else if value == settings.activate as u32 {
+        } else if value == settings.activate {
             Action::Activate
-        } else if value == settings.showhide as u32 {
+        } else if value == settings.showhide {
             Action::ShowHide
-        } else if value == settings.refresh_layout as u32 {
+        } else if value == settings.refresh_layout {
             Action::RefreshLayout
         } else {
-            Action::Irrelevant
+            Action::None
         }
     }
 }

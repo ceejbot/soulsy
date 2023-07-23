@@ -7,139 +7,9 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::control::MenuEventResponse;
+use super::itemdata::*;
 use super::user_settings;
-use crate::plugin::{hasItemOrSpell, notifyPlayer, playerName, Action, TesItemKind};
-
-/// Given an entry kind, return the filename of the icon to use for it.
-/// Exposed to C++.
-pub fn get_icon_file(kind: &TesItemKind) -> String {
-    kind.icon_file()
-}
-
-/// TesItemData, exposed to C++ as an opaque type.
-#[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
-pub struct TesItemData {
-    /// Player-visible name.
-    name: String,
-    /// A string that can be turned back into form data; for serializing.
-    form_string: String,
-    /// An enum classifying this item for fast question-answering as well as icon selection.
-    kind: TesItemKind,
-    /// True if this item requires both hands to use.
-    two_handed: bool,
-    /// True if this item should be displayed with count data.
-    has_count: bool,
-    /// Cached count from inventory data. Relies on hooks to be updated.
-    count: u32,
-    /// is currently highlighted for some reason
-    highlighted: bool,
-}
-
-// Testing the formstring is sufficient for our needs, which is figuring out if
-// this form item is in a cycle already.
-impl PartialEq for TesItemData {
-    fn eq(&self, other: &Self) -> bool {
-        self.form_string == other.form_string
-    }
-}
-
-/// Make a TesItemData struct from the given data.
-pub fn make_tesitem(
-    icon_kind: TesItemKind,
-    two_handed: bool,
-    has_count: bool,
-    count: u32,
-    name: &str,
-    form_string: &str,
-) -> Box<TesItemData> {
-    Box::new(TesItemData::new(
-        icon_kind,
-        two_handed,
-        has_count,
-        count,
-        name,
-        form_string,
-    ))
-}
-
-pub fn hand_to_hand_item() -> Box<TesItemData> {
-    Box::new(TesItemData::new(
-        TesItemKind::HandToHand,
-        false,
-        false,
-        1,
-        "Unarmed",
-        "",
-    ))
-}
-
-/// Construct a default TesItemData struct, which is displayed as
-/// an empty spot on the HUD.
-pub fn default_tes_item() -> Box<TesItemData> {
-    Box::<TesItemData>::default()
-}
-
-impl TesItemData {
-    /// This is called from C++ when handing us a new item.
-    pub fn new(
-        icon_kind: TesItemKind,
-        two_handed: bool,
-        has_count: bool,
-        count: u32,
-        name: &str,
-        form_string: &str,
-    ) -> Self {
-        TesItemData {
-            name: name.to_string(),
-            form_string: form_string.to_string(),
-            kind: icon_kind,
-            two_handed,
-            has_count,
-            count,
-            highlighted: false,
-        }
-    }
-
-    /// Get the name of the item. Cloned string. Might be empty string.
-    pub fn name(&self) -> String {
-        self.name.clone()
-    }
-
-    /// Check if this item must be equipped with both hands.
-    pub fn two_handed(&self) -> bool {
-        self.two_handed
-    }
-
-    pub fn has_count(&self) -> bool {
-        self.has_count
-    }
-
-    /// If this item has a count, e.g., is arrows, return how many the player has.
-    pub fn count(&self) -> u32 {
-        self.count
-    }
-
-    /// Update the count following an inventory-count-changed event.
-    pub fn set_count(&mut self, v: u32) {
-        self.count = v;
-    }
-
-    /// Get this item's form string, which encodes mod esp and formid.
-    /// Should be stable across game loads.
-    pub fn form_string(&self) -> String {
-        self.form_string.clone()
-    }
-
-    /// Get the enum representing this entry's kind (1-handed sword, dagger, health potion, etc.)
-    pub fn kind(&self) -> TesItemKind {
-        self.kind
-    }
-
-    /// True if this entry should be drawn with a highlight.
-    pub fn highlighted(&self) -> bool {
-        self.highlighted
-    }
-}
+use crate::plugin::{hasItemOrSpell, notifyPlayer, playerName, Action, ItemKind};
 
 /// Manage the player's configured item cycles. Track changes, persist data in
 /// files, and advance the cycle when the player presses a cycle button. This
@@ -148,10 +18,10 @@ impl TesItemData {
 pub struct CycleData {
     // I really want these to be maps, but toml can't serialize that.
     // Guess I could write to json instead.
-    left: Vec<TesItemData>,
-    right: Vec<TesItemData>,
-    power: Vec<TesItemData>,
-    utility: Vec<TesItemData>,
+    left: Vec<ItemData>,
+    right: Vec<ItemData>,
+    power: Vec<ItemData>,
+    utility: Vec<ItemData>,
     #[serde(default)]
     hud_visible: bool,
 }
@@ -195,7 +65,7 @@ impl CycleData {
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
     /// This does not equip or try to use the item in any way. It's pure management.
-    pub fn advance(&mut self, which: Action, amount: usize) -> Option<TesItemData> {
+    pub fn advance(&mut self, which: Action, amount: usize) -> Option<ItemData> {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -210,10 +80,42 @@ impl CycleData {
             return None;
         }
         if let Some(previous) = cycle.first_mut() {
-            previous.highlighted = false;
+            previous.set_highlighted(false);
         }
         cycle.rotate_left(amount);
         cycle.first().cloned()
+    }
+
+    pub fn advance_skipping(&mut self, which: Action, skip: ItemData) -> Option<ItemData> {
+        let cycle = match which {
+            Action::Power => &mut self.power,
+            Action::Left => &mut self.left,
+            Action::Right => &mut self.right,
+            Action::Utility => &mut self.utility,
+            _ => {
+                log::warn!("It is a programmer error to call advance() with {which:?}");
+                return None;
+            }
+        };
+        if cycle.is_empty() {
+            return None;
+        }
+
+        if let Some(previous) = cycle.first_mut() {
+            previous.set_highlighted(false);
+        }
+        cycle.rotate_left(1);
+        let candidate = cycle
+            .iter()
+            .find(|xs| xs.form_string() != skip.form_string());
+        if let Some(v) = candidate {
+            let result = v.clone();
+            self.set_top(which, &result);
+            Some(result)
+        } else {
+            log::trace!("advance skip found nothing?????");
+            None
+        }
     }
 
     /// Get the length of the given cycle.
@@ -260,18 +162,21 @@ impl CycleData {
             hasItemOrSpell(&form_spec)
         });
         self.utility.retain(|xs| {
+            if xs.kind().is_ammo() {
+                return true;
+            }
             cxx::let_cxx_string!(form_spec = xs.form_string());
             hasItemOrSpell(&form_spec)
         });
         self.left.retain(|xs| {
-            if xs.kind() == TesItemKind::HandToHand {
+            if xs.kind() == ItemKind::HandToHand {
                 return true;
             }
             cxx::let_cxx_string!(form_spec = xs.form_string());
             hasItemOrSpell(&form_spec)
         });
         self.right.retain(|xs| {
-            if xs.kind() == TesItemKind::HandToHand {
+            if xs.kind() == ItemKind::HandToHand {
                 return true;
             }
             cxx::let_cxx_string!(form_spec = xs.form_string());
@@ -284,7 +189,7 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, which: Action, item: TesItemData) {
+    pub fn set_top(&mut self, which: Action, item: &ItemData) {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -295,13 +200,13 @@ impl CycleData {
             }
         };
 
-        if let Some(idx) = cycle.iter().position(|xs| *xs == item) {
+        if let Some(idx) = cycle.iter().position(|xs| xs == item) {
             cycle.rotate_left(idx);
         }
     }
 
     // the programmer error is annoying, but it's a shared struct...
-    pub fn get_top(&self, which: Action) -> Option<TesItemData> {
+    pub fn get_top(&self, which: Action) -> Option<ItemData> {
         let cycle = match which {
             Action::Power => &self.power,
             Action::Left => &self.left,
@@ -316,6 +221,20 @@ impl CycleData {
         cycle.first().cloned()
     }
 
+    pub fn peek_next(&self, which: Action) -> Option<ItemData> {
+        let cycle = match which {
+            Action::Power => &self.power,
+            Action::Left => &self.left,
+            Action::Right => &self.right,
+            Action::Utility => &self.utility,
+            _ => {
+                log::warn!("It is a programmer error to call get_top() with {which:?}");
+                return None;
+            }
+        };
+        cycle.get(1).cloned()
+    }
+
     /// Toggle the presence of the given item in the given cycle.
     ///
     /// Called from menu views when the player presses a hotkey matching a cycle.
@@ -325,28 +244,28 @@ impl CycleData {
     ///
     /// Does not change the current item in the cycle, unless the current item is
     /// the one removed. Adds at the end.
-    pub fn toggle(&mut self, which: Action, item: TesItemData) -> MenuEventResponse {
+    pub fn toggle(&mut self, which: Action, item: ItemData) -> MenuEventResponse {
         let cycle = match which {
             Action::Power => {
-                if !item.kind.is_power() {
+                if !item.kind().is_power() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.power
             }
             Action::Left => {
-                if !item.kind.left_hand_ok() {
+                if !item.kind().left_hand_ok() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.left
             }
             Action::Right => {
-                if !item.kind.right_hand_ok() {
+                if !item.kind().right_hand_ok() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.right
             }
             Action::Utility => {
-                if !item.kind.is_utility() {
+                if !item.kind().is_utility() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.utility
@@ -370,10 +289,10 @@ impl CycleData {
         }
     }
 
-    pub fn update_count(&mut self, item: TesItemData, count: u32) -> bool {
+    pub fn update_count(&mut self, item: ItemData, count: u32) -> bool {
         if item.kind().is_utility() {
             if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
-                log::debug!(
+                log::trace!(
                     "updating count for tracked item; formID={}; count={count}",
                     item.form_string()
                 );
@@ -387,7 +306,7 @@ impl CycleData {
         false
     }
 
-    pub fn include_item(&mut self, which: Action, item: TesItemData) {
+    pub fn include_item(&mut self, which: Action, item: ItemData) {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -405,7 +324,7 @@ impl CycleData {
         }
     }
 
-    pub fn filter_kind(&mut self, which: Action, kind: TesItemKind) {
+    pub fn filter_kind(&mut self, which: Action, kind: ItemKind) {
         let cycle = match which {
             Action::Power => &mut self.power,
             Action::Left => &mut self.left,
@@ -452,7 +371,7 @@ impl Display for CycleData {
     }
 }
 
-fn vec_to_debug_string(input: &[TesItemData]) -> String {
+fn vec_to_debug_string(input: &[ItemData]) -> String {
     format!(
         "[{}]",
         input
@@ -463,8 +382,8 @@ fn vec_to_debug_string(input: &[TesItemData]) -> String {
     )
 }
 
-impl Display for TesItemData {
+impl Display for ItemData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name)
+        write!(f, "{}", self.name())
     }
 }

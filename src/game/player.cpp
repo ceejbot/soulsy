@@ -23,78 +23,78 @@ namespace player
 
 	bool weaponsAreDrawn() { return RE::PlayerCharacter::GetSingleton()->AsActorState()->IsWeaponDrawn(); }
 
-	rust::Box<TesItemData> equippedLeftHand()
+	rust::Box<ItemData> equippedLeftHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return hand_to_hand_item();
+		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand_to_hand_item();
-		return equippable::makeTESItemDataFromForm(item_form);
+		if (!item_form) return hand2hand_itemdata();
+		return equippable::makeItemDataFromForm(item_form);
 	}
 
-	rust::Box<TesItemData> equippedRightHand()
+	rust::Box<ItemData> equippedRightHand()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return hand_to_hand_item();
+		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand_to_hand_item();
-		return equippable::makeTESItemDataFromForm(item_form);
+		if (!item_form) return hand2hand_itemdata();
+		return equippable::makeItemDataFromForm(item_form);
 	}
 
-	rust::Box<TesItemData> boundObjectLeftHand()
+	rust::Box<ItemData> boundObjectLeftHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return hand_to_hand_item();
+		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand_to_hand_item();
+		if (!item_form) return hand2hand_itemdata();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		game::boundObjectForForm(item_form, player, bound_obj, extra);
-		if (!bound_obj) { return equippable::makeTESItemDataFromForm(item_form); }
+		if (!bound_obj) { return equippable::makeItemDataFromForm(item_form); }
 
-		return equippable::makeTESItemDataFromForm(bound_obj);
+		return equippable::makeItemDataFromForm(bound_obj);
 	}
 
-	rust::Box<TesItemData> boundObjectRightHand()
+	rust::Box<ItemData> boundObjectRightHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return hand_to_hand_item();
+		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand_to_hand_item();
+		if (!item_form) return hand2hand_itemdata();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		game::boundObjectForForm(item_form, player, bound_obj, extra);
-		if (!bound_obj) { return equippable::makeTESItemDataFromForm(item_form); }
+		if (!bound_obj) { return equippable::makeItemDataFromForm(item_form); }
 
-		return equippable::makeTESItemDataFromForm(bound_obj);
+		return equippable::makeItemDataFromForm(bound_obj);
 	}
 
-	rust::Box<TesItemData> equippedPower()
+	rust::Box<ItemData> equippedPower()
 	{
 		auto* player    = RE::PlayerCharacter::GetSingleton();
 		const auto* obj = player->GetActorRuntimeData().selectedPower;
-		if (!obj) return default_tes_item();
+		if (!obj) return empty_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return default_tes_item();
-		return equippable::makeTESItemDataFromForm(item_form);
+		if (!item_form) return empty_itemdata();
+		return equippable::makeItemDataFromForm(item_form);
 	}
 
-	rust::Box<TesItemData> equippedAmmo()
+	rust::Box<ItemData> equippedAmmo()
 	{
 		auto player        = RE::PlayerCharacter::GetSingleton();
 		auto* current_ammo = player->GetCurrentAmmo();
-		if (!current_ammo || !current_ammo->IsAmmo()) { return default_tes_item(); }
+		if (!current_ammo || !current_ammo->IsAmmo()) { return empty_itemdata(); }
 
 		const auto formspec = helpers::makeFormSpecString(current_ammo);
 		auto count          = inventoryCount(current_ammo, RE::FormType::Ammo, player);
-		return make_tesitem(TesItemKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
+		return itemdata_from_formdata(ItemKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
 	}
 
 	void unequipSlot(Action which)
@@ -125,7 +125,7 @@ namespace player
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
-		auto* player         = RE::PlayerCharacter::GetSingleton();
+		auto* player     = RE::PlayerCharacter::GetSingleton();
 		auto* equip_slot = (slot == Action::Right ? game::right_hand_equip_slot() : game::left_hand_equip_slot());
 		game::equipSpellByFormAndSlot(form, equip_slot, player);
 	}
@@ -215,7 +215,7 @@ namespace player
 		return has_it;
 	}
 
-	void reequipLeftHand(const std::string& form_spec)
+	void reequipHand(Action which, const std::string& form_spec)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
@@ -230,12 +230,17 @@ namespace player
 		logger::info("re-equipping item in left hand; name='{}'; formID={}"sv,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
-		auto* left_slot = game::left_hand_equip_slot();
-		auto* task      = SKSE::GetTaskInterface();
+		RE::BGSEquipSlot* slot;
+
+		if (which == Action::Left) { slot = game::left_hand_equip_slot(); }
+		else { slot = game::right_hand_equip_slot(); }
+
+
+		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, left_slot); });
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, slot); });
 		}
 	}
 

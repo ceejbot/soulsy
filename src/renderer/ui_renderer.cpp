@@ -388,10 +388,9 @@ namespace ui
 			drawElement(texture, center, size, angle, top_layout.bg_color);
 		}
 
-
 		for (auto slot_layout : top_layout.layouts)
 		{
-			rust::Box<TesItemData> entry = entry_to_show_in_slot(slot_layout.element);
+			rust::Box<ItemData> entry = entry_to_show_in_slot(slot_layout.element);
 			const auto entry_kind        = entry->kind();
 			const auto entry_name        = entry->name();
 			auto* name                   = new std::string(entry_name);
@@ -463,7 +462,7 @@ namespace ui
 				}
 			}
 
-			if (entry_kind != TesItemKind::Arrow && slot_layout.hotkey_color.a > 0)
+			if (entry_kind != ItemKind::Arrow && slot_layout.hotkey_color.a > 0)
 			{
 				const auto hk_im_center = ImVec2(slot_center.x + slot_layout.hotkey_offset.x * global_scale,
 					slot_center.y + slot_layout.hotkey_offset.y * global_scale);
@@ -508,7 +507,7 @@ namespace ui
 
 		ImGui::End();
 
-		const auto settings           = user_settings();
+		const auto settings = user_settings();
 		// TODO The fade delta values here really want to be on a nice curve
 		// instead of linear. Lower priority tho.
 		if (fade_in && fade < 1.0f)
@@ -535,8 +534,8 @@ namespace ui
 		const auto res_height = 1.0f;
 		get_resolution_scale_height();
 
-		const auto start = static_cast<uint32_t>(TesItemKind::Alteration);
-		const auto end   = static_cast<uint32_t>(TesItemKind::Whip);
+		const auto start = static_cast<uint32_t>(ItemKind::Alteration);
+		const auto end   = static_cast<uint32_t>(ItemKind::Whip);
 
 		for (uint32_t idx = start; idx <= end; idx++)
 		{
@@ -544,7 +543,7 @@ namespace ui
 			// The one below walks the directory and tries to match located
 			// files with the requested icons in the map. This one walks
 			// all needed icons and tries to find matching files.
-			TesItemKind icon     = static_cast<TesItemKind>(idx);
+			ItemKind icon     = static_cast<ItemKind>(idx);
 			const auto icon_file = get_icon_file(icon);
 			auto entrypath       = std::filesystem::path(file_path);
 			entrypath /= std::string(icon_file);

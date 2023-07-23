@@ -1,4 +1,4 @@
-#![deny(future_incompatible)]
+#![deny(future_incompatible, clippy::unwrap_used)]
 #![warn(rust_2018_idioms, trivial_casts)]
 
 pub mod controller;
@@ -20,6 +20,7 @@ pub mod plugin {
         Left,
         Right,
         Ammo,
+        None, // not drawn
     }
 
     /// Where to arrange the HUD elements and what color to draw them in.
@@ -121,7 +122,7 @@ pub mod plugin {
     /// This lets us determine the icon as well as which cycle slot an item can
     /// be added to.
     #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
-    enum TesItemKind {
+    enum ItemKind {
         Empty,
         Alteration,
         ArmorClothing,
@@ -180,7 +181,7 @@ pub mod plugin {
     #[derive(Debug, Clone, Hash)]
     enum Action {
         /// We do not need to do anything, possibly because the key was not one of our hotkeys.
-        Irrelevant,
+        None,
         /// We're acting on the power/shouts hotkey.
         Power,
         /// The left-hand cycle hotkey.
@@ -249,54 +250,54 @@ pub mod plugin {
         fn hud_layout() -> HudLayout;
 
         /// This is an entry in the cycle. The UI will ask questions of it.
-        type TesItemData;
+        type ItemData;
         /// Get the item category, fine-grained to help with icon choices.
-        fn kind(self: &TesItemData) -> TesItemKind;
+        fn kind(self: &ItemData) -> ItemKind;
         /// Check if any UI for this item should be drawn highlighted. UNUSED.
-        fn highlighted(self: &TesItemData) -> bool;
+        fn highlighted(self: &ItemData) -> bool;
         /// Get the game's human-readable name for this item.
-        fn name(self: &TesItemData) -> String;
+        fn name(self: &ItemData) -> String;
         /// Check whether this item is stacked in inventory, like potions are.
-        fn has_count(self: &TesItemData) -> bool;
+        fn has_count(self: &ItemData) -> bool;
         /// Get how many of this item the player has. Updated on inventory changes.
-        fn count(self: &TesItemData) -> u32;
+        fn count(self: &ItemData) -> u32;
         /// Create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
-        fn make_tesitem(
-            kind: TesItemKind,
+        fn itemdata_from_formdata(
+            kind: ItemKind,
             two_handed: bool,
             has_count: bool,
             count: u32,
             name: &str,
             form_string: &str,
-        ) -> Box<TesItemData>;
+        ) -> Box<ItemData>;
         /// Make a default item, representing an empty choice.
-        fn default_tes_item() -> Box<TesItemData>;
-        fn hand_to_hand_item() -> Box<TesItemData>;
+        fn empty_itemdata() -> Box<ItemData>;
+        fn hand2hand_itemdata() -> Box<ItemData>;
 
         /// Check if this item category can be stacked in inventory.
-        fn kind_has_count(kind: TesItemKind) -> bool;
+        fn kind_has_count(kind: ItemKind) -> bool;
         /// Check if this item category counts as magic for the HUD.
-        fn kind_is_magic(kind: TesItemKind) -> bool;
+        fn kind_is_magic(kind: ItemKind) -> bool;
         /// Get the filename of the svg icon matching this item. Not a full path.
-        fn get_icon_file(kind: &TesItemKind) -> String;
+        fn get_icon_file(kind: &ItemKind) -> String;
 
         // These are called by plugin hooks and sinks.
 
         /// Handle an incoming key press event, responding with how it was handled.
         fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse;
         /// Handle an in-menu event (which adds/removes items) from the game.
-        fn handle_menu_event(key: u32, item: Box<TesItemData>);
+        fn handle_menu_event(key: u32, item: Box<ItemData>);
         /// Get the item readied in the given slot, if any.
-        fn entry_to_show_in_slot(slot: HudElement) -> Box<TesItemData>;
+        fn entry_to_show_in_slot(slot: HudElement) -> Box<ItemData>;
         /// A cycle delay timer has expired. Time to equip!
         fn timer_expired(slot: Action);
         /// Update the entire HUD without any hints about what just changed.
         fn update_hud() -> bool;
         /// Handle equipment-changed events from the game.
-        fn handle_item_equipped(equipped: bool, item: Box<TesItemData>) -> bool;
+        fn handle_item_equipped(equipped: bool, item: Box<ItemData>) -> bool;
         /// Handle inventory-count changed events from the game.
-        fn handle_inventory_changed(item: Box<TesItemData>, delta: i32);
+        fn handle_inventory_changed(item: Box<ItemData>, delta: i32);
     }
 
     #[namespace = "RE"]
@@ -348,17 +349,17 @@ pub mod plugin {
         fn weaponsAreDrawn() -> bool;
 
         /// Get the parent form item for the object equipped in the left hand.
-        fn equippedLeftHand() -> Box<TesItemData>;
+        fn equippedLeftHand() -> Box<ItemData>;
         /// Get the bound object (not the parent!) for the object equipped in the left hand.
-        fn boundObjectLeftHand() -> Box<TesItemData>;
+        fn boundObjectLeftHand() -> Box<ItemData>;
         /// Get the parent form item for the object equipped in the right hand.
-        fn equippedRightHand() -> Box<TesItemData>;
+        fn equippedRightHand() -> Box<ItemData>;
         /// Get the bound object (not the parent!) for the object equipped in the right hand.
-        fn boundObjectRightHand() -> Box<TesItemData>;
+        fn boundObjectRightHand() -> Box<ItemData>;
         /// Get the form for the equipped shout or power.
-        fn equippedPower() -> Box<TesItemData>;
+        fn equippedPower() -> Box<ItemData>;
         /// Get the form for the equipped ammo.
-        fn equippedAmmo() -> Box<TesItemData>;
+        fn equippedAmmo() -> Box<ItemData>;
 
         /// Check if the player still has items from this form in their inventory.
         fn hasItemOrSpell(form_spec: &CxxString) -> bool;
@@ -379,6 +380,6 @@ pub mod plugin {
         /// Consume a potion matching the form spec. Skips dynamic items (for now).
         fn consumePotion(form_spec: &CxxString);
         /// Re-equip an item in the left hand. This forces an un-equip first.
-        fn reequipLeftHand(form_spec: &CxxString);
+        fn reequipHand(which: Action, form_spec: &CxxString);
     }
 }

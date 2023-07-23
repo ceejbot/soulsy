@@ -31,7 +31,7 @@ setup:
 
 # Fix clippy lints and format both Rust & C++.
 @format:
-    cargo clippy --fix --allow-staged
+    cargo clippy --fix --allow-dirty
     cargo +nightly fmt
     find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
 

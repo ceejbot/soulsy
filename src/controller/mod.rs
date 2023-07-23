@@ -9,25 +9,28 @@
 //! is available to be bridged to C++ in the `plugin` module.
 pub mod control;
 pub mod cycles;
+pub mod itemdata;
+pub mod itemkind;
+pub mod keys;
 pub mod layout;
 pub mod settings;
-pub mod tesitemkind;
 
 // We don't have much logging setup code, so just shove it in here.
 use std::fs::File;
 use std::path::PathBuf;
 
+use simplelog::*;
+
 pub use control::public::*;
-pub use cycles::{default_tes_item, get_icon_file, hand_to_hand_item, make_tesitem, TesItemData};
+pub use itemdata::{empty_itemdata, hand2hand_itemdata, itemdata_from_formdata, ItemData};
+pub use itemkind::{get_icon_file, kind_has_count, kind_is_magic};
 pub use layout::hud_layout;
 pub use settings::{user_settings, UserSettings};
-use simplelog::*;
-pub use tesitemkind::{kind_has_count, kind_is_magic}; // hmm, is this for settings? I'm confused...
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
-    let hudl = hud_layout(); // yeah, it's in here, sorry. we can reload this at runtime.
+    let hudl = hud_layout(); // yeah, it's in here, sorry.
     let log_level = if hudl.debug {
-        LevelFilter::Debug
+        LevelFilter::Trace
     } else {
         LevelFilter::Info
     };
