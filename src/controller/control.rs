@@ -99,7 +99,6 @@ pub mod public {
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.handle_inventory_changed(item, count);
-        ctrl.update_hud();
     }
 
     pub fn truncate_cycles(new: u32) {
@@ -192,15 +191,16 @@ impl Controller {
             current + delta as u32
         };
 
-        if item.kind() == TesItemKind::Arrow {
+
+        if item.kind().is_ammo() {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
-                if *candidate == *item {
+                if *candidate.form_string() == *item.form_string() {
                     candidate.set_count(new_count);
                 }
             }
-        } else if self.cycles.update_count(*item, new_count) {
-            self.update_hud();
         }
+
+        _ = self.cycles.update_count(*item, new_count);
     }
 
     /// Handle a key-press event that the event system decided we need to know about.
@@ -607,8 +607,7 @@ impl Controller {
         equipped: bool,
         #[allow(clippy::boxed_local)] item: Box<TesItemData>, // boxed because arriving from C++
     ) -> bool {
-        log::debug!("========== start handle_item_equipped() ==========");
-        log::debug!("is-now-equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+        log::trace!("is-now-equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
             equipped,
             item.name(),
             item.kind(),
@@ -617,19 +616,13 @@ impl Controller {
             self.right_hand_cached.clone().map_or("".to_string(), |xs| xs.name())
         );
 
-        if item.kind().is_utility() {
-            // We do nothing. We are the source of truth on the utility view.
-            return false;
-        }
-
         if !equipped {
             return false;
         }
 
         let item = *item; // insert unboxing video
 
-        if matches!(item.kind(), TesItemKind::Arrow) {
-            log::debug!("handling ammo");
+        if item.kind().is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
                 if visible.form_string() != item.form_string() {
                     log::debug!("updating visible ammo; name='{}';", item.name());
@@ -644,11 +637,15 @@ impl Controller {
             }
         }
 
+        if item.kind().is_utility() {
+            // We do nothing. We are the source of truth for non-ammo on the utility view.
+            return false;
+        }
+
         if item.kind().is_power() {
-            log::debug!("handling power/shout");
             if let Some(visible) = self.visible.get(&HudElement::Power) {
                 if visible.form_string() != item.form_string() {
-                    log::debug!("updating visible power; name='{}';", item.name());
+                    log::debug!("updating visible power/shout; name='{}';", item.name());
                     self.update_slot(HudElement::Power, &item);
                     self.cycles.set_top(Action::Power, &item);
                     return true;
@@ -693,7 +690,7 @@ impl Controller {
             boundObjectLeftHand()
         };
 
-        log::debug!(
+        log::trace!(
             "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={};",
             item.form_string(),
             rightie.form_string(),

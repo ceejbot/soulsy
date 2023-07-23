@@ -292,6 +292,9 @@ impl CycleData {
             hasItemOrSpell(&form_spec)
         });
         self.utility.retain(|xs| {
+            if xs.kind().is_ammo() {
+                return true;
+            }
             cxx::let_cxx_string!(form_spec = xs.form_string());
             hasItemOrSpell(&form_spec)
         });
@@ -419,7 +422,7 @@ impl CycleData {
     pub fn update_count(&mut self, item: TesItemData, count: u32) -> bool {
         if item.kind().is_utility() {
             if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
-                log::debug!(
+                log::trace!(
                     "updating count for tracked item; formID={}; count={count}",
                     item.form_string()
                 );
