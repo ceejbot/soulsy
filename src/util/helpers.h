@@ -12,5 +12,8 @@ namespace helpers
 
 	void notifyPlayer(const std::string& message);
 	void fadeToAlpha(const bool shift, const float target);
-	bool hudShouldBeDrawn(); // the authority on whether we should show the hud or not
+	bool hudShouldBeDrawn();  // the authority on whether we should show the hud or not
+
+	//void addCycleKeyword(const std::string& form_spec);
+	//void removeCycleKeyword(const std::string& form_spec);
 }

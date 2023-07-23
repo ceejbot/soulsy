@@ -22,8 +22,9 @@ namespace helpers
 		if (hudInappropriate) { return false; }
 
 		const auto* control_map = RE::ControlMap::GetSingleton();
-		bool playerNotInControl = !control_map || !control_map->IsMovementControlsEnabled() ||
-		       control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
+		bool playerNotInControl =
+			!control_map || !control_map->IsMovementControlsEnabled() ||
+			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
 		if (playerNotInControl) { return false; }
 
 		rust::Box<UserSettings> settings = user_settings();
@@ -161,4 +162,27 @@ namespace helpers
 
 		return menu_form;
 	}
+
+	/*
+	// TODO move to the right home
+	void addCycleKeyword(const std::string& form_spec)
+	{
+		auto* item = formSpecToFormItem(form_spec);
+		if (!item) { return; }
+		// The keyword is going to be a fixed formid in the plugin esp.
+		// AddKeyword(BGSKeyword* a_keyword)
+		// const auto kwd = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(a_edid))
+		// or
+		// const auto kwd = RE::TESForm::LookupByID(0x00106614)->As<RE::BGSKeyword>();
+		// item->AddKeyword(kwd);
+	}
+
+	// TODO move to the right home
+	void removeCycleKeyword(const std::string& form_spec)
+	{
+		auto* item = formSpecToFormItem(form_spec);
+		if (!item) { return; }
+		// bool RemoveKeyword(BGSKeyword* a_keyword)
+	}
+	*/
 }
