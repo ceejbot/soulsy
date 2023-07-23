@@ -35,7 +35,12 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
         LevelFilter::Info
     };
 
-    let mut pathbuf = PathBuf::from(logdir.to_string());
+    #[cfg(target_os = "windows")]
+    let cleaned_log = logdir.to_string_lossy().encode_wide().collect();
+    #[cfg(not(target_os = "windows"))]
+    let cleaned_log = logdir.to_string_lossy();
+
+    let mut pathbuf = PathBuf::from(cleaned_log.to_string());
     pathbuf.set_file_name("SoulsyHUD_rust.log");
 
     if let Ok(logfile) = File::create(&pathbuf) {
