@@ -742,8 +742,8 @@ impl Controller {
             if changed {
                 // Change was out of band. We need to react.
                 self.cycles.set_top(Action::Right, &item);
-                self.update_slot(HudElement::Left, &ItemData::default());
             }
+            self.update_slot(HudElement::Left, &ItemData::default());
             self.two_hander_equipped = true;
             return changed;
         }
@@ -782,8 +782,9 @@ impl Controller {
         let leftvis_matches_equipped = leftvis == leftie.form_string();
 
         let rightvis_matches_equipped = rightvis == rightie.form_string();
-        if leftvis_matches_equipped && rightvis_matches_equipped {
-            if self.two_hander_equipped {
+
+        if rightvis_matches_equipped && self.two_hander_equipped {
+            if !leftvis_matches_equipped {
                 // force re-equip the left anyway, or it won't show up.
                 cxx::let_cxx_string!(form_spec = leftvis);
                 reequipHand(Action::Left, &form_spec);
