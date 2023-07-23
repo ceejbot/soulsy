@@ -391,10 +391,10 @@ namespace ui
 		for (auto slot_layout : top_layout.layouts)
 		{
 			rust::Box<ItemData> entry = entry_to_show_in_slot(slot_layout.element);
-			const auto entry_kind        = entry->kind();
-			const auto entry_name        = entry->name();
-			auto* name                   = new std::string(entry_name);
-			const auto hotkey            = settings->hotkey_for(slot_layout.element);
+			const auto entry_kind     = entry->kind();
+			const auto entry_name     = entry->name();
+			auto* name                = new std::string(entry_name);
+			const auto hotkey         = settings->hotkey_for(slot_layout.element);
 			const auto slot_center =
 				ImVec2(anchor.x + slot_layout.offset.x * global_scale, anchor.y + slot_layout.offset.y * global_scale);
 
@@ -543,7 +543,7 @@ namespace ui
 			// The one below walks the directory and tries to match located
 			// files with the requested icons in the map. This one walks
 			// all needed icons and tries to find matching files.
-			ItemKind icon     = static_cast<ItemKind>(idx);
+			ItemKind icon        = static_cast<ItemKind>(idx);
 			const auto icon_file = get_icon_file(icon);
 			auto entrypath       = std::filesystem::path(file_path);
 			entrypath /= std::string(icon_file);
@@ -693,10 +693,22 @@ namespace ui
 			ImGuiIO& io = ImGui::GetIO();
 			ImVector<ImWchar> ranges;
 			ImFontGlyphRangesBuilder builder;
-			builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
 
-			// TODO. I have ripped out a lot of localization here that I'll eventually
-			// need to restore.
+			builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
+			if (hud.fonts.chinese_full_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull()); }
+			if (hud.fonts.simplified_chinese_glyphs)
+			{
+				builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+			}
+			if (hud.fonts.cyrillic_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic()); }
+
+			if (hud.fonts.japanese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesJapanese()); }
+
+			if (hud.fonts.korean_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesKorean()); }
+
+			if (hud.fonts.thai_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesThai()); }
+
+			if (hud.fonts.vietnamese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese()); }
 
 			builder.BuildRanges(&ranges);
 

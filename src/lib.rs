@@ -40,17 +40,37 @@ pub mod plugin {
         /// One slot layout for each element. This wants to be map, not a vec,
         /// but the map types are not shareable.
         layouts: Vec<SlotLayout>,
-        /// The font file to load to use for all text.
-        font: String,
-        /// The font size for most things.
-        font_size: f32,
         #[serde(default)]
         /// How intense the slot-change animation is. Unused.
         animation_alpha: u8,
         #[serde(default)]
         /// How long the slot-change animation runs. Unused.
         animation_duration: f32,
-
+        /// The font file to load to use for all text.
+        font: String,
+        /// The font size for most things.
+        font_size: f32,
+        /// Whether to buld glyphs for full Chinese text display.
+        #[serde(default)]
+        chinese_full_glyphs: bool,
+        /// Whether to build glyphs for simplified Chinese text display.
+        #[serde(default)]
+        simplified_chinese_glyphs: bool,
+        /// Whether to build glyphs for simplified Chinese text display.
+        #[serde(default)]
+        cyrillic_glyphs: bool,
+        /// Whether to build glyphs for Cyrillic text display.
+        #[serde(default)]
+        japanese_glyphs: bool,
+        /// Whether to build glyphs for Japanese text display.
+        #[serde(default)]
+        korean_glyphs: bool,
+        /// Whether to build glyphs for Thai text display.
+        #[serde(default)]
+        thai_glyphs: bool,
+        /// Whether to build glyphs for Vietnamese text display.
+        #[serde(default)]
+        vietnamese_glyphs: bool,
         /// Enable debug logging for the plugin.
         debug: bool,
     }

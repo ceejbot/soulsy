@@ -228,12 +228,19 @@ impl Default for HudLayout {
             },
             size: Point { x: 300.0, y: 300.0 },
             bg_color: Color::default(),
-            layouts,
             debug: false,
+            layouts,
             animation_alpha: 51,
             animation_duration: 0.1,
             font: "futura-book-bt.ttf".to_string(),
-            font_size: 30.0,
+            font_size: 20.0,
+            chinese_full_glyphs: false,
+            simplified_chinese_glyphs: true,
+            cyrillic_glyphs: true,
+            japanese_glyphs: false,
+            korean_glyphs: false,
+            thai_glyphs: false,
+            vietnamese_glyphs: false,
         }
     }
 }
