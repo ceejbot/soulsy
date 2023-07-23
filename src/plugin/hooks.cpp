@@ -53,7 +53,7 @@ namespace hooks
 					auto* item_form = RE::TESForm::LookupByID(menu_form);
 					if (!item_form) continue;
 
-					auto entry = equippable::makeTESItemDataFromForm(item_form);
+					auto entry = equippable::makeItemDataFromForm(item_form);
 					handle_menu_event(key, std::move(entry));
 				}
 			}
@@ -92,7 +92,7 @@ namespace hooks
 			auto item_form = RE::TESForm::LookupByID(object->formID);
 			if (item_form)
 			{
-				auto shim = equippable::makeTESItemDataFromForm(item_form);
+				auto shim = equippable::makeItemDataFromForm(item_form);
 				handle_inventory_changed(std::move(shim), count);
 			}
 		}
@@ -109,7 +109,7 @@ namespace hooks
 		{
 			auto item_form = RE::TESForm::LookupByID(object->formID);
 			if (!item_form) { return; }
-			auto shim = equippable::makeTESItemDataFromForm(item_form);
+			auto shim = equippable::makeItemDataFromForm(item_form);
 			handle_inventory_changed(std::move(shim), count);
 		}
 	}
@@ -128,7 +128,7 @@ namespace hooks
 			auto* item_form = RE::TESForm::LookupByID(object->formID);
 			if (item_form)
 			{
-				auto shim = equippable::makeTESItemDataFromForm(item_form);
+				auto shim = equippable::makeItemDataFromForm(item_form);
 				handle_inventory_changed(std::move(shim), -count);
 			}
 		}
@@ -149,7 +149,7 @@ namespace hooks
 			auto item_form = RE::TESForm::LookupByID(object->GetBaseObject()->formID);
 			if (item_form)
 			{
-				auto item = equippable::makeTESItemDataFromForm(item_form);
+				auto item = equippable::makeItemDataFromForm(item_form);
 				handle_inventory_changed(std::move(item), count);
 			}
 		}

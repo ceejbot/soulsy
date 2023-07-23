@@ -35,7 +35,7 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	auto* form = RE::TESForm::LookupByID(event->baseObject);
 	if (!form) { return event_result::kContinue; }
 
-	auto item = equippable::makeTESItemDataFromForm(form);
+	auto item = equippable::makeItemDataFromForm(form);
 	handle_item_equipped(event->equipped, std::move(item));
 
 	return event_result::kContinue;

@@ -4,7 +4,7 @@
 #include "image_path.h"
 
 // Forward declarations of the types we're getting from Rust.
-enum class TesItemKind : ::std::uint8_t;
+enum class ItemKind : ::std::uint8_t;
 enum class Action : ::std::uint8_t;
 struct HudLayout;
 struct SlotLayout;

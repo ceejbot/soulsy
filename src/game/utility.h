@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-enum class TesItemKind : ::std::uint8_t;
+enum class ItemKind : ::std::uint8_t;
 
 // Food, potions, ammo, armor. Things that go in the utility slot.
 

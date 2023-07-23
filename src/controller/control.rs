@@ -50,7 +50,7 @@ pub mod public {
 
     /// Function for C++ to call to send a relevant menu button-event to us.
     ///
-    /// We get a fully-filled out TesItemData struct to use as we see fit.
+    /// We get a fully-filled out ItemData struct to use as we see fit.
     // menu_item is boxed because it's arriving from C++.
     #[allow(clippy::boxed_local)]
     pub fn handle_menu_event(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<ItemData>) {

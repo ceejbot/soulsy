@@ -1,4 +1,4 @@
-//! Trait implementations and utilities for the shared enum TesItemKind.
+//! Trait implementations and utilities for the shared enum ItemKind.
 use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
@@ -111,7 +111,7 @@ impl ItemKind {
         )
     }
 
-    // TesItemKind::PoisonDefault,
+    // ItemKind::PoisonDefault,
     /// Check if this item is gluggable.
     pub fn is_potion(&self) -> bool {
         matches!(

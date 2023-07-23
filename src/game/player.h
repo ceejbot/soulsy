@@ -4,9 +4,9 @@
 
 #include "rust/cxx.h"
 
-struct TesItemData;
+struct ItemData;
 enum class Action : ::std::uint8_t;
-enum class TesItemKind : ::std::uint8_t;
+enum class ItemKind : ::std::uint8_t;
 
 namespace player
 {
@@ -20,12 +20,12 @@ namespace player
 	// Here I start carving out an API that the rust controller can call to
 	// manipulate things about the player, as well as ask questions of it.
 
-	rust::Box<TesItemData> equippedLeftHand();
-	rust::Box<TesItemData> equippedRightHand();
-	rust::Box<TesItemData> equippedPower();
-	rust::Box<TesItemData> equippedAmmo();
-	rust::Box<TesItemData> boundObjectLeftHand();
-	rust::Box<TesItemData> boundObjectRightHand();
+	rust::Box<ItemData> equippedLeftHand();
+	rust::Box<ItemData> equippedRightHand();
+	rust::Box<ItemData> equippedPower();
+	rust::Box<ItemData> equippedAmmo();
+	rust::Box<ItemData> boundObjectLeftHand();
+	rust::Box<ItemData> boundObjectRightHand();
 
 	rust::String playerName();
 

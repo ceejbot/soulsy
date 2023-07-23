@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::plugin::ItemKind;
 
-/// TesItemData, exposed to C++ as an opaque type.
+/// ItemData, exposed to C++ as an opaque type.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
 pub struct ItemData {
     /// Player-visible name.
@@ -29,7 +29,7 @@ impl PartialEq for ItemData {
     }
 }
 
-/// Make a TesItemData struct from the given data.
+/// Make a ItemData struct from the given data.
 pub fn itemdata_from_formdata(
     icon_kind: ItemKind,
     two_handed: bool,
@@ -59,7 +59,7 @@ pub fn hand2hand_itemdata() -> Box<ItemData> {
     ))
 }
 
-/// Construct a default TesItemData struct, which is displayed as
+/// Construct a default ItemData struct, which is displayed as
 /// an empty spot on the HUD.
 pub fn empty_itemdata() -> Box<ItemData> {
     Box::<ItemData>::default()
