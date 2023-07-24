@@ -54,11 +54,11 @@ impl ItemKind {
     }
 
     pub fn count_matters(&self) -> bool {
-        !matches!(*self, ItemKind::HandToHand) && (
-        self.is_weapon()
-            || self.is_potion()
-            || self.is_ammo()
-            || matches!(*self, ItemKind::Scroll))
+        !matches!(*self, ItemKind::HandToHand)
+            && (self.is_weapon()
+                || self.is_potion()
+                || self.is_ammo()
+                || matches!(*self, ItemKind::Scroll))
     }
 
     /// Check if this entry is a weapon of any kind.

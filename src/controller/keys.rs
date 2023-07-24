@@ -25,7 +25,10 @@ pub enum HotkeyKind {
 
 impl HotkeyKind {
     pub fn is_cycle_key(&self) -> bool {
-        matches!(*self, HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right | HotkeyKind::Utility)
+        matches!(
+            *self,
+            HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right | HotkeyKind::Utility
+        )
     }
 }
 

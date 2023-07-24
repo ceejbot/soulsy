@@ -19,13 +19,12 @@ pub mod settings;
 use std::fs::File;
 use std::path::PathBuf;
 
-use simplelog::*;
-
 pub use control::public::*;
 pub use itemdata::{empty_itemdata, hand2hand_itemdata, itemdata_from_formdata, ItemData};
 pub use itemkind::{get_icon_file, kind_has_count, kind_is_magic};
 pub use layout::hud_layout;
 pub use settings::{user_settings, UserSettings};
+use simplelog::*;
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
     let hudl = hud_layout(); // yeah, it's in here, sorry.

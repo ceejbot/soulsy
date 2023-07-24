@@ -42,7 +42,7 @@ namespace hooks
 				auto* button = static_cast<RE::ButtonEvent*>(event);
 				if (button->idCode == keycodes::k_invalid) { continue; }
 
-				auto key = keycodes::get_key_id(button);
+				auto key       = keycodes::get_key_id(button);
 				auto do_toggle = handle_menu_event(key, *button);
 
 				if (do_toggle)

@@ -31,12 +31,19 @@ namespace ui
 	static std::map<uint32_t, image> ps_key_struct;
 	static std::map<uint32_t, image> xbox_key_struct;
 
-	auto fade           = 1.0f;
-	auto fade_in        = true;
-	auto fade_out_timer = 1.0f;
+	static const float FADEOUT_HYSTERESIS  = 0.75f;  // seconds
+	static const float TRANSITION_DURATION = 5.0f;   // seconds
+
+	auto hud_alpha        = 1.0f;
+	auto goal_alpha       = 1.0f;
+	auto fade_in          = true;
+	auto fade_duration    = TRANSITION_DURATION;  // seconds
+	auto transition_timer = 2.0f;                 // seconds
+	auto is_transitioning = false;
+	auto fade_out_timer   = 0.5f;                 // seconds
+
 	ImFont* loaded_font;
 	auto tried_font_load = false;
-
 
 	LRESULT ui_renderer::wnd_proc_hook::thunk(const HWND h_wnd,
 		const UINT u_msg,
@@ -61,22 +68,22 @@ namespace ui
 		const auto render_manager = RE::BSRenderManager::GetSingleton();
 		if (!render_manager)
 		{
-			logger::error("Cannot find render manager. Initialization failed."sv);
+			logger::error("Cannot find game render manager. Initialization failed."sv);
 			return;
 		}
 
 		const auto [forwarder, context, unk58, unk60, unk68, swapChain, unk78, unk80, renderView, resourceView] =
 			render_manager->GetRuntimeData();
 
-		logger::info("Getting swapchain..."sv);
+		logger::info("Getting DXGI swapchain..."sv);
 		auto* swapchain = swapChain;
 		if (!swapchain)
 		{
-			logger::error("Cannot find render manager. Initialization failed."sv);
+			logger::error("Cannot find game render manager. Initialization failed."sv);
 			return;
 		}
 
-		logger::info("Getting swapchain desc..."sv);
+		logger::info("Getting DXGI swapchain desc..."sv);
 		DXGI_SWAP_CHAIN_DESC sd{};
 		if (swapchain->GetDesc(std::addressof(sd)) < 0)
 		{
@@ -220,7 +227,7 @@ namespace ui
 	{
 		if (!text || !*text || color.a == 0) { return; }
 
-		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a);
+		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a * hud_alpha);
 		const ImVec2 text_bounds = ImGui::CalcTextSize(text);
 		auto* font               = loaded_font;
 		if (!font) { font = ImGui::GetDefaultFont(); }
@@ -253,7 +260,7 @@ namespace ui
 
 		if (!a_text || !*a_text || a_alpha == 0) { return; }
 
-		const ImU32 color = IM_COL32(a_red, a_green, a_blue, a_alpha);
+		const ImU32 color = IM_COL32(a_red, a_green, a_blue, a_alpha * hud_alpha);
 
 		const ImVec2 text_size = ImGui::CalcTextSize(a_text);
 		if (a_center_text)
@@ -336,7 +343,7 @@ namespace ui
 		const float angle,
 		const Color color)
 	{
-		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a);
+		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * hud_alpha);
 
 		const float cos_a   = cosf(angle);
 		const float sin_a   = sinf(angle);
@@ -487,44 +494,28 @@ namespace ui
 
 	void ui_renderer::draw_ui()
 	{
-		advanceTimers(ImGui::GetIO().DeltaTime);
+		const auto timeDelta = ImGui::GetIO().DeltaTime;
+		advanceTimers(timeDelta);
+		const auto settings = user_settings();
 
-		if (!helpers::hudShouldBeDrawn()) return;
+		if (!helpers::hudAllowedOnScreen()) return;
+		makeFadeDecision();
+		advanceTransition(timeDelta);
+		if (hud_alpha == 0.0f) { return; }
 
-		static constexpr ImGuiWindowFlags window_flag =
+		static constexpr ImGuiWindowFlags window_flags =
 			ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs;
 
 		const float screen_size_x = ImGui::GetIO().DisplaySize.x, screen_size_y = ImGui::GetIO().DisplaySize.y;
 
 		ImGui::SetNextWindowSize(ImVec2(screen_size_x, screen_size_y));
 		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-
-		ImGui::GetStyle().Alpha = fade;
-
-		ImGui::Begin(hud_name, nullptr, window_flag);
+		ImGui::GetStyle().Alpha = hud_alpha;
+		ImGui::Begin(hud_name, nullptr, window_flags);
 
 		drawAllSlots();
 
 		ImGui::End();
-
-		const auto settings = user_settings();
-		// TODO The fade delta values here really want to be on a nice curve
-		// instead of linear. Lower priority tho.
-		if (fade_in && fade < 1.0f)
-		{
-			fade_out_timer = static_cast<float>(settings->fade_delay() / 1000);
-			fade += 0.01f;
-			if (fade > 1.0f) { fade = 1.0f; }
-		}
-		else if (fade > 0.0f)
-		{
-			if (fade_out_timer > 0.0f) { fade_out_timer -= ImGui::GetIO().DeltaTime; }
-			else
-			{
-				fade -= 0.005f;  // fade out more slowly than we fade in
-				if (fade < 0.0f) { fade = 0.0f; }
-			}
-		}
 	}
 
 	void ui_renderer::load_icon_images(std::map<uint32_t, image>& a_struct, std::string& file_path)
@@ -665,18 +656,89 @@ namespace ui
 	float ui_renderer::get_resolution_width() { return ImGui::GetIO().DisplaySize.x; }
 	float ui_renderer::get_resolution_height() { return ImGui::GetIO().DisplaySize.y; }
 
-	void ui_renderer::set_fade(const bool a_in, const float a_value)
+	void ui_renderer::startAlphaTransition(const bool a_in, const float a_value)
 	{
-		fade_in = a_in;
-		fade    = a_value;
-		if (a_in)
+		logger::debug(
+			"startAlphaTransition() called with in={} and goal={}; hud_alpha={};"sv, a_in, a_value, hud_alpha);
+		is_transitioning = true;
+		fade_in          = a_in;
+		goal_alpha       = fmax(a_value, 1.0f);  // unused right now
+		// The game will report that the player has sheathed weapons when
+		// the player has merely equipped something new. So we give it some
+		// time to decide that the weapons are truly gone.
+		fade_out_timer = FADEOUT_HYSTERESIS;
+		transition_timer =
+			fade_in ? (TRANSITION_DURATION / 2.0f) : TRANSITION_DURATION;  // fade in is faster than fade out
+
+		// We must allow for the transition starting while the alpha is not pinned.
+		// Scale the transition time for how much of the shift remains.
+		if (fade_in) { fade_duration = 1.0f - hud_alpha * transition_timer; }
+		else { fade_duration = hud_alpha * transition_timer; }
+	}
+
+	void ui_renderer::makeFadeDecision()
+	{
+		if (helpers::hudShouldAutoFadeOut())
 		{
-			float delay    = static_cast<float>(user_settings()->fade_delay());
-			fade_out_timer = delay;
+			if ((hud_alpha > 0.0f && !is_transitioning) || (is_transitioning && fade_in))
+			{
+				startAlphaTransition(false, 0.0f);
+			}
+		}
+		else
+		{
+			if ((hud_alpha < 1.0f && !is_transitioning) || (is_transitioning && !fade_in))
+			{
+				startAlphaTransition(true, 1.0f);
+			}
 		}
 	}
 
-	bool ui_renderer::get_fade() { return fade_in; }
+	float ui_renderer::easeInCubic(float progress)
+	{
+		if (progress >= 1.0f) return 1.0f;
+		if (progress <= 0.0f) return 0.0f;
+		return static_cast<float>(pow(progress, 3));
+	}
+
+	float ui_renderer::easeOutCubic(float progress)
+	{
+		if (progress >= 1.0f) return 1.0f;
+		if (progress <= 0.0f) return 0.0f;
+		return static_cast<float>(1.0f - pow(1 - progress, 3));
+	}
+
+	void ui_renderer::advanceTransition(float timeDelta)
+	{
+		if (fade_in && is_transitioning)
+		{
+			if (hud_alpha >= 1.0f)
+			{
+				hud_alpha        = 1.0f;
+				transition_timer = 0.0f;
+				is_transitioning = false;
+				return;
+			}
+			if (transition_timer > 0.0f) { transition_timer -= timeDelta; }
+			hud_alpha = ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
+		}
+		else if (!fade_in && is_transitioning)
+		{
+			if (fade_out_timer > 0.0f) { fade_out_timer -= timeDelta; }
+			else
+			{
+				if (hud_alpha <= 0.0f)
+				{
+					hud_alpha        = 0.0f;
+					transition_timer = 0.0f;
+					is_transitioning = false;
+				}
+				fade_out_timer = 0.0f;
+				if (transition_timer > 0.0f) { transition_timer -= timeDelta; }
+				hud_alpha = 1.0f - ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
+			}
+		}
+	}
 
 	void ui_renderer::load_font()
 	{
@@ -696,18 +758,11 @@ namespace ui
 
 			builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
 			if (hud.chinese_full_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull()); }
-			if (hud.simplified_chinese_glyphs)
-			{
-				builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-			}
+			if (hud.simplified_chinese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesChineseSimplifiedCommon()); }
 			if (hud.cyrillic_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic()); }
-
 			if (hud.japanese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesJapanese()); }
-
 			if (hud.korean_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesKorean()); }
-
 			if (hud.thai_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesThai()); }
-
 			if (hud.vietnamese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese()); }
 
 			builder.BuildRanges(&ranges);
@@ -773,5 +828,4 @@ namespace ui
 
 	// remove timer from the map if it exists
 	void ui_renderer::stopTimer(Action which) { cycle_timers.erase(static_cast<uint8_t>(which)); }
-
 }

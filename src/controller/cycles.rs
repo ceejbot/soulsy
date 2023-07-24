@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use super::control::MenuEventResponse;
 use super::itemdata::*;
 use super::user_settings;
-use crate::plugin::{hasItemOrSpell, notifyPlayer, playerName, Action, ItemKind};
+use crate::plugin::{fadeToAlpha, hasItemOrSpell, notifyPlayer, playerName, Action, ItemKind};
 
 /// Manage the player's configured item cycles. Track changes, persist data in
 /// files, and advance the cycle when the player presses a cycle button. This
@@ -316,7 +316,9 @@ impl CycleData {
                 return false;
             }
         };
-        cycle.iter().any(|xs| xs.form_string() == item.form_string())
+        cycle
+            .iter()
+            .any(|xs| xs.form_string() == item.form_string())
     }
 
     pub fn include_item(&mut self, which: Action, item: ItemData) {
@@ -353,6 +355,11 @@ impl CycleData {
     pub fn set_hud_visible(&mut self, visible: bool) {
         if visible != self.hud_visible {
             self.hud_visible = visible;
+            if visible {
+                fadeToAlpha(true, 1.0);
+            } else {
+                fadeToAlpha(false, 0.0);
+            }
             match self.write() {
                 Ok(_) => {}
                 Err(e) => {

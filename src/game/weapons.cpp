@@ -45,8 +45,9 @@ namespace game
 	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
 		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-		auto* task = SKSE::GetTaskInterface();
-		if (!task) {
+		auto* task          = SKSE::GetTaskInterface();
+		if (!task)
+		{
 			logger::warn("unable to get SKSE task interface! Cannot equip or unequip anything."sv);
 			return;
 		}

@@ -41,8 +41,6 @@ namespace papyrus
 			logger::info("truncating cycles to len={};"sv, newmax);
 			truncate_cycles(newmax);
 		}
-		// force a redraw, I guess?
-		ui::ui_renderer::set_fade(true, 1.f);
 	}
 
 	RE::BSFixedString get_resolution_width(RE::TESQuest*)

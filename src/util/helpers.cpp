@@ -12,7 +12,7 @@ namespace helpers
 {
 	using string_util = util::string_util;
 
-	bool hudShouldBeDrawn()
+	bool hudAllowedOnScreen()
 	{
 		// There are some circumstances where we never want to draw it.
 		auto* ui              = RE::UI::GetSingleton();
@@ -27,15 +27,19 @@ namespace helpers
 			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
 		if (playerNotInControl) { return false; }
 
+		return true;
+	}
+
+	bool hudShouldAutoFadeOut()
+	{
 		rust::Box<UserSettings> settings = user_settings();
-		const auto player                = RE::PlayerCharacter::GetSingleton();
-		const bool inCombat              = player->IsInCombat();
-		const auto weaponsDrawn          = player->AsActorState()->IsWeaponDrawn();
+		if (!settings->fade()) { return false; }
 
-		if (settings->fade() && (inCombat || weaponsDrawn)) { return true; }
+		const auto player       = RE::PlayerCharacter::GetSingleton();
+		const bool inCombat     = player->IsInCombat();
+		const auto weaponsDrawn = player->AsActorState()->IsWeaponDrawn();
 
-		// otherwise, we just depend on what the user just said
-		return show_ui();
+		return !inCombat && !weaponsDrawn;
 	}
 
 	void notifyPlayer(const std::string& message)
@@ -44,7 +48,7 @@ namespace helpers
 		RE::DebugNotification(msg);
 	}
 
-	void fadeToAlpha(const bool shift, const float target) { ui::ui_renderer::set_fade(shift, target); }
+	void fadeToAlpha(const bool shift, const float target) { ui::ui_renderer::startAlphaTransition(shift, target); }
 
 	std::string makeFormSpecString(RE::TESForm* form)
 	{
@@ -63,7 +67,7 @@ namespace helpers
 			auto local_form   = form->GetLocalFormID();
 
 			const auto hexified = string_util::int_to_hex(local_form);
-			logger::trace("source file='{}'; local id={}'; hex={};"sv, source_file, local_form, hexified);
+			// logger::trace("source file='{}'; local id={}'; hex={};"sv, source_file, local_form, hexified);
 			form_string = fmt::format("{}{}{}", source_file, util::delimiter, hexified);
 		}
 

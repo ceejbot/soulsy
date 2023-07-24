@@ -102,14 +102,17 @@ namespace ui
 		static float get_resolution_width();
 		static float get_resolution_height();
 
-		static void set_fade(bool a_in, float a_value);
-		static bool get_fade();
+		static void startAlphaTransition(bool a_in, float a_value);
+		static float easeInCubic(float progress);
+		static float easeOutCubic(float progress);
 
 		static void load_all_images();
 
 		static void startTimer(Action which);
 		static void stopTimer(Action which);
 		static void advanceTimers(float delta);
+		static void advanceTransition(float delta);
+		static void makeFadeDecision();
 
 		struct d_3d_init_hook
 		{

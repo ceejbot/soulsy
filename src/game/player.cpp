@@ -99,7 +99,6 @@ namespace player
 
 	void unequipSlot(Action which)
 	{
-		logger::info("entering unequipSlot()"sv);
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
 		if (which == Action::Power) { game::unequipShoutSlot(player); }

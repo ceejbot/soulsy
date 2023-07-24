@@ -354,7 +354,7 @@ pub mod plugin {
         /// Display a debug notification on the screen. Used as hacky action confirmation.
         fn notifyPlayer(message: &CxxString);
         /// Start the HUD widget fading in or out to the goal transparency.
-        fn fadeToAlpha(do_fade: bool, alpha: f32);
+        fn fadeToAlpha(fade_in: bool, alpha: f32);
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
