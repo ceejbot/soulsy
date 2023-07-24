@@ -5,7 +5,6 @@
     "homepage": "https://github.com/ceejbot/soulsy",
     "license": "GPL-2.0-or-later",
     "dependencies": [
-        "simpleini",
         "commonlibsse-ng",
         "nanosvg",
         {

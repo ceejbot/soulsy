@@ -9,7 +9,6 @@
 
 #include <spdlog/sinks/basic_file_sink.h>
 
-#include <SimpleIni.h>
 #include <algorithm>
 #include <cctype>
 #include <d3d11.h>
