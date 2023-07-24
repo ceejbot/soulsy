@@ -114,7 +114,7 @@ y = 0.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 # The color for the name text of any item in this slot.
 [layouts.name_color]
@@ -180,14 +180,14 @@ b = 255
 a = 0
 
 [layouts.count_offset]
-x = 25.0
-y = 40.0
+x = 55.0
+y = 0.0
 
 [layouts.count_color]
 r = 255
 g = 255
 b = 255
-a = 0
+a = 255
 
 [layouts.name_color]
 r = 255
@@ -258,7 +258,7 @@ y = 0.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 [layouts.name_color]
 r = 255
@@ -329,7 +329,7 @@ y = 0.0
 r = 255
 g = 255
 b = 255
-a = 255
+a = 0
 
 [layouts.name_color]
 r = 255
