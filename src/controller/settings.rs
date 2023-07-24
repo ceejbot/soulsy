@@ -68,9 +68,7 @@ pub struct UserSettings {
     /// The number of milliseconds to delay before equipping a selection. Max 2500, min 0.
     pub equip_delay: u32,
     /// Whether to fade out hud when not in combat.
-    pub fade: bool,
-    /// The number of milliseconds to delay before fading. Max 5000, min 0.
-    pub fade_delay: u32,
+    pub autofade: bool,
     /// The controller kind to show in the UX. Matches the controller_set enum in key_path.h
     pub controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
     /// Whether to include unarmed as a cycle entry for each hand.
@@ -93,8 +91,7 @@ impl Default for UserSettings {
             showhide: 2,
             maxlen: 10,       // this not a key code but an int
             equip_delay: 750, // in milliseconds
-            fade: true,
-            fade_delay: 1000,   // in milliseconds
+            autofade: true,
             controller_kind: 0, // PC
             include_unarmed: true,
         }
@@ -175,15 +172,10 @@ impl UserSettings {
             0,
             2500,
         );
-        self.fade_delay = clamp(
-            read_int_from(options, "uFadeDelay", self.fade_delay),
-            0,
-            10000,
-        );
-        self.fade = if let Some(str_val) = options.get("bFade") {
+        self.autofade = if let Some(str_val) = options.get("bAutoFade") {
             str_val != "0"
         } else {
-            self.fade
+            self.autofade
         };
         self.controller_kind = clamp(
             read_int_from(options, "uControllerKind", self.controller_kind),
@@ -261,11 +253,8 @@ impl UserSettings {
     pub fn equip_delay(&self) -> u32 {
         clamp(self.equip_delay, 100, 5000)
     }
-    pub fn fade(&self) -> bool {
-        self.fade
-    }
-    pub fn fade_delay(&self) -> u32 {
-        self.fade_delay
+    pub fn autofade(&self) -> bool {
+        self.autofade
     }
     pub fn controller_kind(&self) -> u32 {
         clamp(self.controller_kind, 0, 2)

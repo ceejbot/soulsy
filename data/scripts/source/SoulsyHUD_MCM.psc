@@ -9,7 +9,7 @@ ScriptName SoulsyHUD_MCM Extends MCM_ConfigBase
 ; int property uShowHideKey = 8 Auto
 ; int property uMaxCycleLength = 10 Auto
 ; int property uEquipDelay = 500 Auto
-; bool property bFade = false Auto
+; bool property bAutoFade = false Auto
 ; int property uFadeDelay = 2000 Auto
 ; int property uControllerKind = 0 Auto
 
@@ -33,7 +33,7 @@ Event OnConfigOpen()
     
     ; uMaxCycleLength = GetModSettingInt("uMaxCycleLength:Options")
     ; uEquipDelay = GetModSettingInt("uEquipDelay:Controls")
-    ; bFade = GetModSettingBool("bFade:Options")
+    ; bAutoFade = GetModSettingBool("bAutoFade:Options")
     ; uFadeDelay = GetModSettingInt("uFadeDelay:Options")
     ; uControllerKind = GetModSettingInt("uControllerKind::Options")
 EndEvent

@@ -28,26 +28,9 @@ pub mod public {
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         log::info!("{settings:?}");
 
-        if settings.activate_modifier > 0 {
-            ctrl.activate_modifier = TrackedKey {
-                key: HotkeyKind::from(settings.activate_modifier as u32),
-                state: KeyState::Up,
-            };
-        }
-        if settings.cycle_modifier > 0 {
-            ctrl.cycle_modifier = TrackedKey {
-                key: HotkeyKind::from(settings.cycle_modifier as u32),
-                state: KeyState::Up,
-            };
-        }
-        if settings.unequip_modifier > 0 {
-            ctrl.unequip_modifier = TrackedKey {
-                key: HotkeyKind::from(settings.unequip_modifier as u32),
-                state: KeyState::Up,
-            };
-        }
 
         let _hud = hud_layout();
+        ctrl.apply_settings();
         ctrl.validate_cycles();
         log::info!("HUD data should be fresh; ready to cycle!")
     }
@@ -144,45 +127,7 @@ pub mod public {
         let mut ctrl = CONTROLLER
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        let settings = user_settings();
-        if settings.include_unarmed() {
-            let h2h = hand2hand_itemdata();
-            let h2h = *h2h;
-            ctrl.cycles.include_item(Action::Left, h2h.clone());
-            ctrl.cycles.include_item(Action::Right, h2h);
-        } else {
-            // remove any item with h2h type from cycles
-            ctrl.cycles.filter_kind(Action::Left, ItemKind::HandToHand);
-            ctrl.cycles.filter_kind(Action::Right, ItemKind::HandToHand);
-        }
-        ctrl.flush_cycle_data();
-
-        // This loses any is-up/is-down state, but the user just closed the config page.
-        // Niche bug.
-        ctrl.activate_modifier = if settings.activate_modifier > 0 {
-            TrackedKey {
-                key: HotkeyKind::from(settings.activate_modifier as u32),
-                state: KeyState::Up,
-            }
-        } else {
-            TrackedKey::default()
-        };
-        ctrl.cycle_modifier = if settings.cycle_modifier > 0 {
-            TrackedKey {
-                key: HotkeyKind::from(settings.cycle_modifier as u32),
-                state: KeyState::Up,
-            }
-        } else {
-            TrackedKey::default()
-        };
-        ctrl.unequip_modifier = if settings.unequip_modifier > 0 {
-            TrackedKey {
-                key: HotkeyKind::from(settings.unequip_modifier as u32),
-                state: KeyState::Up,
-            }
-        } else {
-            TrackedKey::default()
-        };
+        ctrl.apply_settings();
     }
 }
 
@@ -220,6 +165,56 @@ impl Controller {
         self.cycles.validate();
         log::info!("after validation, cycles are: {}", self.cycles);
         self.update_hud();
+    }
+
+    fn apply_settings(&mut self) {
+        let settings = user_settings();
+        if settings.include_unarmed() {
+            let h2h = hand2hand_itemdata();
+            let h2h = *h2h;
+            self.cycles.include_item(Action::Left, h2h.clone());
+            self.cycles.include_item(Action::Right, h2h);
+        } else {
+            // remove any item with h2h type from cycles
+            self.cycles.filter_kind(Action::Left, ItemKind::HandToHand);
+            self.cycles.filter_kind(Action::Right, ItemKind::HandToHand);
+        }
+        self.flush_cycle_data();
+
+        // This loses any is-up/is-down state, but the user just closed the config page.
+        // Niche bug.
+        self.activate_modifier = if settings.activate_modifier > 0 {
+            TrackedKey {
+                key: HotkeyKind::from(settings.activate_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
+        self.cycle_modifier = if settings.cycle_modifier > 0 {
+            TrackedKey {
+                key: HotkeyKind::from(settings.cycle_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
+        self.unequip_modifier = if settings.unequip_modifier > 0 {
+            TrackedKey {
+                key: HotkeyKind::from(settings.unequip_modifier as u32),
+                state: KeyState::Up,
+            }
+        } else {
+            TrackedKey::default()
+        };
+
+        if !settings.autofade {
+            if self.cycles.hud_visible() {
+                fadeToAlpha(true, 1.0);
+            } else {
+                fadeToAlpha(false, 0.0);
+            }
+        }
     }
 
     /// The player's inventory changed! Act on it if we need to.
@@ -307,7 +302,9 @@ impl Controller {
                 }
             }
             HotkeyKind::ShowHide => {
-                self.cycles.toggle_hud();
+                if !user_settings().autofade {
+                    self.cycles.toggle_hud();
+                }
                 KeyEventResponse {
                     handled: true,
                     ..Default::default()

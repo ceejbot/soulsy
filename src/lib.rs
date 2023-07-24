@@ -247,10 +247,8 @@ pub mod plugin {
         type UserSettings;
         /// Get the user setting for the equip delay timer, in milliseconds.
         fn equip_delay(self: &UserSettings) -> u32;
-        /// Get the user setting for the fade-out delay timer, in milliseconds.
-        fn fade_delay(self: &UserSettings) -> u32;
-        /// Get whether the HUD should fade out when not in combat.
-        fn fade(self: &UserSettings) -> bool;
+        /// Get whether the HUD should control its own visibility.
+        fn autofade(self: &UserSettings) -> bool;
         /// Check if this button is relevant to the HUD.
         fn is_cycle_button(self: &UserSettings, key: u32) -> bool;
         /// Get how long a cycle is allow to be.

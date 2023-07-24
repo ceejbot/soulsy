@@ -30,12 +30,12 @@ namespace helpers
 		return true;
 	}
 
-	bool hudShouldAutoFadeIn() { return user_settings()->fade(); }
+	bool hudShouldAutoFadeIn() { return user_settings()->autofade(); }
 
 	bool hudShouldAutoFadeOut()
 	{
 		rust::Box<UserSettings> settings = user_settings();
-		if (!settings->fade()) { return false; }
+		if (!settings->autofade()) { return false; }
 
 		const auto player       = RE::PlayerCharacter::GetSingleton();
 		const bool inCombat     = player->IsInCombat();

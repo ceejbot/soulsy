@@ -31,8 +31,8 @@ namespace ui
 	static std::map<uint32_t, image> ps_key_struct;
 	static std::map<uint32_t, image> xbox_key_struct;
 
-	static const float FADEOUT_HYSTERESIS  = 0.75f;  // seconds
-	static const float TRANSITION_DURATION = 5.0f;   // seconds
+	static const float FADEOUT_HYSTERESIS  = 0.5f;  // seconds
+	static const float TRANSITION_DURATION = 3.0f;  // seconds
 
 	auto hud_alpha        = 1.0f;
 	auto goal_alpha       = 1.0f;
@@ -40,7 +40,7 @@ namespace ui
 	auto fade_duration    = TRANSITION_DURATION;  // seconds
 	auto transition_timer = 2.0f;                 // seconds
 	auto is_transitioning = false;
-	auto fade_out_timer   = 0.5f;                 // seconds
+	auto fade_out_timer   = 0.33f;                 // seconds
 
 	ImFont* loaded_font;
 	auto tried_font_load = false;
@@ -658,11 +658,18 @@ namespace ui
 
 	void ui_renderer::startAlphaTransition(const bool a_in, const float a_value)
 	{
+		if (a_in && hud_alpha == 1.0f) { return; }
+		if (!a_in && hud_alpha == 0.0f) { return; }
 		logger::debug(
 			"startAlphaTransition() called with in={} and goal={}; hud_alpha={};"sv, a_in, a_value, hud_alpha);
 		is_transitioning = true;
 		fade_in          = a_in;
-		goal_alpha       = fmax(a_value, 1.0f);  // unused right now
+
+		// unused right now
+		if (a_value < 0) { goal_alpha = 0.0; }
+		else if (a_value > 1.0) { goal_alpha = 1.0; }
+		else { goal_alpha = a_value; }
+
 		// The game will report that the player has sheathed weapons when
 		// the player has merely equipped something new. So we give it some
 		// time to decide that the weapons are truly gone.

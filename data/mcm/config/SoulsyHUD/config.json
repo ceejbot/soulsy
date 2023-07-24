@@ -81,24 +81,6 @@
       }
     },
     {
-      "id": "uShowHideKey:Controls",
-      "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
-      "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
-      "type": "keymap",
-      "valueOptions": {
-        "sourceType": "ModSettingInt"
-      }
-    },
-    {
-      "id": "uRefreshKey:Controls",
-      "text": "$SoulsyHUD_Controls_RefreshKey_Text",
-      "help": "$SoulsyHUD_Controls_RefreshKey_Help",
-      "type": "keymap",
-      "valueOptions": {
-        "sourceType": "ModSettingInt"
-      }
-    },
-    {
       "text": "$SoulsyHUD_Options_HeaderText",
       "type": "header",
       "position": 1
@@ -109,18 +91,6 @@
       "type": "toggle",
       "help": "$SoulsyHUD_Options_Unarmed_Help",
       "valueOptions": {
-        "sourceType": "ModSettingInt"
-      }
-    },
-    {
-      "id": "uMaxCycleLength:Options",
-      "text": "$SoulsyHUD_Options_Length_Text",
-      "help": "$SoulsyHUD_Options_Length_Help",
-      "type": "slider",
-      "valueOptions": {
-        "min": 2,
-        "max": 20,
-        "step": 1,
         "sourceType": "ModSettingInt"
       }
     },
@@ -137,23 +107,32 @@
       }
     },
     {
-      "id": "bFade:Options",
-      "text": "$SoulsyHUD_Options_Fade_Text",
-      "type": "toggle",
-      "help": "$SoulsyHUD_Options_Fade_Help",
+      "id": "uMaxCycleLength:Options",
+      "text": "$SoulsyHUD_Options_Length_Text",
+      "help": "$SoulsyHUD_Options_Length_Help",
+      "type": "slider",
+      "valueOptions": {
+        "min": 2,
+        "max": 20,
+        "step": 1,
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uShowHideKey:Controls",
+      "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
+      "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
+      "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
     },
     {
-      "id": "uFadeDelay:Options",
-      "text": "$SoulsyHUD_Options_FadeDelay_Text",
-      "help": "$SoulsyHUD_Options_FadeDelay_Help",
-      "type": "slider",
+      "id": "bAutoFade:Options",
+      "text": "$SoulsyHUD_Options_Fade_Text",
+      "type": "toggle",
+      "help": "$SoulsyHUD_Options_Fade_Help",
       "valueOptions": {
-        "min": 0,
-        "max": 5000,
-        "step": 100,
         "sourceType": "ModSettingInt"
       }
     },
@@ -163,13 +142,18 @@
       "type": "enum",
       "help": "$SoulsyHUD_Options_Controller_Help",
       "valueOptions": {
-        "options": [
-          "$SoulsyHUD_Controls_PC",
-          "$SoulsyHUD_Controls_PS",
-          "$SoulsyHUD_Controls_Xbox"
-        ],
+        "options": ["$SoulsyHUD_Controls_PS", "$SoulsyHUD_Controls_Xbox"],
         "sourceType": "ModSettingInt",
         "defaultValue": 0
+      }
+    },
+    {
+      "id": "uRefreshKey:Controls",
+      "text": "$SoulsyHUD_Controls_RefreshKey_Text",
+      "help": "$SoulsyHUD_Controls_RefreshKey_Help",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
       }
     }
   ]
