@@ -685,7 +685,7 @@ namespace ui
 				startAlphaTransition(false, 0.0f);
 			}
 		}
-		else
+		else if (helpers::hudShouldAutoFadeIn())
 		{
 			if ((hud_alpha < 1.0f && !is_transitioning) || (is_transitioning && !fade_in))
 			{

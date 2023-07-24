@@ -30,6 +30,8 @@ namespace helpers
 		return true;
 	}
 
+	bool hudShouldAutoFadeIn() { return user_settings()->fade(); }
+
 	bool hudShouldAutoFadeOut()
 	{
 		rust::Box<UserSettings> settings = user_settings();

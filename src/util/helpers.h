@@ -14,6 +14,7 @@ namespace helpers
 	void fadeToAlpha(const bool shift, const float target);
 	bool hudAllowedOnScreen();  // the authority on whether we should show the hud or not
 	bool hudShouldAutoFadeOut();
+	bool hudShouldAutoFadeIn();
 
 	//void addCycleKeyword(const std::string& form_spec);
 	//void removeCycleKeyword(const std::string& form_spec);
