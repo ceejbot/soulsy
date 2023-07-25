@@ -82,7 +82,7 @@ archive:
     rm "${outdir}"/scripts/source/TESV_Papyrus_Flags.flg
     #7z a "$outdir".7z "$outdir"
     echo "Mod directory ready at ${outdir}; archive at ${outdir}.7z"
-    echo "don't check this in, but copying to live mod..."
+    echo "copying to live mod for testing..."
     cp -p build/Release/SoulsyHUD.dll "/mnt/g/VortexStaging/Soulsy HUD dev version/SKSE/plugins/SoulsyHUD.dll"
     cp -p build/Release/SoulsyHUD.pdb "/mnt/g/VortexStaging/Soulsy HUD dev version/SKSE/plugins/SoulsyHUD.pdb"
 

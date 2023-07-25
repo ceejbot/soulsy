@@ -199,8 +199,8 @@ namespace helpers
 		return menu_form;
 	}
 
-	static bool helpers::isInSlowMotion           = false;
-	static float helpers::previousTimescaleFactor = 1.0f;
+	static bool isInSlowMotion           = false;
+	static float previousTimescaleFactor = 1.0f;
 	static constexpr REL::ID timescaleOffset1(static_cast<std::uint64_t>(388442));
 	static constexpr REL::ID timescaleOffset2(static_cast<std::uint64_t>(388443));
 

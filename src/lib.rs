@@ -257,6 +257,8 @@ pub mod plugin {
         fn hotkey_for(self: &UserSettings, action: HudElement) -> u32;
         /// Get which kind of controller to draw shortcuts for: keyboard, PS5, or Xbox.
         fn controller_kind(self: &UserSettings) -> u32;
+        /// If we should enter slow motion while cycling.
+        fn cycling_slows_time(self: &UserSettings) -> bool;
         /// If a settings change has shortened the max cycle length, truncate if we have to.
         fn truncate_cycles(new_length: u32);
 

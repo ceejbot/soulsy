@@ -825,7 +825,7 @@ namespace ui
 		}
 
 		for (const auto& xs : to_remove) { cycle_timers.erase(xs); }
-		if (cycle_timers.size() == 0 {
+		if (cycle_timers.size() == 0) {
 			helpers::exitSlowMotion();
 		}
 	}
@@ -833,7 +833,7 @@ namespace ui
 	void ui_renderer::startTimer(Action which)
 	{
 		// We replace any existing timer for this slot.
-		const auto* settings = user_settings();
+		auto settings = user_settings();
 		auto duration        = settings->equip_delay();  // this is in ms, so we'll divide...
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
 		logger::info("started equip delay timer; which={}; delay={};"sv,
@@ -846,7 +846,7 @@ namespace ui
 	void ui_renderer::stopTimer(Action which)
 	{
 		cycle_timers.erase(static_cast<uint8_t>(which));
-		if (cycle_timers.size() == 0 {
+		if (cycle_timers.size() == 0) {
 			helpers::exitSlowMotion(); }
 	}
 }
