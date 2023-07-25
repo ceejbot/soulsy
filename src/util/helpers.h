@@ -17,6 +17,11 @@ namespace helpers
 	bool hudShouldAutoFadeIn();
 	bool ignoreKeyEvents();
 
+	// Called by the controller if the user has started cycling.
+	void enterSlowMotion();
+	// Called by the controller when the cycle timeout fires.
+	void exitSlowMotion();
+
 	//void addCycleKeyword(const std::string& form_spec);
 	//void removeCycleKeyword(const std::string& form_spec);
 }

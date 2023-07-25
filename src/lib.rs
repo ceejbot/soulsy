@@ -353,6 +353,10 @@ pub mod plugin {
         fn notifyPlayer(message: &CxxString);
         /// Start the HUD widget fading in or out to the goal transparency.
         fn fadeToAlpha(fade_in: bool, alpha: f32);
+        /// Enter slow time while cycling.
+        fn enterSlowMotion();
+        /// Exit slow time.
+        fn exitSlowMotion();
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.

@@ -40,7 +40,7 @@ namespace ui
 	auto fade_duration    = TRANSITION_DURATION;  // seconds
 	auto transition_timer = 2.0f;                 // seconds
 	auto is_transitioning = false;
-	auto fade_out_timer   = 0.33f;                 // seconds
+	auto fade_out_timer   = 0.33f;  // seconds
 
 	ImFont* loaded_font;
 	auto tried_font_load = false;
@@ -800,6 +800,10 @@ namespace ui
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
 	}
 
+	// We implement timers using UI ticks. We don't need them to be
+	// particularly accurate, just good-feeling to humans. Because we only
+	// manage timers here, this is the right decision point for going into
+	// and out of slow motion.
 	void ui_renderer::advanceTimers(float delta)
 	{
 		std::vector<uint8_t> to_remove;
@@ -821,18 +825,28 @@ namespace ui
 		}
 
 		for (const auto& xs : to_remove) { cycle_timers.erase(xs); }
+		if (cycle_timers.size() == 0 {
+			helpers::exitSlowMotion();
+		}
 	}
 
 	void ui_renderer::startTimer(Action which)
 	{
 		// We replace any existing timer for this slot.
-		auto duration = user_settings()->equip_delay();  // this is in ms, so we'll divide...
-		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000);
+		const auto* settings = user_settings();
+		auto duration        = settings->equip_delay();  // this is in ms, so we'll divide...
+		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
 		logger::info("started equip delay timer; which={}; delay={};"sv,
 			static_cast<uint8_t>(which),
 			static_cast<float>(duration) / 1000.0f);
+		if (settings->cycling_slows_time()) { helpers::enterSlowMotion(); }
 	}
 
 	// remove timer from the map if it exists
-	void ui_renderer::stopTimer(Action which) { cycle_timers.erase(static_cast<uint8_t>(which)); }
+	void ui_renderer::stopTimer(Action which)
+	{
+		cycle_timers.erase(static_cast<uint8_t>(which));
+		if (cycle_timers.size() == 0 {
+			helpers::exitSlowMotion(); }
+	}
 }

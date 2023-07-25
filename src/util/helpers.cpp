@@ -199,6 +199,41 @@ namespace helpers
 		return menu_form;
 	}
 
+	static bool helpers::isInSlowMotion           = false;
+	static float helpers::previousTimescaleFactor = 1.0f;
+
+	// Implemented while referencing https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/SlowMotionHandler.cpp
+	void enterSlowMotion()
+	{
+		if (isInSlowMotion) { return; }
+		// const auto desiredFactor = user_settings().cycle_slowdown();
+		// TODO checks and balances
+		// but while we're getting it working we hard-code it
+		const auto desiredFactor = 0.5f;
+
+		float* timescaleMult1 = reinterpret_cast<float*>(Offsets::GlobalTimescaleMultiplier::Value1.address());
+		float* timescaleMult2 = reinterpret_cast<float*>(Offsets::GlobalTimescaleMultiplier::Value2.address());
+
+		previousTimescaleFactor = *timescaleMult1;
+		*timescaleMult1         = desiredFactor * (*timescaleMult1);
+		*timescaleMult2         = *timescaleMult1;
+
+		isInSlowMotion = true;
+	}
+
+	void exitSlowMotion()
+	{
+		if (!isInSlowMotion) { return; }
+
+		float* timescaleMult1 = reinterpret_cast<float*>(Offsets::GlobalTimescaleMultiplier::Value1.address());
+		float* timescaleMult2 = reinterpret_cast<float*>(Offsets::GlobalTimescaleMultiplier::Value2.address());
+
+		*timescaleMult1 = previousTimescaleFactor;
+		*timescaleMult2 = *timescaleMult1;
+
+		isInSlowMotion = false;
+	}
+
 	/*
 	// TODO move to the right home
 	void addCycleKeyword(const std::string& form_spec)

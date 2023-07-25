@@ -73,6 +73,8 @@ pub struct UserSettings {
     pub controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
     /// Whether to include unarmed as a cycle entry for each hand.
     pub include_unarmed: bool,
+    /// Whether to slow down time when cycling
+    pub cycling_slows_time: bool,
 }
 
 impl Default for UserSettings {
@@ -94,6 +96,7 @@ impl Default for UserSettings {
             autofade: true,
             controller_kind: 0, // PC
             include_unarmed: true,
+            cycling_slows_time: false,
         }
     }
 }
@@ -187,6 +190,11 @@ impl UserSettings {
         } else {
             self.include_unarmed
         };
+        self.cycling_slows_time = if let Some(str_val) = options.get("bCyclingSlowsTime") {
+            str_val != "0"
+        } else {
+            self.cycling_slows_time
+        };
 
         Ok(())
     }
@@ -261,6 +269,9 @@ impl UserSettings {
     }
     pub fn include_unarmed(&self) -> bool {
         self.include_unarmed
+    }
+    pub fn cycling_slows_time(&self) -> bool {
+        self.cycling_slows_time
     }
 }
 

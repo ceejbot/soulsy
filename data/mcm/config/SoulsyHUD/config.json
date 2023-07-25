@@ -86,10 +86,19 @@
       "position": 1
     },
     {
+      "id": "bCyclingSlowsTime:Options",
+      "text": "$SoulsyHUD_Options_SlowTime_Text",
+      "help": "$SoulsyHUD_Options_SlowTime_Help",
+      "type": "toggle",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
       "id": "bIncludeUnarmed:Options",
       "text": "$SoulsyHUD_Options_Unarmed_Text",
-      "type": "toggle",
       "help": "$SoulsyHUD_Options_Unarmed_Help",
+      "type": "toggle",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
@@ -142,7 +151,10 @@
       "type": "enum",
       "help": "$SoulsyHUD_Options_Controller_Help",
       "valueOptions": {
-        "options": ["$SoulsyHUD_Controls_PS", "$SoulsyHUD_Controls_Xbox"],
+        "options": [
+          "$SoulsyHUD_Controls_PS",
+          "$SoulsyHUD_Controls_Xbox"
+        ],
         "sourceType": "ModSettingInt",
         "defaultValue": 0
       }
