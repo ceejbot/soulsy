@@ -59,44 +59,13 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 	// We start by figuring out if we need to do anything at all.
 	if (!event_list) { return event_result::kContinue; }
 
-	// If we can't ask questions about the state of the UI, we bail.
-	auto* ui = RE::UI::GetSingleton();
-	if (!ui) { return event_result::kContinue; }
-
-	// We do nothing if the console, the inventory menu, the magic menu, or the favorites
-	// menu are open.
-	const auto* interface_strings = RE::InterfaceStrings::GetSingleton();
-	if (ui->IsMenuOpen(interface_strings->console)) { return event_result::kContinue; }
-
-	if (ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) || ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
-		ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
-	{
-		return event_result::kContinue;
-	}
+	if (helpers::ignoreKeyEvents()) { return event_result::kContinue; }
 
 	// We might get a list of events to handle.
 	for (auto* event = *event_list; event; event = event->next)
 	{
 		if (event->eventType != RE::INPUT_EVENT_TYPE::kButton) { continue; }
 
-		/*if the game is not paused with the menu, it triggers the menu always in the background*/
-		if (ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
-			!ui->GetMenu<RE::HUDMenu>())
-		{
-			continue;
-		}
-
-		if (RE::UI::GetSingleton()->IsMenuOpen("LootMenu")) { continue; }
-
-		// If we're not in control of the player character or otherwise not in gameplay, move on.
-		const auto* control_map = RE::ControlMap::GetSingleton();
-		if (!control_map || !control_map->IsMovementControlsEnabled() ||
-			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay)
-		{
-			continue;
-		}
-
-		// this stays static_cast
 		const auto* button =
 			static_cast<RE::ButtonEvent*>(event);  // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 
@@ -107,7 +76,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		if (key == -1) { continue; }
 
 		// We need to be a little bit stateful to handle modifier keys, because we don't
-		// get chording events, so all the logic is now in the controller. That's its job!
+		// get chording events, so all the logic is now in the controller.
 		const KeyEventResponse response = handle_key_event(key, *button);
 		if (!response.handled) { continue; }
 

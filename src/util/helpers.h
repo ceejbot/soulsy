@@ -15,6 +15,7 @@ namespace helpers
 	bool hudAllowedOnScreen();  // the authority on whether we should show the hud or not
 	bool hudShouldAutoFadeOut();
 	bool hudShouldAutoFadeIn();
+	bool ignoreKeyEvents();
 
 	//void addCycleKeyword(const std::string& form_spec);
 	//void removeCycleKeyword(const std::string& form_spec);

@@ -12,6 +12,36 @@ namespace helpers
 {
 	using string_util = util::string_util;
 
+	// See UserEvents.h -- this is kMovement | kActivate | kMenu
+	// Handles photo mode and possibly others.
+	static constexpr auto suppressWhenSansControlFlags = static_cast<RE::ControlMap::UEFlag>(1036);
+
+	bool ignoreKeyEvents()
+	{
+		// Some checks here might be redundant. TODO tighten if possible.
+		// If we can't ask questions about the state of the UI, we respectfully decline to act.
+		auto* ui = RE::UI::GetSingleton();
+		if (!ui) { return true; }
+
+		// We only want to act on button presses when in gameplay, not menus of any kind.
+		if (ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
+			!ui->GetMenu<RE::HUDMenu>())
+		{
+			return true;
+		}
+
+		// If we're not in control of the player character or otherwise not in gameplay, move on.
+		const auto* control_map = RE::ControlMap::GetSingleton();
+		if (!control_map || !control_map->IsMovementControlsEnabled() ||
+			!control_map->AreControlsEnabled(suppressWhenSansControlFlags) ||
+			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 	bool hudAllowedOnScreen()
 	{
 		// There are some circumstances where we never want to draw it.
