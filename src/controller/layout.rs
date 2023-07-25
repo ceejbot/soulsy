@@ -3,15 +3,17 @@
 //! toml; the C++ side uses the data in layout. The majority of the implementation
 //! is filing in defaults.
 
-use std::fs;
+use std::{fs, fmt::Display};
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
 use anyhow::Result;
 use once_cell::sync::Lazy;
+use serde::{Serialize, Deserialize};
+use serde::de::{Deserializer, Error};
 
-use crate::plugin::{Color, HudElement, HudLayout, Point, SlotLayout};
+use crate::plugin::{Color, HudElement, HudLayout, Point, SlotLayout, Align};
 
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
@@ -59,10 +61,21 @@ impl HudLayout {
 
     /// Refresh the layout from the file, to take an out-of-band update and apply it in-game.
     pub fn refresh() {
+        let old = hud_layout();
+        if let Ok(buf) = toml::to_string_pretty(&old) {
+            let backup = format!("{LAYOUT_PATH}.bak");
+            let path = std::path::Path::new(&backup);
+            if let Ok(mut fp) = fs::File::create(path) {
+                if write!(fp, "{buf}").is_ok() {
+                    log::info!("backed up old layout to {}", path.display());
+                }
+            }
+        }
+
         match HudLayout::read_from_file() {
             Ok(v) => {
                 log::info!(
-                    "hud layout read: loc={},{}; size={},{}; global scale={}",
+                    "hud layout read: loc={}, {}; size={}, {}; global scale={};",
                     v.anchor.x,
                     v.anchor.y,
                     v.size.x,
@@ -100,6 +113,7 @@ impl Default for HudLayout {
         let power_default = SlotLayout {
             element: HudElement::Power,
             name: "Shouts/Powers".to_string(),
+            align_text: Align::Left,
             offset: Point { x: 0.0, y: -125.0 },
             size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
@@ -123,6 +137,7 @@ impl Default for HudLayout {
         let utility_default = SlotLayout {
             element: HudElement::Utility,
             name: "Consumables".to_string(),
+            align_text: Align::Right,
             offset: Point { x: 0.0, y: 125.0 },
             size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
@@ -146,6 +161,7 @@ impl Default for HudLayout {
         let left_default = SlotLayout {
             element: HudElement::Left,
             name: "Left Hand".to_string(),
+            align_text: Align::Right,
             offset: Point { x: -125.0, y: 0.0 },
             size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
@@ -169,6 +185,7 @@ impl Default for HudLayout {
         let right_default = SlotLayout {
             element: HudElement::Right,
             name: "Right Hand".to_string(),
+            align_text: Align::Left,
             offset: Point { x: 125.0, y: 0.0 },
             size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
@@ -192,6 +209,7 @@ impl Default for HudLayout {
         let ammo_default = SlotLayout {
             element: HudElement::Ammo,
             name: "Ammo".to_string(),
+            align_text: Align::Left,
             offset: Point { x: 0.0, y: 0.0 },
             size: Point { x: 62.0, y: 62.0 },
             bg_color: Color::default(),
@@ -260,6 +278,7 @@ impl Default for SlotLayout {
         Self {
             element: HudElement { repr: 1 },
             name: "unknown".to_string(),
+            align_text: Align::Left,
             offset: Point::default(),
             size: Point { x: 125.0, y: 125.0 },
             bg_color: Color::default(),
@@ -283,6 +302,12 @@ impl Default for SlotLayout {
     }
 }
 
+impl Default for Align {
+    fn default() -> Self {
+        Align::Left
+    }
+}
+
 impl Default for Color {
     fn default() -> Self {
         Self {
@@ -300,5 +325,38 @@ impl Point {
             x: self.x + offset.x,
             y: self.y + offset.y,
         }
+    }
+}
+
+impl Display for Align {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            Align::Left => write!(f, "left"),
+            Align::Right => write!(f, "right"),
+            Align::Center => write!(f, "center"),
+            _ => write!(f, "left"),
+        }
+    }
+}
+
+impl Serialize for Align {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+pub fn deserialize_align<'de, D>(deserializer: D) -> Result<Align, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+
+    match s.to_lowercase().as_str() {
+        "left" => Ok(Align::Left),
+        "right" => Ok(Align::Right),
+        "center" => Ok(Align::Center),
+        _ => Err(Error::unknown_variant(&s, &["left", "right", "center"])),
     }
 }

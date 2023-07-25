@@ -199,19 +199,18 @@ namespace helpers
 		return menu_form;
 	}
 
+	// Implemented while referencing https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/SlowMotionHandler.cpp
 	static bool isInSlowMotion           = false;
 	static float previousTimescaleFactor = 1.0f;
 	static constexpr REL::ID timescaleOffset1(static_cast<std::uint64_t>(388442));
 	static constexpr REL::ID timescaleOffset2(static_cast<std::uint64_t>(388443));
 
-	// Implemented while referencing https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/SlowMotionHandler.cpp
 	void enterSlowMotion()
 	{
 		if (isInSlowMotion) { return; }
+		// Do I want more settings proliferation? I signed an anti-proliferation treaty.
 		// const auto desiredFactor = user_settings().cycle_slowdown();
-		// TODO checks and balances
-		// but while we're getting it working we hard-code it
-		const auto desiredFactor = 0.5f;
+		const auto desiredFactor = 0.25f;
 
 		float* timescaleMult1 = reinterpret_cast<float*>(timescaleOffset1.address());
 		float* timescaleMult2 = reinterpret_cast<float*>(timescaleOffset2.address());

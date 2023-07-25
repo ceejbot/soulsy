@@ -23,6 +23,14 @@ pub mod plugin {
         None, // not drawn
     }
 
+    /// Text alignment options
+    #[derive(Debug, Clone, Hash)]
+    enum Align {
+        Left,
+        Right,
+        Center
+    }
+
     /// Where to arrange the HUD elements and what color to draw them in.
     ///
     /// This data is serialized to the SoulsyHUD_HudLayout.toml file.
@@ -104,6 +112,9 @@ pub mod plugin {
         element: HudElement,
         /// The name of the hud element this layout is for. For humans.
         name: String,
+        /// How to align any text associated with this slot.
+        #[serde(default, deserialize_with="crate::deserialize_align")]
+        align_text: Align,
         /// An offset from the overall hud anchor point to draw this element at.
         offset: Point,
         /// The size of this element, to scale everything to.

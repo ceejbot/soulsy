@@ -6,6 +6,7 @@
 // Forward declarations of the types we're getting from Rust.
 enum class ItemKind : ::std::uint8_t;
 enum class Action : ::std::uint8_t;
+enum class Align : ::std::uint8_t;
 struct HudLayout;
 struct SlotLayout;
 struct Point;
@@ -62,7 +63,7 @@ namespace ui
 			const ImVec2 size,
 			const float angle,
 			const Color color);
-		static void drawText(const char* text, const ImVec2 center, const float font_size, const Color color);
+		static void drawText(const char* text, const ImVec2 center, const float font_size, const Color color, const Align alignment);
 		// older...
 		static void init_animation(animation_type animation_type,
 			float a_screen_x,
