@@ -201,6 +201,8 @@ namespace helpers
 
 	static bool helpers::isInSlowMotion           = false;
 	static float helpers::previousTimescaleFactor = 1.0f;
+	static constexpr REL::ID timescaleOffset1(static_cast<std::uint64_t>(388442));
+	static constexpr REL::ID timescaleOffset2(static_cast<std::uint64_t>(388443));
 
 	// Implemented while referencing https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/SlowMotionHandler.cpp
 	void enterSlowMotion()
@@ -211,8 +213,8 @@ namespace helpers
 		// but while we're getting it working we hard-code it
 		const auto desiredFactor = 0.5f;
 
-		float* timescaleMult1 = reinterpret_cast<float*>(Offsets::GlobalTimescaleMultiplier::Value1.address());
-		float* timescaleMult2 = reinterpret_cast<float*>(Offsets::GlobalTimescaleMultiplier::Value2.address());
+		float* timescaleMult1 = reinterpret_cast<float*>(timescaleOffset1.address());
+		float* timescaleMult2 = reinterpret_cast<float*>(timescaleOffset2.address());
 
 		previousTimescaleFactor = *timescaleMult1;
 		*timescaleMult1         = desiredFactor * (*timescaleMult1);
@@ -225,8 +227,8 @@ namespace helpers
 	{
 		if (!isInSlowMotion) { return; }
 
-		float* timescaleMult1 = reinterpret_cast<float*>(Offsets::GlobalTimescaleMultiplier::Value1.address());
-		float* timescaleMult2 = reinterpret_cast<float*>(Offsets::GlobalTimescaleMultiplier::Value2.address());
+		float* timescaleMult1 = reinterpret_cast<float*>(timescaleOffset1.address());
+		float* timescaleMult2 = reinterpret_cast<float*>(timescaleOffset2.address());
 
 		*timescaleMult1 = previousTimescaleFactor;
 		*timescaleMult2 = *timescaleMult1;
