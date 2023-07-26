@@ -35,30 +35,30 @@ impl HotkeyKind {
 impl From<u32> for HotkeyKind {
     fn from(v: u32) -> Self {
         let settings = user_settings();
-        if v == settings.power {
+        if v == settings.power() {
             HotkeyKind::Power
-        } else if v == settings.utility {
+        } else if v == settings.utility() {
             HotkeyKind::Utility
-        } else if v == settings.left {
+        } else if v == settings.left() {
             HotkeyKind::Left
-        } else if v == settings.right {
+        } else if v == settings.right() {
             HotkeyKind::Right
-        } else if v == settings.refresh_layout {
+        } else if v == settings.refresh_layout() {
             HotkeyKind::Refresh
-        } else if v == settings.showhide {
+        } else if v == settings.showhide() {
             HotkeyKind::ShowHide
-        } else if v == settings.activate {
+        } else if v == settings.activate() {
             HotkeyKind::Activate
-        } else if settings.activate_modifier.is_positive()
-            && v == settings.activate_modifier.unsigned_abs()
+        } else if settings.activate_modifier().is_positive()
+            && v == settings.activate_modifier().unsigned_abs()
         {
             HotkeyKind::ActivateModifier
-        } else if settings.cycle_modifier.is_positive()
-            && v == settings.cycle_modifier.unsigned_abs()
+        } else if settings.cycle_modifier().is_positive()
+            && v == settings.cycle_modifier().unsigned_abs()
         {
             HotkeyKind::CycleModifier
-        } else if settings.unequip_modifier.is_positive()
-            && v == settings.unequip_modifier.unsigned_abs()
+        } else if settings.unequip_modifier().is_positive()
+            && v == settings.unequip_modifier().unsigned_abs()
         {
             HotkeyKind::UnequipModifier
         } else {

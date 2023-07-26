@@ -5,26 +5,8 @@
   "cursorFillMode": "topToBottom",
   "content": [
     {
-      "text": "$SoulsyHUD_Controls_HeaderText",
+      "text": "$SoulsyHUD_Controls_KeysHeader",
       "type": "header"
-    },
-    {
-      "id": "iCycleModifierKey:Controls",
-      "text": "$SoulsyHUD_Controls_CycleModifierKey_Text",
-      "help": "$SoulsyHUD_Controls_CycleModifierKey_Help",
-      "type": "keymap",
-      "valueOptions": {
-        "sourceType": "ModSettingInt"
-      }
-    },
-    {
-      "id": "iUnequipModifierKey:Controls",
-      "text": "$SoulsyHUD_Controls_UnequipModifierKey_Text",
-      "help": "$SoulsyHUD_Controls_UnequipModifierKey_Help",
-      "type": "keymap",
-      "valueOptions": {
-        "sourceType": "ModSettingInt"
-      }
     },
     {
       "id": "uPowerCycleKey:Controls",
@@ -63,6 +45,21 @@
       }
     },
     {
+      "id": "uHowToActivate:Controls",
+      "text": "$SoulsyHUD_Activate_When_Text",
+      "help": "$SoulsyHUD_Activate_When_Help",
+      "type": "enum",
+      "valueOptions": {
+        "options": [
+          "$SoulsyHUD_Activate_Enum_Hotkey",
+          "$SoulsyHUD_Activate_Enum_LongPress",
+          "$SoulsyHUD_Activate_Enum_Mod"
+        ],
+        "sourceType": "ModSettingInt",
+        "defaultValue": 0
+      }
+    },
+    {
       "id": "iUtilityActivateModifier:Controls",
       "text": "$SoulsyHUD_Controls_ActivateModifier_Text",
       "help": "$SoulsyHUD_Controls_ActivateModifier_Help",
@@ -81,9 +78,8 @@
       }
     },
     {
-      "text": "$SoulsyHUD_Options_HeaderText",
-      "type": "header",
-      "position": 1
+      "text": "$SoulsyHUD_Gameplay_FeelHeader",
+      "type": "header"
     },
     {
       "id": "bCyclingSlowsTime:Options",
@@ -95,11 +91,14 @@
       }
     },
     {
-      "id": "bIncludeUnarmed:Options",
-      "text": "$SoulsyHUD_Options_Unarmed_Text",
-      "help": "$SoulsyHUD_Options_Unarmed_Help",
-      "type": "toggle",
+      "id": "uSlowTimeFactor:Options",
+      "text": "$SoulsyHUD_Options_HowSlow_Text",
+      "help": "$SoulsyHUD_Options_HowSlow_Help",
+      "type": "slider",
       "valueOptions": {
+        "min": 10,
+        "max": 90,
+        "step": 1,
         "sourceType": "ModSettingInt"
       }
     },
@@ -128,6 +127,108 @@
       }
     },
     {
+      "id": "uControllerKind:Options",
+      "text": "$SoulsyHUD_Options_Controller_Text",
+      "type": "enum",
+      "help": "$SoulsyHUD_Options_Controller_Help",
+      "valueOptions": {
+        "options": ["$SoulsyHUD_Controls_PS", "$SoulsyHUD_Controls_Xbox"],
+        "sourceType": "ModSettingInt",
+        "defaultValue": 0
+      }
+    },
+    {
+      "id": "uRefreshKey:Controls",
+      "text": "$SoulsyHUD_Controls_RefreshKey_Text",
+      "help": "$SoulsyHUD_Controls_RefreshKey_Help",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "text": "$SoulsyHUD_Controls_ModifiersHeader",
+      "type": "header",
+      "position": 1
+    },
+    {
+      "id": "uHowToAdvance:Controls",
+      "text": "$SoulsyHUD_Controls_CycleModRequired_Text",
+      "help": "$SoulsyHUD_Controls_CycleModRequired_Help",
+      "type": "enum",
+      "valueOptions": {
+        "options": [
+          "$SoulsyHUD_Activate_Enum_Hotkey",
+          "$SoulsyHUD_Activate_Enum_LongPress",
+          "$SoulsyHUD_Activate_Enum_Mod"
+        ],
+        "sourceType": "ModSettingInt",
+        "defaultValue": 0
+      }
+    },
+    {
+      "id": "iCycleModifierKey:Controls",
+      "text": "$SoulsyHUD_Controls_CycleModifierKey_Text",
+      "help": "$SoulsyHUD_Controls_CycleModifierKey_Help",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uHowTriggerInMenus:Controls",
+      "text": "$SoulsyHUD_Controls_Menus_Text",
+      "help": "$SoulsyHUD_Controls_Menus_Help",
+      "type": "enum",
+      "valueOptions": {
+        "options": [
+          "$SoulsyHUD_Activate_Enum_Hotkey",
+          "$SoulsyHUD_Activate_Enum_LongPress",
+          "$SoulsyHUD_Activate_Enum_Mod"
+        ],
+        "sourceType": "ModSettingInt",
+        "defaultValue": 0
+      }
+    },
+    {
+      "id": "uHowToUnequip:Controls",
+      "text": "$SoulsyHUD_Controls_Unarmed_Text",
+      "help": "$SoulsyHUD_Controls_Unarmed_Help",
+      "type": "enum",
+      "valueOptions": {
+        "options": [
+          "$SoulsyHUD_Unarmed_Enum_None",
+          "$SoulsyHUD_Unarmed_Enum_LongPress",
+          "$SoulsyHUD_Unarmed_Enum_Mod",
+          "$SoulsyHUD_Unarmed_Enum_Add"
+        ],
+        "sourceType": "ModSettingInt",
+        "defaultValue": 0
+      }
+    },
+    {
+      "id": "iUnequipModifierKey:Controls",
+      "text": "$SoulsyHUD_Controls_UnequipModifierKey_Text",
+      "help": "$SoulsyHUD_Controls_UnequipModifierKey_Help",
+      "type": "keymap",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "bIncludeUnarmed:Options",
+      "text": "$SoulsyHUD_Options_Unarmed_Text",
+      "help": "$SoulsyHUD_Options_Unarmed_Help",
+      "type": "toggle",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "text": "$SoulsyHUD_Gameplay_VisibilityHeader",
+      "type": "header"
+    },
+    {
       "id": "uShowHideKey:Controls",
       "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
       "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
@@ -146,25 +247,14 @@
       }
     },
     {
-      "id": "uControllerKind:Options",
-      "text": "$SoulsyHUD_Options_Controller_Text",
-      "type": "enum",
-      "help": "$SoulsyHUD_Options_Controller_Help",
+      "id": "uFadeTime:Options",
+      "text": "$SoulsyHUD_Options_FadeTime_Text",
+      "help": "$SoulsyHUD_Options_FadeTime_Help",
+      "type": "slider",
       "valueOptions": {
-        "options": [
-          "$SoulsyHUD_Controls_PS",
-          "$SoulsyHUD_Controls_Xbox"
-        ],
-        "sourceType": "ModSettingInt",
-        "defaultValue": 0
-      }
-    },
-    {
-      "id": "uRefreshKey:Controls",
-      "text": "$SoulsyHUD_Controls_RefreshKey_Text",
-      "help": "$SoulsyHUD_Controls_RefreshKey_Help",
-      "type": "keymap",
-      "valueOptions": {
+        "min": 500,
+        "max": 5000,
+        "step": 100,
         "sourceType": "ModSettingInt"
       }
     }

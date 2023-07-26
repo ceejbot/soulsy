@@ -183,32 +183,32 @@ impl Controller {
 
         // This loses any is-up/is-down state, but the user just closed the config page.
         // Niche bug.
-        self.activate_modifier = if settings.activate_modifier > 0 {
+        self.activate_modifier = if settings.activate_modifier() > 0 {
             TrackedKey {
-                key: HotkeyKind::from(settings.activate_modifier as u32),
+                key: HotkeyKind::from(settings.activate_modifier() as u32),
                 state: KeyState::Up,
             }
         } else {
             TrackedKey::default()
         };
-        self.cycle_modifier = if settings.cycle_modifier > 0 {
+        self.cycle_modifier = if settings.cycle_modifier() > 0 {
             TrackedKey {
-                key: HotkeyKind::from(settings.cycle_modifier as u32),
+                key: HotkeyKind::from(settings.cycle_modifier() as u32),
                 state: KeyState::Up,
             }
         } else {
             TrackedKey::default()
         };
-        self.unequip_modifier = if settings.unequip_modifier > 0 {
+        self.unequip_modifier = if settings.unequip_modifier() > 0 {
             TrackedKey {
-                key: HotkeyKind::from(settings.unequip_modifier as u32),
+                key: HotkeyKind::from(settings.unequip_modifier() as u32),
                 state: KeyState::Up,
             }
         } else {
             TrackedKey::default()
         };
 
-        if !settings.autofade {
+        if !settings.autofade() {
             if self.cycles.hud_visible() {
                 fadeToAlpha(true, 1.0);
             } else {
@@ -302,7 +302,7 @@ impl Controller {
                 }
             }
             HotkeyKind::ShowHide => {
-                if !user_settings().autofade {
+                if !user_settings().autofade() {
                     self.cycles.toggle_hud();
                 }
                 KeyEventResponse {
@@ -955,9 +955,9 @@ impl Controller {
     fn toggle_item(&mut self, action: Action, item: ItemData) {
         // clear the modifier key in case strange things happen
         let settings = user_settings();
-        if settings.cycle_modifier > 0 {
+        if settings.cycle_modifier() > 0 {
             self.cycle_modifier = TrackedKey {
-                key: HotkeyKind::from(settings.cycle_modifier as u32),
+                key: HotkeyKind::from(settings.cycle_modifier() as u32),
                 state: KeyState::Up,
             };
         }
@@ -1053,19 +1053,19 @@ impl From<u32> for Action {
     fn from(value: u32) -> Self {
         let settings = user_settings();
 
-        if value == settings.left {
+        if value == settings.left() {
             Action::Left
-        } else if value == settings.right {
+        } else if value == settings.right() {
             Action::Right
-        } else if value == settings.power {
+        } else if value == settings.power() {
             Action::Power
-        } else if value == settings.utility {
+        } else if value == settings.utility() {
             Action::Utility
-        } else if value == settings.activate {
+        } else if value == settings.activate() {
             Action::Activate
-        } else if value == settings.showhide {
+        } else if value == settings.showhide() {
             Action::ShowHide
-        } else if value == settings.refresh_layout {
+        } else if value == settings.refresh_layout() {
             Action::RefreshLayout
         } else {
             Action::None

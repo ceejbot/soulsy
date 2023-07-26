@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use anyhow::Result;
 use ini::Ini;
 use once_cell::sync::Lazy;
+use strum::Display;
 
 use crate::plugin::HudElement;
 
@@ -36,6 +37,45 @@ pub fn refresh_user_settings() {
     }
 }
 
+#[derive(Debug, Clone, Display)]
+pub enum ActivationMethod {
+    Hotkey,
+    LongPress,
+    Modifier,
+}
+
+impl From<u32> for ActivationMethod {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => ActivationMethod::Hotkey,
+            1 => ActivationMethod::LongPress,
+            2 => ActivationMethod::Modifier,
+            _ => ActivationMethod::Hotkey
+        }
+    }
+}
+
+#[derive(Debug, Clone, Display)]
+pub enum UnarmedMethod {
+    None,
+    LongPress,
+    Modifier,
+    AddToCycles,
+}
+
+impl From<u32> for UnarmedMethod {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => UnarmedMethod::None,
+            1 => UnarmedMethod::LongPress,
+            2 => UnarmedMethod::Modifier,
+            3 => UnarmedMethod::AddToCycles,
+            _ => UnarmedMethod::None
+        }
+    }
+}
+
+
 /// User-modifiable settings for HUD behavior. Doesn't manage cycles.
 ///
 /// These settings are read from an ini file managed by SkyUI's MCM, which provides
@@ -44,43 +84,52 @@ pub fn refresh_user_settings() {
 #[derive(Debug, Clone)]
 pub struct UserSettings {
     /// An optional modifier key for all cycle hotkeys. E.g., shift + key.
-    pub cycle_modifier: i32,
+    cycle_modifier: i32,
+    /// When to apply the cycle modifier.
+    cycle_mod_when: CycleModWhen,
     /// An optional modifier key for unequipping a specific slot
-    pub unequip_modifier: i32,
+    unequip_modifier: i32,
     /// The key for the left hand's cycle.
-    pub left: u32,
+    left: u32,
     /// The key for the right hand's cycle.
-    pub right: u32,
+    right: u32,
     /// The key for powers.
-    pub power: u32,
+    power: u32,
     /// The key for utility items.
-    pub utility: u32,
+    utility: u32,
     /// The key to activate or use a utility item.
-    pub activate: u32,
+    activate: u32,
     /// An optional modifier key for activating the utility item.
-    pub activate_modifier: i32,
+    activate_modifier: i32,
+    /// Set to require activation with a long press
+    activate_with_press: bool,
     /// Show/hide shortcut key.
-    pub showhide: u32,
+    showhide: u32,
     /// A hotkey for re-reading the layout from toml and redrawing.
-    pub refresh_layout: u32,
+    refresh_layout: u32,
     /// The maximum length of a cycle. Must be between 2 and 15, inclusive.
-    pub maxlen: u32,
+    maxlen: u32,
     /// The number of milliseconds to delay before equipping a selection. Max 2500, min 0.
-    pub equip_delay: u32,
+    equip_delay: u32,
     /// Whether to fade out hud when not in combat.
-    pub autofade: bool,
+    autofade: bool,
+    /// The time in milliseconds it takes to fade out.
+    fade_time: u32,
     /// The controller kind to show in the UX. Matches the controller_set enum in key_path.h
-    pub controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
+    controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
     /// Whether to include unarmed as a cycle entry for each hand.
-    pub include_unarmed: bool,
+    include_unarmed: bool,
     /// Whether to slow down time when cycling
-    pub cycling_slows_time: bool,
+    cycling_slows_time: bool,
+    /// How much to slow down time.
+    slow_time_factor: f32,
 }
 
 impl Default for UserSettings {
     fn default() -> Self {
         Self {
             cycle_modifier: -1,
+            cycle_mod_when: CycleModWhen::Never,
             unequip_modifier: -1,
             // The map in key_path.h starts with numeral 1 => 2.
             left: 5,
@@ -89,14 +138,17 @@ impl Default for UserSettings {
             utility: 6,
             activate: 4,
             activate_modifier: -1,
+            activate_with_press: false,
             refresh_layout: 8,
             showhide: 2,
             maxlen: 10,       // this not a key code but an int
             equip_delay: 750, // in milliseconds
             autofade: true,
-            controller_kind: 0, // PC
+            fade_time: 2000,    // in milliseconds
+            controller_kind: 0, // PS5
             include_unarmed: true,
             cycling_slows_time: false,
+            slow_time_factor: 0.25,
         }
     }
 }
@@ -115,6 +167,14 @@ fn read_int_from(section: &ini::Properties, key: &str, default: u32) -> u32 {
 fn read_signed_int_from(section: &ini::Properties, key: &str, default: i32) -> i32 {
     if let Some(str_val) = section.get(key) {
         str_val.parse::<i32>().unwrap_or(default)
+    } else {
+        default
+    }
+}
+
+fn read_bool_from(section: &ini::Properties, key: &str, default: bool) -> bool {
+    if let Some(str_val) = section.get(key) {
+        str_val != "0"
     } else {
         default
     }
@@ -146,25 +206,39 @@ impl UserSettings {
         } else {
             &empty
         };
-        self.cycle_modifier =
-            read_signed_int_from(controls, "iCycleModifierKey", self.cycle_modifier);
-        self.unequip_modifier =
-            read_signed_int_from(controls, "iUnequipModifierKey", self.unequip_modifier);
-        self.left = read_int_from(controls, "uLeftCycleKey", self.left);
-        self.right = read_int_from(controls, "uRightCycleKey", self.right);
-        self.power = read_int_from(controls, "uPowerCycleKey", self.power);
-        self.utility = read_int_from(controls, "uUtilityCycleKey", self.utility);
-        self.activate = read_int_from(controls, "uUtilityActivateKey", self.activate);
-        self.activate_modifier =
-            read_signed_int_from(controls, "iUtilityActivateModifier", self.activate_modifier);
-        self.showhide = read_int_from(controls, "uShowHideKey", self.showhide);
-        self.refresh_layout = read_int_from(controls, "uRefreshKey", self.refresh_layout);
-
+        // And again, clonk.
         let options = if let Some(s) = conf.section(Some("Options")) {
             s
         } else {
             &empty
         };
+
+        self.cycle_modifier =
+            read_signed_int_from(controls, "iCycleModifierKey", self.cycle_modifier);
+        self.cycle_mod_when = if let Some(str_val) = controls.get("uCycleModifierRequired") {
+            CycleModWhen::from(str_val)
+        } else {
+            CycleModWhen::Never
+        };
+
+        self.left = read_int_from(controls, "uLeftCycleKey", self.left);
+        self.right = read_int_from(controls, "uRightCycleKey", self.right);
+        self.power = read_int_from(controls, "uPowerCycleKey", self.power);
+        self.utility = read_int_from(controls, "uUtilityCycleKey", self.utility);
+
+        self.activate = read_int_from(controls, "uUtilityActivateKey", self.activate);
+        self.activate_modifier =
+            read_signed_int_from(controls, "iUtilityActivateModifier", self.activate_modifier);
+        self.activate_with_press =
+            read_bool_from(controls, "bActivateLongPress", self.activate_with_press);
+
+        self.showhide = read_int_from(controls, "uShowHideKey", self.showhide);
+        self.refresh_layout = read_int_from(controls, "uRefreshKey", self.refresh_layout);
+
+        self.unequip_modifier =
+            read_signed_int_from(controls, "iUnequipModifierKey", self.unequip_modifier);
+
+
         self.maxlen = clamp(
             read_int_from(options, "uMaxCycleLength", self.maxlen),
             2,
@@ -175,26 +249,22 @@ impl UserSettings {
             0,
             2500,
         );
-        self.autofade = if let Some(str_val) = options.get("bAutoFade") {
-            str_val != "0"
-        } else {
-            self.autofade
-        };
+
+        self.autofade = read_bool_from(options, "bAutoFade", self.autofade);
+        self.fade_time = clamp(read_int_from(options, "uFadeTime", self.fade_time), 0, 2500);
+
         self.controller_kind = clamp(
             read_int_from(options, "uControllerKind", self.controller_kind),
             0,
             2,
         );
-        self.include_unarmed = if let Some(str_val) = options.get("bIncludeUnarmed") {
-            str_val != "0"
-        } else {
-            self.include_unarmed
-        };
-        self.cycling_slows_time = if let Some(str_val) = options.get("bCyclingSlowsTime") {
-            str_val != "0"
-        } else {
-            self.cycling_slows_time
-        };
+
+        self.include_unarmed = read_bool_from(options, "bIncludeUnarmed", self.include_unarmed);
+
+        self.cycling_slows_time =
+            read_bool_from(options, "bCyclingSlowsTime", self.cycling_slows_time);
+        let percentage = read_int_from(options, "uSlowTimeFactor", 25);
+        self.slow_time_factor = percentage as f32 / 100.0;
 
         Ok(())
     }
@@ -203,15 +273,23 @@ impl UserSettings {
         // hiding the implementation here, possibly pointlessly
         self.unequip_modifier > 0
     }
-
     pub fn is_unequip_modifier(&self, key: u32) -> bool {
         self.unequip_modifier as u32 == key
     }
+    pub fn unequip_modifier(&self) -> i32 {
+        self.unequip_modifier
+    }
 
+    // TODO rework
+    pub fn cycle_mod_when(&self) -> &CycleModWhen {
+        &self.cycle_mod_when
+    }
     pub fn cycle_with_modifier(&self) -> bool {
         self.cycle_modifier > 0
     }
-
+    pub fn cycle_modifier(&self) -> i32 {
+        self.cycle_modifier
+    }
     pub fn is_cycle_modifier(&self, key: u32) -> bool {
         self.cycle_modifier as u32 == key
     }
@@ -246,6 +324,9 @@ impl UserSettings {
     pub fn activate_modifier(&self) -> i32 {
         self.activate_modifier
     }
+    pub fn activate_with_press(&self) -> bool {
+        self.activate_with_press
+    }
     pub fn activate(&self) -> u32 {
         self.activate
     }
@@ -263,6 +344,9 @@ impl UserSettings {
     }
     pub fn autofade(&self) -> bool {
         self.autofade
+    }
+    pub fn fade_time(&self) -> u32 {
+        self.fade_time
     }
     pub fn controller_kind(&self) -> u32 {
         clamp(self.controller_kind, 0, 2)
