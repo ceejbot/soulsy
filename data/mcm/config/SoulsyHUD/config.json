@@ -1,7 +1,7 @@
 {
   "modName": "SoulsyHUD",
   "displayName": "SoulsyHUD",
-  "minMcmVersion": 13,
+  "minMcmVersion": 11,
   "cursorFillMode": "topToBottom",
   "content": [
     {
