@@ -132,7 +132,10 @@
       "type": "enum",
       "help": "$SoulsyHUD_Options_Controller_Help",
       "valueOptions": {
-        "options": ["$SoulsyHUD_Controls_PS", "$SoulsyHUD_Controls_Xbox"],
+        "options": [
+          "$SoulsyHUD_Controls_PS",
+          "$SoulsyHUD_Controls_Xbox"
+        ],
         "sourceType": "ModSettingInt",
         "defaultValue": 0
       }
@@ -152,7 +155,7 @@
       "position": 1
     },
     {
-      "id": "uHowToAdvance:Controls",
+      "id": "uHowToCycle:Controls",
       "text": "$SoulsyHUD_Controls_CycleModRequired_Text",
       "help": "$SoulsyHUD_Controls_CycleModRequired_Help",
       "type": "enum",
