@@ -65,8 +65,11 @@ pub struct UserSettings {
     /// An optional modifier key for all cycle hotkeys. E.g., shift + key. iCycleModifierKey
     cycle_modifier: i32,
 
+    /// How the player adds and removes items in menus. uHowTriggerInMenus
+    how_to_toggle: ActivationMethod,
+
     /// How the player wants to handle unequipping slots. uHowToUnequip
-    how_to_unequip: UnarmedMethod,
+    unarmed_handling: UnarmedMethod,
     /// An optional modifier key for unequipping a specific slot. iUnequipModifierKey
     unequip_modifier: i32,
 
@@ -84,8 +87,6 @@ pub struct UserSettings {
     fade_time: u32,
     /// The controller kind to show in the UX. Matches the controller_set enum in key_path.h
     controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
-    /// Whether to include unarmed as a cycle entry for each hand.
-    include_unarmed: bool,
     /// Whether to slow down time when cycling
     cycling_slows_time: bool,
     /// How much to slow down time.
@@ -105,7 +106,8 @@ impl Default for UserSettings {
             activate_modifier: -1,
             how_to_cycle: ActivationMethod::Hotkey,
             cycle_modifier: -1,
-            how_to_unequip: UnarmedMethod::None,
+            how_to_toggle: ActivationMethod::Hotkey,
+            unarmed_handling: UnarmedMethod::None,
             unequip_modifier: -1,
             refresh_layout: 8,
             showhide: 2,
@@ -114,7 +116,6 @@ impl Default for UserSettings {
             autofade: true,
             fade_time: 2000,    // in milliseconds
             controller_kind: 0, // PS5
-            include_unarmed: true,
             cycling_slows_time: false,
             slow_time_factor: 0.25,
         }
@@ -165,6 +166,8 @@ impl UserSettings {
             self.how_to_cycle = ActivationMethod::Modifier;
         }
 
+        self.how_to_toggle = read_from_ini(self.how_to_toggle, "uHowToggleInMenus", controls);
+
         self.how_to_activate = read_from_ini(self.how_to_activate, "uHowToActivate", controls);
         self.activate = read_from_ini(self.activate, "uUtilityActivateKey", controls);
         self.activate_modifier =
@@ -173,38 +176,33 @@ impl UserSettings {
         self.showhide = read_from_ini(self.showhide, "uShowHideKey", controls);
         self.refresh_layout = read_from_ini(self.refresh_layout, "uRefreshKey", controls);
 
-        self.how_to_unequip = read_from_ini(self.how_to_unequip, "uHowToUnequip", controls);
+        self.unarmed_handling = read_from_ini(self.unarmed_handling, "uHowToUnequip", controls);
         self.unequip_modifier =
             read_from_ini(self.unequip_modifier, "iUnequipModifierKey", controls);
         let old_include_unarmed = read_from_ini(false, "bIncludeUnarmed", options);
         if old_include_unarmed {
-            self.how_to_unequip = UnarmedMethod::AddToCycles;
+            self.unarmed_handling = UnarmedMethod::AddToCycles;
         }
 
         self.maxlen = clamp(
-            read_from_ini(self.maxlen, "uMaxCycleLength", controls),
+            read_from_ini(self.maxlen, "uMaxCycleLength", options),
             2,
             20,
         );
         self.equip_delay = clamp(
-            read_from_ini(self.equip_delay, "uEquipDelay", controls),
+            read_from_ini(self.equip_delay, "uEquipDelay", options),
             0,
             2500,
         );
 
-        self.autofade = read_from_ini(self.autofade, "bAutoFade", controls);
-        self.fade_time = clamp(
-            read_from_ini(self.fade_time, "uEquipDelay", controls),
-            0,
-            2500,
-        );
+        self.autofade = read_from_ini(self.autofade, "bAutoFade", options);
+        self.fade_time = clamp(read_from_ini(self.fade_time, "uFadeTime", options), 0, 2500);
         self.controller_kind = clamp(
-            read_from_ini(self.controller_kind, "uControllerKind", controls),
+            read_from_ini(self.controller_kind, "uControllerKind", options),
             0,
             1,
         );
 
-        self.include_unarmed = read_from_ini(self.include_unarmed, "bIncludeUnarmed", options);
         self.cycling_slows_time =
             read_from_ini(self.cycling_slows_time, "bCyclingSlowsTime", options);
         let percentage = read_from_ini(25, "uSlowTimeFactor", options);
@@ -217,11 +215,18 @@ impl UserSettings {
         // hiding the implementation here, possibly pointlessly
         self.unequip_modifier > 0
     }
+    pub fn unarmed_handling(&self) -> &UnarmedMethod {
+        &self.unarmed_handling
+    }
     pub fn is_unequip_modifier(&self, key: u32) -> bool {
         self.unequip_modifier as u32 == key
     }
     pub fn unequip_modifier(&self) -> i32 {
         self.unequip_modifier
+    }
+
+    pub fn how_to_toggle(&self) -> &ActivationMethod {
+        &self.how_to_toggle
     }
 
     pub fn how_to_cycle(&self) -> &ActivationMethod {
@@ -295,9 +300,6 @@ impl UserSettings {
     }
     pub fn controller_kind(&self) -> u32 {
         clamp(self.controller_kind, 0, 2)
-    }
-    pub fn include_unarmed(&self) -> bool {
-        self.include_unarmed
     }
     pub fn cycling_slows_time(&self) -> bool {
         self.cycling_slows_time

@@ -1,6 +1,7 @@
 //! Structs and trait impls for considering keyboard/controller state.
 
 use std::fmt::Display;
+use std::time::{Duration, Instant};
 
 use strum::Display;
 
@@ -91,6 +92,7 @@ impl From<&ButtonEvent> for KeyState {
 pub struct TrackedKey {
     pub key: HotkeyKind,
     pub state: KeyState,
+    pub press_start: Option<Instant>,
 }
 
 impl TrackedKey {
@@ -100,6 +102,32 @@ impl TrackedKey {
 
     pub fn update(&mut self, event: &ButtonEvent) {
         self.state = KeyState::from(event);
+        match self.state {
+            KeyState::Up => {
+                // nothing?
+            }
+            KeyState::Pressed => {
+                if self.press_start.is_none() {
+                    self.press_start = Some(Instant::now());
+                }
+            }
+            KeyState::Down => {
+                self.press_start = Some(Instant::now());
+            }
+        }
+    }
+
+    pub fn is_long_press(&self) -> bool {
+        if let Some(start) = self.press_start {
+            let elapsed_time = start.elapsed();
+            elapsed_time > Duration::from_millis(1000) // TODO what counts as a long press?
+        } else {
+            false
+        }
+    }
+
+    pub fn is_up(&self) -> bool {
+        matches!(self.state, KeyState::Up)
     }
 
     pub fn is_pressed(&self) -> bool {
@@ -112,6 +140,7 @@ impl Default for TrackedKey {
         Self {
             key: HotkeyKind::None,
             state: KeyState::Up,
+            press_start: None,
         }
     }
 }
