@@ -853,7 +853,10 @@ namespace ui
 		logger::info("started equip delay timer; which={}; delay={};"sv,
 			static_cast<uint8_t>(which),
 			static_cast<float>(duration) / 1000.0f);
-		if (settings->cycling_slows_time()) { helpers::enterSlowMotion(); }
+		if (settings->cycling_slows_time() && RE::PlayerCharacter::GetSingleton()->IsInCombat())
+		{
+			helpers::enterSlowMotion();
+		}
 	}
 
 	// remove timer from the map if it exists

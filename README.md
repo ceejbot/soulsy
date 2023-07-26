@@ -47,56 +47,16 @@ The icons for the built-in theme are the usual SkyUI icons, plus the `futura-boo
 
 Current tasks:
 
-- [ ] I18n: fonts. ??
 - [ ] Make a *good-looking* layout. Find a designer if necessary.
-- [ ] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 - [ ] Fix filed issues.
-
-Second phase goals:
-
 - [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
 - [ ] Move `imgui` rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
 - [ ] Make image loading on-demand, to save memory. (Maybe an unimportant optimization? Measure.)
 - [ ] Add support for debug builds to CMake, or at least remove the half-done option.
 - [ ] Decide what to do about highlight animations.
 - [ ] If I decide to highlight, track highlight status in the controller to support it.
-
-DONE:
-
-- [x] Figure out how to compile papyrus scripts. Answer: Pyro.
-- [x] Edit the `.esp` if necessary. Check it in.
-- [x] Rewrite or merely just tweak the script that builds the mod archive itself, with correctly-placed files.
-- [x] Test to see if the mod loads at all into the game. Fix whatever's broken.
-- [x] Finish up the icon data loading function.
-- [x] Hack out the per-page position settings stuff to ask Rust for info for exactly four slots, the ones visible right now.
-- [x] Handle the case of equipped items not being in the cycle, while the cycle is being advanced.
-- [x] Wire up the equip-item functions as well as the equip delay. Implement a timer using the tick in the imgui rendering code.
-- [x] Implement a get-current-slot-info function that handles the case where the current item is not in a cycle.
-- [x] Debounce keys. Especially the show/hide button.
-- [x] Wire up the mod to MCM to show its config & write user settings.
-- [x] Figure out what I'm doing wrong with MCM config settings. No really.
-- [x] Figure out what I'm doing wrong with translation files. UTF-16 LE, one tab. What else? **CRLF**.
-- [x] Why is consuming potions unstable? Sometimes fine, sometimes lockup.
-- [x] Make re-equipping the left-hand item work.
-- [x] Wire up the inventory-changed hooks.
-- [x] Inform Rust about equip changes.
-- [x] Get ammo showing correctly.
-- [x] Validate cycle data on save load. Baking the data into the save might be more robust long-term, but I don't know how to do that yet.
-- [x] Wire up activating the utility button.
-- [x] Figure out why activating potions makes the game lock up.
-- [x] Get all layout info into one file; load it into the shared struct. (Is shared the right choice? who knows.)
-- [x] Come up with an adequate default layout for the HUD.
-- [x] I18n: translation files.
-- [x] Code cleanup. DRY up the C++. Reorganize the Rust. Tighten up names.
-- [x] Cycle serialization files should include the player name so character-hopping doesn't lose dta.
-- [x] Sort out `gear.h` vs `utility_items.h`. Merge?
-- [x] Improve the CMake files so rebuilding is reliable.
-- [x] Make Rust log to a second file in the same directory as SKSE.
-- [x] Add more Rust debug-level logging for happy-path cases.
-- [x] Review the 20-or-so TODO items noted in code comments.
-- [x] User docs, for the readme and for the Nexus page.
-- [x] Is there an official way to show a textual feedback message in SkyUI? I'm using it.
-- [x] Consider getting more testers.
+- [x] I18n: fonts. ??
+- [x] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 
 ## License
 

@@ -114,7 +114,6 @@ build-layouts:
         echo "Built ${name}.7z"
     done
 
-
 # The traditional
 @clean:
     rm -f archive.7z

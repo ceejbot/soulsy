@@ -199,42 +199,45 @@ namespace helpers
 		return menu_form;
 	}
 
-	// Implemented while referencing https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/SlowMotionHandler.cpp
+	//  Two references for this implementation:
+	//  https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/SlowMotionHandler.cpp
+	//  RE/B/BStimer.h
+
 	static bool isInSlowMotion = false;
 	const auto desiredFactor   = 0.25f;
-	static constexpr REL::ID timescaleOffset1(static_cast<std::uint64_t>(388442));
-	static constexpr REL::ID timescaleOffset2(static_cast<std::uint64_t>(388443));
+
+	static constexpr auto globalMultOffset = RELOCATION_ID(511883, 388443);
+
+	static float* getGlobalTimeMultPtr() {
+		float* globalMultPtr = reinterpret_cast<float*>(globalMultOffset.address());
+		return globalMultPtr;
+	}
+
 
 	void enterSlowMotion()
 	{
 		if (isInSlowMotion) { return; }
 		// Do I want more settings proliferation? I signed an anti-proliferation treaty.
 		// const auto desiredFactor = user_settings().cycle_slowdown();
-
-		float* timescaleMult1 = reinterpret_cast<float*>(timescaleOffset1.address());
-		float* timescaleMult2 = reinterpret_cast<float*>(timescaleOffset2.address());
-
-		*timescaleMult1 = desiredFactor * (*timescaleMult1);
-		*timescaleMult2 = *timescaleMult1;
+		auto currentMult = reinterpret_cast<float*>(getGlobalTimeMultPtr());
+		auto newFactor        = desiredFactor * (*currentMult);
+		*currentMult = newFactor;
 
 		isInSlowMotion = true;
+		logger::info("entered slow-motion"sv);
 	}
 
 	void exitSlowMotion()
 	{
 		if (!isInSlowMotion) { return; }
 
-		float* currentMult = reinterpret_cast<float*>(timescaleOffset1.address());
-		float newFactor    = *currentMult / desiredFactor;
+		auto currentMult = reinterpret_cast<float*>(getGlobalTimeMultPtr());
+		float newFactor    = (*currentMult) / desiredFactor;
 		if (std::fabs(newFactor - 1.0f) < 0.01) { newFactor = 1.0f; }
-
-		float* timescaleMult1 = reinterpret_cast<float*>(timescaleOffset1.address());
-		float* timescaleMult2 = reinterpret_cast<float*>(timescaleOffset2.address());
-
-		*timescaleMult1 = newFactor;
-		*timescaleMult2 = *timescaleMult1;
+		*currentMult = newFactor;
 
 		isInSlowMotion = false;
+		logger::info("exited slow-motion"sv);
 	}
 
 	/*
