@@ -11,9 +11,10 @@ animation_alpha = 51
 # unused right now
 animation_duration = 0.2
 # Enable any of these you need text rendering for.
+# You will need to supply a font with the glyphs; futura doesn't have them.
 chinese_full_glyphs = false
-simplified_chinese_glyphs = true
-cyrillic_glyphs = true
+simplified_chinese_glyphs = false
+cyrillic_glyphs = false
 japanese_glyphs = false
 korean_glyphs = false
 thai_glyphs = false
@@ -43,6 +44,8 @@ a = 64
 name = "Shouts/Powers"
 # Not used for this slot, since powers don't have counts.
 count_font_size = 15.0
+# How to align name and count text for this slot.
+align_text = "left"
 
 # Used to help the hud renderer figure out which slot this is. Complicated
 # handwave about serializing TOML.
@@ -131,6 +134,7 @@ y = 110.0
 [[layouts]]
 name = "Consumables"
 count_font_size = 20.0
+align_text = "left"
 
 [layouts.element]
 repr = 1
@@ -202,6 +206,7 @@ y = 40.0
 [[layouts]]
 name = "Left Hand"
 count_font_size = 20.0
+align_text = "left"
 
 [layouts.element]
 repr = 2
@@ -273,6 +278,7 @@ y = 50.0
 [[layouts]]
 name = "Right Hand"
 count_font_size = 20.0
+align_text = "left"
 
 [layouts.element]
 repr = 3
@@ -344,6 +350,7 @@ y = 75.0
 [[layouts]]
 name = "Ammo"
 count_font_size = 20.0
+align_text = "left"
 
 [layouts.element]
 repr = 4

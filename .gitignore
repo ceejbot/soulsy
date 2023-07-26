@@ -4,7 +4,5 @@ build
 .vscode
 .vs
 .DS_Store
-archive
-archive.7z
-experiments
+releases
 SoulsyHUD_v*
