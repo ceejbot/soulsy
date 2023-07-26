@@ -200,8 +200,8 @@ namespace helpers
 	}
 
 	// Implemented while referencing https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/SlowMotionHandler.cpp
-	static bool isInSlowMotion           = false;
-	static float previousTimescaleFactor = 1.0f;
+	static bool isInSlowMotion = false;
+	const auto desiredFactor   = 0.25f;
 	static constexpr REL::ID timescaleOffset1(static_cast<std::uint64_t>(388442));
 	static constexpr REL::ID timescaleOffset2(static_cast<std::uint64_t>(388443));
 
@@ -210,14 +210,12 @@ namespace helpers
 		if (isInSlowMotion) { return; }
 		// Do I want more settings proliferation? I signed an anti-proliferation treaty.
 		// const auto desiredFactor = user_settings().cycle_slowdown();
-		const auto desiredFactor = 0.25f;
 
 		float* timescaleMult1 = reinterpret_cast<float*>(timescaleOffset1.address());
 		float* timescaleMult2 = reinterpret_cast<float*>(timescaleOffset2.address());
 
-		previousTimescaleFactor = *timescaleMult1;
-		*timescaleMult1         = desiredFactor * (*timescaleMult1);
-		*timescaleMult2         = *timescaleMult1;
+		*timescaleMult1 = desiredFactor * (*timescaleMult1);
+		*timescaleMult2 = *timescaleMult1;
 
 		isInSlowMotion = true;
 	}
@@ -226,10 +224,14 @@ namespace helpers
 	{
 		if (!isInSlowMotion) { return; }
 
+		float* currentMult = reinterpret_cast<float*>(timescaleOffset1.address());
+		float newFactor    = *currentMult / desiredFactor;
+		if (std::fabs(newFactor - 1.0f) < 0.01) { newFactor = 1.0f; }
+
 		float* timescaleMult1 = reinterpret_cast<float*>(timescaleOffset1.address());
 		float* timescaleMult2 = reinterpret_cast<float*>(timescaleOffset2.address());
 
-		*timescaleMult1 = previousTimescaleFactor;
+		*timescaleMult1 = newFactor;
 		*timescaleMult2 = *timescaleMult1;
 
 		isInSlowMotion = false;
