@@ -48,7 +48,6 @@
       "id": "uHowToActivate:Controls",
       "text": "$SoulsyHUD_Activate_When_Text",
       "help": "$SoulsyHUD_Activate_When_Help",
-      "groupControl": 1,
       "type": "enum",
       "valueOptions": {
         "options": [
@@ -58,6 +57,24 @@
         ],
         "sourceType": "ModSettingInt",
         "defaultValue": 0
+      }
+    },
+    {
+      "type": "hiddenToggle",
+      "text": "hidden toggle for utility activate modifier",
+      "groupControl": 1,
+      "valueOptions": {
+        "sourceType": "PropertyValueBool",
+        "propertyName": "pEnableActivateModifier"
+      }
+    },
+    {
+      "type": "hiddenToggle",
+      "text": "hidden toggle for utility hotkey",
+      "groupControl": 2,
+      "valueOptions": {
+        "sourceType": "PropertyValueBool",
+        "propertyName": "pEnableActivateHotkey"
       }
     },
     {
@@ -75,7 +92,7 @@
       "id": "uUtilityActivateKey:Controls",
       "text": "$SoulsyHUD_Controls_ActivateKey_Text",
       "help": "$SoulsyHUD_Controls_ActivateKey_Help",
-      "groupCondition": 1,
+      "groupCondition": 2,
       "groupBehavior": "hide",
       "type": "keymap",
       "valueOptions": {
@@ -90,7 +107,7 @@
       "id": "bCyclingSlowsTime:Options",
       "text": "$SoulsyHUD_Options_SlowTime_Text",
       "help": "$SoulsyHUD_Options_SlowTime_Help",
-      "groupControl": 2,
+      "groupControl": 3,
       "type": "toggle",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -100,7 +117,7 @@
       "id": "uSlowTimeFactor:Options",
       "text": "$SoulsyHUD_Options_HowSlow_Text",
       "help": "$SoulsyHUD_Options_HowSlow_Help",
-      "groupCondition": 2,
+      "groupCondition": 3,
       "groupBehavior": "hide",
       "type": "slider",
       "valueOptions": {
@@ -178,9 +195,20 @@
       }
     },
     {
+      "type": "hiddenToggle",
+      "text": "hidden toggle for cycle modifier hotkey",
+      "groupControl": 4,
+      "valueOptions": {
+        "sourceType": "PropertyValueBool",
+        "propertyName": "pEnableCycleModifier"
+      }
+    },
+    {
       "id": "iCycleModifierKey:Controls",
       "text": "$SoulsyHUD_Controls_CycleModifierKey_Text",
       "help": "$SoulsyHUD_Controls_CycleModifierKey_Help",
+      "groupCondition": 4,
+      "groupBehavior": "hide",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -215,6 +243,15 @@
         ],
         "sourceType": "ModSettingInt",
         "defaultValue": 0
+      }
+    },
+    {
+      "type": "hiddenToggle",
+      "text": "hidden toggle for unequip modifier hotkey",
+      "groupControl": 5,
+      "valueOptions": {
+        "sourceType": "PropertyValueBool",
+        "propertyName": "pEnableUnequipModifier"
       }
     },
     {
