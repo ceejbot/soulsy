@@ -29,11 +29,13 @@ namespace hooks
 		auto* ui                        = RE::UI::GetSingleton();
 		rust::Box<UserSettings> hotkeys = user_settings();
 
-		auto relevant_menu_open = ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) ||
-		                          ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
-		                          ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
+		auto relevantMenuOpen = ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) ||
+		                        ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
+		                        ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
+		auto lootMenuOpen = ui->IsMenuOpen(RE::LootMenu::MENU_NAME);
 
-		if (eventPtr && *eventPtr && relevant_menu_open)
+
+		if (eventPtr && *eventPtr && relevantMenuOpen)
 		{
 			for (auto* event = *eventPtr; event; event = event->next)
 			{

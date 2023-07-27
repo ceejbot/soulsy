@@ -31,16 +31,15 @@ namespace ui
 	static std::map<uint32_t, image> ps_key_struct;
 	static std::map<uint32_t, image> xbox_key_struct;
 
-	static const float FADEOUT_HYSTERESIS  = 0.5f;  // seconds
-	static const float TRANSITION_DURATION = 3.0f;  // seconds
+	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 
 	auto hud_alpha        = 1.0f;
 	auto goal_alpha       = 1.0f;
 	auto fade_in          = true;
-	auto fade_duration    = TRANSITION_DURATION;  // seconds
-	auto transition_timer = 2.0f;                 // seconds
+	auto fade_duration    = 3.0f;  // seconds
+	auto transition_timer = 2.0f;  // seconds
 	auto is_transitioning = false;
-	auto fade_out_timer   = 0.33f;                // seconds
+	auto fade_out_timer   = 0.33f;  // seconds
 
 	ImFont* loaded_font;
 	auto tried_font_load = false;
@@ -689,9 +688,10 @@ namespace ui
 		// The game will report that the player has sheathed weapons when
 		// the player has merely equipped something new. So we give it some
 		// time to decide that the weapons are truly gone.
-		fade_out_timer = FADEOUT_HYSTERESIS;
-		transition_timer =
-			fade_in ? (TRANSITION_DURATION / 2.0f) : TRANSITION_DURATION;  // fade in is faster than fade out
+		fade_out_timer   = FADEOUT_HYSTERESIS;
+		auto* settings   = user_settings();
+		auto fade_time   = settings->fade_time();
+		transition_timer = fade_in ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
 
 		// We must allow for the transition starting while the alpha is not pinned.
 		// Scale the transition time for how much of the shift remains.

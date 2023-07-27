@@ -229,7 +229,7 @@ impl CycleData {
                 &mut self.power
             }
             Action::Left => {
-                if !item.kind().left_hand_ok() {
+                if item.two_handed() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.left

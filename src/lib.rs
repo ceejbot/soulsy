@@ -28,7 +28,7 @@ pub mod plugin {
     enum Align {
         Left,
         Right,
-        Center
+        Center,
     }
 
     /// Where to arrange the HUD elements and what color to draw them in.
@@ -113,7 +113,7 @@ pub mod plugin {
         /// The name of the hud element this layout is for. For humans.
         name: String,
         /// How to align any text associated with this slot.
-        #[serde(default, deserialize_with="crate::deserialize_align")]
+        #[serde(default, deserialize_with = "crate::deserialize_align")]
         align_text: Align,
         /// An offset from the overall hud anchor point to draw this element at.
         offset: Point,
@@ -272,6 +272,8 @@ pub mod plugin {
         fn cycling_slows_time(self: &UserSettings) -> bool;
         /// How much to slow down time.
         fn slow_time_factor(self: &UserSettings) -> f32;
+        /// How long to spend fading in or out.
+        fn fade_time(self: &UserSettings) -> u32;
 
         /// Managed access to the settings object, so we can lazy-load if necessary.
         fn user_settings() -> Box<UserSettings>;
