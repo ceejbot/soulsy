@@ -48,6 +48,7 @@
       "id": "uHowToActivate:Controls",
       "text": "$SoulsyHUD_Activate_When_Text",
       "help": "$SoulsyHUD_Activate_When_Help",
+      "groupControl": 1,
       "type": "enum",
       "valueOptions": {
         "options": [
@@ -63,6 +64,8 @@
       "id": "iUtilityActivateModifier:Controls",
       "text": "$SoulsyHUD_Controls_ActivateModifier_Text",
       "help": "$SoulsyHUD_Controls_ActivateModifier_Help",
+      "groupCondition": 1,
+      "groupBehavior": "hide",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -72,6 +75,8 @@
       "id": "uUtilityActivateKey:Controls",
       "text": "$SoulsyHUD_Controls_ActivateKey_Text",
       "help": "$SoulsyHUD_Controls_ActivateKey_Help",
+      "groupCondition": 1,
+      "groupBehavior": "hide",
       "type": "keymap",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -85,6 +90,7 @@
       "id": "bCyclingSlowsTime:Options",
       "text": "$SoulsyHUD_Options_SlowTime_Text",
       "help": "$SoulsyHUD_Options_SlowTime_Help",
+      "groupControl": 2,
       "type": "toggle",
       "valueOptions": {
         "sourceType": "ModSettingInt"
@@ -94,6 +100,8 @@
       "id": "uSlowTimeFactor:Options",
       "text": "$SoulsyHUD_Options_HowSlow_Text",
       "help": "$SoulsyHUD_Options_HowSlow_Help",
+      "groupCondition": 2,
+      "groupBehavior": "hide",
       "type": "slider",
       "valueOptions": {
         "min": 10,
@@ -214,15 +222,6 @@
       "text": "$SoulsyHUD_Controls_UnequipModifierKey_Text",
       "help": "$SoulsyHUD_Controls_UnequipModifierKey_Help",
       "type": "keymap",
-      "valueOptions": {
-        "sourceType": "ModSettingInt"
-      }
-    },
-    {
-      "id": "bIncludeUnarmed:Options",
-      "text": "$SoulsyHUD_Controls_Unarmed_Text",
-      "help": "$SoulsyHUD_Controls_Unarmed_Help",
-      "type": "toggle",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
