@@ -132,7 +132,37 @@ impl CycleData {
     /// Remove any items that have vanished from the game or from the player's
     /// inventory.
     pub fn validate(&mut self) {
-        // This is looking special-case-y. Find an abstraction maybe?
+        let to_check = vec![
+            (Action::Power, "power"),
+            (Action::Utility, "utility"),
+            (Action::Left, "left"),
+            (Action::Right, "right"),
+        ];
+        to_check.iter().for_each(|xs| {
+            let action = xs.0;
+            let name = xs.1;
+            let cycle = match action {
+                Action::Power => &self.power,
+                Action::Utility => &self.utility,
+                Action::Left => &self.left,
+                Action::Right => &self.right,
+                _ => &self.power, // I hate non-exhaustive matching
+            };
+            log::info!("validating {name} cycle");
+            cycle.iter().for_each(|item| {
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                let hasit = hasItemOrSpell(&form_spec);
+                log::info!(
+                    "    {}: name='{}'; form={}; player has={};",
+                    name,
+                    item.name(),
+                    item.form_string(),
+                    hasit
+                );
+            });
+        });
+
+        /*
         self.power.retain(|xs| {
             cxx::let_cxx_string!(form_spec = xs.form_string());
             hasItemOrSpell(&form_spec)
@@ -158,6 +188,7 @@ impl CycleData {
             cxx::let_cxx_string!(form_spec = xs.form_string());
             hasItemOrSpell(&form_spec)
         });
+        */
     }
 
     /// Attempt to set the current item in a cycle to the given form spec (mod.esp|formid).

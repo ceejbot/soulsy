@@ -183,7 +183,11 @@ namespace player
 	bool hasItemOrSpell(const std::string& form_spec)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
-		if (!form) { return false; }
+		if (!form)
+		{
+			logger::warn("unable to turn string formspec into valid form in-game: {}"sv, form_spec);
+			return false;
+		}
 
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		auto has_it  = false;
