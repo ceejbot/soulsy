@@ -1,6 +1,7 @@
 //! Structs and trait impls for considering keyboard/controller state.
 
 use std::fmt::Display;
+use std::time::{Duration, Instant};
 
 use strum::Display;
 
@@ -32,33 +33,48 @@ impl HotkeyKind {
     }
 }
 
+impl From<&Action> for HotkeyKind {
+    fn from(value: &Action) -> Self {
+        match *value {
+            Action::Activate => HotkeyKind::Activate,
+            Action::Left => HotkeyKind::Left,
+            Action::Power => HotkeyKind::Power,
+            Action::Right => HotkeyKind::Right,
+            Action::ShowHide => HotkeyKind::ShowHide,
+            Action::Utility => HotkeyKind::Utility,
+            Action::RefreshLayout => HotkeyKind::Refresh,
+            _ => HotkeyKind::None,
+        }
+    }
+}
+
 impl From<u32> for HotkeyKind {
     fn from(v: u32) -> Self {
         let settings = user_settings();
-        if v == settings.power {
+        if v == settings.power() {
             HotkeyKind::Power
-        } else if v == settings.utility {
+        } else if v == settings.utility() {
             HotkeyKind::Utility
-        } else if v == settings.left {
+        } else if v == settings.left() {
             HotkeyKind::Left
-        } else if v == settings.right {
+        } else if v == settings.right() {
             HotkeyKind::Right
-        } else if v == settings.refresh_layout {
+        } else if v == settings.refresh_layout() {
             HotkeyKind::Refresh
-        } else if v == settings.showhide {
+        } else if v == settings.showhide() {
             HotkeyKind::ShowHide
-        } else if v == settings.activate {
+        } else if v == settings.activate() {
             HotkeyKind::Activate
-        } else if settings.activate_modifier.is_positive()
-            && v == settings.activate_modifier.unsigned_abs()
+        } else if settings.activate_modifier().is_positive()
+            && v == settings.activate_modifier().unsigned_abs()
         {
             HotkeyKind::ActivateModifier
-        } else if settings.cycle_modifier.is_positive()
-            && v == settings.cycle_modifier.unsigned_abs()
+        } else if settings.cycle_modifier().is_positive()
+            && v == settings.cycle_modifier().unsigned_abs()
         {
             HotkeyKind::CycleModifier
-        } else if settings.unequip_modifier.is_positive()
-            && v == settings.unequip_modifier.unsigned_abs()
+        } else if settings.unequip_modifier().is_positive()
+            && v == settings.unequip_modifier().unsigned_abs()
         {
             HotkeyKind::UnequipModifier
         } else {
@@ -91,6 +107,7 @@ impl From<&ButtonEvent> for KeyState {
 pub struct TrackedKey {
     pub key: HotkeyKind,
     pub state: KeyState,
+    pub press_start: Option<Instant>,
 }
 
 impl TrackedKey {
@@ -100,6 +117,33 @@ impl TrackedKey {
 
     pub fn update(&mut self, event: &ButtonEvent) {
         self.state = KeyState::from(event);
+        match self.state {
+            KeyState::Up => {
+                // nothing?
+            }
+            KeyState::Pressed => {
+                if self.press_start.is_none() {
+                    self.press_start = Some(Instant::now());
+                }
+            }
+            KeyState::Down => {
+                self.press_start = Some(Instant::now());
+            }
+        }
+    }
+
+    pub fn is_long_press(&self) -> bool {
+        if let Some(start) = self.press_start {
+            let elapsed_time = start.elapsed();
+            let settings = user_settings();
+            elapsed_time > Duration::from_millis(settings.long_press_ms().into())
+        } else {
+            false
+        }
+    }
+
+    pub fn is_up(&self) -> bool {
+        matches!(self.state, KeyState::Up)
     }
 
     pub fn is_pressed(&self) -> bool {
@@ -112,6 +156,7 @@ impl Default for TrackedKey {
         Self {
             key: HotkeyKind::None,
             state: KeyState::Up,
+            press_start: None,
         }
     }
 }

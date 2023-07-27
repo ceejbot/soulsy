@@ -199,6 +199,46 @@ namespace helpers
 		return menu_form;
 	}
 
+	//  Two references for this implementation:
+	//  https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/SlowMotionHandler.cpp
+	//  RE/B/BStimer.h
+
+	static bool isInSlowMotion             = false;
+	static constexpr auto globalMultOffset = RELOCATION_ID(511883, 388443);
+
+	static float* getGlobalTimeMultPtr()
+	{
+		float* globalMultPtr = reinterpret_cast<float*>(globalMultOffset.address());
+		return globalMultPtr;
+	}
+
+
+	void enterSlowMotion()
+	{
+		if (isInSlowMotion) { return; }
+		const auto desiredFactor = user_settings()->slow_time_factor();
+		auto currentMult         = reinterpret_cast<float*>(getGlobalTimeMultPtr());
+		auto newFactor           = desiredFactor * (*currentMult);
+		*currentMult             = newFactor;
+
+		isInSlowMotion = true;
+		logger::info("entered slow-motion"sv);
+	}
+
+	void exitSlowMotion()
+	{
+		if (!isInSlowMotion) { return; }
+
+		auto currentMult         = reinterpret_cast<float*>(getGlobalTimeMultPtr());
+		const auto desiredFactor = user_settings()->slow_time_factor();
+		float newFactor = (*currentMult) / desiredFactor;
+		if (std::fabs(newFactor - 1.0f) < 0.01) { newFactor = 1.0f; }
+		*currentMult = newFactor;
+
+		isInSlowMotion = false;
+		logger::info("exited slow-motion"sv);
+	}
+
 	/*
 	// TODO move to the right home
 	void addCycleKeyword(const std::string& form_spec)

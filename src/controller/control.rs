@@ -7,7 +7,7 @@ use once_cell::sync::Lazy;
 use super::cycles::*;
 use super::itemdata::*;
 use super::keys::*;
-use super::settings::{user_settings, UserSettings};
+use super::settings::{user_settings, ActivationMethod, UnarmedMethod, UserSettings};
 use crate::hud_layout;
 use crate::plugin::*;
 
@@ -27,7 +27,6 @@ pub mod public {
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         log::info!("{settings:?}");
-
 
         let _hud = hud_layout();
         ctrl.apply_settings();
@@ -112,13 +111,6 @@ pub mod public {
         ctrl.handle_inventory_changed(item, count);
     }
 
-    pub fn truncate_cycles(new: u32) {
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.cycles.truncate_if_needed(new as usize);
-    }
-
     pub fn refresh_user_settings() {
         if let Some(e) = UserSettings::refresh().err() {
             log::warn!("Failed to read user settings! using defaults; {e:?}");
@@ -144,10 +136,11 @@ pub struct Controller {
     left_hand_cached: Option<ItemData>,
     /// We cache the right-hand item we had similarly.
     right_hand_cached: Option<ItemData>,
-    /// State of the cycle modifier hotkey
-    cycle_modifier: TrackedKey,
-    unequip_modifier: TrackedKey,
-    activate_modifier: TrackedKey,
+    tracked_keys: HashMap<HotkeyKind, TrackedKey>,
+    // State of the cycle modifier hotkey
+    // cycle_modifier: TrackedKey,
+    // unequip_modifier: TrackedKey,
+    // activate_modifier: TrackedKey,
 }
 
 impl Controller {
@@ -169,46 +162,23 @@ impl Controller {
 
     fn apply_settings(&mut self) {
         let settings = user_settings();
-        if settings.include_unarmed() {
-            let h2h = hand2hand_itemdata();
-            let h2h = *h2h;
-            self.cycles.include_item(Action::Left, h2h.clone());
-            self.cycles.include_item(Action::Right, h2h);
-        } else {
-            // remove any item with h2h type from cycles
-            self.cycles.filter_kind(Action::Left, ItemKind::HandToHand);
-            self.cycles.filter_kind(Action::Right, ItemKind::HandToHand);
+
+        match settings.unarmed_handling() {
+            UnarmedMethod::AddToCycles => {
+                let h2h = hand2hand_itemdata();
+                let h2h = *h2h;
+                self.cycles.include_item(Action::Left, h2h.clone());
+                self.cycles.include_item(Action::Right, h2h);
+            }
+            _ => {
+                // remove any item with h2h type from cycles
+                self.cycles.filter_kind(Action::Left, ItemKind::HandToHand);
+                self.cycles.filter_kind(Action::Right, ItemKind::HandToHand);
+            }
         }
         self.flush_cycle_data();
 
-        // This loses any is-up/is-down state, but the user just closed the config page.
-        // Niche bug.
-        self.activate_modifier = if settings.activate_modifier > 0 {
-            TrackedKey {
-                key: HotkeyKind::from(settings.activate_modifier as u32),
-                state: KeyState::Up,
-            }
-        } else {
-            TrackedKey::default()
-        };
-        self.cycle_modifier = if settings.cycle_modifier > 0 {
-            TrackedKey {
-                key: HotkeyKind::from(settings.cycle_modifier as u32),
-                state: KeyState::Up,
-            }
-        } else {
-            TrackedKey::default()
-        };
-        self.unequip_modifier = if settings.unequip_modifier > 0 {
-            TrackedKey {
-                key: HotkeyKind::from(settings.unequip_modifier as u32),
-                state: KeyState::Up,
-            }
-        } else {
-            TrackedKey::default()
-        };
-
-        if !settings.autofade {
+        if !settings.autofade() {
             if self.cycles.hud_visible() {
                 fadeToAlpha(true, 1.0);
             } else {
@@ -255,44 +225,44 @@ impl Controller {
     /// Returns an enum indicating what we did in response, so that the C++ layer can
     /// start a tick timer for cycle delay.
     fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
-        let keyevent = TrackedKey {
-            key: HotkeyKind::from(key),
-            state: KeyState::from(button),
-        };
-        if matches!(keyevent.key, HotkeyKind::None) {
-            return KeyEventResponse::default();
-        }
-        if !button.IsUp() && !button.IsDown() {
+        let hotkey = HotkeyKind::from(key);
+        let state = KeyState::from(button);
+        if matches!(hotkey, HotkeyKind::None) {
             return KeyEventResponse::default();
         }
 
-        log::trace!("incoming key={};", keyevent);
+        log::trace!("incoming key={}; state={};", hotkey, state);
 
-        if matches!(keyevent.key, HotkeyKind::CycleModifier) {
-            self.cycle_modifier = keyevent;
-            return KeyEventResponse::default();
-        }
-        if matches!(keyevent.key, HotkeyKind::UnequipModifier) {
-            self.unequip_modifier = keyevent;
-            return KeyEventResponse::default();
-        }
-        if matches!(keyevent.key, HotkeyKind::ActivateModifier) {
-            self.activate_modifier = keyevent;
-            return KeyEventResponse::default();
+        // We want all updates so we can track long presses.
+        self.update_tracked_key(&hotkey, button);
+
+        // For mod keys, we're done.
+        match hotkey {
+            HotkeyKind::UnequipModifier => {
+                return KeyEventResponse::default();
+            }
+            HotkeyKind::CycleModifier => {
+                return KeyEventResponse::default();
+            }
+            HotkeyKind::ActivateModifier => {
+                return KeyEventResponse::default();
+            }
+            _ => {}
         }
 
-        if keyevent.state != KeyState::Up {
+        // From here on, we only care if the key has gone up.
+        if state != KeyState::Up {
             return KeyEventResponse {
                 handled: true,
                 ..Default::default()
             };
         }
 
-        match keyevent.key {
+        match hotkey {
             HotkeyKind::Power => self.handle_cycle_power(),
             HotkeyKind::Utility => self.handle_cycle_utility(),
-            HotkeyKind::Left => self.handle_cycle_hand(keyevent),
-            HotkeyKind::Right => self.handle_cycle_hand(keyevent),
+            HotkeyKind::Left => self.handle_cycle_hand(hotkey),
+            HotkeyKind::Right => self.handle_cycle_hand(hotkey),
             HotkeyKind::Activate => self.use_utility_item(),
             HotkeyKind::Refresh => {
                 HudLayout::refresh();
@@ -302,7 +272,7 @@ impl Controller {
                 }
             }
             HotkeyKind::ShowHide => {
-                if !user_settings().autofade {
+                if !user_settings().autofade() {
                     self.cycles.toggle_hud();
                 }
                 KeyEventResponse {
@@ -310,42 +280,85 @@ impl Controller {
                     ..Default::default()
                 }
             }
-            HotkeyKind::UnequipModifier => {
-                self.unequip_modifier = keyevent;
-                KeyEventResponse::default()
-            }
-            HotkeyKind::CycleModifier => {
-                self.cycle_modifier = keyevent;
-                KeyEventResponse::default()
-            }
-            HotkeyKind::ActivateModifier => {
-                self.activate_modifier = keyevent;
-                KeyEventResponse::default()
-            }
-            HotkeyKind::None => KeyEventResponse::default(),
+            _ => KeyEventResponse::default(),
         }
     }
 
+    // Just implementing these without worrying about generalizations yet.
     fn handle_cycle_power(&mut self) -> KeyEventResponse {
-        if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
-            log::debug!("cycling shouts/powers");
-            self.advance_simple_cycle(Action::Power)
-        } else {
-            log::info!("declining to advance power/shouts cycle without the modifier key down");
-            KeyEventResponse::default()
+        let settings = user_settings();
+        let cycle_method = settings.how_to_cycle();
+        match cycle_method {
+            ActivationMethod::Hotkey => self.advance_simple_cycle(Action::Power),
+            ActivationMethod::LongPress => {
+                let hotkey = self.get_tracked_key(&HotkeyKind::Power);
+                if hotkey.is_long_press() {
+                    self.advance_simple_cycle(Action::Power)
+                } else {
+                    log::info!("declining to advance power/shouts cycle without a long press");
+                    KeyEventResponse::default()
+                }
+            }
+            ActivationMethod::Modifier => {
+                let hotkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                if hotkey.is_pressed() {
+                    self.advance_simple_cycle(Action::Power)
+                } else {
+                    log::info!(
+                        "declining to advance power/shouts cycle without the cycle modifier key down"
+                    );
+                    KeyEventResponse::default()
+                }
+            }
         }
     }
 
     fn handle_cycle_utility(&mut self) -> KeyEventResponse {
-        if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
-            log::debug!("cycling utilities/consumables");
-            self.advance_simple_cycle(Action::Utility)
-        } else {
-            log::info!(
-                "declining to advance utility/consumables cycle without the modifier key down"
-            );
-            KeyEventResponse::default()
+        let settings = user_settings();
+        let cycle_method = settings.how_to_cycle();
+        let activation_method = settings.how_to_activate();
+
+        match cycle_method {
+            ActivationMethod::Hotkey => {
+                log::debug!("cycling utilities/consumables");
+                return self.advance_simple_cycle(Action::Utility);
+            }
+            ActivationMethod::LongPress => {
+                let hotkey = self.get_tracked_key(&HotkeyKind::Utility);
+                if hotkey.is_long_press() {
+                    return self.advance_simple_cycle(Action::Utility);
+                }
+            }
+            ActivationMethod::Modifier => {
+                let hotkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                if hotkey.is_pressed() {
+                    log::debug!("cycling utilities/consumables");
+                    return self.advance_simple_cycle(Action::Utility);
+                }
+            }
         }
+
+        match activation_method {
+            ActivationMethod::Hotkey => {
+                // should be unreachable-- this is its own key handler
+                return KeyEventResponse::default();
+            }
+            ActivationMethod::LongPress => {
+                let hotkey = self.get_tracked_key(&HotkeyKind::Utility);
+                if hotkey.is_long_press() {
+                    return self.use_utility_item();
+                }
+            }
+            ActivationMethod::Modifier => {
+                let hotkey = self.get_tracked_key(&HotkeyKind::ActivateModifier);
+                if hotkey.is_pressed() {
+                    log::debug!("activating utilities/consumables");
+                    return self.use_utility_item();
+                }
+            }
+        }
+
+        KeyEventResponse::default()
     }
 
     fn advance_simple_cycle(&mut self, which: Action) -> KeyEventResponse {
@@ -387,26 +400,41 @@ impl Controller {
         }
     }
 
-    fn handle_cycle_hand(&mut self, event: TrackedKey) -> KeyEventResponse {
-        if !matches!(event.key, HotkeyKind::Left | HotkeyKind::Right) {
+    fn handle_cycle_hand(&mut self, hotkey: HotkeyKind) -> KeyEventResponse {
+        if !matches!(hotkey, HotkeyKind::Left | HotkeyKind::Right) {
             return KeyEventResponse::default();
         }
 
-        log::debug!("cycling item in {} hand", event.key);
+        log::debug!("considering cycling item in {} hand", hotkey);
 
-        // We have two modifiers to check
-        let unequip_requested =
-            !self.unequip_modifier.ignore() && self.unequip_modifier.is_pressed();
-        let cycle_requested = if self.cycle_modifier.ignore() {
-            !unequip_requested
-        } else {
-            self.cycle_modifier.is_pressed()
+        // We have two states to check
+        let settings = user_settings();
+        let tracked = self.get_tracked_key(&hotkey);
+
+        let unequip_requested = match settings.unarmed_handling() {
+            UnarmedMethod::None => false,
+            UnarmedMethod::LongPress => tracked.is_long_press(),
+            UnarmedMethod::Modifier => {
+                let unequipmod = self.get_tracked_key(&HotkeyKind::UnequipModifier);
+                unequipmod.is_pressed()
+            }
+            UnarmedMethod::AddToCycles => false,
         };
+
+        let cycle_requested = !unequip_requested
+            && match settings.how_to_cycle() {
+                ActivationMethod::Hotkey => true,
+                ActivationMethod::LongPress => tracked.is_long_press(),
+                ActivationMethod::Modifier => {
+                    let cyclemod = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                    cyclemod.is_pressed()
+                }
+            };
 
         // ETOOMANYENUMS
         // The root problem is that shared enums are not sum types, and I want sum types.
-        let hudslot = HudElement::from(&event.key);
-        let action = Action::from(&event.key);
+        let hudslot = HudElement::from(&hotkey);
+        let action = Action::from(&hotkey);
 
         if unequip_requested {
             log::info!("unequipping slot {:?} by request", action);
@@ -555,13 +583,6 @@ impl Controller {
     /// Activate whatever we have in the utility slot.
     fn use_utility_item(&mut self) -> KeyEventResponse {
         log::debug!("using utility item");
-        if !self.activate_modifier.ignore() && !self.activate_modifier.is_pressed() {
-            log::info!("got the activate key, but no modifier with it; doing nothing");
-            return KeyEventResponse {
-                handled: true,
-                ..Default::default()
-            };
-        }
 
         if let Some(item) = self.cycles.get_top(Action::Utility) {
             if item.kind().is_potion()
@@ -599,6 +620,14 @@ impl Controller {
     /// callback decide what to do when, e.g., a two-handed item is equipped.
     fn timer_expired(&mut self, which: Action) {
         let hud = HudElement::from(which);
+        let hotkey = self.get_tracked_key(&HotkeyKind::from(&which));
+        if hotkey.is_pressed() {
+            // Here's the reasoning. The player might be mid-long-press, in
+            // which case we do not want to interrupt by equipping. The player
+            // might be mid-short-tap, in which case the timer will get started
+            // again on key up.
+            return;
+        }
 
         let Some(item) = &self.visible.get(&hud) else {
             log::warn!(
@@ -924,28 +953,31 @@ impl Controller {
         // Much simpler than the game loop. We care if the cycle modifier key
         // is down (if one is set), and we care if the cycle button itself has
         // been pressed.
-        let keyevent = TrackedKey {
-            key: HotkeyKind::from(key),
-            state: KeyState::from(button),
-        };
-        if matches!(keyevent.key, HotkeyKind::None) {
+        let hotkey = HotkeyKind::from(key);
+        if matches!(hotkey, HotkeyKind::None) || !hotkey.is_cycle_key() {
             return false;
         }
 
-        if matches!(keyevent.key, HotkeyKind::CycleModifier) {
-            self.cycle_modifier = keyevent;
+        self.update_tracked_key(&hotkey, button);
+        if !hotkey.is_cycle_key() || !button.IsUp() {
             return false;
         }
 
-        if keyevent.key.is_cycle_key() && button.IsDown() {
-            if self.cycle_modifier.ignore() || self.cycle_modifier.is_pressed() {
-                true
-            } else {
-                log::info!("Not toggling in menu because your modifier key isn't pressed.");
-                false
+        let settings = user_settings();
+        let menu_method = settings.how_to_toggle();
+
+        match menu_method {
+            ActivationMethod::Hotkey => true,
+            ActivationMethod::LongPress => {
+                log::info!("checking for long press in menu");
+                // if it's not found, will never be a long press
+                self.get_tracked_key(&hotkey).is_long_press()
             }
-        } else {
-            false
+            ActivationMethod::Modifier => {
+                log::info!("checking for cycle modifier key pressed in menu");
+                let modkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                modkey.is_pressed()
+            }
         }
     }
 
@@ -953,16 +985,6 @@ impl Controller {
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
     fn toggle_item(&mut self, action: Action, item: ItemData) {
-        // clear the modifier key in case strange things happen
-        let settings = user_settings();
-        if settings.cycle_modifier > 0 {
-            self.cycle_modifier = TrackedKey {
-                key: HotkeyKind::from(settings.cycle_modifier as u32),
-                state: KeyState::Up,
-            };
-        }
-        drop(settings);
-
         let result = self.cycles.toggle(action, item.clone());
 
         // notify the player what happened...
@@ -1003,6 +1025,33 @@ impl Controller {
             Ok(_) => {}
             Err(e) => {
                 log::warn!("failed to persist cycle data, but gamely continuing; {e:?}");
+            }
+        }
+    }
+
+    // watching the keys
+    fn update_tracked_key(&mut self, hotkey: &HotkeyKind, button: &ButtonEvent) {
+        if let Some(tracked) = self.tracked_keys.get_mut(hotkey) {
+            tracked.update(button);
+        } else {
+            let mut tracked = TrackedKey {
+                key: hotkey.clone(),
+                state: KeyState::default(),
+                press_start: None,
+            };
+            tracked.update(button);
+            self.tracked_keys.insert(hotkey.clone(), tracked);
+        }
+    }
+
+    fn get_tracked_key(&self, hotkey: &HotkeyKind) -> TrackedKey {
+        if let Some(tracked) = self.tracked_keys.get(hotkey) {
+            tracked.clone()
+        } else {
+            TrackedKey {
+                key: HotkeyKind::None,
+                state: KeyState::Up,
+                press_start: None,
             }
         }
     }
@@ -1053,19 +1102,19 @@ impl From<u32> for Action {
     fn from(value: u32) -> Self {
         let settings = user_settings();
 
-        if value == settings.left {
+        if value == settings.left() {
             Action::Left
-        } else if value == settings.right {
+        } else if value == settings.right() {
             Action::Right
-        } else if value == settings.power {
+        } else if value == settings.power() {
             Action::Power
-        } else if value == settings.utility {
+        } else if value == settings.utility() {
             Action::Utility
-        } else if value == settings.activate {
+        } else if value == settings.activate() {
             Action::Activate
-        } else if value == settings.showhide {
+        } else if value == settings.showhide() {
             Action::ShowHide
-        } else if value == settings.refresh_layout {
+        } else if value == settings.refresh_layout() {
             Action::RefreshLayout
         } else {
             Action::None

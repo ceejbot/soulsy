@@ -25,13 +25,9 @@ setup:
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
 
-# Lint Rust.
-@lint:
-    cargo clippy
-
 # Fix clippy lints and format both Rust & C++.
-@format:
-    # cargo clippy --fix --allow-dirty
+@lint-fix:
+    cargo clippy --fix --allow-dirty
     cargo +nightly fmt
     find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
 
@@ -82,7 +78,7 @@ archive:
     rm "${outdir}"/scripts/source/TESV_Papyrus_Flags.flg
     #7z a "$outdir".7z "$outdir"
     echo "Mod directory ready at ${outdir}; archive at ${outdir}.7z"
-    echo "don't check this in, but copying to live mod..."
+    echo "copying to live mod for testing..."
     cp -p build/Release/SoulsyHUD.dll "/mnt/g/VortexStaging/Soulsy HUD dev version/SKSE/plugins/SoulsyHUD.dll"
     cp -p build/Release/SoulsyHUD.pdb "/mnt/g/VortexStaging/Soulsy HUD dev version/SKSE/plugins/SoulsyHUD.pdb"
 
@@ -92,6 +88,30 @@ translations:
     declare -a langs=(czech french german italian japanese polish russian spanish)
     for lang in "${langs[@]}"; do
         cp data/Interface/Translations/SoulsyHUD_english.txt data/Interface/Translations/SoulsyHUD_$lang.txt
+    done
+
+# Build mod structures for additional layouts. Bash.
+build-layouts:
+    #!/usr/bin/env bash
+    set -e
+
+    mkdir -p releases
+    for layout in layouts/*.toml; do
+        name="${layout/layouts\/SoulsyHUD_/}"
+        name="SoulsyHUD-layout-${name/.toml/}"
+        dest="releases/${name}/SKSE/plugins"
+        mkdir -p "releases/${name}/SKSE/plugins"
+        cp -p "$layout" "$dest/SoulsyHUD_Layout.toml"
+        font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
+        if [ "$font" = "Inter-Medium.ttf" ]; then
+            mkdir -p "$dest/resources/fonts"
+            cp -p "layouts/Inter-Medium.ttf" "$dest/resources/fonts"
+        fi
+        cd releases
+        7zz -y -bsp0 -bso0 a "${name}.7z" "${name}"
+        rm -rf "${name}"
+        cd ..
+        echo "Built ${name}.7z"
     done
 
 # The traditional

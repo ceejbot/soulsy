@@ -40,7 +40,7 @@ namespace ui
 	auto fade_duration    = TRANSITION_DURATION;  // seconds
 	auto transition_timer = 2.0f;                 // seconds
 	auto is_transitioning = false;
-	auto fade_out_timer   = 0.33f;                 // seconds
+	auto fade_out_timer   = 0.33f;                // seconds
 
 	ImFont* loaded_font;
 	auto tried_font_load = false;
@@ -223,7 +223,11 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::drawText(const char* text, const ImVec2 center, const float font_size, const Color color)
+	void ui_renderer::drawText(const char* text,
+		const ImVec2 center,
+		const float font_size,
+		const Color color,
+		const Align align)
 	{
 		if (!text || !*text || color.a == 0) { return; }
 
@@ -232,7 +236,14 @@ namespace ui
 		auto* font               = loaded_font;
 		if (!font) { font = ImGui::GetDefaultFont(); }
 
-		ImGui::GetWindowDrawList()->AddText(font, font_size, center, text_color, text, nullptr, 0.0f, nullptr);
+		// It's left-aligned by default.
+		float adjustment = 0;
+		if (align == Align::Center) { adjustment = -0.5f * text_bounds.x; }
+		else if (align == Align::Right) { adjustment = -1.0f * text_bounds.x; }
+
+		ImVec2 aligned_center = ImVec2(center.x + adjustment, center.y);
+
+		ImGui::GetWindowDrawList()->AddText(font, font_size, aligned_center, text_color, text, nullptr, 0.0f, nullptr);
 	}
 
 
@@ -448,7 +459,11 @@ namespace ui
 				const auto text_pos = ImVec2(slot_center.x + slot_layout.name_offset.x * global_scale,
 					slot_center.y + slot_layout.name_offset.y * global_scale);
 
-				drawText(name->c_str(), text_pos, top_layout.font_size * global_scale, slot_layout.name_color);
+				drawText(name->c_str(),
+					text_pos,
+					top_layout.font_size * global_scale,
+					slot_layout.name_color,
+					slot_layout.align_text);
 			}
 
 			// next up: do we have extra text to show on this puppy?
@@ -465,7 +480,8 @@ namespace ui
 					drawText(slot_text.c_str(),
 						text_pos,
 						slot_layout.count_font_size * global_scale,
-						slot_layout.count_color);
+						slot_layout.count_color,
+						slot_layout.align_text);
 				}
 			}
 
@@ -800,6 +816,10 @@ namespace ui
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
 	}
 
+	// We implement timers using UI ticks. We don't need them to be
+	// particularly accurate, just good-feeling to humans. Because we only
+	// manage timers here, this is the right decision point for going into
+	// and out of slow motion.
 	void ui_renderer::advanceTimers(float delta)
 	{
 		std::vector<uint8_t> to_remove;
@@ -821,18 +841,28 @@ namespace ui
 		}
 
 		for (const auto& xs : to_remove) { cycle_timers.erase(xs); }
+		if (cycle_timers.size() == 0) { helpers::exitSlowMotion(); }
 	}
 
 	void ui_renderer::startTimer(Action which)
 	{
 		// We replace any existing timer for this slot.
-		auto duration = user_settings()->equip_delay();  // this is in ms, so we'll divide...
-		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000);
+		auto settings = user_settings();
+		auto duration = settings->equip_delay_ms();  // this is in ms, so we'll divide...
+		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
 		logger::info("started equip delay timer; which={}; delay={};"sv,
 			static_cast<uint8_t>(which),
 			static_cast<float>(duration) / 1000.0f);
+		if (settings->cycling_slows_time() && RE::PlayerCharacter::GetSingleton()->IsInCombat())
+		{
+			helpers::enterSlowMotion();
+		}
 	}
 
 	// remove timer from the map if it exists
-	void ui_renderer::stopTimer(Action which) { cycle_timers.erase(static_cast<uint8_t>(which)); }
+	void ui_renderer::stopTimer(Action which)
+	{
+		cycle_timers.erase(static_cast<uint8_t>(which));
+		if (cycle_timers.size() == 0) { helpers::exitSlowMotion(); }
+	}
 }

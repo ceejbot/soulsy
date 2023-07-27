@@ -30,17 +30,7 @@ namespace papyrus
 
 	void onConfigClose(RE::TESQuest*)
 	{
-		logger::info("updating configuration after settings change!"sv);
-		rust::Box<UserSettings> old_settings = user_settings();
 		refresh_user_settings();
-		rust::Box<UserSettings> new_settings = user_settings();
-
-		auto newmax = new_settings->maxlen();
-		if (old_settings->maxlen() > newmax)
-		{
-			logger::info("truncating cycles to len={};"sv, newmax);
-			truncate_cycles(newmax);
-		}
 	}
 
 	RE::BSFixedString get_resolution_width(RE::TESQuest*)

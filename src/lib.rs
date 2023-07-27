@@ -23,6 +23,14 @@ pub mod plugin {
         None, // not drawn
     }
 
+    /// Text alignment options
+    #[derive(Debug, Clone, Hash)]
+    enum Align {
+        Left,
+        Right,
+        Center
+    }
+
     /// Where to arrange the HUD elements and what color to draw them in.
     ///
     /// This data is serialized to the SoulsyHUD_HudLayout.toml file.
@@ -104,6 +112,9 @@ pub mod plugin {
         element: HudElement,
         /// The name of the hud element this layout is for. For humans.
         name: String,
+        /// How to align any text associated with this slot.
+        #[serde(default, deserialize_with="crate::deserialize_align")]
+        align_text: Align,
         /// An offset from the overall hud anchor point to draw this element at.
         offset: Point,
         /// The size of this element, to scale everything to.
@@ -246,7 +257,7 @@ pub mod plugin {
         /// Give access to the settings to the C++ side.
         type UserSettings;
         /// Get the user setting for the equip delay timer, in milliseconds.
-        fn equip_delay(self: &UserSettings) -> u32;
+        fn equip_delay_ms(self: &UserSettings) -> u32;
         /// Get whether the HUD should control its own visibility.
         fn autofade(self: &UserSettings) -> bool;
         /// Check if this button is relevant to the HUD.
@@ -257,8 +268,10 @@ pub mod plugin {
         fn hotkey_for(self: &UserSettings, action: HudElement) -> u32;
         /// Get which kind of controller to draw shortcuts for: keyboard, PS5, or Xbox.
         fn controller_kind(self: &UserSettings) -> u32;
-        /// If a settings change has shortened the max cycle length, truncate if we have to.
-        fn truncate_cycles(new_length: u32);
+        /// If we should enter slow motion while cycling.
+        fn cycling_slows_time(self: &UserSettings) -> bool;
+        /// How much to slow down time.
+        fn slow_time_factor(self: &UserSettings) -> f32;
 
         /// Managed access to the settings object, so we can lazy-load if necessary.
         fn user_settings() -> Box<UserSettings>;
@@ -353,6 +366,10 @@ pub mod plugin {
         fn notifyPlayer(message: &CxxString);
         /// Start the HUD widget fading in or out to the goal transparency.
         fn fadeToAlpha(fade_in: bool, alpha: f32);
+        /// Enter slow time while cycling.
+        fn enterSlowMotion();
+        /// Exit slow time.
+        fn exitSlowMotion();
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
