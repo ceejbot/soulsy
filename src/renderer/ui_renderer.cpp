@@ -848,7 +848,7 @@ namespace ui
 	{
 		// We replace any existing timer for this slot.
 		auto settings = user_settings();
-		auto duration = settings->equip_delay();  // this is in ms, so we'll divide...
+		auto duration = settings->equip_delay_ms();  // this is in ms, so we'll divide...
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
 		logger::info("started equip delay timer; which={}; delay={};"sv,
 			static_cast<uint8_t>(which),

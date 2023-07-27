@@ -135,7 +135,8 @@ impl TrackedKey {
     pub fn is_long_press(&self) -> bool {
         if let Some(start) = self.press_start {
             let elapsed_time = start.elapsed();
-            elapsed_time > Duration::from_millis(1000) // TODO what counts as a long press?
+            let settings = user_settings();
+            elapsed_time > Duration::from_millis(settings.long_press_ms().into())
         } else {
             false
         }

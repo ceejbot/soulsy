@@ -78,7 +78,9 @@ pub struct UserSettings {
     /// A hotkey for re-reading the layout from toml and redrawing. uRefreshKey
     refresh_layout: u32,
     /// The number of milliseconds to delay before equipping a selection. Max 2500, min 0.
-    equip_delay: u32,
+    equip_delay_ms: u32,
+    /// The number of milliseconds it takes for a press to be a long one.
+    long_press_ms: u32,
     /// Whether to fade out hud when not in combat.
     autofade: bool,
     /// The time in milliseconds it takes to fade out.
@@ -109,7 +111,8 @@ impl Default for UserSettings {
             unequip_modifier: -1,
             refresh_layout: 8,
             showhide: 2,
-            equip_delay: 750, // in milliseconds
+            equip_delay_ms: 750, // in milliseconds
+            long_press_ms: 1250, // in milliseconds
             autofade: true,
             fade_time: 2000,    // in milliseconds
             controller_kind: 0, // PS5
@@ -186,9 +189,14 @@ impl UserSettings {
             self.unarmed_handling = UnarmedMethod::AddToCycles;
         }
 
-        self.equip_delay = clamp(
-            read_from_ini(self.equip_delay, "uEquipDelay", options),
+        self.equip_delay_ms = clamp(
+            read_from_ini(self.equip_delay_ms, "uEquipDelay", options),
             0,
+            2500,
+        );
+        self.long_press_ms = clamp(
+            read_from_ini(self.equip_delay_ms, "uLongPressMillis", options),
+            self.equip_delay_ms + 100,
             2500,
         );
 
@@ -286,8 +294,11 @@ impl UserSettings {
     pub fn maxlen(&self) -> u32 {
         20
     }
-    pub fn equip_delay(&self) -> u32 {
-        self.equip_delay
+    pub fn equip_delay_ms(&self) -> u32 {
+        self.equip_delay_ms
+    }
+    pub fn long_press_ms(&self) -> u32 {
+        self.long_press_ms
     }
     pub fn autofade(&self) -> bool {
         self.autofade

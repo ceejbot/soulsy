@@ -27,9 +27,12 @@ Event OnSettingChange(String changedID)
     elseif (changedID == "uHowToUnequip:Controls")
         int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
         pEnableUnequipModifier = (unequipEnum == 2)
-    elseif (changedID) == "bCyclingSlowsTime:Options"
-        bool slows = GetModSettingBool("bCyclingSlowsTime:Options")
-        ; I dunno why the group control doesn't work
+    endif
+
+    int equipDelay = GetModSettingInt("uEquipDelay:Options")
+    int longPress = GetModSettingInt("uLongPressMillis:Options")
+    if longPress <= equipDelay
+        SetModSettingInt("uLongPressMillis:Options", equipDelay + 250)
     endif
 
     ForcePageReset()

@@ -257,7 +257,7 @@ pub mod plugin {
         /// Give access to the settings to the C++ side.
         type UserSettings;
         /// Get the user setting for the equip delay timer, in milliseconds.
-        fn equip_delay(self: &UserSettings) -> u32;
+        fn equip_delay_ms(self: &UserSettings) -> u32;
         /// Get whether the HUD should control its own visibility.
         fn autofade(self: &UserSettings) -> bool;
         /// Check if this button is relevant to the HUD.

@@ -150,6 +150,30 @@
       "type": "header"
     },
     {
+      "id": "uEquipDelay:Options",
+      "text": "$SoulsyHUD_Options_EquipDelay_Text",
+      "help": "$SoulsyHUD_Options_EquipDelay_Help",
+      "type": "slider",
+      "valueOptions": {
+        "min": 0,
+        "max": 2500,
+        "step": 50,
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
+      "id": "uLongPressMillis:Options",
+      "text": "$SoulsyHUD_Options_LongPress_Text",
+      "help": "$SoulsyHUD_Options_LongPress_Help",
+      "type": "slider",
+      "valueOptions": {
+        "min": 750,
+        "max": 2500,
+        "step": 50,
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
       "id": "bCyclingSlowsTime:Options",
       "text": "$SoulsyHUD_Options_SlowTime_Text",
       "help": "$SoulsyHUD_Options_SlowTime_Help",
@@ -167,18 +191,6 @@
         "min": 10,
         "max": 90,
         "step": 1,
-        "sourceType": "ModSettingInt"
-      }
-    },
-    {
-      "id": "uEquipDelay:Options",
-      "text": "$SoulsyHUD_Options_EquipDelay_Text",
-      "help": "$SoulsyHUD_Options_EquipDelay_Help",
-      "type": "slider",
-      "valueOptions": {
-        "min": 0,
-        "max": 2500,
-        "step": 50,
         "sourceType": "ModSettingInt"
       }
     },
