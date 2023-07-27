@@ -627,6 +627,14 @@ impl Controller {
     /// callback decide what to do when, e.g., a two-handed item is equipped.
     fn timer_expired(&mut self, which: Action) {
         let hud = HudElement::from(which);
+        let hotkey = self.get_tracked_key(&HotkeyKind::from(&which));
+        if hotkey.is_pressed() {
+            // Here's the reasoning. The player might be mid-long-press, in
+            // which case we do not want to interrupt by equipping. The player
+            // might be mid-short-tap, in which case the timer will get started
+            // again on key up.
+            return;
+        }
 
         let Some(item) = &self.visible.get(&hud) else {
             log::warn!(

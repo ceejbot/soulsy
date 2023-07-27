@@ -162,7 +162,8 @@ impl UserSettings {
         self.how_to_cycle = read_from_ini(self.how_to_cycle, "uHowToCycle", controls);
         self.cycle_modifier = read_from_ini(self.cycle_modifier, "iCycleModifierKey", controls);
         let old_mod_required = read_from_ini(false, "uCycleModifierRequired", controls);
-        if old_mod_required {
+        if old_mod_required && self.cycle_modifier != -1 {
+            log::warn!("Using your old config option to require a mod key for cycling.");
             self.how_to_cycle = ActivationMethod::Modifier;
         }
 
@@ -180,7 +181,11 @@ impl UserSettings {
         self.unequip_modifier =
             read_from_ini(self.unequip_modifier, "iUnequipModifierKey", controls);
         let old_include_unarmed = read_from_ini(false, "bIncludeUnarmed", options);
-        if old_include_unarmed {
+        if old_include_unarmed && matches!(self.unarmed_handling, UnarmedMethod::None) {
+            log::warn!("Using your old config option and adding unarmed to cycles.");
+            self.unarmed_handling = UnarmedMethod::AddToCycles;
+        } else if self.unequip_modifier != -1 && matches!(self.unarmed_handling, UnarmedMethod::None) {
+            log::warn!("Using your old config option and requiring a modifier key for un-equipping a hand.");
             self.unarmed_handling = UnarmedMethod::AddToCycles;
         }
 

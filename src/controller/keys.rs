@@ -33,6 +33,21 @@ impl HotkeyKind {
     }
 }
 
+impl From<&Action> for HotkeyKind {
+    fn from(value: &Action) -> Self {
+        match *value {
+            Action::Activate => HotkeyKind::Activate,
+            Action::Left => HotkeyKind::Left,
+            Action::Power => HotkeyKind::Power,
+            Action::Right => HotkeyKind::Right,
+            Action::ShowHide => HotkeyKind::ShowHide,
+            Action::Utility => HotkeyKind::Utility,
+            Action::RefreshLayout => HotkeyKind::Refresh,
+            _ => HotkeyKind::None,
+        }
+    }
+}
+
 impl From<u32> for HotkeyKind {
     fn from(v: u32) -> Self {
         let settings = user_settings();
