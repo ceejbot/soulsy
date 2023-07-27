@@ -156,8 +156,8 @@
     },
     {
       "id": "uHowToCycle:Controls",
-      "text": "$SoulsyHUD_Controls_CycleModRequired_Text",
-      "help": "$SoulsyHUD_Controls_CycleModRequired_Help",
+      "text": "$SoulsyHUD_Controls_Advance_Text",
+      "help": "$SoulsyHUD_Controls_Advancce:_Help",
       "type": "enum",
       "valueOptions": {
         "options": [
@@ -220,8 +220,8 @@
     },
     {
       "id": "bIncludeUnarmed:Options",
-      "text": "$SoulsyHUD_Options_Unarmed_Text",
-      "help": "$SoulsyHUD_Options_Unarmed_Help",
+      "text": "$SoulsyHUD_Controls_Unarmed_Text",
+      "help": "$SoulsyHUD_Controls_Unarmed_Help",
       "type": "toggle",
       "valueOptions": {
         "sourceType": "ModSettingInt"
