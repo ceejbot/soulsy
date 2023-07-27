@@ -74,7 +74,7 @@
       }
     },
     {
-      "id": "uHowTriggerInMenus:Controls",
+      "id": "uHowToggleInMenus:Controls",
       "text": "$SoulsyHUD_Controls_Menus_Text",
       "help": "$SoulsyHUD_Controls_Menus_Help",
       "type": "enum",
