@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use super::control::MenuEventResponse;
 use super::itemdata::*;
 use super::user_settings;
-use crate::plugin::{fadeToAlpha, hasItemOrSpell, notifyPlayer, playerName, Action, ItemKind};
+use crate::plugin::{fadeToAlpha, hasItemOrSpell, playerName, Action, ItemKind};
 
 /// Manage the player's configured item cycles. Track changes, persist data in
 /// files, and advance the cycle when the player presses a cycle button. This
@@ -126,30 +126,6 @@ impl CycleData {
             Action::Right => self.right.len(),
             Action::Utility => self.utility.len(),
             _ => 0,
-        }
-    }
-
-    /// Truncate a cycle to the passed-in length if necessary. Notifies on change.
-    pub fn truncate_if_needed(&mut self, newlen: usize) {
-        if self.power.len() > newlen {
-            self.power.truncate(newlen);
-            cxx::let_cxx_string!(msg = format!("Power cycle shortened to {} items.", newlen));
-            notifyPlayer(&msg);
-        }
-        if self.utility.len() > newlen {
-            self.utility.truncate(newlen);
-            cxx::let_cxx_string!(msg = format!("Utility cycle shortened to {} items.", newlen));
-            notifyPlayer(&msg);
-        }
-        if self.left.len() > newlen {
-            self.left.truncate(newlen);
-            cxx::let_cxx_string!(msg = format!("Left-hand cycle shortened to {} items.", newlen));
-            notifyPlayer(&msg);
-        }
-        if self.right.len() > newlen {
-            self.right.truncate(newlen);
-            cxx::let_cxx_string!(msg = format!("Right-hand cycle shortened to {} items.", newlen));
-            notifyPlayer(&msg);
         }
     }
 

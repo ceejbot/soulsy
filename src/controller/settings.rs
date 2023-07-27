@@ -77,8 +77,6 @@ pub struct UserSettings {
     showhide: u32,
     /// A hotkey for re-reading the layout from toml and redrawing. uRefreshKey
     refresh_layout: u32,
-    /// The maximum length of a cycle. Must be between 2 and 15, inclusive.
-    maxlen: u32,
     /// The number of milliseconds to delay before equipping a selection. Max 2500, min 0.
     equip_delay: u32,
     /// Whether to fade out hud when not in combat.
@@ -111,7 +109,6 @@ impl Default for UserSettings {
             unequip_modifier: -1,
             refresh_layout: 8,
             showhide: 2,
-            maxlen: 10,       // this not a key code but an int
             equip_delay: 750, // in milliseconds
             autofade: true,
             fade_time: 2000,    // in milliseconds
@@ -189,11 +186,6 @@ impl UserSettings {
             self.unarmed_handling = UnarmedMethod::AddToCycles;
         }
 
-        self.maxlen = clamp(
-            read_from_ini(self.maxlen, "uMaxCycleLength", options),
-            2,
-            20,
-        );
         self.equip_delay = clamp(
             read_from_ini(self.equip_delay, "uEquipDelay", options),
             0,
@@ -292,7 +284,7 @@ impl UserSettings {
         self.refresh_layout
     }
     pub fn maxlen(&self) -> u32 {
-        self.maxlen
+        20
     }
     pub fn equip_delay(&self) -> u32 {
         self.equip_delay

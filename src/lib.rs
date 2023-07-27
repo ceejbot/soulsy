@@ -272,8 +272,6 @@ pub mod plugin {
         fn cycling_slows_time(self: &UserSettings) -> bool;
         /// How much to slow down time.
         fn slow_time_factor(self: &UserSettings) -> f32;
-        /// If a settings change has shortened the max cycle length, truncate if we have to.
-        fn truncate_cycles(new_length: u32);
 
         /// Managed access to the settings object, so we can lazy-load if necessary.
         fn user_settings() -> Box<UserSettings>;

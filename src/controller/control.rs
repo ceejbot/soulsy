@@ -111,13 +111,6 @@ pub mod public {
         ctrl.handle_inventory_changed(item, count);
     }
 
-    pub fn truncate_cycles(new: u32) {
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.cycles.truncate_if_needed(new as usize);
-    }
-
     pub fn refresh_user_settings() {
         if let Some(e) = UserSettings::refresh().err() {
             log::warn!("Failed to read user settings! using defaults; {e:?}");
