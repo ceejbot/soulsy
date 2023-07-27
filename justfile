@@ -90,6 +90,23 @@ translations:
         cp -p data/Interface/Translations/SoulsyHUD_english.txt data/Interface/Translations/SoulsyHUD_$lang.txt
     done
 
+# check that all $ strings in config have matching translation strings
+check-translations:
+    #!/bin/bash
+    converted=$(iconv -f utf-16 -t utf-8 data/Interface/Translations/SoulsyHUD_english.txt > tmp.txt)
+
+    # I am too lazy to figure out how to get jq to do all of it.
+    keys=$(cat data/mcm/config/SoulsyHUD/config.json | jq '.content[] | .[]' -r | grep "\\$" | tr -d '," $' | sort | uniq)
+    for k in $keys; do
+        cmd="grep $k tmp.txt"
+        suppressed=$(sh -c "$cmd")
+        exit=$?
+        if [ $exit != '0' ]; then
+            echo "missing translation: $k"
+        fi
+    done
+    rm tmp.txt
+
 # Build mod structures for additional layouts. Bash.
 build-layouts:
     #!/usr/bin/env bash
