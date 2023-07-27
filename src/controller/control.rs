@@ -941,7 +941,7 @@ impl Controller {
         // is down (if one is set), and we care if the cycle button itself has
         // been pressed.
         let hotkey = HotkeyKind::from(key);
-        if matches!(hotkey, HotkeyKind::None) || !hotkey.is_cycle_key() {
+        if matches!(hotkey, HotkeyKind::None) {
             return false;
         }
 
@@ -956,13 +956,16 @@ impl Controller {
         match menu_method {
             ActivationMethod::Hotkey => true,
             ActivationMethod::LongPress => {
-                log::info!("checking for long press in menu");
+                log::debug!("checking for long press in menu");
                 // if it's not found, will never be a long press
                 self.get_tracked_key(&hotkey).is_long_press()
             }
             ActivationMethod::Modifier => {
                 let modkey = self.get_tracked_key(&HotkeyKind::MenuModifier);
-                log::info!("checking for menu modifier key pressed in menu; {modkey:?} => {}", modkey.is_pressed());
+                log::debug!(
+                    "checking for menu modifier key pressed in menu; {modkey:?} => {}",
+                    modkey.is_pressed()
+                );
                 modkey.is_pressed()
             }
         }
