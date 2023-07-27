@@ -67,6 +67,8 @@ pub struct UserSettings {
 
     /// How the player adds and removes items in menus. uHowTriggerInMenus
     how_to_toggle: ActivationMethod,
+    /// Optional menu modifier key
+    menu_modifier: i32,
 
     /// How the player wants to handle unequipping slots. uHowToUnequip
     unarmed_handling: UnarmedMethod,
@@ -107,6 +109,7 @@ impl Default for UserSettings {
             how_to_cycle: ActivationMethod::Hotkey,
             cycle_modifier: -1,
             how_to_toggle: ActivationMethod::Hotkey,
+            menu_modifier: -1,
             unarmed_handling: UnarmedMethod::None,
             unequip_modifier: -1,
             refresh_layout: 8,
@@ -168,6 +171,7 @@ impl UserSettings {
         }
 
         self.how_to_toggle = read_from_ini(self.how_to_toggle, "uHowToggleInMenus", controls);
+        self.menu_modifier = read_from_ini(self.menu_modifier, "iMenuModifierKey", controls);
 
         self.how_to_activate = read_from_ini(self.how_to_activate, "uHowToActivate", controls);
         self.activate = read_from_ini(self.activate, "uUtilityActivateKey", controls);
@@ -184,7 +188,9 @@ impl UserSettings {
         if old_include_unarmed && matches!(self.unarmed_handling, UnarmedMethod::None) {
             log::warn!("Using your old config option and adding unarmed to cycles.");
             self.unarmed_handling = UnarmedMethod::AddToCycles;
-        } else if self.unequip_modifier != -1 && matches!(self.unarmed_handling, UnarmedMethod::None) {
+        } else if self.unequip_modifier != -1
+            && matches!(self.unarmed_handling, UnarmedMethod::None)
+        {
             log::warn!("Using your old config option and requiring a modifier key for un-equipping a hand.");
             self.unarmed_handling = UnarmedMethod::AddToCycles;
         }
@@ -232,6 +238,9 @@ impl UserSettings {
 
     pub fn how_to_toggle(&self) -> &ActivationMethod {
         &self.how_to_toggle
+    }
+    pub fn menu_modifier(&self) -> i32 {
+        self.menu_modifier
     }
 
     pub fn how_to_cycle(&self) -> &ActivationMethod {

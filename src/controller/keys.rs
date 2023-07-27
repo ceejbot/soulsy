@@ -20,6 +20,7 @@ pub enum HotkeyKind {
     UnequipModifier,
     CycleModifier,
     ActivateModifier,
+    MenuModifier,
     #[default]
     None,
 }
@@ -29,6 +30,16 @@ impl HotkeyKind {
         matches!(
             *self,
             HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right | HotkeyKind::Utility
+        )
+    }
+
+    pub fn is_modifier_key(&self) -> bool {
+        matches!(
+            *self,
+            HotkeyKind::ActivateModifier
+                | HotkeyKind::CycleModifier
+                | HotkeyKind::MenuModifier
+                | HotkeyKind::UnequipModifier
         )
     }
 }
@@ -77,6 +88,10 @@ impl From<u32> for HotkeyKind {
             && v == settings.unequip_modifier().unsigned_abs()
         {
             HotkeyKind::UnequipModifier
+        } else if settings.menu_modifier().is_positive()
+            && v == settings.menu_modifier().unsigned_abs()
+        {
+            HotkeyKind::MenuModifier
         } else {
             HotkeyKind::None
         }

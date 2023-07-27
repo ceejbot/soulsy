@@ -680,6 +680,7 @@ namespace ui
 		is_transitioning = true;
 		fade_in          = a_in;
 
+
 		// unused right now
 		if (a_value < 0) { goal_alpha = 0.0; }
 		else if (a_value > 1.0) { goal_alpha = 1.0; }
@@ -689,8 +690,9 @@ namespace ui
 		// the player has merely equipped something new. So we give it some
 		// time to decide that the weapons are truly gone.
 		fade_out_timer   = FADEOUT_HYSTERESIS;
-		auto* settings   = user_settings();
-		auto fade_time   = settings->fade_time();
+
+		auto settings   = user_settings();
+		float fade_time   = static_cast<float>(settings->fade_time()) / 1000.0f;
 		transition_timer = fade_in ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
 
 		// We must allow for the transition starting while the alpha is not pinned.

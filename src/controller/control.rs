@@ -137,10 +137,6 @@ pub struct Controller {
     /// We cache the right-hand item we had similarly.
     right_hand_cached: Option<ItemData>,
     tracked_keys: HashMap<HotkeyKind, TrackedKey>,
-    // State of the cycle modifier hotkey
-    // cycle_modifier: TrackedKey,
-    // unequip_modifier: TrackedKey,
-    // activate_modifier: TrackedKey,
 }
 
 impl Controller {
@@ -237,17 +233,8 @@ impl Controller {
         self.update_tracked_key(&hotkey, button);
 
         // For mod keys, we're done.
-        match hotkey {
-            HotkeyKind::UnequipModifier => {
-                return KeyEventResponse::default();
-            }
-            HotkeyKind::CycleModifier => {
-                return KeyEventResponse::default();
-            }
-            HotkeyKind::ActivateModifier => {
-                return KeyEventResponse::default();
-            }
-            _ => {}
+        if hotkey.is_modifier_key() {
+            return KeyEventResponse::default();
         }
 
         // From here on, we only care if the key has gone up.
@@ -974,8 +961,8 @@ impl Controller {
                 self.get_tracked_key(&hotkey).is_long_press()
             }
             ActivationMethod::Modifier => {
-                log::info!("checking for cycle modifier key pressed in menu");
-                let modkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                let modkey = self.get_tracked_key(&HotkeyKind::MenuModifier);
+                log::info!("checking for menu modifier key pressed in menu; {modkey:?} => {}", modkey.is_pressed());
                 modkey.is_pressed()
             }
         }

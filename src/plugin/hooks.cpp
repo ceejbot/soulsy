@@ -32,8 +32,7 @@ namespace hooks
 		auto relevantMenuOpen = ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) ||
 		                        ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
 		                        ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
-		auto lootMenuOpen = ui->IsMenuOpen(RE::LootMenu::MENU_NAME);
-
+		// auto lootMenuOpen = ui->IsMenuOpen(RE::LootMenu::MENU_NAME);
 
 		if (eventPtr && *eventPtr && relevantMenuOpen)
 		{
