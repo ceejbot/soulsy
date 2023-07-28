@@ -22,6 +22,8 @@ pub struct CycleData {
     utility: Vec<ItemData>,
     #[serde(default)]
     hud_visible: bool,
+    #[serde(default)]
+    pub loaded: bool
 }
 
 // where to persist
@@ -341,6 +343,11 @@ impl CycleData {
 
     /// Write serialized toml to the cycle storage file for this character.
     pub fn write(&self) -> Result<()> {
+        if self.power.is_empty() && self.utility.is_empty() && self.left.is_empty() && self.right.is_empty() {
+            log::debug!("Declining to write empty/default cycles.");
+            return Ok(());
+        }
+
         log::info!(
             "writing cycles to disk; lengths are: powers={}; utilities={}; left={}; right={};",
             self.power.len(),
@@ -348,12 +355,11 @@ impl CycleData {
             self.left.len(),
             self.right.len()
         );
+        let fname = CycleData::cycle_storage();
+        let backup = format!("{}.bak", fname.display());
+        std::fs::copy(fname, backup)?;
         let buf = toml::to_string(self)?;
         std::fs::write(CycleData::cycle_storage(), buf)?;
-        log::trace!(
-            "wrote cycle data to {}",
-            CycleData::cycle_storage().display()
-        );
         Ok(())
     }
 
@@ -434,12 +440,12 @@ mod archive {
                     rkyv::Infallible,
                 >>::deserialize(v, &mut rkyv::Infallible)
                 {
-                    log::info!("Loaded cycles from cosave successfully!");
                     return Some(deserialized.into());
                 }
             }
             Err(e) => {
-                log::error!("Something's wrong with the cosave data. Starting fresh.");
+                log::error!("Something's wrong with the cosave data.");
+                log::debug!("len={}; mod 16={}", bytes.len(), bytes.len() % 16);
                 log::error!("{e:?}");
                 log::trace!("{bytes:?}");
             }
@@ -488,6 +494,7 @@ mod archive {
                 power: value.power.iter().map(|xs| xs.into()).collect(),
                 utility: value.utility.iter().map(|xs| xs.into()).collect(),
                 hud_visible: value.hud_visible,
+                loaded: true,
             }
         }
     }

@@ -30,7 +30,11 @@ pub mod public {
 
         let _hud = hud_layout();
         ctrl.apply_settings();
-        log::info!("Hud waiting for cycles from cosave data...");
+        if !ctrl.cycles.loaded {
+            ctrl.cycles = CycleData::read().unwrap_or_default();
+            log::info!("Cosave data not found yet. Falling back to toml");
+        }
+        ctrl.update_hud();
     }
 
     /// Function for C++ to call to send a relevant button event to us.
@@ -138,9 +142,7 @@ pub mod public {
             ctrl.cycles = cosave_cycle;
             log::info!("Cycles loaded and ready to rock.");
         } else {
-            log::warn!("Cosave load failed. Falling back to toml.");
-            let fallback = CycleData::read().unwrap_or_default();
-            ctrl.cycles = fallback;
+            log::warn!("Cosave load failed. Staying with TOML fallback.");
         }
         ctrl.validate_cycles();
     }
@@ -1000,6 +1002,14 @@ impl Controller {
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
     fn toggle_item(&mut self, action: Action, item: ItemData) {
         let result = self.cycles.toggle(action, item.clone());
+
+        if matches!(result, MenuEventResponse::ItemRemoved) && matches!(action, Action::Utility) {
+            if let Some(topmost) = self.cycles.get_top(Action::Utility) {
+                self.update_slot(HudElement::Utility, &topmost);
+            } else {
+                self.update_slot(HudElement::Utility, &ItemData::default());
+            }
+        }
 
         // notify the player what happened...
         let verb = match result {

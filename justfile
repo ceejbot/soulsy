@@ -76,11 +76,18 @@ archive:
     cp -p build/Release/SoulsyHUD.dll "$outdir"/SKSE/plugins/SoulsyHUD.dll
     cp -p build/Release/SoulsyHUD.pdb "$outdir"/SKSE/plugins/SoulsyHUD.pdb
     rm "${outdir}"/scripts/source/TESV_Papyrus_Flags.flg
-    #7z a "$outdir".7z "$outdir"
+    7z a "$outdir".7z "$outdir"
     echo "Mod directory ready at ${outdir}; archive at ${outdir}.7z"
+
+# copy files to my test mod
+test:
+    #!/bin/bash
     echo "copying to live mod for testing..."
-    cp -p build/Release/SoulsyHUD.dll "/mnt/g/VortexStaging/Soulsy HUD dev version/SKSE/plugins/SoulsyHUD.dll"
-    cp -p build/Release/SoulsyHUD.pdb "/mnt/g/VortexStaging/Soulsy HUD dev version/SKSE/plugins/SoulsyHUD.pdb"
+    outdir="/mnt/g/VortexStaging/Soulsy HUD dev version/"
+    cp -rp data/* "$outdir"
+    cp -p build/Release/SoulsyHUD.dll "${outdir}/SKSE/plugins/SoulsyHUD.dll"
+    cp -p build/Release/SoulsyHUD.pdb "${outdir}/SKSE/plugins/SoulsyHUD.pdb"
+
 
 # Copy English translation to other translation files.
 translations:
