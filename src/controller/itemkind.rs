@@ -255,7 +255,8 @@ static ICON_MAP: Lazy<HashMap<ItemKind, String>> = Lazy::new(|| {
     ])
 });
 
-// This is horrific.
+// This is horrific. There has to be a better way.
+// A way to iterate, perhaps?
 impl From<u8> for ItemKind {
     fn from(value: u8) -> Self {
         if value == ItemKind::Empty.repr {
