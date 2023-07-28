@@ -1,0 +1,127 @@
+//! This module bundles up the public-facing interface of the controller for ease
+//! of import into the bridge. It should have as little logic as is compatible
+//! with keeping opaque Rust types from having to be exposed to C++.
+
+use std::fs::File;
+use std::path::PathBuf;
+
+use simplelog::*;
+
+use super::cycles::*;
+use super::itemdata::*;
+use super::settings::{user_settings, UserSettings};
+use crate::plugin::*;
+use crate::{control, hud_layout};
+
+// ---------- logging
+
+pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
+    let hudl = hud_layout(); // yeah, it's in here, sorry.
+    let log_level = if hudl.debug {
+        LevelFilter::Trace
+    } else {
+        LevelFilter::Info
+    };
+
+    let cleaned_log = logdir.to_string_lossy();
+    let mut pathbuf = PathBuf::from(cleaned_log.to_string());
+    pathbuf.set_file_name("SoulsyHUD_rust.log");
+
+    if let Ok(logfile) = File::create(&pathbuf) {
+        let _ = WriteLogger::init(log_level, Config::default(), logfile);
+        log::info!("rust side logging standing by");
+    } else {
+        // Welp, we failed and I have nowhere to write the darn error. Ha ha.
+    }
+}
+
+// ---------- the controller itself
+
+/// Let's get this party started.
+pub fn initialize_hud() {
+    let settings = user_settings();
+    log::info!("initializing hud controller");
+    let mut ctrl = control::get();
+    log::info!("{settings:?}");
+
+    let _hud = hud_layout();
+    ctrl.apply_settings();
+    if !ctrl.cycles.loaded {
+        log::info!("Cosave data not found. Falling back to toml or defaults.");
+        ctrl.cycles = CycleData::read().unwrap_or_default();
+    }
+    ctrl.update_hud();
+}
+
+/// Function for C++ to call to send a relevant button event to us.
+pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
+    control::get().handle_key_event(key, button)
+}
+
+pub fn show_ui() -> bool {
+    control::get().cycles.hud_visible()
+}
+
+/// Function for C++ to call to send a relevant menu button-event to us.
+///
+/// We get a fully-filled out ItemData struct to use as we see fit.
+// menu_item is boxed because it's arriving from C++.
+#[allow(clippy::boxed_local)]
+pub fn toggle_item(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<ItemData>) {
+    let action = Action::from(key);
+    control::get().handle_toggle_item(action, *menu_item)
+}
+
+pub fn handle_menu_event(key: u32, button: &ButtonEvent) -> bool {
+    control::get().handle_menu_event(key, button)
+}
+
+/// Get information about the item equipped in a specific slot.
+pub fn entry_to_show_in_slot(element: HudElement) -> Box<ItemData> {
+    control::get().entry_to_show_in_slot(element)
+}
+
+// Handle an equip delay timer expiring.
+pub fn timer_expired(slot: Action) {
+    control::get().timer_expired(slot);
+}
+
+/// Update our view of the player's equipment.
+pub fn update_hud() -> bool {
+    control::get().update_hud()
+}
+
+/// We know for sure the player just equipped this item.
+pub fn handle_item_equipped(equipped: bool, item: Box<ItemData>) -> bool {
+    control::get().handle_item_equipped(equipped, item)
+}
+
+/// A consumable's count changed. Record if relevant.
+pub fn handle_inventory_changed(item: Box<ItemData>, count: i32) {
+    control::get().handle_inventory_changed(item, count);
+}
+
+pub fn refresh_user_settings() {
+    if let Some(e) = UserSettings::refresh().err() {
+        log::warn!("Failed to read user settings! using defaults; {e:?}");
+        return;
+    }
+    control::get().apply_settings();
+}
+
+/// Serialize cycles for cosave.
+pub fn serialize_cycles() -> Vec<u8> {
+    control::get().cycles.serialize()
+}
+
+/// Cycle data loaded from cosave.
+pub fn cycle_loaded_from_cosave(buffer: Vec<u8>) {
+    let mut ctrl = control::get();
+    if let Some(cosave_cycle) = CycleData::deserialize(buffer) {
+        ctrl.cycles = cosave_cycle;
+        log::info!("Cycles loaded and ready to rock.");
+    } else {
+        log::warn!("Cosave load failed. Staying with TOML fallback.");
+    }
+    ctrl.validate_cycles();
+}

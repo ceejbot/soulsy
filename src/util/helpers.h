@@ -2,7 +2,9 @@
 
 #include "rust/cxx.h"
 
-// This namespace is for rust/C++ bridge helpers.
+// This namespace is for rust/C++ bridge helpers as well as any
+// decision-making that needs a single source of truth. It's
+// badly-named.
 
 namespace helpers
 {

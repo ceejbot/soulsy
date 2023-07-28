@@ -3,17 +3,18 @@
 //! toml; the C++ side uses the data in layout. The majority of the implementation
 //! is filing in defaults.
 
-use std::{fs, fmt::Display};
+use std::fmt::Display;
+use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
 use anyhow::Result;
 use once_cell::sync::Lazy;
-use serde::{Serialize, Deserialize};
 use serde::de::{Deserializer, Error};
+use serde::{Deserialize, Serialize};
 
-use crate::plugin::{Color, HudElement, HudLayout, Point, SlotLayout, Align};
+use crate::plugin::{Action, Align, Color, HudElement, HudLayout, Point, SlotLayout};
 
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
@@ -342,7 +343,8 @@ impl Display for Align {
 impl Serialize for Align {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
+        S: serde::Serializer,
+    {
         serializer.serialize_str(&self.to_string())
     }
 }
@@ -358,5 +360,35 @@ where
         "right" => Ok(Align::Right),
         "center" => Ok(Align::Center),
         _ => Err(Error::unknown_variant(&s, &["left", "right", "center"])),
+    }
+}
+
+/// All this converting makes me suspect the abstraction is wrong.
+impl From<Action> for HudElement {
+    fn from(value: Action) -> Self {
+        if value == Action::Power {
+            HudElement::Power
+        } else if value == Action::Utility {
+            HudElement::Utility
+        } else if value == Action::Left {
+            HudElement::Left
+        } else if value == Action::Right {
+            HudElement::Right
+        } else {
+            HudElement::Ammo
+        }
+    }
+}
+
+impl Display for HudElement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            HudElement::Ammo => write!(f, "Ammo"),
+            HudElement::Left => write!(f, "Left"),
+            HudElement::Power => write!(f, "Power"),
+            HudElement::Right => write!(f, "Right"),
+            HudElement::Utility => write!(f, "Utility"),
+            _ => write!(f, "unknown"),
+        }
     }
 }

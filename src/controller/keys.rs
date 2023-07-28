@@ -3,10 +3,19 @@
 use std::fmt::Display;
 use std::time::{Duration, Instant};
 
+use anyhow::anyhow;
 use strum::Display;
 
 use crate::controller::user_settings;
 use crate::plugin::{Action, ButtonEvent, HudElement};
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Display)]
+pub enum CycleSlot {
+    Left,
+    Power,
+    Right,
+    Utility,
+}
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Default, Display)]
 pub enum HotkeyKind {
@@ -41,6 +50,17 @@ impl HotkeyKind {
                 | HotkeyKind::MenuModifier
                 | HotkeyKind::UnequipModifier
         )
+    }
+}
+
+impl From<&CycleSlot> for HotkeyKind {
+    fn from(value: &CycleSlot) -> Self {
+        match *value {
+            CycleSlot::Left => HotkeyKind::Left,
+            CycleSlot::Power => HotkeyKind::Power,
+            CycleSlot::Right => HotkeyKind::Right,
+            CycleSlot::Utility => HotkeyKind::Utility,
+        }
     }
 }
 
@@ -206,6 +226,58 @@ impl From<&HotkeyKind> for HudElement {
             HotkeyKind::Left => HudElement::Left,
             HotkeyKind::Right => HudElement::Right,
             _ => HudElement::None,
+        }
+    }
+}
+
+impl TryFrom<Action> for CycleSlot {
+    type Error = anyhow::Error;
+
+    fn try_from(value: Action) -> Result<Self, Self::Error> {
+        match value {
+            Action::Power => Ok(CycleSlot::Power),
+            Action::Utility => Ok(CycleSlot::Utility),
+            Action::Left => Ok(CycleSlot::Left),
+            Action::Right => Ok(CycleSlot::Right),
+            _ => Err(anyhow!(
+                "this action does not map to a cycle; key={value:?}"
+            )),
+        }
+    }
+}
+
+impl TryFrom<HotkeyKind> for CycleSlot {
+    type Error = anyhow::Error;
+
+    fn try_from(value: HotkeyKind) -> Result<Self, Self::Error> {
+        match value {
+            HotkeyKind::Power => Ok(CycleSlot::Power),
+            HotkeyKind::Utility => Ok(CycleSlot::Utility),
+            HotkeyKind::Left => Ok(CycleSlot::Left),
+            HotkeyKind::Right => Ok(CycleSlot::Right),
+            _ => Err(anyhow!("this hotkey is not a cycle key; key={value}")),
+        }
+    }
+}
+
+impl From<&CycleSlot> for HudElement {
+    fn from(value: &CycleSlot) -> Self {
+        match value {
+            CycleSlot::Power => HudElement::Power,
+            CycleSlot::Utility => HudElement::Utility,
+            CycleSlot::Left => HudElement::Left,
+            CycleSlot::Right => HudElement::Right,
+        }
+    }
+}
+
+impl From<CycleSlot> for Action {
+    fn from(value: CycleSlot) -> Self {
+        match value {
+            CycleSlot::Power => Action::Power,
+            CycleSlot::Utility => Action::Utility,
+            CycleSlot::Left => Action::Left,
+            CycleSlot::Right => Action::Right,
         }
     }
 }

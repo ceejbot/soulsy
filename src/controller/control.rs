@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt::Display;
 use std::sync::Mutex;
 
 use once_cell::sync::Lazy;
@@ -7,152 +6,23 @@ use once_cell::sync::Lazy;
 use super::cycles::*;
 use super::itemdata::*;
 use super::keys::*;
-use super::settings::{user_settings, ActivationMethod, UnarmedMethod, UserSettings};
-use crate::hud_layout;
+use super::settings::{user_settings, ActivationMethod, UnarmedMethod};
 use crate::plugin::*;
 
 /// There can be only one. Not public because we want access managed.
 static CONTROLLER: Lazy<Mutex<Controller>> = Lazy::new(|| Mutex::new(Controller::new()));
 
-/// This mod bundles up the public-facing interface of the controller for ease
-/// of import into the bridge. I do not want to give the C++ side this object.
-pub mod public {
-    use super::*;
-
-    /// C++ tells us when it's safe to start pulling together the data we need.
-    pub fn initialize_hud() {
-        let settings = user_settings();
-        log::info!("initializing hud controller");
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        log::info!("{settings:?}");
-
-        let _hud = hud_layout();
-        ctrl.apply_settings();
-        if !ctrl.cycles.loaded {
-            ctrl.cycles = CycleData::read().unwrap_or_default();
-            log::info!("Cosave data not found yet. Falling back to toml");
-        }
-        ctrl.update_hud();
-    }
-
-    /// Function for C++ to call to send a relevant button event to us.
-    pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
-        CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
-            .handle_key_event(key, button)
-    }
-
-    pub fn show_ui() -> bool {
-        CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
-            .cycles
-            .hud_visible()
-    }
-
-    /// Function for C++ to call to send a relevant menu button-event to us.
-    ///
-    /// We get a fully-filled out ItemData struct to use as we see fit.
-    // menu_item is boxed because it's arriving from C++.
-    #[allow(clippy::boxed_local)]
-    pub fn toggle_item(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<ItemData>) {
-        let action = Action::from(key);
-        CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
-            .toggle_item(action, *menu_item)
-    }
-
-    pub fn handle_menu_event(key: u32, button: &ButtonEvent) -> bool {
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.handle_menu_event(key, button)
-    }
-
-    /// Get information about the item equipped in a specific slot.
-    pub fn entry_to_show_in_slot(element: HudElement) -> Box<ItemData> {
-        CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
-            .entry_to_show_in_slot(element)
-    }
-
-    // Handle an equip delay timer expiring.
-    pub fn timer_expired(slot: Action) {
-        // Fun time! We get to equip an item now!
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.timer_expired(slot);
-    }
-
-    /// Update our view of the player's equipment.
-    pub fn update_hud() -> bool {
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.update_hud()
-    }
-
-    /// We know for sure the player just equipped this item.
-    pub fn handle_item_equipped(equipped: bool, item: Box<ItemData>) -> bool {
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.handle_item_equipped(equipped, item)
-    }
-
-    /// A consumable's count changed. Record if relevant.
-    pub fn handle_inventory_changed(item: Box<ItemData>, count: i32) {
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.handle_inventory_changed(item, count);
-    }
-
-    pub fn refresh_user_settings() {
-        if let Some(e) = UserSettings::refresh().err() {
-            log::warn!("Failed to read user settings! using defaults; {e:?}");
-            return;
-        }
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.apply_settings();
-    }
-
-    /// Serialize cycles for cosave test.
-    pub fn serialize_cycles() -> Vec<u8> {
-        let ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        ctrl.cycles.serialize()
-    }
-
-    /// Cycle data loaded from cosave.
-    pub fn cycle_loaded_from_cosave(buffer: Vec<u8>) {
-        let mut ctrl = CONTROLLER
-            .lock()
-            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
-        if let Some(cosave_cycle) = CycleData::deserialize(buffer) {
-            ctrl.cycles = cosave_cycle;
-            log::info!("Cycles loaded and ready to rock.");
-        } else {
-            log::warn!("Cosave load failed. Staying with TOML fallback.");
-        }
-        ctrl.validate_cycles();
-    }
+pub fn get() -> std::sync::MutexGuard<'static, Controller> {
+    CONTROLLER
+        .lock()
+        .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.")
 }
 
 /// What, model/view/controller? In my UI application? oh no
 #[derive(Clone, Default, Debug)]
 pub struct Controller {
     /// Our currently-active cycles.
-    cycles: CycleData,
+    pub cycles: CycleData,
     /// The items the HUD should show right now.
     visible: HashMap<HudElement, ItemData>,
     /// True if we've got a two-handed weapon equipped right now.
@@ -181,20 +51,22 @@ impl Controller {
         self.update_hud();
     }
 
-    fn apply_settings(&mut self) {
+    pub fn apply_settings(&mut self) {
         let settings = user_settings();
 
         match settings.unarmed_handling() {
             UnarmedMethod::AddToCycles => {
                 let h2h = hand2hand_itemdata();
                 let h2h = *h2h;
-                self.cycles.include_item(Action::Left, h2h.clone());
-                self.cycles.include_item(Action::Right, h2h);
+                self.cycles.include_item(CycleSlot::Left, h2h.clone());
+                self.cycles.include_item(CycleSlot::Right, h2h);
             }
             _ => {
                 // remove any item with h2h type from cycles
-                self.cycles.filter_kind(Action::Left, ItemKind::HandToHand);
-                self.cycles.filter_kind(Action::Right, ItemKind::HandToHand);
+                self.cycles
+                    .filter_kind(&CycleSlot::Left, ItemKind::HandToHand);
+                self.cycles
+                    .filter_kind(&CycleSlot::Right, ItemKind::HandToHand);
             }
         }
         self.flush_cycle_data();
@@ -209,7 +81,7 @@ impl Controller {
     }
 
     /// The player's inventory changed! Act on it if we need to.
-    fn handle_inventory_changed(
+    pub fn handle_inventory_changed(
         &mut self,
         #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
         delta: i32,
@@ -246,7 +118,7 @@ impl Controller {
     ///
     /// Returns an enum indicating what we did in response, so that the C++ layer can
     /// start a tick timer for cycle delay.
-    fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
+    pub fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
         let hotkey = HotkeyKind::from(key);
         let state = KeyState::from(button);
         if matches!(hotkey, HotkeyKind::None) {
@@ -274,8 +146,8 @@ impl Controller {
         match hotkey {
             HotkeyKind::Power => self.handle_cycle_power(),
             HotkeyKind::Utility => self.handle_cycle_utility(),
-            HotkeyKind::Left => self.handle_cycle_hand(hotkey),
-            HotkeyKind::Right => self.handle_cycle_hand(hotkey),
+            HotkeyKind::Left => self.handle_cycle_hand(CycleSlot::Left, &hotkey),
+            HotkeyKind::Right => self.handle_cycle_hand(CycleSlot::Right, &hotkey),
             HotkeyKind::Activate => self.use_utility_item(),
             HotkeyKind::Refresh => {
                 HudLayout::refresh();
@@ -302,11 +174,11 @@ impl Controller {
         let settings = user_settings();
         let cycle_method = settings.how_to_cycle();
         match cycle_method {
-            ActivationMethod::Hotkey => self.advance_simple_cycle(Action::Power),
+            ActivationMethod::Hotkey => self.advance_simple_cycle(&CycleSlot::Power),
             ActivationMethod::LongPress => {
                 let hotkey = self.get_tracked_key(&HotkeyKind::Power);
                 if hotkey.is_long_press() {
-                    self.advance_simple_cycle(Action::Power)
+                    self.advance_simple_cycle(&CycleSlot::Power)
                 } else {
                     log::info!("declining to advance power/shouts cycle without a long press");
                     KeyEventResponse::default()
@@ -315,7 +187,7 @@ impl Controller {
             ActivationMethod::Modifier => {
                 let hotkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
                 if hotkey.is_pressed() {
-                    self.advance_simple_cycle(Action::Power)
+                    self.advance_simple_cycle(&CycleSlot::Power)
                 } else {
                     log::info!(
                         "declining to advance power/shouts cycle without the cycle modifier key down"
@@ -334,19 +206,19 @@ impl Controller {
         match cycle_method {
             ActivationMethod::Hotkey => {
                 log::debug!("cycling utilities/consumables");
-                return self.advance_simple_cycle(Action::Utility);
+                return self.advance_simple_cycle(&CycleSlot::Utility);
             }
             ActivationMethod::LongPress => {
                 let hotkey = self.get_tracked_key(&HotkeyKind::Utility);
                 if hotkey.is_long_press() {
-                    return self.advance_simple_cycle(Action::Utility);
+                    return self.advance_simple_cycle(&CycleSlot::Utility);
                 }
             }
             ActivationMethod::Modifier => {
                 let hotkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
                 if hotkey.is_pressed() {
                     log::debug!("cycling utilities/consumables");
-                    return self.advance_simple_cycle(Action::Utility);
+                    return self.advance_simple_cycle(&CycleSlot::Utility);
                 }
             }
         }
@@ -374,9 +246,9 @@ impl Controller {
         KeyEventResponse::default()
     }
 
-    fn advance_simple_cycle(&mut self, which: Action) -> KeyEventResponse {
+    fn advance_simple_cycle(&mut self, which: &CycleSlot) -> KeyEventResponse {
         // Programmer error to call this for left/right.
-        if !matches!(which, Action::Power | Action::Utility) {
+        if !matches!(which, CycleSlot::Power | CycleSlot::Utility) {
             log::info!("Programmer error! This is not a simple cycle. cycle={which:?}",);
             return KeyEventResponse::default();
         }
@@ -398,8 +270,8 @@ impl Controller {
             self.flush_cycle_data();
             KeyEventResponse {
                 handled: true,
-                start_timer: if !matches!(which, Action::Utility) {
-                    which
+                start_timer: if !matches!(which, CycleSlot::Utility) {
+                    Action::from(which.clone())
                 } else {
                     Action::None
                 },
@@ -413,12 +285,12 @@ impl Controller {
         }
     }
 
-    fn handle_cycle_hand(&mut self, hotkey: HotkeyKind) -> KeyEventResponse {
-        if !matches!(hotkey, HotkeyKind::Left | HotkeyKind::Right) {
+    fn handle_cycle_hand(&mut self, cycleslot: CycleSlot, hotkey: &HotkeyKind) -> KeyEventResponse {
+        if !matches!(cycleslot, CycleSlot::Left | CycleSlot::Right) {
             return KeyEventResponse::default();
         }
 
-        log::debug!("considering cycling item in {} hand", hotkey);
+        log::debug!("considering cycling item in {} hand", cycleslot);
 
         // We have two states to check
         let settings = user_settings();
@@ -446,30 +318,29 @@ impl Controller {
 
         // ETOOMANYENUMS
         // The root problem is that shared enums are not sum types, and I want sum types.
-        let hudslot = HudElement::from(&hotkey);
-        let action = Action::from(&hotkey);
+        let action = Action::from(hotkey);
 
         if unequip_requested {
-            log::info!("unequipping slot {:?} by request", action);
-            let empty_item = *hand2hand_itemdata();
+            log::info!("unequipping slot {cycleslot} by request");
+            let empty_item = *hand2hand_itemdata(); // unbox
             unequipSlot(action);
-            self.update_slot(hudslot, &empty_item);
-            self.cycles.set_top(action, &empty_item);
+            self.update_slot(HudElement::from(&cycleslot), &empty_item);
+            self.cycles.set_top(&cycleslot, &empty_item);
             KeyEventResponse {
                 handled: true,
                 start_timer: Action::None,
                 stop_timer: action,
             }
         } else if cycle_requested {
-            self.advance_hand_cycle(action)
+            self.advance_hand_cycle(&cycleslot)
         } else {
             // TODO honk
-            log::info!("you need a modifier key down for {action:?}");
+            log::info!("you need a modifier key down for {cycleslot}");
             KeyEventResponse::default()
         }
     }
 
-    fn advance_hand_cycle(&mut self, which: Action) -> KeyEventResponse {
+    fn advance_hand_cycle(&mut self, which: &CycleSlot) -> KeyEventResponse {
         if self.cycles.cycle_len(which) <= 1 {
             // TODO failure sound honk
             return KeyEventResponse {
@@ -484,7 +355,7 @@ impl Controller {
         // What is an allowed next choice in the spot? This code deliberately
         // repeats itself to make the logic clear.
 
-        let other_hud = if which == Action::Left {
+        let other_hud = if matches!(which, CycleSlot::Left) {
             HudElement::Right
         } else {
             HudElement::Left
@@ -505,14 +376,14 @@ impl Controller {
             if candidate.two_handed() {
                 // no problem. just cycle to it.
                 self.cycles.advance(which, 1);
-                return self.update_and_record(which, &candidate);
+                return self.update_and_record(&which, &candidate);
             }
 
             // Now we got fun. Do we have something to bounce back to in the other hand?
-            let (other_cached, other_action) = if matches!(which, Action::Left) {
-                (self.right_hand_cached.clone(), Action::Right)
+            let (other_cached, other_hand) = if matches!(which, CycleSlot::Left) {
+                (self.right_hand_cached.clone(), CycleSlot::Right)
             } else {
-                (self.left_hand_cached.clone(), Action::Left)
+                (self.left_hand_cached.clone(), CycleSlot::Left)
             };
 
             let Some(return_to) = other_cached else {
@@ -526,7 +397,7 @@ impl Controller {
             if candidate.form_string() != return_to.form_string() {
                 self.cycles.advance(which, 1);
                 let _changed = self.update_slot(other_hud, &return_to.clone());
-                self.cycles.set_top(other_action, &return_to.clone());
+                self.cycles.set_top(&other_hand, &return_to.clone());
                 return self.update_and_record(which, &candidate);
             }
 
@@ -534,11 +405,12 @@ impl Controller {
             if !candidate.kind().count_matters() || candidate.count() > 1 {
                 self.cycles.advance(which, 1);
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
+                self.cycles.set_top(&other_hand, &return_to.clone());
                 return self.update_and_record(which, &candidate);
             }
 
-            // The worst case! Somebody's got to lose, and in this case it's the
-            // hand trying to cycle forward.
+            // The worst case! Somebody's got to lose the battle for the single item,
+            // and in this case it's the hand trying to cycle forward.
             let Some(candidate) = self.cycles.advance_skipping(which, return_to.clone()) else {
                 // We have no good options. TODO honk
                 return KeyEventResponse {
@@ -548,15 +420,17 @@ impl Controller {
             };
 
             if candidate.two_handed() {
-                // How lucky we are.
+                // How lucky we are. We equip it and don't fuss.
                 return self.update_and_record(which, &candidate);
             } else {
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
+                self.cycles.set_top(&other_hand, &return_to.clone());
                 return self.update_and_record(which, &candidate);
             }
         } else {
             // Phew. Okay. Now we're on to the one-handers equipped cases. These are easier.
             let maybe_candidate = if let Some(other_equipped) = self.visible.get(&other_hud) {
+                // Are we dual-wielding? If so, do we have at least two?
                 if !other_equipped.kind().count_matters() || other_equipped.count() > 1 {
                     self.cycles.advance(which, 1)
                 } else {
@@ -578,14 +452,14 @@ impl Controller {
         }
     }
 
-    fn update_and_record(&mut self, which: Action, next: &ItemData) -> KeyEventResponse {
+    fn update_and_record(&mut self, which: &CycleSlot, next: &ItemData) -> KeyEventResponse {
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
         self.flush_cycle_data();
         KeyEventResponse {
             handled: true,
-            start_timer: if !matches!(which, Action::Utility) {
-                which
+            start_timer: if !matches!(which, CycleSlot::Utility) {
+                Action::from(which.clone())
             } else {
                 Action::None
             },
@@ -597,7 +471,7 @@ impl Controller {
     fn use_utility_item(&mut self) -> KeyEventResponse {
         log::debug!("using utility item");
 
-        if let Some(item) = self.cycles.get_top(Action::Utility) {
+        if let Some(item) = self.cycles.get_top(&CycleSlot::Utility) {
             if item.kind().is_potion()
                 || matches!(item.kind(), ItemKind::PoisonDefault | ItemKind::Food)
             {
@@ -631,7 +505,7 @@ impl Controller {
     ///
     /// We do not act here on cascading changes. Instead, we let the equipped-change
     /// callback decide what to do when, e.g., a two-handed item is equipped.
-    fn timer_expired(&mut self, which: Action) {
+    pub fn timer_expired(&mut self, which: Action) {
         let hud = HudElement::from(which);
         let hotkey = self.get_tracked_key(&HotkeyKind::from(&which));
         if hotkey.is_pressed() {
@@ -687,6 +561,7 @@ impl Controller {
         if !matches!(which, Action::Right | Action::Left | Action::Utility) {
             return;
         }
+
         let kind = item.kind();
         cxx::let_cxx_string!(form_spec = item.form_string());
         log::trace!(
@@ -696,12 +571,11 @@ impl Controller {
             item.name()
         );
 
-        // These are all different because the game API is a bit of an evolved thing.
         if kind.is_magic() {
             // My name is John Wellington Wells / I'm a dealer in...
-            equipWeapon(&form_spec, which);
+            equipWeapon(&form_spec, which.into());
         } else if kind.left_hand_ok() || kind.right_hand_ok() {
-            equipWeapon(&form_spec, which);
+            equipWeapon(&form_spec, which.into());
         } else if kind.is_armor() {
             equipArmor(&form_spec);
         } else if kind == ItemKind::Arrow {
@@ -720,7 +594,7 @@ impl Controller {
     /// changes we do need to react to, either because they were done
     /// out-of-band of the HUD or because we want to do more work in reaction to
     /// changes we initiated.
-    fn handle_item_equipped(
+    pub fn handle_item_equipped(
         &mut self,
         equipped: bool,
         #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
@@ -765,7 +639,7 @@ impl Controller {
                 if visible.form_string() != item.form_string() {
                     log::debug!("updating visible power/shout; name='{}';", item.name());
                     self.update_slot(HudElement::Power, &item);
-                    self.cycles.set_top(Action::Power, &item);
+                    self.cycles.set_top(&CycleSlot::Power, &item);
                     return true;
                 } else {
                     return false;
@@ -787,7 +661,7 @@ impl Controller {
             let changed = self.update_slot(HudElement::Right, &item);
             if changed {
                 // Change was out of band. We need to react.
-                self.cycles.set_top(Action::Right, &item);
+                self.cycles.set_top(&CycleSlot::Right, &item);
             }
             self.update_slot(HudElement::Left, &ItemData::default());
             self.two_hander_equipped = true;
@@ -890,7 +764,7 @@ impl Controller {
 
     /// Get the item equipped in a specific slot.
     /// Called by the HUD rendering loop in the ImGui code.
-    fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<ItemData> {
+    pub fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<ItemData> {
         let Some(candidate) = self.visible.get(&slot) else {
             return Box::<ItemData>::default();
         };
@@ -903,7 +777,7 @@ impl Controller {
     /// Updates will only happen here if the player changed equipment
     /// out of band, e.g., by using a menu, and only then if we screwed
     /// up an equip event.
-    fn update_hud(&mut self) -> bool {
+    pub fn update_hud(&mut self) -> bool {
         let right_entry = boundObjectRightHand();
         let right_changed = self.update_slot(HudElement::Right, &right_entry);
         if !right_entry.two_handed() {
@@ -923,7 +797,7 @@ impl Controller {
         let ammo = equippedAmmo();
         let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
 
-        let utility_changed = if let Some(utility) = self.cycles.get_top(Action::Utility) {
+        let utility_changed = if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {
             log::debug!("utility item starts at name='{}';", utility.name());
             self.update_slot(HudElement::Utility, &utility);
             true
@@ -945,9 +819,9 @@ impl Controller {
 
             // If any of our equipped items is in a cycle, make that item the top item
             // so advancing the cycles works as expected.
-            self.cycles.set_top(Action::Power, &power);
-            self.cycles.set_top(Action::Left, &left_entry);
-            self.cycles.set_top(Action::Right, &right_entry);
+            self.cycles.set_top(&CycleSlot::Power, &power);
+            self.cycles.set_top(&CycleSlot::Left, &left_entry);
+            self.cycles.set_top(&CycleSlot::Right, &right_entry);
         }
 
         changed
@@ -962,8 +836,8 @@ impl Controller {
         }
     }
 
-    fn handle_menu_event(&mut self, key: u32, button: &ButtonEvent) -> bool {
-        // Much simpler than the game loop. We care if the cycle modifier key
+    pub fn handle_menu_event(&mut self, key: u32, button: &ButtonEvent) -> bool {
+        // Much simpler than the cycle loop. We care if the cycle modifier key
         // is down (if one is set), and we care if the cycle button itself has
         // been pressed.
         let hotkey = HotkeyKind::from(key);
@@ -1000,11 +874,15 @@ impl Controller {
     /// This function is called when the player has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    fn toggle_item(&mut self, action: Action, item: ItemData) {
-        let result = self.cycles.toggle(action, item.clone());
+    pub fn handle_toggle_item(&mut self, action: Action, item: ItemData) {
+        let Ok(cycle_slot) = CycleSlot::try_from(action) else {
+            return;
+        };
+
+        let result = self.cycles.toggle(&cycle_slot, item.clone());
 
         if matches!(result, MenuEventResponse::ItemRemoved) && matches!(action, Action::Utility) {
-            if let Some(topmost) = self.cycles.get_top(Action::Utility) {
+            if let Some(topmost) = self.cycles.get_top(&CycleSlot::Utility) {
                 self.update_slot(HudElement::Utility, &topmost);
             } else {
                 self.update_slot(HudElement::Utility, &ItemData::default());
@@ -1087,36 +965,6 @@ impl Default for KeyEventResponse {
             handled: false,
             stop_timer: Action::None,
             start_timer: Action::None,
-        }
-    }
-}
-
-/// All this converting makes me suspect the abstraction is wrong.
-impl From<Action> for HudElement {
-    fn from(value: Action) -> Self {
-        if value == Action::Power {
-            HudElement::Power
-        } else if value == Action::Utility {
-            HudElement::Utility
-        } else if value == Action::Left {
-            HudElement::Left
-        } else if value == Action::Right {
-            HudElement::Right
-        } else {
-            HudElement::Ammo
-        }
-    }
-}
-
-impl Display for HudElement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match *self {
-            HudElement::Ammo => write!(f, "Ammo"),
-            HudElement::Left => write!(f, "Left"),
-            HudElement::Power => write!(f, "Power"),
-            HudElement::Right => write!(f, "Right"),
-            HudElement::Utility => write!(f, "Utility"),
-            _ => write!(f, "unknown"),
         }
     }
 }

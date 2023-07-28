@@ -259,17 +259,17 @@ pub mod plugin {
 
         /// Give access to the settings to the C++ side.
         type UserSettings;
+        /// Get read-only access to our settings for use.
+        fn user_settings() -> Box<UserSettings>;
         /// Get the user setting for the equip delay timer, in milliseconds.
         fn equip_delay_ms(self: &UserSettings) -> u32;
         /// Get whether the HUD should control its own visibility.
         fn autofade(self: &UserSettings) -> bool;
         /// Check if this button is relevant to the HUD.
         fn is_cycle_button(self: &UserSettings, key: u32) -> bool;
-        /// Get how long a cycle is allow to be.
-        fn maxlen(self: &UserSettings) -> u32;
         /// Get the hotkey for a specific action.
         fn hotkey_for(self: &UserSettings, action: HudElement) -> u32;
-        /// Get which kind of controller to draw shortcuts for: keyboard, PS5, or Xbox.
+        /// Get which kind of controller to draw shortcuts for: PS5 or Xbox.
         fn controller_kind(self: &UserSettings) -> u32;
         /// If we should enter slow motion while cycling.
         fn cycling_slows_time(self: &UserSettings) -> bool;
@@ -278,8 +278,6 @@ pub mod plugin {
         /// How long to spend fading in or out.
         fn fade_time(self: &UserSettings) -> u32;
 
-        /// Managed access to the settings object, so we can lazy-load if necessary.
-        fn user_settings() -> Box<UserSettings>;
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
         /// Fetch a read-only copy of our current layout.
@@ -287,16 +285,6 @@ pub mod plugin {
 
         /// This is an entry in the cycle. The UI will ask questions of it.
         type ItemData;
-        /// Get the item category, fine-grained to help with icon choices.
-        fn kind(self: &ItemData) -> ItemKind;
-        /// Check if any UI for this item should be drawn highlighted. UNUSED.
-        fn highlighted(self: &ItemData) -> bool;
-        /// Get the game's human-readable name for this item.
-        fn name(self: &ItemData) -> String;
-        /// Check whether this item is stacked in inventory, like potions are.
-        fn has_count(self: &ItemData) -> bool;
-        /// Get how many of this item the player has. Updated on inventory changes.
-        fn count(self: &ItemData) -> u32;
         /// Create a brand-new cycle entry, with a cache of game data we'll need
         /// to draw and use this item quickly.
         fn itemdata_from_formdata(
@@ -307,8 +295,19 @@ pub mod plugin {
             name: &str,
             form_string: &str,
         ) -> Box<ItemData>;
-        /// Make a default item, representing an empty choice.
+        /// Get the item category, fine-grained to help with icon choices.
+        fn kind(self: &ItemData) -> ItemKind;
+        /// Check if any UI for this item should be drawn highlighted. UNUSED.
+        fn highlighted(self: &ItemData) -> bool;
+        /// Get the game's human-readable name for this item.
+        fn name(self: &ItemData) -> String;
+        /// Check whether this item is stacked in inventory, like potions are.
+        fn has_count(self: &ItemData) -> bool;
+        /// Get how many of this item the player has. Updated on inventory changes.
+        fn count(self: &ItemData) -> u32;
+        /// Make an item that represents an empty choice.
         fn empty_itemdata() -> Box<ItemData>;
+        /// Make an item that represents hand-to-hand combat, aka an empty hand.
         fn hand2hand_itemdata() -> Box<ItemData>;
 
         /// Check if this item category can be stacked in inventory.

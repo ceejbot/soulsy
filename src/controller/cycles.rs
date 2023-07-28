@@ -8,8 +8,9 @@ use serde::{Deserialize, Serialize};
 
 use super::control::MenuEventResponse;
 use super::itemdata::*;
+use super::keys::CycleSlot;
 use super::user_settings;
-use crate::plugin::{fadeToAlpha, hasItemOrSpell, playerName, Action, ItemKind};
+use crate::plugin::{fadeToAlpha, hasItemOrSpell, playerName, ItemKind};
 
 /// Manage the player's configured item cycles. Track changes, persist data in
 /// files, and advance the cycle when the player presses a cycle button. This
@@ -23,7 +24,7 @@ pub struct CycleData {
     #[serde(default)]
     hud_visible: bool,
     #[serde(default)]
-    pub loaded: bool
+    pub loaded: bool,
 }
 
 // where to persist
@@ -34,16 +35,12 @@ impl CycleData {
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
     /// This does not equip or try to use the item in any way. It's pure management.
-    pub fn advance(&mut self, which: Action, amount: usize) -> Option<ItemData> {
+    pub fn advance(&mut self, which: &CycleSlot, amount: usize) -> Option<ItemData> {
         let cycle = match which {
-            Action::Power => &mut self.power,
-            Action::Left => &mut self.left,
-            Action::Right => &mut self.right,
-            Action::Utility => &mut self.utility,
-            _ => {
-                log::warn!("It is a programmer error to call advance() with {which:?}");
-                return None;
-            }
+            CycleSlot::Power => &mut self.power,
+            CycleSlot::Left => &mut self.left,
+            CycleSlot::Right => &mut self.right,
+            CycleSlot::Utility => &mut self.utility,
         };
         if cycle.is_empty() {
             return None;
@@ -55,16 +52,12 @@ impl CycleData {
         cycle.first().cloned()
     }
 
-    pub fn advance_skipping(&mut self, which: Action, skip: ItemData) -> Option<ItemData> {
+    pub fn advance_skipping(&mut self, which: &CycleSlot, skip: ItemData) -> Option<ItemData> {
         let cycle = match which {
-            Action::Power => &mut self.power,
-            Action::Left => &mut self.left,
-            Action::Right => &mut self.right,
-            Action::Utility => &mut self.utility,
-            _ => {
-                log::warn!("It is a programmer error to call advance() with {which:?}");
-                return None;
-            }
+            CycleSlot::Power => &mut self.power,
+            CycleSlot::Left => &mut self.left,
+            CycleSlot::Right => &mut self.right,
+            CycleSlot::Utility => &mut self.utility,
         };
         if cycle.is_empty() {
             return None;
@@ -88,13 +81,12 @@ impl CycleData {
     }
 
     /// Get the length of the given cycle.
-    pub fn cycle_len(&self, which: Action) -> usize {
+    pub fn cycle_len(&self, which: &CycleSlot) -> usize {
         match which {
-            Action::Power => self.power.len(),
-            Action::Left => self.left.len(),
-            Action::Right => self.right.len(),
-            Action::Utility => self.utility.len(),
-            _ => 0,
+            CycleSlot::Power => self.power.len(),
+            CycleSlot::Left => self.left.len(),
+            CycleSlot::Right => self.right.len(),
+            CycleSlot::Utility => self.utility.len(),
         }
     }
 
@@ -103,15 +95,12 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, which: Action, item: &ItemData) {
+    pub fn set_top(&mut self, which: &CycleSlot, item: &ItemData) {
         let cycle = match which {
-            Action::Power => &mut self.power,
-            Action::Left => &mut self.left,
-            Action::Right => &mut self.right,
-            Action::Utility => &mut self.utility,
-            _ => {
-                return;
-            }
+            CycleSlot::Power => &mut self.power,
+            CycleSlot::Left => &mut self.left,
+            CycleSlot::Right => &mut self.right,
+            CycleSlot::Utility => &mut self.utility,
         };
 
         if let Some(idx) = cycle.iter().position(|xs| xs == item) {
@@ -120,31 +109,23 @@ impl CycleData {
     }
 
     // the programmer error is annoying, but it's a shared struct...
-    pub fn get_top(&self, which: Action) -> Option<ItemData> {
+    pub fn get_top(&self, which: &CycleSlot) -> Option<ItemData> {
         let cycle = match which {
-            Action::Power => &self.power,
-            Action::Left => &self.left,
-            Action::Right => &self.right,
-            Action::Utility => &self.utility,
-            _ => {
-                log::warn!("It is a programmer error to call get_top() with {which:?}");
-                return None;
-            }
+            CycleSlot::Power => &self.power,
+            CycleSlot::Left => &self.left,
+            CycleSlot::Right => &self.right,
+            CycleSlot::Utility => &self.utility,
         };
 
         cycle.first().cloned()
     }
 
-    pub fn peek_next(&self, which: Action) -> Option<ItemData> {
+    pub fn peek_next(&self, which: &CycleSlot) -> Option<ItemData> {
         let cycle = match which {
-            Action::Power => &self.power,
-            Action::Left => &self.left,
-            Action::Right => &self.right,
-            Action::Utility => &self.utility,
-            _ => {
-                log::warn!("It is a programmer error to call get_top() with {which:?}");
-                return None;
-            }
+            CycleSlot::Power => &self.power,
+            CycleSlot::Left => &self.left,
+            CycleSlot::Right => &self.right,
+            CycleSlot::Utility => &self.utility,
         };
         cycle.get(1).cloned()
     }
@@ -158,35 +139,31 @@ impl CycleData {
     ///
     /// Does not change the current item in the cycle, unless the current item is
     /// the one removed. Adds at the end.
-    pub fn toggle(&mut self, which: Action, item: ItemData) -> MenuEventResponse {
+    pub fn toggle(&mut self, which: &CycleSlot, item: ItemData) -> MenuEventResponse {
         let cycle = match which {
-            Action::Power => {
+            CycleSlot::Power => {
                 if !item.kind().is_power() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.power
             }
-            Action::Left => {
+            CycleSlot::Left => {
                 if item.two_handed() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.left
             }
-            Action::Right => {
+            CycleSlot::Right => {
                 if !item.kind().right_hand_ok() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.right
             }
-            Action::Utility => {
+            CycleSlot::Utility => {
                 if !item.kind().is_utility() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.utility
-            }
-            _ => {
-                log::warn!("It is a programmer error to call toggle() with {which:?}");
-                return MenuEventResponse::ItemInappropriate;
             }
         };
 
@@ -217,33 +194,28 @@ impl CycleData {
                 return true;
             }
         }
+        // TODO This does not update counts for other types!!!!!
         false
     }
 
-    pub fn includes(&self, which: Action, item: &ItemData) -> bool {
+    pub fn includes(&self, which: &CycleSlot, item: &ItemData) -> bool {
         let cycle = match which {
-            Action::Power => &self.power,
-            Action::Left => &self.left,
-            Action::Right => &self.right,
-            Action::Utility => &self.utility,
-            _ => {
-                return false;
-            }
+            CycleSlot::Power => &self.power,
+            CycleSlot::Left => &self.left,
+            CycleSlot::Right => &self.right,
+            CycleSlot::Utility => &self.utility,
         };
         cycle
             .iter()
             .any(|xs| xs.form_string() == item.form_string())
     }
 
-    pub fn include_item(&mut self, which: Action, item: ItemData) {
+    pub fn include_item(&mut self, which: CycleSlot, item: ItemData) {
         let cycle = match which {
-            Action::Power => &mut self.power,
-            Action::Left => &mut self.left,
-            Action::Right => &mut self.right,
-            Action::Utility => &mut self.utility,
-            _ => {
-                return;
-            }
+            CycleSlot::Power => &mut self.power,
+            CycleSlot::Left => &mut self.left,
+            CycleSlot::Right => &mut self.right,
+            CycleSlot::Utility => &mut self.utility,
         };
         if !cycle
             .iter()
@@ -253,15 +225,12 @@ impl CycleData {
         }
     }
 
-    pub fn filter_kind(&mut self, which: Action, kind: ItemKind) {
+    pub fn filter_kind(&mut self, which: &CycleSlot, kind: ItemKind) {
         let cycle = match which {
-            Action::Power => &mut self.power,
-            Action::Left => &mut self.left,
-            Action::Right => &mut self.right,
-            Action::Utility => &mut self.utility,
-            _ => {
-                return;
-            }
+            CycleSlot::Power => &mut self.power,
+            CycleSlot::Left => &mut self.left,
+            CycleSlot::Right => &mut self.right,
+            CycleSlot::Utility => &mut self.utility,
         };
         cycle.retain(|xs| xs.kind() != kind);
     }
@@ -297,20 +266,18 @@ impl CycleData {
     /// inventory.
     pub fn validate(&mut self) {
         let to_check = vec![
-            (Action::Power, "power"),
-            (Action::Utility, "utility"),
-            (Action::Left, "left"),
-            (Action::Right, "right"),
+            (CycleSlot::Power, "power"),
+            (CycleSlot::Utility, "utility"),
+            (CycleSlot::Left, "left"),
+            (CycleSlot::Right, "right"),
         ];
         to_check.iter().for_each(|xs| {
-            let action = xs.0;
             let name = xs.1;
-            let cycle = match action {
-                Action::Power => &self.power,
-                Action::Utility => &self.utility,
-                Action::Left => &self.left,
-                Action::Right => &self.right,
-                _ => &self.power, // I hate non-exhaustive matching
+            let cycle = match &xs.0 {
+                CycleSlot::Power => &self.power,
+                CycleSlot::Utility => &self.utility,
+                CycleSlot::Left => &self.left,
+                CycleSlot::Right => &self.right,
             };
             log::info!("validating {name} cycle");
             cycle.iter().for_each(|item| {
@@ -343,7 +310,11 @@ impl CycleData {
 
     /// Write serialized toml to the cycle storage file for this character.
     pub fn write(&self) -> Result<()> {
-        if self.power.is_empty() && self.utility.is_empty() && self.left.is_empty() && self.right.is_empty() {
+        if self.power.is_empty()
+            && self.utility.is_empty()
+            && self.left.is_empty()
+            && self.right.is_empty()
+        {
             log::debug!("Declining to write empty/default cycles.");
             return Ok(());
         }
@@ -382,7 +353,6 @@ impl CycleData {
     }
 
     // rkyv serialization to cosave
-
 
     pub fn serialize(&self) -> Vec<u8> {
         archive::serialize(self)

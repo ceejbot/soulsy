@@ -347,7 +347,7 @@ pub enum ActivationMethod {
     Modifier,
 }
 
-// Trait and function for reading from the ini file
+// Trait and implementations for reading from the ini file
 
 fn read_from_ini<'a, T: FromIniStr>(default: T, key: &str, section: &ini::Properties) -> T {
     if let Some(str_val) = section.get(key) {

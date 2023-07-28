@@ -60,7 +60,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 		case SKSE::MessagingInterface::kNewGame:
 			logger::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
 			initialize_hud();
-			logger::info("SKSE post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
+			logger::info("SKSE kNewGame post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
 			break;
 		default: break;
 	}
@@ -74,8 +74,8 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 {
 	init_logger();
 
-	logger::info("---------- game launched!"sv);
-	logger::info("{} loading"sv, Version::PROJECT);
+	logger::info(
+		"---------- {} @ {}.{}.{} loading"sv, Version::PROJECT, Version::MAJOR, Version::MINOR, Version::PATCH);
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
 	auto hud = hud_layout();
 
@@ -102,7 +102,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 
 	g_message->RegisterListener(message_callback);
 
-	logger::info("{} loaded"sv, Version::PROJECT);
+	logger::info("{} load successful"sv, Version::PROJECT);
 	return true;
 }
 
