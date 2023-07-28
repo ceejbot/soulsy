@@ -231,7 +231,7 @@ namespace helpers
 
 		auto currentMult         = reinterpret_cast<float*>(getGlobalTimeMultPtr());
 		const auto desiredFactor = user_settings()->slow_time_factor();
-		float newFactor = (*currentMult) / desiredFactor;
+		float newFactor          = (*currentMult) / desiredFactor;
 		if (std::fabs(newFactor - 1.0f) < 0.01) { newFactor = 1.0f; }
 		*currentMult = newFactor;
 

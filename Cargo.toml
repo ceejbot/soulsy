@@ -16,6 +16,7 @@ anyhow = "1.0.71"
 cxx = { version = "1.0.100", features = ["c++20"] }
 log = "0.4.19"
 once_cell = "1.18.0"
+rkyv = { version = "0.7.42", features = ["validation"] }
 rust-ini = "0.19.0"
 serde = { version = "1.0.167", features = ["derive"] }
 simplelog = "0.12.1"

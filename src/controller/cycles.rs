@@ -16,8 +16,6 @@ use crate::plugin::{fadeToAlpha, hasItemOrSpell, playerName, Action, ItemKind};
 /// struct now holds all data we need to persist across game starts.
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct CycleData {
-    // I really want these to be maps, but toml can't serialize that.
-    // Guess I could write to json instead.
     left: Vec<ItemData>,
     right: Vec<ItemData>,
     power: Vec<ItemData>,
@@ -30,51 +28,6 @@ pub struct CycleData {
 static CYCLE_PATH: &str = "./data/SKSE/Plugins";
 
 impl CycleData {
-    /// Write the cycle data to its file.
-    fn cycle_storage() -> PathBuf {
-        let name = playerName()
-            .trim()
-            .replace(' ', "_")
-            .replace(['\\', '\''], "");
-        PathBuf::from(CYCLE_PATH).join(format!("SoulsyHUD_{}_Cycles.toml", name))
-    }
-
-    /// Write serialized toml to the cycle storage file for this character.
-    pub fn write(&self) -> Result<()> {
-        log::info!(
-            "writing cycles to disk; lengths are: powers={}; utilities={}; left={}; right={};",
-            self.power.len(),
-            self.utility.len(),
-            self.left.len(),
-            self.right.len()
-        );
-        let buf = toml::to_string(self)?;
-        std::fs::write(CycleData::cycle_storage(), buf)?;
-        log::trace!(
-            "wrote cycle data to {}",
-            CycleData::cycle_storage().display()
-        );
-        Ok(())
-    }
-
-    /// Read cycle data from the serialization file for this character.
-    pub fn read() -> Result<Self> {
-        let buf = std::fs::read_to_string(CycleData::cycle_storage())?;
-        let data = toml::from_str::<CycleData>(&buf)?;
-        log::info!(
-            "read cycle data from {}; initial cycle lengths are:",
-            CycleData::cycle_storage().display()
-        );
-        log::info!(
-            "powers={}; utilities={}; left={}; right={};",
-            data.power.len(),
-            data.utility.len(),
-            data.left.len(),
-            data.right.len()
-        );
-        Ok(data)
-    }
-
     /// Advance the given cycle by one. Returns a copy of the newly-top item.
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
@@ -141,41 +94,6 @@ impl CycleData {
             Action::Utility => self.utility.len(),
             _ => 0,
         }
-    }
-
-    /// Remove any items that have vanished from the game or from the player's
-    /// inventory.
-    pub fn validate(&mut self) {
-        let to_check = vec![
-            (Action::Power, "power"),
-            (Action::Utility, "utility"),
-            (Action::Left, "left"),
-            (Action::Right, "right"),
-        ];
-        to_check.iter().for_each(|xs| {
-            let action = xs.0;
-            let name = xs.1;
-            let cycle = match action {
-                Action::Power => &self.power,
-                Action::Utility => &self.utility,
-                Action::Left => &self.left,
-                Action::Right => &self.right,
-                _ => &self.power, // I hate non-exhaustive matching
-            };
-            log::info!("validating {name} cycle");
-            cycle.iter().for_each(|item| {
-                cxx::let_cxx_string!(form_spec = item.form_string());
-                let hasit = item.kind().is_ammo() || hasItemOrSpell(&form_spec);
-                log::info!(
-                    "    {}: name='{}'; form={}; player has={};",
-                    name,
-                    item.name(),
-                    item.form_string(),
-                    hasit
-                );
-            });
-        });
-        log::info!("Informational only. No changes made to cycle data. Have a nice day and remember to put on a cloak if it starts snowing.");
     }
 
     /// Attempt to set the current item in a cycle to the given form spec (mod.esp|formid).
@@ -370,6 +288,103 @@ impl CycleData {
     pub fn hud_visible(&mut self) -> bool {
         self.hud_visible
     }
+
+    // ---------- validation
+
+    /// Remove any items that have vanished from the game or from the player's
+    /// inventory.
+    pub fn validate(&mut self) {
+        let to_check = vec![
+            (Action::Power, "power"),
+            (Action::Utility, "utility"),
+            (Action::Left, "left"),
+            (Action::Right, "right"),
+        ];
+        to_check.iter().for_each(|xs| {
+            let action = xs.0;
+            let name = xs.1;
+            let cycle = match action {
+                Action::Power => &self.power,
+                Action::Utility => &self.utility,
+                Action::Left => &self.left,
+                Action::Right => &self.right,
+                _ => &self.power, // I hate non-exhaustive matching
+            };
+            log::info!("validating {name} cycle");
+            cycle.iter().for_each(|item| {
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                let hasit = item.kind().is_ammo() || hasItemOrSpell(&form_spec);
+                log::info!(
+                    "    {}: name='{}'; kind={:?}; form={}; player has={};",
+                    name,
+                    item.name(),
+                    item.kind(),
+                    item.form_string(),
+                    hasit
+                );
+            });
+        });
+        log::info!("hud_visible: {}", self.hud_visible);
+        log::info!("Informational only. No changes made to cycle data. Have a nice day and remember to put on a cloak if it starts snowing.");
+    }
+
+    // ---------- TOML serialization
+
+    /// Write the cycle data to its file.
+    fn cycle_storage() -> PathBuf {
+        let name = playerName()
+            .trim()
+            .replace(' ', "_")
+            .replace(['\\', '\''], "");
+        PathBuf::from(CYCLE_PATH).join(format!("SoulsyHUD_{}_Cycles.toml", name))
+    }
+
+    /// Write serialized toml to the cycle storage file for this character.
+    pub fn write(&self) -> Result<()> {
+        log::info!(
+            "writing cycles to disk; lengths are: powers={}; utilities={}; left={}; right={};",
+            self.power.len(),
+            self.utility.len(),
+            self.left.len(),
+            self.right.len()
+        );
+        let buf = toml::to_string(self)?;
+        std::fs::write(CycleData::cycle_storage(), buf)?;
+        log::trace!(
+            "wrote cycle data to {}",
+            CycleData::cycle_storage().display()
+        );
+        Ok(())
+    }
+
+    /// Read cycle data from the serialization file for this character.
+    pub fn read() -> Result<Self> {
+        let buf = std::fs::read_to_string(CycleData::cycle_storage())?;
+        let data = toml::from_str::<CycleData>(&buf)?;
+        log::info!(
+            "read cycle data from {}; initial cycle lengths are:",
+            CycleData::cycle_storage().display()
+        );
+        log::info!(
+            "powers={}; utilities={}; left={}; right={};",
+            data.power.len(),
+            data.utility.len(),
+            data.left.len(),
+            data.right.len()
+        );
+        Ok(data)
+    }
+
+    // rkyv serialization to cosave
+
+
+    pub fn serialize(&self) -> Vec<u8> {
+        archive::serialize(self)
+    }
+
+    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
+        archive::deserialize(bytes)
+    }
 }
 
 impl Display for CycleData {
@@ -394,4 +409,112 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
             .collect::<Vec<String>>()
             .join(", ")
     )
+}
+
+mod archive {
+    use rkyv::{Archive, Deserialize, Serialize};
+
+    use super::{CycleData, ItemData};
+
+    // cosave implemention starts with a very packed set of bytes
+    // I'm implementing this to the side of the toml so I can experiment.
+
+    pub fn serialize(cycle: &CycleData) -> Vec<u8> {
+        let value = CycleSerialized::from(cycle);
+        let bytes = rkyv::to_bytes::<_, 256>(&value).unwrap();
+        // let _ = rkyv::check_archived_root::<CycleSerialized>(&bytes[..]).unwrap();
+        bytes.into_vec()
+    }
+
+    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
+        match rkyv::check_archived_root::<CycleSerialized>(&bytes[..]) {
+            Ok(v) => {
+                if let Ok(deserialized) = <ArchivedCycleSerialized as rkyv::Deserialize<
+                    CycleSerialized,
+                    rkyv::Infallible,
+                >>::deserialize(v, &mut rkyv::Infallible)
+                {
+                    log::info!("Loaded cycles from cosave successfully!");
+                    return Some(deserialized.into());
+                }
+            }
+            Err(e) => {
+                log::error!("Something's wrong with the cosave data. Starting fresh.");
+                log::error!("{e:?}");
+                log::trace!("{bytes:?}");
+            }
+        }
+        None
+    }
+
+    #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
+    #[archive(compare(PartialEq), check_bytes)]
+    pub struct CycleSerialized {
+        left: Vec<ItemSerialized>,
+        right: Vec<ItemSerialized>,
+        power: Vec<ItemSerialized>,
+        utility: Vec<ItemSerialized>,
+        hud_visible: bool,
+    }
+
+    #[derive(Serialize, Deserialize, Archive, Debug, Clone, Default, PartialEq, Eq)]
+    #[archive(compare(PartialEq), check_bytes)]
+    pub struct ItemSerialized {
+        name: String,
+        form_string: String,
+        kind: u8,
+        two_handed: bool,
+        has_count: bool,
+        count: u32,
+    }
+
+    impl From<&CycleData> for CycleSerialized {
+        fn from(value: &CycleData) -> Self {
+            Self {
+                left: value.left.iter().map(|xs| xs.into()).collect(),
+                right: value.right.iter().map(|xs| xs.into()).collect(),
+                power: value.power.iter().map(|xs| xs.into()).collect(),
+                utility: value.utility.iter().map(|xs| xs.into()).collect(),
+                hud_visible: value.hud_visible,
+            }
+        }
+    }
+
+    impl From<CycleSerialized> for CycleData {
+        fn from(value: CycleSerialized) -> Self {
+            Self {
+                left: value.left.iter().map(|xs| xs.into()).collect(),
+                right: value.right.iter().map(|xs| xs.into()).collect(),
+                power: value.power.iter().map(|xs| xs.into()).collect(),
+                utility: value.utility.iter().map(|xs| xs.into()).collect(),
+                hud_visible: value.hud_visible,
+            }
+        }
+    }
+
+    impl From<&ItemData> for ItemSerialized {
+        fn from(value: &ItemData) -> Self {
+            Self {
+                name: value.name().clone(),
+                form_string: value.form_string().clone(),
+                kind: value.kind().repr,
+                two_handed: value.two_handed(),
+                has_count: value.has_count(),
+                count: value.count(),
+            }
+        }
+    }
+
+    impl From<&ItemSerialized> for ItemData {
+        fn from(value: &ItemSerialized) -> ItemData {
+            ItemData::new(
+                value.kind.into(),
+                value.two_handed,
+                value.has_count,
+                value.count,
+                &value.name,
+                &value.form_string,
+            )
+        }
+    }
 }

@@ -30,8 +30,7 @@ pub mod public {
 
         let _hud = hud_layout();
         ctrl.apply_settings();
-        ctrl.validate_cycles();
-        log::info!("HUD data should be fresh; ready to cycle!")
+        log::info!("Hud waiting for cycles from cosave data...");
     }
 
     /// Function for C++ to call to send a relevant button event to us.
@@ -121,6 +120,30 @@ pub mod public {
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.apply_settings();
     }
+
+    /// Serialize cycles for cosave test.
+    pub fn serialize_cycles() -> Vec<u8> {
+        let ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
+        ctrl.cycles.serialize()
+    }
+
+    /// Cycle data loaded from cosave.
+    pub fn cycle_loaded_from_cosave(buffer: Vec<u8>) {
+        let mut ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
+        if let Some(cosave_cycle) = CycleData::deserialize(buffer) {
+            ctrl.cycles = cosave_cycle;
+            log::info!("Cycles loaded and ready to rock.");
+        } else {
+            log::warn!("Cosave load failed. Falling back to toml.");
+            let fallback = CycleData::read().unwrap_or_default();
+            ctrl.cycles = fallback;
+        }
+        ctrl.validate_cycles();
+    }
 }
 
 /// What, model/view/controller? In my UI application? oh no
@@ -143,7 +166,7 @@ impl Controller {
     /// Make a controller. Cycle data is read from disk. Currently-equipped
     /// items are not handled yet.
     pub fn new() -> Self {
-        let cycles = CycleData::read().unwrap_or_default();
+        let cycles = CycleData::default();
         Controller {
             cycles,
             ..Default::default()

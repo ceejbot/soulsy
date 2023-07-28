@@ -1,3 +1,4 @@
+#include "cosave.h"
 #include "hooks.h"
 #include "papyrus.h"
 #include "sinks.h"
@@ -85,6 +86,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	}
 
 	Init(a_skse);
+	cosave::initializeCosaves();
 
 	SKSE::AllocTrampoline(14 * 3);
 
