@@ -23,6 +23,12 @@ namespace helpers
 		auto* ui = RE::UI::GetSingleton();
 		if (!ui) { return true; }
 
+		if (ui->IsMenuOpen("LootMenu"))
+		{
+			auto gamepad = gamepadInUse();
+			logger::debug("the quickloot menu is up; gamepad in use={}"sv, gamepad);
+		}
+
 		// We only want to act on button presses when in gameplay, not menus of any kind.
 		if (ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
 			!ui->GetMenu<RE::HUDMenu>() || ui->IsMenuOpen("LootMenu"))
@@ -40,6 +46,12 @@ namespace helpers
 		}
 
 		return false;
+	}
+
+	bool gamepadInUse()
+	{
+		auto* inputManager = BSInputDeviceManager::GetSingleton();
+		return inputManager->IsGamepadEnabled() && inputManager->IsGamepadConnected();
 	}
 
 	bool hudAllowedOnScreen()
