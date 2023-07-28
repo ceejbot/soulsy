@@ -151,7 +151,7 @@ impl CycleData {
             log::info!("validating {name} cycle");
             cycle.iter().for_each(|item| {
                 cxx::let_cxx_string!(form_spec = item.form_string());
-                let hasit = hasItemOrSpell(&form_spec);
+                let hasit = item.kind().is_ammo() || hasItemOrSpell(&form_spec);
                 log::info!(
                     "    {}: name='{}'; form={}; player has={};",
                     name,

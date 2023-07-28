@@ -189,8 +189,9 @@ impl Controller {
         #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
         delta: i32,
     ) {
-        log::info!(
-            "inventory count changed; formID={}; count={delta}",
+        log::debug!(
+            "inventory count changed; name='{}'; formID={}; count={delta}",
+            item.name(),
             item.form_string()
         );
 
@@ -227,7 +228,7 @@ impl Controller {
             return KeyEventResponse::default();
         }
 
-        log::trace!("incoming key={}; state={};", hotkey, state);
+        // log::trace!("incoming key={}; state={};", hotkey, state);
 
         // We want all updates so we can track long presses.
         self.update_tracked_key(&hotkey, button);
