@@ -25,9 +25,9 @@ setup:
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
 
-# Fix clippy lints and format both Rust & C++.
-@lint-fix:
-    cargo clippy --fix --allow-dirty
+# Check clippy lints and format both Rust & C++.
+@lint:
+    cargo clippy
     cargo +nightly fmt
     find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
 

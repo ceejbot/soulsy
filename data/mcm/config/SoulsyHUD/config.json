@@ -110,6 +110,15 @@
       }
     },
     {
+      "id": "bFavoritingToggles:Options",
+      "text": "$SoulsyHUD_Options_Favoriting_Text",
+      "help": "$SoulsyHUD_Options_Favoriting_Help",
+      "type": "toggle",
+      "valueOptions": {
+        "sourceType": "ModSettingBool"
+      }
+    },
+    {
       "id": "uHowToUnequip:Controls",
       "text": "$SoulsyHUD_Controls_Unarmed_Text",
       "help": "$SoulsyHUD_Controls_Unarmed_Help",
@@ -270,8 +279,8 @@
     {
       "id": "bAutoFade:Options",
       "text": "$SoulsyHUD_Options_Fade_Text",
-      "type": "toggle",
       "help": "$SoulsyHUD_Options_Fade_Help",
+      "type": "toggle",
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }

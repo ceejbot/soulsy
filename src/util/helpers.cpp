@@ -53,6 +53,13 @@ namespace helpers
 		return inputManager->IsGamepadEnabled() && inputManager->IsGamepadConnected();
 	}
 
+	bool relevantMenuOpen()
+	{
+		auto* ui = RE::UI::GetSingleton();
+		return ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) || ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
+		       ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
+	}
+
 	bool hudAllowedOnScreen()
 	{
 		// There are some circumstances where we never want to draw it.

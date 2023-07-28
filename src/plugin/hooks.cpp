@@ -28,15 +28,11 @@ namespace hooks
 	{
 		auto* ui                        = RE::UI::GetSingleton();
 		rust::Box<UserSettings> hotkeys = user_settings();
+		auto relevantMenuOpen = helpers::relevantMenuOpen();
 
-		auto relevantMenuOpen = ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME) ||
-		                        ui->IsMenuOpen(RE::MagicMenu::MENU_NAME) ||
-		                        ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
+		if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
 
-		if (ui->IsMenuOpen(RE::LootMenu::MENU_NAME)) { return process_event_(this, eventPtr, eventSource); }
-
-
-		if (eventPtr && *eventPtr && relevantMenuOpen)
+		if (eventPtr && *eventPtr)
 		{
 			for (auto* event = *eventPtr; event; event = event->next)
 			{
@@ -44,21 +40,6 @@ namespace hooks
 
 				auto* button = static_cast<RE::ButtonEvent*>(event);
 				if (button->idCode == keycodes::k_invalid) { continue; }
-
-				if (button->QUserEvent() == RE::UserEvents::GetSingleton()->toggleFavorite)
-				{
-					logger::info("we saw a toggle favorite event!");
-					/*
-					and then theoretically:
-					auto menu_form = helpers::getSelectedFormFromMenu(ui);
-					if (!menu_form) continue;
-					auto* item_form = RE::TESForm::LookupByID(menu_form);
-					if (!item_form) continue;
-					auto item = equippable::makeItemDataFromForm(item_form);
-					handle_favorite_event(button, item);
-				 */
-				}
-
 				auto key       = keycodes::get_key_id(button);
 				auto do_toggle = handle_menu_event(key, *button);
 
@@ -171,5 +152,4 @@ namespace hooks
 			}
 		}
 	}
-
 }

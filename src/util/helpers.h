@@ -19,6 +19,7 @@ namespace helpers
 	bool hudShouldAutoFadeIn();
 	bool ignoreKeyEvents();
 	bool gamepadInUse();
+	bool relevantMenuOpen();
 
 	// Called by the controller if the user has started cycling.
 	void enterSlowMotion();

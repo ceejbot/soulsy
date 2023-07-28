@@ -122,6 +122,7 @@ pub fn cycle_loaded_from_cosave(buffer: Vec<u8>) {
         log::info!("Cycles loaded and ready to rock.");
     } else {
         log::warn!("Cosave load failed. Staying with TOML fallback.");
+        ctrl.cycles = CycleData::read().unwrap_or_default();
     }
     ctrl.validate_cycles();
 }

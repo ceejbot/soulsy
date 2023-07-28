@@ -59,7 +59,8 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 	// We start by figuring out if we need to do anything at all.
 	if (!event_list) { return event_result::kContinue; }
 
-	if (helpers::ignoreKeyEvents()) { return event_result::kContinue; }
+	const auto relevantMenuOpen = helpers::relevantMenuOpen();
+	if (!relevantMenuOpen && helpers::ignoreKeyEvents()) { return event_result::kContinue; }
 
 	// We might get a list of events to handle.
 	for (auto* event = *event_list; event; event = event->next)
@@ -68,6 +69,24 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 
 		const auto* button =
 			static_cast<RE::ButtonEvent*>(event);  // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
+
+		if (relevantMenuOpen)
+		{
+			logger::info("q-user-event is {}"sv, button->QUserEvent());
+			if (button->QUserEvent() == RE::UserEvents::GetSingleton()->toggleFavorite)
+			{
+				logger::info("we saw a toggle favorite event!");
+				/*
+					and then theoretically:
+					auto menu_form = helpers::getSelectedFormFromMenu(ui);
+					if (!menu_form) continue;
+					auto* item_form = RE::TESForm::LookupByID(menu_form);
+					if (!item_form) continue;
+					auto item = equippable::makeItemDataFromForm(item_form);
+					handle_favorite_event(button, item);
+				 */
+			}
+		}
 
 		// This offsets the button by an amount that varies based on what originated the
 		// event. This appears to be so that we can directly compare it to the hotkey numbers

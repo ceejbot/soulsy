@@ -294,7 +294,7 @@ impl Controller {
 
         // We have two states to check
         let settings = user_settings();
-        let tracked = self.get_tracked_key(&hotkey);
+        let tracked = self.get_tracked_key(hotkey);
 
         let unequip_requested = match settings.unarmed_handling() {
             UnarmedMethod::None => false,
@@ -376,7 +376,7 @@ impl Controller {
             if candidate.two_handed() {
                 // no problem. just cycle to it.
                 self.cycles.advance(which, 1);
-                return self.update_and_record(&which, &candidate);
+                return self.update_and_record(which, &candidate);
             }
 
             // Now we got fun. Do we have something to bounce back to in the other hand?
@@ -424,7 +424,7 @@ impl Controller {
                 return self.update_and_record(which, &candidate);
             } else {
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
-                self.cycles.set_top(&other_hand, &return_to.clone());
+                self.cycles.set_top(&other_hand, &return_to);
                 return self.update_and_record(which, &candidate);
             }
         } else {
@@ -571,11 +571,8 @@ impl Controller {
             item.name()
         );
 
-        if kind.is_magic() {
-            // My name is John Wellington Wells / I'm a dealer in...
-            equipWeapon(&form_spec, which.into());
-        } else if kind.left_hand_ok() || kind.right_hand_ok() {
-            equipWeapon(&form_spec, which.into());
+        if kind.is_magic() || kind.left_hand_ok() || kind.right_hand_ok() {
+            equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
         } else if kind == ItemKind::Arrow {

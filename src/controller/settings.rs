@@ -69,6 +69,8 @@ pub struct UserSettings {
     how_to_toggle: ActivationMethod,
     /// Optional menu modifier key
     menu_modifier: i32,
+    /// Favoriting weapons and spells adds to cycles.
+    favoriting_toggles: bool,
 
     /// How the player wants to handle unequipping slots. uHowToUnequip
     unarmed_handling: UnarmedMethod,
@@ -110,6 +112,7 @@ impl Default for UserSettings {
             cycle_modifier: -1,
             how_to_toggle: ActivationMethod::Hotkey,
             menu_modifier: -1,
+            favoriting_toggles: false,
             unarmed_handling: UnarmedMethod::None,
             unequip_modifier: -1,
             refresh_layout: 8,
@@ -172,6 +175,8 @@ impl UserSettings {
 
         self.how_to_toggle = read_from_ini(self.how_to_toggle, "uHowToggleInMenus", controls);
         self.menu_modifier = read_from_ini(self.menu_modifier, "iMenuModifierKey", controls);
+        self.favoriting_toggles =
+            read_from_ini(self.favoriting_toggles, "bFavoritingToggles", options);
 
         self.how_to_activate = read_from_ini(self.how_to_activate, "uHowToActivate", controls);
         self.activate = read_from_ini(self.activate, "uUtilityActivateKey", controls);
@@ -241,6 +246,9 @@ impl UserSettings {
     }
     pub fn menu_modifier(&self) -> i32 {
         self.menu_modifier
+    }
+    pub fn favoriting_toggles(&self) -> bool {
+        self.favoriting_toggles
     }
 
     pub fn how_to_cycle(&self) -> &ActivationMethod {
@@ -349,9 +357,9 @@ pub enum ActivationMethod {
 
 // Trait and implementations for reading from the ini file
 
-fn read_from_ini<'a, T: FromIniStr>(default: T, key: &str, section: &ini::Properties) -> T {
+fn read_from_ini<T: FromIniStr>(default: T, key: &str, section: &ini::Properties) -> T {
     if let Some(str_val) = section.get(key) {
-        if let Some(v) = T::from_ini(&str_val) {
+        if let Some(v) = T::from_ini(str_val) {
             v
         } else {
             default

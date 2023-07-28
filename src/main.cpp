@@ -26,8 +26,6 @@ void init_logger()
 		spdlog::set_default_logger(std::move(log));
 		spdlog::set_pattern("%H:%M:%S.%f [%l] %s(%#) %v"s);
 
-		logger::info("starting up {} @ v{}"sv, Version::PROJECT, Version::NAME);
-
 		initialize_rust_logging(path->string());
 	}
 	catch (const std::exception& e)

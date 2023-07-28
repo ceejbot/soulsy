@@ -397,7 +397,8 @@ mod archive {
 
     pub fn serialize(cycle: &CycleData) -> Vec<u8> {
         let value = CycleSerialized::from(cycle);
-        let bytes = rkyv::to_bytes::<_, 256>(&value).unwrap();
+        let bytes = rkyv::to_bytes::<_, 256>(&value)
+            .expect("to_bytes() ought to have succeeded, but did not. something is very wrong.");
         // let _ = rkyv::check_archived_root::<CycleSerialized>(&bytes[..]).unwrap();
         bytes.into_vec()
     }
@@ -472,8 +473,8 @@ mod archive {
     impl From<&ItemData> for ItemSerialized {
         fn from(value: &ItemData) -> Self {
             Self {
-                name: value.name().clone(),
-                form_string: value.form_string().clone(),
+                name: value.name(),
+                form_string: value.form_string(),
                 kind: value.kind().repr,
                 two_handed: value.two_handed(),
                 has_count: value.has_count(),
