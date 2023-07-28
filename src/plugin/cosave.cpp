@@ -7,6 +7,16 @@ inline const auto CYCLE_RECORD = _byteswap_ulong('CYCL');
 namespace cosave
 {
 
+	void initializeCosaves()
+	{
+		logger::trace("Initializing cosave serialization...");
+		auto* cosave = SKSE::GetSerializationInterface();
+		cosave->SetUniqueID(_byteswap_ulong('SOLS'));
+		cosave->SetSaveCallback(cosave::gameSavedHandler);
+		// cosave->SetRevertCallback(cosave::revertHandler);
+		cosave->SetLoadCallback(cosave::gameLoadedHandler);
+	}
+
 	void gameSavedHandler(SKSE::SerializationInterface* cosave)
 	{
 		if (!cosave->OpenRecord(CYCLE_RECORD, 0))
@@ -25,10 +35,12 @@ namespace cosave
 		for (iter = buffer.begin(); iter != buffer.end(); ++iter) { cosave->WriteRecordData(iter); }
 	}
 
+/*
 	void revertHandler(SKSE::SerializationInterface* cosave)
 	{
 		// TODO reset
 	}
+*/
 
 	void gameLoadedHandler(SKSE::SerializationInterface* cosave)
 	{

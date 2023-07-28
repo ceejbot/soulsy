@@ -86,7 +86,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	}
 
 	Init(a_skse);
-	initializeCosaveSerialization();
+	cosave::initializeCosaves();
 
 	SKSE::AllocTrampoline(14 * 3);
 
@@ -138,14 +138,4 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI
 	}
 
 	return true;
-}
-
-void initializeCosaveSerialization()
-{
-	log::trace("Initializing cosave serialization...");
-	auto* cosave = GetSerializationInterface();
-	cosave->SetUniqueID(_byteswap_ulong('SOLS'));
-	cosave->SetSaveCallback(cosave::gameSavedHandler);
-	cosave->SetRevertCallback(cosave::revertHandler);
-	cosave->SetLoadCallback(cosave::gameLoadedHandler);
 }
