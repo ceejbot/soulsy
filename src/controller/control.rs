@@ -134,7 +134,10 @@ pub mod public {
     pub fn cycle_loaded_from_cosave(buffer: Vec<u8>) {
         // don't do anything with it yet, but deserialize it and see how it looks
         let mut test_cycle = CycleData::deserialize(buffer);
+        log::info!("-------- begin cosave validation ----------");
         test_cycle.validate();
+        log::info!("-------- end cosave validation ----------");
+
     }
 }
 

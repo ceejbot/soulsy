@@ -9,7 +9,7 @@ namespace cosave
 
 	void initializeCosaves()
 	{
-		logger::trace("Initializing cosave serialization...");
+		logger::info("Initializing cosave serialization...");
 		auto* cosave = SKSE::GetSerializationInterface();
 		cosave->SetUniqueID(_byteswap_ulong('SOLS'));
 		cosave->SetSaveCallback(cosave::gameSavedHandler);
@@ -26,13 +26,19 @@ namespace cosave
 		}
 
 		// The format is an ad-hoc bag of bytes that we interpret
-		// as we wish. What I'm going to do is serialize on the Rust side
-		// to a bag of bytes and then just write the bag.
+		// as we wish. So we serialize to a bag of bytes on the Rust side.
 
 		rust::Vec<uint8_t> buffer = serialize_cycles();
-		cosave->WriteRecordData(buffer.size());
-		rust::Vec<uint8_t>::iterator iter;
-		for (iter = buffer.begin(); iter != buffer.end(); ++iter) { cosave->WriteRecordData(iter); }
+		auto pad = buffer.size() % 16;
+		logger::debug("cycles serialized into a Vec<u8> of size={}; pad={};"sv, buffer.size(), pad);
+		cosave->WriteRecordData(buffer.size() + pad);
+
+		for (uint8_t byte : buffer) {
+			cosave->WriteRecordData(byte);
+		}
+		for (int i=0; i < pad; i++) {
+			cosave->WriteRecordData(0);
+		}
 	}
 
 /*
@@ -55,6 +61,8 @@ namespace cosave
 				int bufferSize;
 				rust::Vec<uint8_t> buffer;
 				cosave->ReadRecordData(bufferSize);
+				logger::debug("found our cosave data; need to read a buffer of size={}"sv, bufferSize);
+
 				for (; bufferSize > 0; --bufferSize)
 				{
 					// this feels staggeringly inefficient, but first I gotta make it work

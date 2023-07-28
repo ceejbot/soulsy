@@ -403,10 +403,10 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
 }
 
 mod archive {
-    use crate::plugin::ItemKind;
+    use rkyv::{Archive, Deserialize, Serialize};
 
     use super::{CycleData, ItemData};
-    use rkyv::{Archive, Deserialize, Serialize};
+    use crate::plugin::ItemKind;
 
     // cosave implemention starts with a very packed set of bytes
     // I'm implementing this to the side of the toml so I can experiment.
@@ -414,13 +414,29 @@ mod archive {
     pub fn serialize(cycle: &CycleData) -> Vec<u8> {
         let value = CycleSerialized::from(cycle);
         let bytes = rkyv::to_bytes::<_, 256>(&value).unwrap();
-        bytes.into()
+        // let _ = rkyv::check_archived_root::<CycleSerialized>(&bytes[..]).unwrap();
+        bytes.into_vec()
     }
 
     pub fn deserialize(bytes: Vec<u8>) -> CycleData {
-        let archived = rkyv::check_archived_root::<CycleSerialized>(&bytes[..]).unwrap();
-        let deserialized: CycleSerialized = archived.deserialize(&mut rkyv::Infallible).unwrap();
-        deserialized.into()
+        match rkyv::check_archived_root::<CycleSerialized>(&bytes[..]) {
+            Ok(v) => {
+                if let Ok(deserialized) = <ArchivedCycleSerialized as rkyv::Deserialize<
+                    CycleSerialized,
+                    rkyv::Infallible,
+                >>::deserialize(v, &mut rkyv::Infallible)
+                {
+                    log::info!("Loaded cycles from cosave successfully!");
+                    return deserialized.into();
+                }
+            }
+            Err(e) => {
+                log::error!("Something's wrong with the cosave data. Starting fresh.");
+                log::error!("{e:?}");
+                log::trace!("{bytes:?}");
+            }
+        }
+        CycleData::default()
     }
 
     #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
