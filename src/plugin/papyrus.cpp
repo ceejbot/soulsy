@@ -28,10 +28,7 @@ namespace papyrus
 		return true;
 	}
 
-	void onConfigClose(RE::TESQuest*)
-	{
-		refresh_user_settings();
-	}
+	void onConfigClose(RE::TESQuest*) { refresh_user_settings(); }
 
 	RE::BSFixedString get_resolution_width(RE::TESQuest*)
 	{

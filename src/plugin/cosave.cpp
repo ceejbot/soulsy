@@ -29,20 +29,16 @@ namespace cosave
 		// as we wish. So we serialize to a bag of bytes on the Rust side.
 
 		rust::Vec<uint8_t> buffer = serialize_cycles();
-		auto pad = buffer.size() % 16;
+		auto pad                  = buffer.size() % 16;
 		if (pad == 0) pad = 16;
 		logger::debug("cycles serialized into a Vec<u8> of size={}; pad={};"sv, buffer.size(), pad);
 		cosave->WriteRecordData(buffer.size() + pad);
 
-		for (uint8_t byte : buffer) {
-			cosave->WriteRecordData(byte);
-		}
-		for (int i=0; i < pad; i++) {
-			cosave->WriteRecordData(0);
-		}
+		for (uint8_t byte : buffer) { cosave->WriteRecordData(byte); }
+		for (int i = 0; i < pad; i++) { cosave->WriteRecordData(0); }
 	}
 
-/*
+	/*
 	void revertHandler(SKSE::SerializationInterface* cosave)
 	{
 		// TODO reset
