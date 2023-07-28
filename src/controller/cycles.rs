@@ -1,5 +1,5 @@
 //! Management of the cycle data: serialization and mutation.
-//!
+
 use std::fmt::Display;
 use std::path::PathBuf;
 
@@ -388,44 +388,33 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
 }
 
 mod archive {
-    use rkyv::{Archive, Deserialize, Serialize};
+    use bincode::{Decode, Encode};
 
     use super::{CycleData, ItemData};
 
     // cosave implemention starts with a very packed set of bytes
-    // I'm implementing this to the side of the toml so I can experiment.
+    // I'm implementing this to the side of the toml for safety.
 
     pub fn serialize(cycle: &CycleData) -> Vec<u8> {
         let value = CycleSerialized::from(cycle);
-        let bytes = rkyv::to_bytes::<_, 256>(&value)
-            .expect("to_bytes() ought to have succeeded, but did not. something is very wrong.");
-        // let _ = rkyv::check_archived_root::<CycleSerialized>(&bytes[..]).unwrap();
-        bytes.into_vec()
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        bytes
     }
 
     pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
-        match rkyv::check_archived_root::<CycleSerialized>(&bytes[..]) {
-            Ok(v) => {
-                if let Ok(deserialized) = <ArchivedCycleSerialized as rkyv::Deserialize<
-                    CycleSerialized,
-                    rkyv::Infallible,
-                >>::deserialize(v, &mut rkyv::Infallible)
-                {
-                    return Some(deserialized.into());
-                }
-            }
+        let config = bincode::config::standard();
+        match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
+            Ok((value, _len)) => Some(value.into()),
             Err(e) => {
-                log::error!("Something's wrong with the cosave data.");
-                log::debug!("len={}; mod 16={}", bytes.len(), bytes.len() % 16);
+                log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
                 log::error!("{e:?}");
-                log::trace!("{bytes:?}");
+                None
             }
         }
-        None
     }
 
-    #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
-    #[archive(compare(PartialEq), check_bytes)]
+    #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
     pub struct CycleSerialized {
         left: Vec<ItemSerialized>,
         right: Vec<ItemSerialized>,
@@ -434,8 +423,7 @@ mod archive {
         hud_visible: bool,
     }
 
-    #[derive(Serialize, Deserialize, Archive, Debug, Clone, Default, PartialEq, Eq)]
-    #[archive(compare(PartialEq), check_bytes)]
+    #[derive(Decode, Encode, Hash, Debug, Clone, Default, PartialEq, Eq)]
     pub struct ItemSerialized {
         name: String,
         form_string: String,
