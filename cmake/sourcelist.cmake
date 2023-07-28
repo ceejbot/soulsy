@@ -7,6 +7,7 @@ set(headers ${headers}
     src/game/shouts.h
     src/game/utility.h
     src/game/weapons.h
+    src/plugin/cosave.h
     src/plugin/hooks.h
     src/plugin/keycodes.h
     src/plugin/papyrus.h
@@ -30,6 +31,7 @@ set(sources ${sources}
     src/game/utility.cpp
     src/game/weapons.cpp
     src/main.cpp
+    src/plugin/cosave.cpp
     src/plugin/hooks.cpp
     src/plugin/keycodes.cpp
     src/plugin/papyrus.cpp

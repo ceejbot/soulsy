@@ -16,8 +16,6 @@ use crate::plugin::{fadeToAlpha, hasItemOrSpell, playerName, Action, ItemKind};
 /// struct now holds all data we need to persist across game starts.
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct CycleData {
-    // I really want these to be maps, but toml can't serialize that.
-    // Guess I could write to json instead.
     left: Vec<ItemData>,
     right: Vec<ItemData>,
     power: Vec<ItemData>,
@@ -370,6 +368,14 @@ impl CycleData {
     pub fn hud_visible(&mut self) -> bool {
         self.hud_visible
     }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        archive::serialize(self)
+    }
+
+    pub fn deserialize(bytes: Vec<u8>) -> CycleData {
+        archive::deserialize(bytes)
+    }
 }
 
 impl Display for CycleData {
@@ -394,4 +400,97 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
             .collect::<Vec<String>>()
             .join(", ")
     )
+}
+
+mod archive {
+    use crate::plugin::ItemKind;
+
+    use super::{CycleData, ItemData};
+    use rkyv::{Archive, Deserialize, Serialize};
+
+    // cosave implemention starts with a very packed set of bytes
+    // I'm implementing this to the side of the toml so I can experiment.
+
+    pub fn serialize(cycle: &CycleData) -> Vec<u8> {
+        let value = CycleSerialized::from(cycle);
+        let bytes = rkyv::to_bytes::<_, 256>(&value).unwrap();
+        bytes.into()
+    }
+
+    pub fn deserialize(bytes: Vec<u8>) -> CycleData {
+        let archived = rkyv::check_archived_root::<CycleSerialized>(&bytes[..]).unwrap();
+        let deserialized: CycleSerialized = archived.deserialize(&mut rkyv::Infallible).unwrap();
+        deserialized.into()
+    }
+
+    #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
+    #[archive(compare(PartialEq), check_bytes)]
+    pub struct CycleSerialized {
+        left: Vec<ItemSerialized>,
+        right: Vec<ItemSerialized>,
+        power: Vec<ItemSerialized>,
+        utility: Vec<ItemSerialized>,
+        hud_visible: bool,
+    }
+
+    #[derive(Serialize, Deserialize, Archive, Debug, Clone, Default, PartialEq, Eq)]
+    #[archive(compare(PartialEq), check_bytes)]
+    pub struct ItemSerialized {
+        name: String,
+        form_string: String,
+        kind: u8,
+        two_handed: bool,
+        has_count: bool,
+        count: u32,
+    }
+
+    impl From<&CycleData> for CycleSerialized {
+        fn from(value: &CycleData) -> Self {
+            Self {
+                left: value.left.iter().map(|xs| xs.into()).collect(),
+                right: value.right.iter().map(|xs| xs.into()).collect(),
+                power: value.power.iter().map(|xs| xs.into()).collect(),
+                utility: value.utility.iter().map(|xs| xs.into()).collect(),
+                hud_visible: value.hud_visible,
+            }
+        }
+    }
+
+    impl From<CycleSerialized> for CycleData {
+        fn from(value: CycleSerialized) -> Self {
+            Self {
+                left: value.left.iter().map(|xs| xs.into()).collect(),
+                right: value.right.iter().map(|xs| xs.into()).collect(),
+                power: value.power.iter().map(|xs| xs.into()).collect(),
+                utility: value.utility.iter().map(|xs| xs.into()).collect(),
+                hud_visible: value.hud_visible,
+            }
+        }
+    }
+
+    impl From<&ItemData> for ItemSerialized {
+        fn from(value: &ItemData) -> Self {
+            Self {
+                name: value.name().clone(),
+                form_string: value.form_string().clone(),
+                kind: value.kind().repr,
+                two_handed: value.two_handed(),
+                has_count: value.has_count(),
+                count: value.count(),
+            }
+        }
+    }
+
+    impl From<&ItemSerialized> for ItemData {
+        fn from(value: &ItemSerialized) -> ItemData {
+            ItemData::new(
+                ItemKind::Empty, // value.kind.into(),
+                value.two_handed,
+                value.has_count,
+                value.count,
+                &value.name,
+                &value.form_string,
+            )
+        }
+    }
 }

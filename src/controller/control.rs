@@ -121,6 +121,21 @@ pub mod public {
             .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
         ctrl.apply_settings();
     }
+
+    /// Serialize cycles for cosave test.
+    pub fn serialize_cycles() -> Vec<u8> {
+        let ctrl = CONTROLLER
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire controller lock. Exiting.");
+        ctrl.cycles.serialize()
+    }
+
+    /// Cycle data loaded from cosave.
+    pub fn cycle_loaded_from_cosave(buffer: Vec<u8>) {
+        // don't do anything with it yet, but deserialize it and see how it looks
+        let mut test_cycle = CycleData::deserialize(buffer);
+        test_cycle.validate();
+    }
 }
 
 /// What, model/view/controller? In my UI application? oh no

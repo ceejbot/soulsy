@@ -254,3 +254,112 @@ static ICON_MAP: Lazy<HashMap<ItemKind, String>> = Lazy::new(|| {
         (ItemKind::Whip, "whip.svg".to_string()),
     ])
 });
+
+// This is horrific.
+impl From<u8> for ItemKind {
+    fn from(value: u8) -> Self {
+        if value == ItemKind::Empty.repr {
+            ItemKind::Empty
+        } else if value == ItemKind::Alteration.repr {
+            ItemKind::Alteration
+        } else if value == ItemKind::ArmorClothing.repr {
+            ItemKind::ArmorClothing
+        } else if value == ItemKind::ArmorHeavy.repr {
+            ItemKind::ArmorHeavy
+        } else if value == ItemKind::ArmorLight.repr {
+            ItemKind::ArmorLight
+        } else if value == ItemKind::Arrow.repr {
+            ItemKind::Arrow
+        } else if value == ItemKind::AxeOneHanded.repr {
+            ItemKind::AxeOneHanded
+        } else if value == ItemKind::AxeTwoHanded.repr {
+            ItemKind::AxeTwoHanded
+        } else if value == ItemKind::Bow.repr {
+            ItemKind::Bow
+        } else if value == ItemKind::Claw.repr {
+            ItemKind::Claw
+        } else if value == ItemKind::Conjuration.repr {
+            ItemKind::Conjuration
+        } else if value == ItemKind::Crossbow.repr {
+            ItemKind::Crossbow
+        } else if value == ItemKind::Dagger.repr {
+            ItemKind::Dagger
+        } else if value == ItemKind::DestructionFire.repr {
+            ItemKind::DestructionFire
+        } else if value == ItemKind::DestructionFrost.repr {
+            ItemKind::DestructionFrost
+        } else if value == ItemKind::DestructionShock.repr {
+            ItemKind::DestructionShock
+        } else if value == ItemKind::Destruction.repr {
+            ItemKind::Destruction
+        } else if value == ItemKind::Food.repr {
+            ItemKind::Food
+        } else if value == ItemKind::Halberd.repr {
+            ItemKind::Halberd
+        } else if value == ItemKind::HandToHand.repr {
+            ItemKind::HandToHand
+        } else if value == ItemKind::IconDefault.repr {
+            ItemKind::IconDefault
+        } else if value == ItemKind::Illusion.repr {
+            ItemKind::Illusion
+        } else if value == ItemKind::Katana.repr {
+            ItemKind::Katana
+        } else if value == ItemKind::Lantern.repr {
+            ItemKind::Lantern
+        } else if value == ItemKind::Mace.repr {
+            ItemKind::Mace
+        } else if value == ItemKind::Mask.repr {
+            ItemKind::Mask
+        } else if value == ItemKind::Pike.repr {
+            ItemKind::Pike
+        } else if value == ItemKind::PoisonDefault.repr {
+            ItemKind::PoisonDefault
+        } else if value == ItemKind::PotionDefault.repr {
+            ItemKind::PotionDefault
+        } else if value == ItemKind::PotionFireResist.repr {
+            ItemKind::PotionFireResist
+        } else if value == ItemKind::PotionFrostResist.repr {
+            ItemKind::PotionFrostResist
+        } else if value == ItemKind::PotionHealth.repr {
+            ItemKind::PotionHealth
+        } else if value == ItemKind::PotionMagicka.repr {
+            ItemKind::PotionMagicka
+        } else if value == ItemKind::PotionMagicResist.repr {
+            ItemKind::PotionMagicResist
+        } else if value == ItemKind::PotionShockResist.repr {
+            ItemKind::PotionShockResist
+        } else if value == ItemKind::PotionStamina.repr {
+            ItemKind::PotionStamina
+        } else if value == ItemKind::Power.repr {
+            ItemKind::Power
+        } else if value == ItemKind::QuarterStaff.repr {
+            ItemKind::QuarterStaff
+        } else if value == ItemKind::Rapier.repr {
+            ItemKind::Rapier
+        } else if value == ItemKind::Restoration.repr {
+            ItemKind::Restoration
+        } else if value == ItemKind::Scroll.repr {
+            ItemKind::Scroll
+        } else if value == ItemKind::Shield.repr {
+            ItemKind::Shield
+        } else if value == ItemKind::Shout.repr {
+            ItemKind::Shout
+        } else if value == ItemKind::SpellDefault.repr {
+            ItemKind::SpellDefault
+        } else if value == ItemKind::Staff.repr {
+            ItemKind::Staff
+        } else if value == ItemKind::SwordOneHanded.repr {
+            ItemKind::SwordOneHanded
+        } else if value == ItemKind::SwordTwoHanded.repr {
+            ItemKind::SwordTwoHanded
+        } else if value == ItemKind::Torch.repr {
+            ItemKind::Torch
+        } else if value == ItemKind::WeaponDefault.repr {
+            ItemKind::WeaponDefault
+        } else if value == ItemKind::Whip.repr {
+            ItemKind::Whip
+        } else {
+            ItemKind::Empty
+        }
+    }
+}
