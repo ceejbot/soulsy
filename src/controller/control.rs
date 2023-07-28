@@ -152,7 +152,7 @@ impl Controller {
 
     pub fn validate_cycles(&mut self) {
         self.cycles.validate();
-        log::info!("after validation, cycles are: {}", self.cycles);
+        // log::info!("after validation, cycles are: {}", self.cycles);
         self.update_hud();
     }
 

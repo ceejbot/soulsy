@@ -41,6 +41,13 @@ impl CycleData {
 
     /// Write serialized toml to the cycle storage file for this character.
     pub fn write(&self) -> Result<()> {
+        log::info!(
+            "writing cycles to disk; lengths are: powers={}; utilities={}; left={}; right={};",
+            self.power.len(),
+            self.utility.len(),
+            self.left.len(),
+            self.right.len()
+        );
         let buf = toml::to_string(self)?;
         std::fs::write(CycleData::cycle_storage(), buf)?;
         log::trace!(
@@ -53,11 +60,18 @@ impl CycleData {
     /// Read cycle data from the serialization file for this character.
     pub fn read() -> Result<Self> {
         let buf = std::fs::read_to_string(CycleData::cycle_storage())?;
-        log::debug!(
-            "read cycle data from {}",
+        let data = toml::from_str::<CycleData>(&buf)?;
+        log::info!(
+            "read cycle data from {}; initial cycle lengths are:",
             CycleData::cycle_storage().display()
         );
-        let data = toml::from_str::<CycleData>(&buf)?;
+        log::info!(
+            "powers={}; utilities={}; left={}; right={};",
+            data.power.len(),
+            data.utility.len(),
+            data.left.len(),
+            data.right.len()
+        );
         Ok(data)
     }
 
@@ -161,34 +175,7 @@ impl CycleData {
                 );
             });
         });
-
-        /*
-        self.power.retain(|xs| {
-            cxx::let_cxx_string!(form_spec = xs.form_string());
-            hasItemOrSpell(&form_spec)
-        });
-        self.utility.retain(|xs| {
-            if xs.kind().is_ammo() {
-                return true;
-            }
-            cxx::let_cxx_string!(form_spec = xs.form_string());
-            hasItemOrSpell(&form_spec)
-        });
-        self.left.retain(|xs| {
-            if xs.kind() == ItemKind::HandToHand {
-                return true;
-            }
-            cxx::let_cxx_string!(form_spec = xs.form_string());
-            hasItemOrSpell(&form_spec)
-        });
-        self.right.retain(|xs| {
-            if xs.kind() == ItemKind::HandToHand {
-                return true;
-            }
-            cxx::let_cxx_string!(form_spec = xs.form_string());
-            hasItemOrSpell(&form_spec)
-        });
-        */
+        log::info!("Informational only. No changes made to cycle data. Have a nice day and remember to put on a cloak if it starts snowing.");
     }
 
     /// Attempt to set the current item in a cycle to the given form spec (mod.esp|formid).
