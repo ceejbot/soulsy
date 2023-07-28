@@ -836,6 +836,10 @@ impl Controller {
         }
     }
 
+    pub fn handle_favorite_event(&mut self, _button: &ButtonEvent, _item: ItemData) {
+        todo!();
+    }
+
     pub fn handle_menu_event(&mut self, key: u32, button: &ButtonEvent) -> bool {
         // Much simpler than the cycle loop. We care if the cycle modifier key
         // is down (if one is set), and we care if the cycle button itself has
