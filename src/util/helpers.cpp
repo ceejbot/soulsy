@@ -25,7 +25,7 @@ namespace helpers
 
 		// We only want to act on button presses when in gameplay, not menus of any kind.
 		if (ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
-			!ui->GetMenu<RE::HUDMenu>())
+			!ui->GetMenu<RE::HUDMenu>() || ui->IsMenuOpen("LootMenu"))
 		{
 			return true;
 		}
