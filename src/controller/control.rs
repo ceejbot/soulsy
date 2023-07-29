@@ -341,14 +341,6 @@ impl Controller {
     }
 
     fn advance_hand_cycle(&mut self, which: &CycleSlot) -> KeyEventResponse {
-        if self.cycles.cycle_len(which) <= 1 {
-            // TODO failure sound honk
-            return KeyEventResponse {
-                handled: true,
-                ..Default::default()
-            };
-        }
-
         // This is one of two tricky decision points in the mod. (The other
         // is when timers expire and we have to act on decisions made here.)
         // We have decided we want to advance the left or right cycle.
