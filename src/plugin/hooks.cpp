@@ -21,6 +21,7 @@ namespace hooks
 		process_event_ = menu_controls_vtbl.write_vfunc(0x1, &MenuHook::process_event);
 
 		logger::info("Menu hooked."sv);
+		didControlMapDump = false;
 	}
 
 	RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
@@ -31,6 +32,27 @@ namespace hooks
 		auto relevantMenuOpen           = helpers::relevantMenuOpen();
 
 		if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
+
+		if (!didControlMapDump)
+		{
+			auto* ctrlMaps = RE::ControlMap::GetSingleton();
+			for (auto i = 0; i < RE::UserEvents::INPUT_CONTEXT_ID::InputContextID::kTotal; i++)
+			{
+				const auto* ctx = ctrlMaps->controlMap[i];
+				if (!ctx) continue;
+				// BSTArray<UserEventMapping> deviceMappings[INPUT_DEVICES::kTotal];
+				for (auto j = 0; j < RE::INPUT_DEVICE::INPUT_DEVICES::kTotal; j++)
+				{
+					const auto* deviceMappings = ctx->deviceMappings[j];
+					if (!deviceMappings) continue;
+					for (auto& mapping : deviceMappings)
+					{
+						logger::info("{}  {}  eventid={}; key={};"sv i, j, mapping.eventID, mapping.inputKey);
+					}
+				}
+			}
+			didControlMapDump = true;
+		}
 
 		// auto* mapping = RE::ControlMap::GetSingleton();
 		// auto favconst = RE::UserEvents::GetSingleton()->toggleFavorite;
@@ -46,11 +68,11 @@ namespace hooks
 				auto* button = static_cast<RE::ButtonEvent*>(event);
 				if (button->idCode == keycodes::k_invalid) { continue; }
 
-				auto key       = keycodes::get_key_id(button);
+				auto key = keycodes::get_key_id(button);
 				/*
 				if (button->IsUp()) {
 					auto underlying = button->GetDevice();
-					auto maybe = mapping->GetMappedKey(favconst, underlying, RE::UserEvents::INPUT_CONTEXT_ID::kMenuMode);
+					auto maybe = mapping->GetMappedKey(favconst, underlying, RE::UserEvents::INPUT_CONTEXT_ID::kInventory);
 					logger::info("is this a {} key? (points at butterfly) {}; favkey={} maybe={}"sv, favconst, key, favkey, maybe);
 				}
 				*/
