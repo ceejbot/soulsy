@@ -29,14 +29,11 @@ namespace cosave
 		// as we wish. So we serialize to a bag of bytes on the Rust side.
 
 		rust::Vec<uint8_t> buffer = serialize_cycles();
-		auto pad                  = (buffer.size() % 16);
-		if (pad == 0) pad = 16;
-		logger::debug("cycles serialized into a Vec<u8> of size={}; pad={};"sv, buffer.size(), pad);
-		cosave->WriteRecordData(buffer.size());
-		cosave->WriteRecordData(pad);
-		cosave->WriteRecordData(&buffer.data, buffer.size());
-		// for (uint8_t byte : buffer) { cosave->WriteRecordData(byte); }
-		for (int i = 0; i < pad; i++) { cosave->WriteRecordData(0); }
+		uint32_t bufsize          = static_cast<uint32_t>(buffer.size());
+		logger::debug("cycles serialized into a Vec<u8> of size={};"sv, bufsize);
+
+		cosave->WriteRecordData(bufsize);
+		cosave->WriteRecordData(buffer.data(), bufsize);
 	}
 
 	void gameLoadedHandler(SKSE::SerializationInterface* cosave)
@@ -49,20 +46,17 @@ namespace cosave
 		{
 			if (type == CYCLE_RECORD)
 			{
-				size_t bufferSize;
-				size_t pad;
-				rust::Vec<uint8_t> buffer;
-				cosave->ReadRecordData(bufferSize);
-				cosave->ReadRecordData(pad);
-				logger::debug("found our cosave data; need to read a buffer of size={}; pad={}"sv, bufferSize, pad);
-
-				for (; bufferSize > 0; --bufferSize)
-				{
-					// this feels staggeringly inefficient, but first I gotta make it work
-					uint8_t next;
-					cosave->ReadRecordData(next);
-					buffer.push_back(next);
+				if (version != 0) {
+					logger::info("surprised to get version {}"sv, version);
 				}
+				uint32_t bufSize;
+				std::vector<uint8_t> buffer;
+				cosave->ReadRecordData(bufSize);
+				buffer.resize(bufSize);
+
+				const auto read = cosave->ReadRecordData(buffer.data(), bufSize);
+				buffer.resize(read);
+				logger::debug("read {} bytes from cosave; buffer len is {}"sv, read, buffer.size());
 				cycle_loaded_from_cosave(buffer);
 			}
 			else { logger::warn("Unknown record type in cosave; type={}", type); }

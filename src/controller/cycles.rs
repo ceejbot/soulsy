@@ -4,6 +4,7 @@ use std::fmt::Display;
 use std::path::PathBuf;
 
 use anyhow::Result;
+use cxx::CxxVector;
 use serde::{Deserialize, Serialize};
 
 use super::control::MenuEventResponse;
@@ -358,7 +359,7 @@ impl CycleData {
         archive::serialize(self)
     }
 
-    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
+    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
         archive::deserialize(bytes)
     }
 }
@@ -389,6 +390,7 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
 
 mod archive {
     use bincode::{Decode, Encode};
+    use cxx::CxxVector;
 
     use super::{CycleData, ItemData};
 
@@ -402,10 +404,14 @@ mod archive {
         bytes
     }
 
-    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
+    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
+        let bytes: Vec<u8> = bytes.iter().map(|xs| *xs).collect();
         let config = bincode::config::standard();
         match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
-            Ok((value, _len)) => Some(value.into()),
+            Ok((value, _len)) => {
+                log::info!("Cycles successfully read from cosave data.");
+                Some(value.into())
+            },
             Err(e) => {
                 log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
                 log::error!("{e:?}");

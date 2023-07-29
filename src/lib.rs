@@ -255,7 +255,7 @@ pub mod plugin {
         fn show_ui() -> bool;
         /// Get cycle data for cosave.
         fn serialize_cycles() -> Vec<u8>;
-        fn cycle_loaded_from_cosave(buffer: Vec<u8>);
+        fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>);
 
         /// Give access to the settings to the C++ side.
         type UserSettings;

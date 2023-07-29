@@ -5,6 +5,7 @@
 use std::fs::File;
 use std::path::PathBuf;
 
+use cxx::CxxVector;
 use simplelog::*;
 
 use super::cycles::*;
@@ -115,9 +116,9 @@ pub fn serialize_cycles() -> Vec<u8> {
 }
 
 /// Cycle data loaded from cosave.
-pub fn cycle_loaded_from_cosave(buffer: Vec<u8>) {
+pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>) {
     let mut ctrl = control::get();
-    if let Some(cosave_cycle) = CycleData::deserialize(buffer) {
+    if let Some(cosave_cycle) = CycleData::deserialize(bytes) {
         ctrl.cycles = cosave_cycle;
         log::info!("Cycles loaded and ready to rock.");
     } else {
