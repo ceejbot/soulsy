@@ -12,7 +12,6 @@ namespace hooks
 		static void install();
 
 	private:
-		static bool didControlMapDump;
 		RE::BSEventNotifyControl process_event(RE::InputEvent** a_event, RE::BSTEventSource<RE::InputEvent*>* a_source);
 
 		using process_event_type =

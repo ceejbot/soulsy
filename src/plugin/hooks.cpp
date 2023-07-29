@@ -21,8 +21,9 @@ namespace hooks
 		process_event_ = menu_controls_vtbl.write_vfunc(0x1, &MenuHook::process_event);
 
 		logger::info("Menu hooked."sv);
-		didControlMapDump = false;
 	}
+
+	static bool didControlMapDump = false;
 
 	RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 		RE::BSTEventSource<RE::InputEvent*>* eventSource)
@@ -36,18 +37,19 @@ namespace hooks
 		if (!didControlMapDump)
 		{
 			auto* ctrlMaps = RE::ControlMap::GetSingleton();
-			for (auto i = 0; i < RE::UserEvents::INPUT_CONTEXT_ID::InputContextID::kTotal; i++)
+			for (auto i = 0; i < RE::UserEvents::INPUT_CONTEXT_ID::kTotal; i++)
 			{
-				const auto* ctx = ctrlMaps->controlMap[i];
-				if (!ctx) continue;
-				// BSTArray<UserEventMapping> deviceMappings[INPUT_DEVICES::kTotal];
-				for (auto j = 0; j < RE::INPUT_DEVICE::INPUT_DEVICES::kTotal; j++)
+				if (!ctrlMaps->controlMap[i]) continue;
+				const auto count = ctrlMaps->controlMap[i]->GetNumDeviceMappings();
+				logger::info("on input ctx id = {}; mappings count={}"sv, i, count);
+				for (auto j = 0; j < count; j++)
 				{
-					const auto* deviceMappings = ctx->deviceMappings[j];
-					if (!deviceMappings) continue;
+					const auto& deviceMappings = ctrlMaps->controlMap[i]->deviceMappings[j];
+					logger::info("    device {}: {} keys mapped"sv, j, deviceMappings.size());
+					if (deviceMappings.size() > 255) { continue; }
 					for (auto& mapping : deviceMappings)
 					{
-						logger::info("{}  {}  eventid={}; key={};"sv i, j, mapping.eventID, mapping.inputKey);
+						logger::info("        eventid={}; key={};"sv, mapping.eventID, mapping.inputKey);
 					}
 				}
 			}
