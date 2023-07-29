@@ -29,7 +29,7 @@ namespace hooks
 	{
 		auto* ui                        = RE::UI::GetSingleton();
 		rust::Box<UserSettings> hotkeys = user_settings();
-		auto relevantMenuOpen           = helpers::relevantMenuOpen();
+		//auto relevantMenuOpen           = helpers::relevantMenuOpen();
 
 		// if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
 
@@ -160,29 +160,15 @@ namespace hooks
 	{
 		logger::info("Hooking favorites handler..."sv);
 		REL::Relocation<std::uintptr_t> favorites_handler_vtbl{ RE::VTABLE_FavoritesHandler[0] };
-		process_button_ = favorites_handler_vtbl.write_vfunc(0x5, &FavoritesHook::process_button);
+		process_button_ = favorites_handler_vtbl.write_vfunc(0x5, &FavoritesHook::processButtonEvent);
 
 		logger::info("Favorites hooked."sv);
 	}
 
-	bool ProcessButton(ButtonEvent* event)
+	bool FavoritesHook::processButtonEvent(RE::ButtonEvent* event)
 	{
 		logger::info("congrats! you have hooked into button events on the favorites menu.");
-		logger::info("button id code is {}"sv, event->idCode);
-		logger::info("q-user-event is {}"sv, event->QUserEvent());
-		if (event->QUserEvent() == RE::UserEvents::GetSingleton()->toggleFavorite)
-		{
-			logger::info("we saw a toggle favorite event!");
-			/*
-    			and then theoretically:
-    			auto menu_form = helpers::getSelectedFormFromMenu(ui);
-    			if (!menu_form) continue;
-    			auto* item_form = RE::TESForm::LookupByID(menu_form);
-    			if (!item_form) continue;
-    			auto item = equippable::makeItemDataFromForm(item_form);
-    			handle_favorite_event(button, item);
-    		 */
-		}
+		logger::info("button: idCode={};"sv, event->GetIDCode());
 
 		return process_button_(event);
 	}

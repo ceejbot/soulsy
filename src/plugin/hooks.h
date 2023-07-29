@@ -62,12 +62,23 @@ namespace hooks
 		static void install();
 
 	private:
-		static void pick_up_object(RE::Actor* a_this,
-			RE::TESObjectREFR* a_object,
-			uint32_t a_count,
-			bool a_arg3,
-			bool a_play_sound);
-		static inline REL::Relocation<decltype(pick_up_object)> pick_up_object_;
-	}
+		static bool processButtonEvent(RE::ButtonEvent* event);
 
+		using func_t = decltype(static_cast<bool (RE::FavoritesHandler::*)(RE::ButtonEvent*)>
+			(&RE::FavoritesHandler::ProcessButton));
+		static inline REL::Relocation<decltype(processButtonEvent)> process_button_;
+
+//  bool (RE::FavoritesHandler::*)(RE::ButtonEvent *)
+// static inline REL::Relocation<hooks::FavoritesHook::func_t> hooks::FavoritesHook::process_button_
+
+
+/**
+		using process_event_type =
+			decltype(static_cast<RE::BSEventNotifyControl 
+				(RE::MenuControls::*)(RE::InputEvent* const*, RE::BSTEventSource<RE::InputEvent*>*)>
+				(&RE::MenuControls::ProcessEvent));
+
+*/
+
+	};
 }
