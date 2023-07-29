@@ -1,5 +1,7 @@
 #include "hooks.h"
 #include "equippable.h"
+#include "gear.h"
+#include "string_util.h"
 
 #include "lib.rs.h"
 
@@ -23,43 +25,19 @@ namespace hooks
 		logger::info("Menu hooked."sv);
 	}
 
-	static bool didControlMapDump = false;
-
 	RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 		RE::BSTEventSource<RE::InputEvent*>* eventSource)
 	{
-		auto* ui                        = RE::UI::GetSingleton();
-		rust::Box<UserSettings> hotkeys = user_settings();
-		auto relevantMenuOpen           = helpers::relevantMenuOpen();
+		auto* ui                         = RE::UI::GetSingleton();
+		if (!ui) return process_event_(this, eventPtr, eventSource);;
+		rust::Box<UserSettings> settings = user_settings();
+		bool check_favorites             = settings->link_to_favorites();
+		auto relevantMenuOpen            = helpers::relevantMenuOpen();
+
+		auto* controlMap = RE::ControlMap::GetSingleton();
+		auto favconst    = RE::UserEvents::GetSingleton()->togglePOV;
 
 		if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
-
-		if (!didControlMapDump)
-		{
-			auto* ctrlMaps = RE::ControlMap::GetSingleton();
-			for (auto i = 0; i < RE::UserEvents::INPUT_CONTEXT_ID::kTotal; i++)
-			{
-				if (!ctrlMaps->controlMap[i]) continue;
-				const auto count = ctrlMaps->controlMap[i]->GetNumDeviceMappings();
-				logger::info("on input ctx id = {}; mappings count={}"sv, i, count);
-				for (auto j = 0; j < count; j++)
-				{
-					const auto& deviceMappings = ctrlMaps->controlMap[i]->deviceMappings[j];
-					logger::info("    device {}: {} keys mapped"sv, j, deviceMappings.size());
-					if (deviceMappings.size() > 255) { continue; }
-					for (auto& mapping : deviceMappings)
-					{
-						logger::info("        eventid={}; key={};"sv, mapping.eventID, mapping.inputKey);
-					}
-				}
-			}
-			didControlMapDump = true;
-		}
-
-		// auto* mapping = RE::ControlMap::GetSingleton();
-		// auto favconst = RE::UserEvents::GetSingleton()->toggleFavorite;
-		// auto favkey = mapping->GetMappedKey(favconst, RE::INPUT_DEVICE::kKeyboard, RE::UserEvents::INPUT_CONTEXT_ID::kInventory);
-		// auto favbutton = mapping->GetMappedKey(favconst, RE::INPUT_DEVICE::kGamepad, RE::UserEvents::INPUT_CONTEXT_ID::kInventory);
 
 		if (eventPtr && *eventPtr)
 		{
@@ -69,25 +47,50 @@ namespace hooks
 
 				auto* button = static_cast<RE::ButtonEvent*>(event);
 				if (button->idCode == keycodes::k_invalid) { continue; }
-
 				auto key = keycodes::get_key_id(button);
-				/*
-				if (button->IsUp()) {
-					auto underlying = button->GetDevice();
-					auto maybe = mapping->GetMappedKey(favconst, underlying, RE::UserEvents::INPUT_CONTEXT_ID::kInventory);
-					logger::info("is this a {} key? (points at butterfly) {}; favkey={} maybe={}"sv, favconst, key, favkey, maybe);
+
+				if (button->IsUp() && check_favorites)
+				{
+					if (buttonMatchesEvent(controlMap, favconst, button))
+					{
+						helpers::MenuSelection* selection = nullptr;
+						auto menu_form = helpers::MenuSelection::getSelectionFromMenu(ui, selection);
+						if (!menu_form) continue;
+
+						logger::info("hey, we didn't crash. form_id={}; is-favorited={}"sv,
+							util::string_util::int_to_hex(selection->form_id),
+							selection->favorite);
+
+						if (selection->bound_obj)
+						{
+							auto entry = equippable::makeItemDataFromForm(selection->bound_obj);
+							logger::info("got bound object; name='{}'; kind={};"sv,
+								selection->bound_obj->GetName(),
+								static_cast<uint8_t>(entry->kind()));
+							handle_favorite_event(*button, selection->favorite, std::move(entry));
+						}
+						else if (selection->form)
+						{
+							auto entry = equippable::makeItemDataFromForm(selection->form);
+							logger::info("got form; name='{}'; kind={}"sv,
+								selection->form->GetName(),
+								static_cast<uint8_t>(entry->kind()));
+							handle_favorite_event(*button, selection->favorite, std::move(entry));
+						}
+						continue;
+					}
 				}
-				*/
 
 				// we send all key events to this handler because it needs to track modifiers
 				auto do_toggle = handle_menu_event(key, *button);
 
 				if (do_toggle)
 				{
-					auto menu_form = helpers::getSelectedFormFromMenu(ui);
+					helpers::MenuSelection* selection = nullptr;
+					auto menu_form                    = helpers::MenuSelection::getSelectionFromMenu(ui, selection);
 					if (!menu_form) continue;
 
-					auto* item_form = RE::TESForm::LookupByID(menu_form);
+					auto* item_form = selection->form;
 					if (!item_form) continue;
 
 					auto entry = equippable::makeItemDataFromForm(item_form);
@@ -97,6 +100,21 @@ namespace hooks
 		}
 
 		return process_event_(this, eventPtr, eventSource);
+	}
+
+	bool MenuHook::buttonMatchesEvent(RE::ControlMap* controlMap, RE::BSFixedString eventID, RE::ButtonEvent* button)
+	{
+		auto the_device   = button->GetDevice();
+		auto mapForDevice = controlMap->controlMap[the_device];
+		if (!mapForDevice) return false;
+
+		auto contextMap = mapForDevice->deviceMappings[0];  // gameplay map
+		for (auto& mapping : contextMap)
+		{
+			if (button->GetIDCode() == mapping.inputKey) { return (mapping.eventID == eventID); }
+		}
+
+		return false;
 	}
 
 	// ---------- PlayerHook

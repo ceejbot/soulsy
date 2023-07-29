@@ -18,10 +18,11 @@ namespace game
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		std::vector<RE::ExtraDataList*> extra_vector;
+		
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(the_player, form->GetFormType());
 
-		logger::trace("found count={} candidates of same type as name='{}';"sv, candidates.size(), form->GetName());
+		// logger::trace("found count={} candidates of same type as name='{}';"sv, candidates.size(), form->GetName());
 
 		auto item_count = 0;
 		for (const auto& [item, inv_data] : candidates)
@@ -36,13 +37,17 @@ namespace game
 					for (auto* extra_data : *simple_extra_data_list)
 					{
 						extra           = extra_data;
+						extra_vector.push_back(extra_data);
+						auto is_favorited = extra_data->HasType(RE::ExtraDataType::kHotkey);
+						auto is_poisoned = extra_data->HasType(RE::ExtraDataType::kPoison);
 						auto worn_right = extra_data->HasType(RE::ExtraDataType::kWorn);
 						auto worn_left  = extra_data->HasType(RE::ExtraDataType::kWornLeft);
-						logger::trace("extra data {}, worn right {}, worn left {}"sv,
+						logger::debug("extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
 							extra_data->GetCount(),
+							is_favorited,
+							is_poisoned,
 							worn_right,
 							worn_left);
-						if (!worn_right && !worn_left) { extra_vector.push_back(extra_data); }
 					}
 				}
 				break;
@@ -51,11 +56,11 @@ namespace game
 
 		if (!bound_obj)
 		{
-			logger::info("unable to find any bound objects for item; bailing. name='{}'; "sv, form->GetName());
+			// logger::trace("unable to find any bound objects for item; bailing. name='{}'; "sv, form->GetName());
 			return 0;
 		}
 
-		logger::info("found {} instance for bound object; name='{}'; formID={};"sv,
+		logger::debug("found {} instance for bound object; name='{}'; formID={};"sv,
 			item_count,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));

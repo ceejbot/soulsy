@@ -21,7 +21,7 @@ setup:
 
 # Rebuild the archive for testing. Requires windows.
 @rebuild:
-    if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
+    # if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
 

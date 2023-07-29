@@ -98,12 +98,12 @@ namespace helpers
 		RE::DebugNotification(msg);
 	}
 
-	void startAlphaTransition(const bool shift, const float target) { ui::ui_renderer::startAlphaTransition(shift, target); }
-
-	void show_briefly()
+	void startAlphaTransition(const bool shift, const float target)
 	{
-		ui::ui_renderer::show_briefly();
+		ui::ui_renderer::startAlphaTransition(shift, target);
 	}
+
+	void show_briefly() { ui::ui_renderer::show_briefly(); }
 
 	std::string makeFormSpecString(RE::TESForm* form)
 	{
@@ -160,64 +160,188 @@ namespace helpers
 
 		if (form != nullptr)
 		{
-			logger::trace(
-				"found form id for form spec='{}'; name='{}'; formID={}", a_str, form->GetName(), string_util::int_to_hex(form->GetFormID()));
+			logger::trace("found form id for form spec='{}'; name='{}'; formID={}",
+				a_str,
+				form->GetName(),
+				string_util::int_to_hex(form->GetFormID()));
 		}
 
 		return form;
 	}
 
-	uint32_t getSelectedFormFromMenu(RE::UI*& a_ui)
+
+	MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid) {}
+
+	void MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelection*& outSelection)
 	{
-		uint32_t menu_form = 0;
-		if (a_ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME))
+		if (!menu) return;
+
+		RE::FormID form_id = 0;
+		RE::GFxValue result;
+		menu->uiMovie->GetVariable(&result, "_root.MenuHolder.Menu_mc.itemList.selectedEntry.form_id");
+		if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 		{
-			auto* inventory_menu = static_cast<RE::InventoryMenu*>(a_ui->GetMenu(RE::InventoryMenu::MENU_NAME).get());
+			form_id = static_cast<std::uint32_t>(result.GetNumber());
+			logger::debug("favorites menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
+		}
+
+		auto favorites = menu->GetRuntimeData().favorites;
+		for (auto favorite : favorites)
+		{
+			if (favorite.item->formID == form_id)
+			{
+				auto* selection      = new MenuSelection(form_id);
+				selection->form      = favorite.item;
+				selection->favorite  = favorite.entryData->IsFavorited();
+				selection->poisoned  = favorite.entryData->IsPoisoned();
+				selection->equipped  = favorite.entryData->IsWorn();
+				selection->count     = favorite.entryData->countDelta;  // probably wrong
+				selection->bound_obj = favorite.entryData->object;
+
+				outSelection = selection;
+			}
+		}
+		logger::info("fell through without finding our object.");
+	}
+
+	void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection*& outSelection)
+	{
+		if (!menu) return;
+		logger::debug("makeFromInventoryMenu()");
+
+		auto* itemList = menu->GetRuntimeData().itemList;
+		auto* selected = itemList->GetSelectedItem();
+		auto* obj      = selected->data.objDesc->object;
+
+		if (obj)
+		{
+			auto form_id         = obj->GetFormID();
+			auto* selection      = new MenuSelection(obj->GetFormID());
+			selection->count     = selected->data.GetCount();
+			selection->poisoned  = selected->data.objDesc->IsPoisoned();
+			selection->favorite  = selected->data.objDesc->IsFavorited();
+			selection->equipped  = selected->data.objDesc->IsWorn();
+			selection->bound_obj = obj->IsBoundObject() ? obj : nullptr;
+			selection->form      = RE::TESForm::LookupByID(form_id);
+			outSelection         = selection;
+			return;
+		}
+
+		// Fallback if we didn't get anything.
+		RE::GFxValue result;
+		//menu->uiMovie->SetPause(true);
+		menu->uiMovie->GetVariable(&result, "_root.Menu_mc.inventoryLists.itemList.selectedEntry.formId");
+		if (result.GetType() == RE::GFxValue::ValueType::kNumber)
+		{
+			RE::FormID form_id = static_cast<std::uint32_t>(result.GetNumber());
+			logger::trace("formid {}"sv, util::string_util::int_to_hex(form_id));
+			auto* item_form = RE::TESForm::LookupByID(form_id);
+			if (!item_form) return;
+
+			auto* player                  = RE::PlayerCharacter::GetSingleton();
+			RE::TESBoundObject* bound_obj = nullptr;
+			RE::ExtraDataList* extra      = nullptr;
+			game::boundObjectForForm(item_form, player, bound_obj, extra);
+
+			auto* selection     = new MenuSelection(form_id);
+			selection->count    = 0;
+			selection->poisoned = extra ? extra->HasType(RE::ExtraDataType::kPoison) : false;
+			selection->favorite = extra ? extra->HasType(RE::ExtraDataType::kHotkey) : false;
+			selection->equipped =
+				extra ? extra->HasType(RE::ExtraDataType::kWorn) || extra->HasType(RE::ExtraDataType::kWornLeft) :
+						false;
+			selection->bound_obj = bound_obj;
+			selection->form      = item_form;
+			outSelection         = selection;
+			return;
+		}
+	}
+
+	void MenuSelection::makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSelection)
+	{
+		if (!menu) return;
+
+		RE::FormID form_id = 0;
+		RE::GFxValue result;
+		menu->uiMovie->GetVariable(&result, "_root.Menu_mc.inventoryLists.itemList.selectedEntry.formId");
+		if (result.GetType() == RE::GFxValue::ValueType::kNumber)
+		{
+			form_id = static_cast<std::uint32_t>(result.GetNumber());
+			logger::debug("magic menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
+		}
+		else { logger::info("got result type: {}"sv, static_cast<uint8_t>(result.GetType())); }
+
+		auto* mfaves = RE::MagicFavorites::GetSingleton();
+
+		for (auto* form : mfaves->spells)
+		{
+			logger::info(
+				"mfave form: id={}; name='{}'"sv, util::string_util::int_to_hex(form->GetFormID()), form->GetName());
+			if (form->GetFormID() == form_id)
+			{
+				// match time
+				auto* selection      = new MenuSelection(form_id);
+				selection->count     = 0;
+				selection->poisoned  = false;
+				selection->favorite  = true;
+				selection->equipped  = false;  // TODO
+				selection->bound_obj = nullptr;
+				selection->form      = form;
+
+				outSelection = selection;
+				return;
+			}
+		}
+
+		if (form_id == 0) return;
+
+		// If we got here and we have a form id, then we were un-favorited.
+		auto* selection      = new MenuSelection(form_id);
+		selection->count     = 0;      // irrelevant
+		selection->poisoned  = false;  // irrelevant
+		selection->favorite  = false;  // we know this
+		selection->equipped  = false;  // we do not know this
+		selection->bound_obj = nullptr;
+		selection->form      = RE::TESForm::LookupByID(form_id);
+
+		outSelection = selection;
+	}
+
+	uint32_t MenuSelection::getSelectionFromMenu(RE::UI*& ui, MenuSelection*& outSelection)
+	{
+		if (!ui) return 0;
+
+		if (ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME))
+		{
+			auto* inventory_menu = static_cast<RE::InventoryMenu*>(ui->GetMenu(RE::InventoryMenu::MENU_NAME).get());
 			if (inventory_menu)
 			{
-				RE::GFxValue result;
-				//inventory_menu->uiMovie->SetPause(true);
-				inventory_menu->uiMovie->GetVariable(
-					&result, "_root.Menu_mc.inventoryLists.itemList.selectedEntry.formId");
-				if (result.GetType() == RE::GFxValue::ValueType::kNumber)
-				{
-					menu_form = static_cast<std::uint32_t>(result.GetNumber());
-					logger::trace("formid {}"sv, util::string_util::int_to_hex(menu_form));
-				}
+				MenuSelection::makeFromInventoryMenu(inventory_menu, outSelection);
+				if (outSelection) return outSelection->form_id;
 			}
 		}
 
-		if (a_ui->IsMenuOpen(RE::MagicMenu::MENU_NAME))
+		if (ui->IsMenuOpen(RE::MagicMenu::MENU_NAME))
 		{
-			auto* magic_menu = static_cast<RE::MagicMenu*>(a_ui->GetMenu(RE::MagicMenu::MENU_NAME).get());
+			auto* magic_menu = static_cast<RE::MagicMenu*>(ui->GetMenu(RE::MagicMenu::MENU_NAME).get());
 			if (magic_menu)
 			{
-				RE::GFxValue result;
-				magic_menu->uiMovie->GetVariable(&result, "_root.Menu_mc.inventoryLists.itemList.selectedEntry.formId");
-				if (result.GetType() == RE::GFxValue::ValueType::kNumber)
-				{
-					menu_form = static_cast<std::uint32_t>(result.GetNumber());
-					logger::trace("formid {}"sv, util::string_util::int_to_hex(menu_form));
-				}
+				MenuSelection::makeFromMagicMenu(magic_menu, outSelection);
+				if (outSelection) return outSelection->form_id;
 			}
 		}
 
-		if (a_ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
+		if (ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
 		{
-			auto* favorite_menu = static_cast<RE::FavoritesMenu*>(a_ui->GetMenu(RE::FavoritesMenu::MENU_NAME).get());
+			auto* favorite_menu = static_cast<RE::FavoritesMenu*>(ui->GetMenu(RE::FavoritesMenu::MENU_NAME).get());
 			if (favorite_menu)
 			{
-				RE::GFxValue result;
-				favorite_menu->uiMovie->GetVariable(&result, "_root.MenuHolder.Menu_mc.itemList.selectedEntry.formId");
-				if (result.GetType() == RE::GFxValue::ValueType::kNumber)
-				{
-					menu_form = static_cast<std::uint32_t>(result.GetNumber());
-					logger::trace("formid {}"sv, util::string_util::int_to_hex(menu_form));
-				}
+				MenuSelection::makeFromFavoritesMenu(favorite_menu, outSelection);
+				if (outSelection) return outSelection->form_id;
 			}
 		}
 
-		return menu_form;
+		return 0;
 	}
 
 	//  Two references for this implementation:
@@ -282,4 +406,77 @@ namespace helpers
 		// bool RemoveKeyword(BGSKeyword* a_keyword)
 	}
 	*/
+
+	bool itemIsFavorited(RE::TESForm* item_form)
+	{
+		auto* player = RE::PlayerCharacter::GetSingleton();
+
+		if (item_form->Is(RE::FormType::Spell))
+		{
+			RE::TESBoundObject* bound_spell = item_form->As<RE::SpellItem>()->GetMenuDisplayObject();
+			auto formid                     = bound_spell->GetFormID();
+			uint32_t item_count             = 0;
+			RE::ExtraDataList* extra        = nullptr;
+			std::vector<RE::ExtraDataList*> extra_vector;
+
+			std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+				player->GetInventory([formid](const RE::TESBoundObject& obj) { return obj.GetFormID() == formid; });
+
+			for (const auto& [item, inv_data] : candidates)
+			{
+				if (const auto& [num_items, entry] = inv_data; entry->object->formID == formid)
+				{
+					// bound_obj                   = item;
+					item_count                  = num_items;
+					auto simple_extra_data_list = entry->extraLists;
+					if (simple_extra_data_list)
+					{
+						for (auto* extra_data : *simple_extra_data_list)
+						{
+							extra = extra_data;
+							extra_vector.push_back(extra_data);
+							auto is_favorited = extra_data->HasType(RE::ExtraDataType::kHotkey);
+							auto is_poisoned  = extra_data->HasType(RE::ExtraDataType::kPoison);
+							auto worn_right   = extra_data->HasType(RE::ExtraDataType::kWorn);
+							auto worn_left    = extra_data->HasType(RE::ExtraDataType::kWornLeft);
+							logger::debug(
+								"extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
+								extra_data->GetCount(),
+								is_favorited,
+								is_poisoned,
+								worn_right,
+								worn_left);
+						}
+					}
+					break;
+				}
+			}
+
+
+			// auto* obj_refr = bound_spell->As<RE::TESObjectREFR>();
+			// auto extra     = obj_refr->extraList;
+			// return extra.HasType(RE::ExtraDataType::kHotkey);
+		}
+		else if (item_form->Is(RE::FormType::Shout))
+		{
+			// get inventory entry data somehow
+		}
+		else if (item_form->Is(RE::FormType::AlchemyItem))
+		{
+			// ditto
+		}
+		else if (item_form->Is(RE::FormType::Ammo))
+		{
+			// yeah
+		}
+		else
+		{
+			RE::TESBoundObject* bound_obj = nullptr;
+			RE::ExtraDataList* extra      = nullptr;
+			game::boundObjectForForm(item_form, player, bound_obj, extra);
+			if (extra) { return extra->HasType(RE::ExtraDataType::kHotkey); }
+		}
+
+		return false;
+	}
 }

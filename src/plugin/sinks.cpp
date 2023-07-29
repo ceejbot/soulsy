@@ -5,6 +5,7 @@
 #include "keycodes.h"
 #include "player.h"
 #include "ui_renderer.h"
+#include "gear.h"
 
 #include "lib.rs.h"
 
@@ -35,8 +36,20 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	auto* form = RE::TESForm::LookupByID(event->baseObject);
 	if (!form) { return event_result::kContinue; }
 
+	bool worn_right = false;
+	bool worn_left = false;
+
+	auto* player = RE::PlayerCharacter::GetSingleton();
+	RE::TESBoundObject* obj  = nullptr;
+	RE::ExtraDataList* extra = nullptr;
+	game::boundObjectForForm(form, player, obj, extra);
+	if (extra) {
+		worn_right = extra->HasType(RE::ExtraDataType::kWorn);
+		worn_left  = equippable::requiresTwoHands(form) ? false : extra->HasType(RE::ExtraDataType::kWornLeft);
+	}
+
 	auto item = equippable::makeItemDataFromForm(form);
-	handle_item_equipped(event->equipped, std::move(item));
+	handle_item_equipped(event->equipped, std::move(item), worn_right, worn_left);
 
 	return event_result::kContinue;
 }

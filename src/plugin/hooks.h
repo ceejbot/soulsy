@@ -18,6 +18,7 @@ namespace hooks
 			decltype(static_cast<RE::BSEventNotifyControl (RE::MenuControls::*)(RE::InputEvent* const*,
 					RE::BSTEventSource<RE::InputEvent*>*)>(&RE::MenuControls::ProcessEvent));
 		static inline REL::Relocation<process_event_type> process_event_;
+		static bool buttonMatchesEvent(RE::ControlMap* controlMap, RE::BSFixedString eventStr, RE::ButtonEvent* button);
 	};
 
 	class PlayerHook

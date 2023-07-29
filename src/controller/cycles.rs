@@ -211,7 +211,7 @@ impl CycleData {
             .any(|xs| xs.form_string() == item.form_string())
     }
 
-    pub fn include_item(&mut self, which: CycleSlot, item: ItemData) {
+    pub fn include_item(&mut self, which: CycleSlot, item: &ItemData) -> bool {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -222,8 +222,42 @@ impl CycleData {
             .iter()
             .any(|xs| xs.kind() == item.kind() || xs.form_string() == item.form_string())
         {
-            cycle.push(item);
+            cycle.push(item.clone());
+            true
+        } else {
+            false
         }
+    }
+
+    pub fn add_item(&mut self, which: CycleSlot, item: &ItemData) -> bool {
+        let cycle = match which {
+            CycleSlot::Power => &mut self.power,
+            CycleSlot::Left => &mut self.left,
+            CycleSlot::Right => &mut self.right,
+            CycleSlot::Utility => &mut self.utility,
+        };
+        if !cycle
+            .iter()
+            .any(|xs| xs.form_string() == item.form_string())
+        {
+            cycle.push(item.clone());
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn remove_item(&mut self, which: CycleSlot, item: &ItemData) -> bool {
+        let cycle = match which {
+            CycleSlot::Power => &mut self.power,
+            CycleSlot::Left => &mut self.left,
+            CycleSlot::Right => &mut self.right,
+            CycleSlot::Utility => &mut self.utility,
+        };
+
+        let orig_len = cycle.len();
+        cycle.retain(|xs| xs.form_string() != item.form_string());
+        orig_len != cycle.len()
     }
 
     pub fn filter_kind(&mut self, which: &CycleSlot, kind: ItemKind) {

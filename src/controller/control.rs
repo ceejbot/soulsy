@@ -58,8 +58,8 @@ impl Controller {
             UnarmedMethod::AddToCycles => {
                 let h2h = hand2hand_itemdata();
                 let h2h = *h2h;
-                self.cycles.include_item(CycleSlot::Left, h2h.clone());
-                self.cycles.include_item(CycleSlot::Right, h2h);
+                self.cycles.include_item(CycleSlot::Left, &h2h);
+                self.cycles.include_item(CycleSlot::Right, &h2h);
             }
             _ => {
                 // remove any item with h2h type from cycles
@@ -267,7 +267,6 @@ impl Controller {
 
         if let Some(next) = candidate {
             self.update_slot(hud, &next);
-            self.flush_cycle_data();
             KeyEventResponse {
                 handled: true,
                 start_timer: if !matches!(which, CycleSlot::Utility) {
@@ -290,10 +289,7 @@ impl Controller {
             return KeyEventResponse::default();
         }
 
-        log::debug!(
-            "user pressed hotkey: making decisions about the {} hand",
-            cycleslot
-        );
+        log::debug!("user requested to advance the {} hand", cycleslot);
 
         // We have two states to check
         let settings = user_settings();
@@ -450,7 +446,7 @@ impl Controller {
     fn update_and_record(&mut self, which: &CycleSlot, next: &ItemData) -> KeyEventResponse {
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
-        self.flush_cycle_data();
+        // self.flush_cycle_data();
 
         if user_settings().autofade() {
             show_briefly();
@@ -540,7 +536,7 @@ impl Controller {
 
         if matches!(which, Action::Power) {
             // Equip that fus-ro-dah, dovahkin!
-            log::info!("Fus-ro-dah!");
+            log::info!("Fus-ro-dah! {}!", item.name());
             cxx::let_cxx_string!(form_spec = item.form_string());
             equipShout(&form_spec);
             return;
@@ -595,16 +591,9 @@ impl Controller {
         &mut self,
         equipped: bool,
         #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
+        right: bool,
+        left: bool,
     ) -> bool {
-        log::trace!("is-now-equipped={}; name='{}'; item.kind={:?}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
-            equipped,
-            item.name(),
-            item.kind(),
-            self.two_hander_equipped,
-            self.left_hand_cached.clone().map_or("".to_string(), |xs| xs.name()),
-            self.right_hand_cached.clone().map_or("".to_string(), |xs| xs.name())
-        );
-
         if !equipped {
             return false;
         }
@@ -654,6 +643,18 @@ impl Controller {
         // the other decision happen as well. If the equip event was NOT driven
         // by the HUD, we have some more work to do.
 
+        // log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+        //     equipped,
+        //     right,
+        //     left,
+        //     item.name(),
+        //     item.kind(),
+        //     item.two_handed(),
+        //     self.two_hander_equipped,
+        //     self.left_hand_cached.clone().map_or("".to_string(), |xs| xs.name()),
+        //     self.right_hand_cached.clone().map_or("".to_string(), |xs| xs.name())
+        // );
+
         if item.two_handed() {
             let changed = self.update_slot(HudElement::Right, &item);
             if changed {
@@ -686,7 +687,6 @@ impl Controller {
             leftie.form_string(),
             self.two_hander_equipped
         );
-
         let leftvis = self
             .visible
             .get(&HudElement::Left)
@@ -696,67 +696,67 @@ impl Controller {
             .get(&HudElement::Right)
             .map_or("".to_string(), |xs| xs.form_string());
 
-        let leftvis_matches_equipped = leftvis == leftie.form_string();
+        let left_unexpected = leftvis != leftie.form_string();
+        let right_unexpected = rightvis != rightie.form_string();
 
-        let rightvis_matches_equipped = rightvis == rightie.form_string();
-
-        if rightvis_matches_equipped && self.two_hander_equipped {
-            if !leftvis_matches_equipped {
-                // force re-equip the left anyway, or it won't show up.
+        if right {
+            // update was out of band
+            if right_unexpected {
+                self.update_slot(HudElement::Right, &item);
+            } else {
+                // we expected the right hand change. Force the left hand to show what we wanted.
                 cxx::let_cxx_string!(form_spec = leftvis);
                 reequipHand(Action::Left, &form_spec);
             }
-            self.two_hander_equipped = false;
-            return false; // no more work to do
         }
 
-        let item_slotted_left = item.form_string() == leftie.form_string();
-        let item_slotted_right = item.form_string() == rightie.form_string();
-
-        let l_changed = if item_slotted_left {
-            // HUD update. This was out of band.
-            self.update_slot(HudElement::Left, &item)
-        } else {
-            false
-        };
-
-        let r_changed = if item_slotted_right {
-            // HUD update. This was out of band.
-            self.update_slot(HudElement::Right, &item)
-        } else {
-            false
-        };
-
-        if !self.two_hander_equipped {
-            // We are done. Phew.
-            return r_changed || l_changed;
-        }
-
-        if r_changed {
-            if let Some(prev_left) = self.left_hand_cached.clone() {
-                log::debug!("considering re-requipping or unequipping LEFT");
-                if prev_left.kind() == ItemKind::HandToHand {
-                    unequipSlot(Action::Left);
-                    self.update_slot(HudElement::Left, &prev_left);
-                } else {
-                    cxx::let_cxx_string!(form_spec = prev_left.form_string());
-                    reequipHand(Action::Left, &form_spec);
-                    self.update_slot(HudElement::Left, &prev_left);
-                }
-            }
-        } else if let Some(prev_right) = self.right_hand_cached.clone() {
-            log::debug!("considering re-requipping or unequipping RIGHT");
-            if prev_right.kind() == ItemKind::HandToHand {
-                unequipSlot(Action::Right);
-                self.update_slot(HudElement::Right, &prev_right);
+        if left {
+            // update was out of band
+            if left_unexpected {
+                self.update_slot(HudElement::Left, &item);
             } else {
-                cxx::let_cxx_string!(form_spec = prev_right.form_string());
+                // we expected the left hand change. Force the right hand to show what we wanted.
+                cxx::let_cxx_string!(form_spec = rightvis);
                 reequipHand(Action::Right, &form_spec);
             }
         }
 
+        if !self.two_hander_equipped {
+            // We are done. Phew.
+            return left_unexpected || right_unexpected;
+        }
+
+        // We just swapped from a two-hander to a one-hander.
+        // Now we earn our keep.
+
+        if right {
+            if let Some(prev_left) = self.left_hand_cached.clone() {
+                log::debug!("considering re-requipping or unequipping LEFT");
+                if prev_left.kind() == ItemKind::HandToHand {
+                    unequipSlot(Action::Left);
+                } else {
+                    cxx::let_cxx_string!(form_spec = prev_left.form_string());
+                    reequipHand(Action::Left, &form_spec);
+                }
+                self.update_slot(HudElement::Left, &prev_left);
+            }
+        }
+
+        if left {
+            if let Some(prev_right) = self.right_hand_cached.clone() {
+                log::debug!("considering re-requipping or unequipping RIGHT");
+                if prev_right.kind() == ItemKind::HandToHand {
+                    unequipSlot(Action::Right);
+                } else {
+                    cxx::let_cxx_string!(form_spec = prev_right.form_string());
+                    reequipHand(Action::Right, &form_spec);
+                }
+                self.update_slot(HudElement::Right, &prev_right);
+            }
+        }
+
         self.two_hander_equipped = item.two_handed();
-        r_changed || l_changed
+        left_unexpected || right_unexpected
     }
 
     /// Get the item equipped in a specific slot.
@@ -782,7 +782,7 @@ impl Controller {
         }
 
         let left_entry = boundObjectLeftHand();
-        let left_changed = self.update_slot(HudElement::Left, &left_entry);
+        let left_unexpected = self.update_slot(HudElement::Left, &left_entry);
         if !left_entry.two_handed() {
             self.left_hand_cached = Some(*left_entry.clone());
         }
@@ -802,7 +802,7 @@ impl Controller {
         };
 
         let changed =
-            right_changed || left_changed || power_changed || ammo_changed || utility_changed;
+            right_changed || left_unexpected || power_changed || ammo_changed || utility_changed;
 
         if changed {
             log::info!(
@@ -832,8 +832,122 @@ impl Controller {
         }
     }
 
-    pub fn handle_favorite_event(&mut self, _button: &ButtonEvent, _item: ItemData) {
-        todo!();
+    pub fn handle_favorite_event(
+        &mut self,
+        _button: &ButtonEvent,
+        is_favorite: bool,
+        item: ItemData,
+    ) {
+        let settings = user_settings();
+        if !settings.link_to_favorites() {
+            return;
+        }
+
+        log::info!("handle_favorite_event(); is_favorite={is_favorite};");
+        log::info!(
+            "    name='{}'; form={}; kind={:?}; two-handed={};",
+            item.name(),
+            item.form_string(),
+            item.kind(),
+            item.two_handed()
+        );
+
+        let maybe_message = if !is_favorite {
+            // This formerly-favorite item is now disliked.
+            if item.kind().is_utility() {
+                if self.cycles.remove_item(CycleSlot::Utility, &item) {
+                    Some(format!("{} removed from utilities cycle.", item.name()))
+                } else {
+                    None
+                }
+            } else if item.kind().is_power() {
+                if self.cycles.remove_item(CycleSlot::Power, &item) {
+                    Some(format!("{} removed from powers cycle.", item.name()))
+                } else {
+                    None
+                }
+            } else if item.two_handed() {
+                if self.cycles.remove_item(CycleSlot::Right, &item) {
+                    Some(format!("{} removed from right hand.", item.name()))
+                } else {
+                    None
+                }
+            } else {
+                let removed_right = self.cycles.remove_item(CycleSlot::Right, &item);
+                let removed_left = self.cycles.remove_item(CycleSlot::Left, &item);
+                if removed_right && removed_left {
+                    Some(format!("{} removed from both hands.", item.name()))
+                } else if removed_left {
+                    Some(format!("{} removed from left hand.", item.name()))
+                } else if removed_right {
+                    Some(format!("{} removed from right hand.", item.name()))
+                } else {
+                    None
+                }
+            }
+        } else {
+            // This item is a new fave! Add to whatever the appropriate cycle is.
+            if item.kind().is_utility() {
+                log::info!("attempting to add to utilities cycle...");
+                if self.cycles.add_item(CycleSlot::Utility, &item) {
+                    Some(format!("{} added to utilities cycle.", item.name()))
+                } else {
+                    None
+                }
+            } else if item.kind().is_power() {
+                log::info!("attempting to add to powers cycle...");
+                if self.cycles.add_item(CycleSlot::Power, &item) {
+                    Some(format!("{} added to powers cycle.", item.name()))
+                } else {
+                    None
+                }
+            } else if item.two_handed() {
+                if self.cycles.add_item(CycleSlot::Right, &item) {
+                    Some(format!("{} added to right hand.", item.name()))
+                } else {
+                    None
+                }
+            } else if matches!(item.kind(), ItemKind::Scroll) {
+                if self.cycles.add_item(CycleSlot::Right, &item) {
+                    Some(format!("{} added to right hand.", item.name()))
+                } else {
+                    None
+                }
+            } else if item.kind().is_spell() || (item.kind().right_hand_ok() && item.count() > 1) {
+                let added_right = self.cycles.add_item(CycleSlot::Right, &item);
+                let added_left = self.cycles.add_item(CycleSlot::Left, &item);
+                if added_right && added_left {
+                    Some(format!("{} added to both hands.", item.name()))
+                } else if added_left {
+                    Some(format!("{} added to left hand.", item.name()))
+                } else if added_right {
+                    Some(format!("{} added to right hand.", item.name()))
+                } else {
+                    None
+                }
+            } else if item.kind().right_hand_ok() {
+                if self.cycles.add_item(CycleSlot::Right, &item) {
+                    Some(format!("{} added to right hand.", item.name()))
+                } else {
+                    None
+                }
+            } else {
+                if self.cycles.add_item(CycleSlot::Left, &item) {
+                    Some(format!("{} added to left hand.", item.name()))
+                } else {
+                    None
+                }
+            }
+        };
+
+        if let Some(msg) = maybe_message {
+            log::info!("{msg}");
+            cxx::let_cxx_string!(message = msg);
+            notifyPlayer(&message);
+            self.flush_cycle_data();
+        } else {
+            log::info!("no changes made.");
+        }
     }
 
     pub fn handle_menu_event(&mut self, key: u32, button: &ButtonEvent) -> bool {

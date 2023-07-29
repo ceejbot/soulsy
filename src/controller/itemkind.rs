@@ -38,6 +38,11 @@ impl ItemKind {
 
     /// Check if this entry is a magic spell or scroll of any type.
     pub fn is_magic(&self) -> bool {
+        self.is_spell() || matches!(*self, ItemKind::Scroll)
+    }
+
+    /// is a spell specifically, not a scroll
+    pub fn is_spell(&self) -> bool {
         matches!(
             *self,
             ItemKind::Alteration
@@ -49,7 +54,6 @@ impl ItemKind {
                 | ItemKind::Illusion
                 | ItemKind::Restoration
                 | ItemKind::SpellDefault
-                | ItemKind::Scroll
         )
     }
 

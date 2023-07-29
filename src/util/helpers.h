@@ -10,7 +10,8 @@ namespace helpers
 {
 	RE::TESForm* formSpecToFormItem(const std::string& a_str);
 	std::string makeFormSpecString(RE::TESForm* form);
-	uint32_t getSelectedFormFromMenu(RE::UI*& a_ui);
+	// uint32_t getSelectedFormFromMenu(RE::UI*& a_ui);
+
 
 	void notifyPlayer(const std::string& message);
 	void startAlphaTransition(const bool shift, const float target);
@@ -27,6 +28,27 @@ namespace helpers
 	// Called by the controller when the cycle timeout fires.
 	void exitSlowMotion();
 
+	bool itemIsFavorited(RE::TESForm* item_form);
+
 	//void addCycleKeyword(const std::string& form_spec);
 	//void removeCycleKeyword(const std::string& form_spec);
+
+
+	struct MenuSelection
+	{
+		static uint32_t getSelectionFromMenu(RE::UI*& a_ui, MenuSelection*& outSelection);
+		static void makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelection*& outSelection);
+		static void makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSelection);
+		static void makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection*& outSelection);
+
+		MenuSelection(RE::FormID formid);
+
+		RE::FormID form_id;
+		bool favorite;
+		bool poisoned;
+		bool equipped;
+		uint32_t count;
+		RE::TESBoundObject* bound_obj;
+		RE::TESForm* form;
+	};
 }

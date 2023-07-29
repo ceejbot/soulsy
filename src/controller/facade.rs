@@ -93,13 +93,18 @@ pub fn update_hud() -> bool {
 }
 
 /// We know for sure the player just equipped this item.
-pub fn handle_item_equipped(equipped: bool, item: Box<ItemData>) -> bool {
-    control::get().handle_item_equipped(equipped, item)
+pub fn handle_item_equipped(equipped: bool, item: Box<ItemData>, right: bool, left: bool) -> bool {
+    control::get().handle_item_equipped(equipped, item, right, left)
 }
 
 /// A consumable's count changed. Record if relevant.
 pub fn handle_inventory_changed(item: Box<ItemData>, count: i32) {
     control::get().handle_inventory_changed(item, count);
+}
+
+pub fn handle_favorite_event(button: &ButtonEvent, is_favorite: bool, item: Box<ItemData>)
+{
+    control::get().handle_favorite_event(button, is_favorite, *item);
 }
 
 pub fn refresh_user_settings() {

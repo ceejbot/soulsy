@@ -55,8 +55,8 @@ namespace player
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		game::boundObjectForForm(item_form, player, bound_obj, extra);
-		if (!bound_obj) { return equippable::makeItemDataFromForm(item_form); }
 
+		if (!bound_obj) { return equippable::makeItemDataFromForm(item_form); }
 		return equippable::makeItemDataFromForm(bound_obj);
 	}
 

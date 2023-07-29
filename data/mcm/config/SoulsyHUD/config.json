@@ -110,7 +110,7 @@
       }
     },
     {
-      "id": "bFavoritingToggles:Options",
+      "id": "bLinkToFavorites:Options",
       "text": "$SoulsyHUD_Options_Favoriting_Text",
       "help": "$SoulsyHUD_Options_Favoriting_Help",
       "type": "toggle",

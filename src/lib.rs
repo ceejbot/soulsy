@@ -277,6 +277,8 @@ pub mod plugin {
         fn slow_time_factor(self: &UserSettings) -> f32;
         /// How long to spend fading in or out.
         fn fade_time(self: &UserSettings) -> u32;
+        /// If we care about favorites.
+        fn link_to_favorites(self: &UserSettings) -> bool;
 
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
@@ -332,9 +334,11 @@ pub mod plugin {
         /// Update the entire HUD without any hints about what just changed.
         fn update_hud() -> bool;
         /// Handle equipment-changed events from the game.
-        fn handle_item_equipped(equipped: bool, item: Box<ItemData>) -> bool;
+        fn handle_item_equipped(equipped: bool, item: Box<ItemData>, right: bool, left: bool) -> bool;
         /// Handle inventory-count changed events from the game.
         fn handle_inventory_changed(item: Box<ItemData>, delta: i32);
+        /// Favoriting & unfavoriting.
+        fn handle_favorite_event(_button: &ButtonEvent, is_favorite: bool, _item: Box<ItemData>);
     }
 
     #[namespace = "RE"]
