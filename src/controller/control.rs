@@ -73,9 +73,9 @@ impl Controller {
 
         if !settings.autofade() {
             if self.cycles.hud_visible() {
-                fadeToAlpha(true, 1.0);
+                startAlphaTransition(true, 1.0);
             } else {
-                fadeToAlpha(false, 0.0);
+                startAlphaTransition(false, 0.0);
             }
         }
     }
@@ -290,7 +290,10 @@ impl Controller {
             return KeyEventResponse::default();
         }
 
-        log::debug!("considering cycling item in {} hand", cycleslot);
+        log::debug!(
+            "user pressed hotkey: making decisions about the {} hand",
+            cycleslot
+        );
 
         // We have two states to check
         let settings = user_settings();
@@ -448,6 +451,11 @@ impl Controller {
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
         self.flush_cycle_data();
+
+        if user_settings().autofade() {
+            show_briefly();
+        }
+
         KeyEventResponse {
             handled: true,
             start_timer: if !matches!(which, CycleSlot::Utility) {

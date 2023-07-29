@@ -118,6 +118,7 @@ namespace ui
 		static void advanceTimers(float delta);
 		static void advanceTransition(float delta);
 		static void makeFadeDecision();
+		static void show_briefly();
 
 		struct d_3d_init_hook
 		{

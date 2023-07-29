@@ -369,11 +369,12 @@ pub mod plugin {
         /// Display a debug notification on the screen. Used as hacky action confirmation.
         fn notifyPlayer(message: &CxxString);
         /// Start the HUD widget fading in or out to the goal transparency.
-        fn fadeToAlpha(fade_in: bool, alpha: f32);
+        fn startAlphaTransition(fade_in: bool, alpha: f32);
         /// Enter slow time while cycling.
         fn enterSlowMotion();
         /// Exit slow time.
         fn exitSlowMotion();
+        fn show_briefly();
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.

@@ -98,7 +98,12 @@ namespace helpers
 		RE::DebugNotification(msg);
 	}
 
-	void fadeToAlpha(const bool shift, const float target) { ui::ui_renderer::startAlphaTransition(shift, target); }
+	void startAlphaTransition(const bool shift, const float target) { ui::ui_renderer::startAlphaTransition(shift, target); }
+
+	void show_briefly()
+	{
+		ui::ui_renderer::show_briefly();
+	}
 
 	std::string makeFormSpecString(RE::TESForm* form)
 	{
@@ -156,7 +161,7 @@ namespace helpers
 		if (form != nullptr)
 		{
 			logger::trace(
-				"found form id for form spec=''; name='{}'; formID={}", a_str, form->GetName(), string_util::int_to_hex(form->GetFormID()));
+				"found form id for form spec='{}'; name='{}'; formID={}", a_str, form->GetName(), string_util::int_to_hex(form->GetFormID()));
 		}
 
 		return form;

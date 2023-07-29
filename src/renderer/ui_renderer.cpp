@@ -36,10 +36,11 @@ namespace ui
 	auto hud_alpha        = 1.0f;
 	auto goal_alpha       = 1.0f;
 	auto fade_in          = true;
-	auto fade_duration    = 3.0f;  // seconds
-	auto transition_timer = 2.0f;  // seconds
+	auto fade_duration    = 3.0f;   // seconds
+	auto transition_timer = 2.0f;   // seconds
 	auto is_transitioning = false;
 	auto fade_out_timer   = 0.33f;  // seconds
+	bool doing_brief_peek = false;
 
 	ImFont* loaded_font;
 	auto tried_font_load = false;
@@ -602,7 +603,7 @@ namespace ui
 						a_struct[index].width,
 						a_struct[index].height))
 				{
-						/*
+					/*
 					logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
 						entry.path().filename().string().c_str(),
 						entry.path().filename().extension().string().c_str(),
@@ -673,6 +674,14 @@ namespace ui
 	float ui_renderer::get_resolution_width() { return ImGui::GetIO().DisplaySize.x; }
 	float ui_renderer::get_resolution_height() { return ImGui::GetIO().DisplaySize.y; }
 
+	void ui_renderer::show_briefly()
+	{
+		if (doing_brief_peek || fade_in == true || hud_alpha == 1.0f) { return; }
+
+		doing_brief_peek = true;
+		ui_renderer::startAlphaTransition(true, 1.0f);
+	}
+
 	void ui_renderer::startAlphaTransition(const bool a_in, const float a_value)
 	{
 		if (a_in && hud_alpha == 1.0f) { return; }
@@ -707,6 +716,12 @@ namespace ui
 	{
 		if (helpers::hudShouldAutoFadeOut())
 		{
+			if (doing_brief_peek)
+			{
+				if (hud_alpha < 1.0f) { return; }
+				else { doing_brief_peek = false; }
+			}
+
 			if ((hud_alpha > 0.0f && !is_transitioning) || (is_transitioning && fade_in))
 			{
 				startAlphaTransition(false, 0.0f);

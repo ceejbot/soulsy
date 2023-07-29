@@ -59,8 +59,7 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 	// We start by figuring out if we need to do anything at all.
 	if (!event_list) { return event_result::kContinue; }
 
-	const auto relevantMenuOpen = helpers::relevantMenuOpen();
-	if (!relevantMenuOpen && helpers::ignoreKeyEvents()) { return event_result::kContinue; }
+	if (helpers::ignoreKeyEvents()) { return event_result::kContinue; }
 
 	// We might get a list of events to handle.
 	for (auto* event = *event_list; event; event = event->next)

@@ -13,7 +13,8 @@ namespace helpers
 	uint32_t getSelectedFormFromMenu(RE::UI*& a_ui);
 
 	void notifyPlayer(const std::string& message);
-	void fadeToAlpha(const bool shift, const float target);
+	void startAlphaTransition(const bool shift, const float target);
+	void show_briefly();
 	bool hudAllowedOnScreen();  // the authority on whether we should show the hud or not
 	bool hudShouldAutoFadeOut();
 	bool hudShouldAutoFadeIn();

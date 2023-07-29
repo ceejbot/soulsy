@@ -11,7 +11,7 @@ use super::control::MenuEventResponse;
 use super::itemdata::*;
 use super::keys::CycleSlot;
 use super::user_settings;
-use crate::plugin::{fadeToAlpha, hasItemOrSpell, playerName, ItemKind};
+use crate::plugin::{hasItemOrSpell, playerName, startAlphaTransition, ItemKind};
 
 /// Manage the player's configured item cycles. Track changes, persist data in
 /// files, and advance the cycle when the player presses a cycle button. This
@@ -240,9 +240,9 @@ impl CycleData {
         if visible != self.hud_visible {
             self.hud_visible = visible;
             if visible {
-                fadeToAlpha(true, 1.0);
+                startAlphaTransition(true, 1.0);
             } else {
-                fadeToAlpha(false, 0.0);
+                startAlphaTransition(false, 0.0);
             }
             match self.write() {
                 Ok(_) => {}
@@ -320,7 +320,7 @@ impl CycleData {
             return Ok(());
         }
 
-        log::info!(
+        log::debug!(
             "writing cycles to disk; lengths are: powers={}; utilities={}; left={}; right={};",
             self.power.len(),
             self.utility.len(),
@@ -405,13 +405,13 @@ mod archive {
     }
 
     pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        let bytes: Vec<u8> = bytes.iter().map(|xs| *xs).collect();
+        let bytes: Vec<u8> = bytes.iter().copied().collect();
         let config = bincode::config::standard();
         match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
             Ok((value, _len)) => {
                 log::info!("Cycles successfully read from cosave data.");
                 Some(value.into())
-            },
+            }
             Err(e) => {
                 log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
                 log::error!("{e:?}");
