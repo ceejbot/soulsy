@@ -149,8 +149,6 @@ namespace helpers
 		if (plugin == util::dynamic_name) { form = RE::TESForm::LookupByID(form_id); }
 		else
 		{
-			logger::trace("looking for form={}; checking plugin='{}';"sv, form_id, plugin);
-
 			const auto data_handler = RE::TESDataHandler::GetSingleton();
 			form                    = data_handler->LookupForm(form_id, plugin);
 		}
@@ -158,7 +156,7 @@ namespace helpers
 		if (form != nullptr)
 		{
 			logger::trace(
-				"found it! name='{}'; formID={}", form->GetName(), string_util::int_to_hex(form->GetFormID()));
+				"found form id for form spec=''; name='{}'; formID={}", a_str, form->GetName(), string_util::int_to_hex(form->GetFormID()));
 		}
 
 		return form;

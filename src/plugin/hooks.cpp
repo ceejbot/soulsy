@@ -9,7 +9,6 @@ namespace hooks
 	{
 		PlayerHook::install();
 		MenuHook::install();
-		FavoritesHook::install();
 	}
 
 	// ---------- MenuHook
@@ -29,9 +28,14 @@ namespace hooks
 	{
 		auto* ui                        = RE::UI::GetSingleton();
 		rust::Box<UserSettings> hotkeys = user_settings();
-		//auto relevantMenuOpen           = helpers::relevantMenuOpen();
+		auto relevantMenuOpen           = helpers::relevantMenuOpen();
 
-		// if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
+		if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
+
+		// auto* mapping = RE::ControlMap::GetSingleton();
+		// auto favconst = RE::UserEvents::GetSingleton()->toggleFavorite;
+		// auto favkey = mapping->GetMappedKey(favconst, RE::INPUT_DEVICE::kKeyboard, RE::UserEvents::INPUT_CONTEXT_ID::kInventory);
+		// auto favbutton = mapping->GetMappedKey(favconst, RE::INPUT_DEVICE::kGamepad, RE::UserEvents::INPUT_CONTEXT_ID::kInventory);
 
 		if (eventPtr && *eventPtr)
 		{
@@ -41,7 +45,17 @@ namespace hooks
 
 				auto* button = static_cast<RE::ButtonEvent*>(event);
 				if (button->idCode == keycodes::k_invalid) { continue; }
+
 				auto key       = keycodes::get_key_id(button);
+				/*
+				if (button->IsUp()) {
+					auto underlying = button->GetDevice();
+					auto maybe = mapping->GetMappedKey(favconst, underlying, RE::UserEvents::INPUT_CONTEXT_ID::kMenuMode);
+					logger::info("is this a {} key? (points at butterfly) {}; favkey={} maybe={}"sv, favconst, key, favkey, maybe);
+				}
+				*/
+
+				// we send all key events to this handler because it needs to track modifiers
 				auto do_toggle = handle_menu_event(key, *button);
 
 				if (do_toggle)
@@ -152,24 +166,5 @@ namespace hooks
 				handle_inventory_changed(std::move(item), count);
 			}
 		}
-	}
-
-	// ---------- Favorites
-
-	void FavoritesHook::install()
-	{
-		logger::info("Hooking favorites handler..."sv);
-		REL::Relocation<std::uintptr_t> favorites_handler_vtbl{ RE::VTABLE_FavoritesHandler[0] };
-		process_button_ = favorites_handler_vtbl.write_vfunc(0x5, &FavoritesHook::processButtonEvent);
-
-		logger::info("Favorites hooked."sv);
-	}
-
-	bool FavoritesHook::processButtonEvent(RE::ButtonEvent* event)
-	{
-		logger::info("congrats! you have hooked into button events on the favorites menu.");
-		logger::info("button: idCode={};"sv, event->GetIDCode());
-
-		return process_button_(event);
 	}
 }

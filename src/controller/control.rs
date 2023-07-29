@@ -795,7 +795,6 @@ impl Controller {
         let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
 
         let utility_changed = if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {
-            log::debug!("utility item starts at name='{}';", utility.name());
             self.update_slot(HudElement::Utility, &utility);
             true
         } else {

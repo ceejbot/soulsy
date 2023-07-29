@@ -55,30 +55,4 @@ namespace hooks
 			add_item_functor(RE::TESObjectREFR* a_this, RE::TESObjectREFR* a_object, int32_t a_count, bool a4, bool a5);
 		static inline REL::Relocation<decltype(add_item_functor)> add_item_functor_;
 	};
-
-	class FavoritesHook
-	{
-	public:
-		static void install();
-
-	private:
-		static bool processButtonEvent(RE::ButtonEvent* event);
-
-		using func_t = decltype(static_cast<bool (RE::FavoritesHandler::*)(RE::ButtonEvent*)>
-			(&RE::FavoritesHandler::ProcessButton));
-		static inline REL::Relocation<decltype(processButtonEvent)> process_button_;
-
-//  bool (RE::FavoritesHandler::*)(RE::ButtonEvent *)
-// static inline REL::Relocation<hooks::FavoritesHook::func_t> hooks::FavoritesHook::process_button_
-
-
-/**
-		using process_event_type =
-			decltype(static_cast<RE::BSEventNotifyControl 
-				(RE::MenuControls::*)(RE::InputEvent* const*, RE::BSTEventSource<RE::InputEvent*>*)>
-				(&RE::MenuControls::ProcessEvent));
-
-*/
-
-	};
 }
