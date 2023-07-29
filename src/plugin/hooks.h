@@ -56,4 +56,18 @@ namespace hooks
 		static inline REL::Relocation<decltype(add_item_functor)> add_item_functor_;
 	};
 
+	class FavoritesHook
+	{
+	public:
+		static void install();
+
+	private:
+		static void pick_up_object(RE::Actor* a_this,
+			RE::TESObjectREFR* a_object,
+			uint32_t a_count,
+			bool a_arg3,
+			bool a_play_sound);
+		static inline REL::Relocation<decltype(pick_up_object)> pick_up_object_;
+	}
+
 }
