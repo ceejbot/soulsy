@@ -309,13 +309,13 @@ impl CycleData {
         to_check.iter().for_each(|xs| {
             let name = xs.1;
             let cycle = match &xs.0 {
-                CycleSlot::Power => &self.power,
-                CycleSlot::Utility => &self.utility,
-                CycleSlot::Left => &self.left,
-                CycleSlot::Right => &self.right,
+                CycleSlot::Power => &mut self.power,
+                CycleSlot::Utility => &mut self.utility,
+                CycleSlot::Left => &mut self.left,
+                CycleSlot::Right => &mut self.right,
             };
             log::info!("validating {name} cycle");
-            cycle.iter().for_each(|item| {
+            cycle.retain(|item| {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 let hasit = item.kind().is_ammo() || hasItemOrSpell(&form_spec);
                 log::info!(
@@ -326,10 +326,11 @@ impl CycleData {
                     item.form_string(),
                     hasit
                 );
+                hasit
             });
         });
-        log::info!("hud_visible: {}", self.hud_visible);
-        log::info!("Informational only. No changes made to cycle data. Have a nice day and remember to put on a cloak if it starts snowing.");
+        //log::info!("hud_visible: {}", self.hud_visible);
+        log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
     }
 
     // ---------- TOML serialization
