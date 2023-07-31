@@ -65,7 +65,7 @@ namespace ui
 	{
 		func();
 
-		logger::info("D3DInit Hooked"sv);
+		logger::info("D3DInit hooked so we can give imgui something to render to."sv);
 		const auto render_manager = RE::BSRenderManager::GetSingleton();
 		if (!render_manager)
 		{
@@ -83,6 +83,7 @@ namespace ui
 			logger::error("Cannot find game render manager. Initialization failed."sv);
 			return;
 		}
+		logger::info("Reticulating splines...");
 
 		logger::info("Getting DXGI swapchain desc..."sv);
 		DXGI_SWAP_CHAIN_DESC sd{};
@@ -112,9 +113,9 @@ namespace ui
 			logger::error("ImGui initialization failed (DX11)"sv);
 			return;
 		}
-		logger::info("ImGui initialized.");
 
 		initialized.store(true);
+		logger::info("Ready to render.");
 
 		wnd_proc_hook::func = reinterpret_cast<WNDPROC>(
 			SetWindowLongPtrA(sd.OutputWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wnd_proc_hook::thunk)));
@@ -560,7 +561,7 @@ namespace ui
 		get_resolution_scale_height();
 
 		const auto start = static_cast<uint32_t>(ItemKind::Alteration);
-		const auto end   = static_cast<uint32_t>(ItemKind::Whip);
+		const auto end   = static_cast<uint32_t>(ItemKind::SpellReflect);
 
 		for (uint32_t idx = start; idx <= end; idx++)
 		{
@@ -574,18 +575,23 @@ namespace ui
 			entrypath /= std::string(icon_file);
 
 			std::error_code ec;
+			if (!std::filesystem::exists(entrypath, ec))
+			{
+				auto fallback = get_icon_fallback(icon);
+				entrypath     = std::filesystem::path(file_path);
+				entrypath /= std::string(fallback);
+			}
+
 			if (std::filesystem::exists(entrypath, ec))
 			{
 				if (load_texture_from_file(
 						entrypath.string().c_str(), &a_struct[idx].texture, a_struct[idx].width, a_struct[idx].height))
 				{
-					/*
-					logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
+					logger::info("loading texture {}, type: {}, width: {}, height: {}"sv,
 						entrypath.filename().string().c_str(),
 						entrypath.filename().extension().string().c_str(),
 						a_struct[idx].width,
 						a_struct[idx].height);
-					*/
 
 					a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
 					a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);

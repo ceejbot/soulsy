@@ -963,7 +963,7 @@ impl Controller {
 
         if changed {
             log::info!(
-                "visible items changed: power='{}'; left='{}'; right='{}'; ammo='{}';",
+                "HUD updated. Now showing: power='{}'; left='{}'; right='{}'; ammo='{}';",
                 power.name(),
                 left_entry.name(),
                 right_entry.name(),
@@ -1039,14 +1039,12 @@ impl Controller {
         } else {
             // This item is a new fave! Add to whatever the appropriate cycle is.
             if item.kind().is_utility() {
-                log::info!("attempting to add to utilities cycle...");
                 if self.cycles.add_item(CycleSlot::Utility, &item) {
                     Some(format!("{} added to utilities cycle.", item.name()))
                 } else {
                     None
                 }
             } else if item.kind().is_power() {
-                log::info!("attempting to add to powers cycle...");
                 if self.cycles.add_item(CycleSlot::Power, &item) {
                     Some(format!("{} added to powers cycle.", item.name()))
                 } else {
@@ -1088,7 +1086,7 @@ impl Controller {
             cxx::let_cxx_string!(message = msg);
             notifyPlayer(&message);
         } else {
-            log::info!("no changes made.");
+            log::info!("Favoriting or unfavoriting didn't change cycles.");
         }
     }
 
@@ -1160,7 +1158,9 @@ impl Controller {
             Action::Utility => "utility items",
             _ => "any",
         };
+
         let message = format!("{} {} {} cycle", item.name(), verb, cyclename);
+        log::info!("{}; kind={:?};", message, item.kind());
         cxx::let_cxx_string!(msg = message);
         notifyPlayer(&msg);
     }

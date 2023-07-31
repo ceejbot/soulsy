@@ -18,6 +18,6 @@ pub mod settings;
 
 pub use facade::*;
 pub use itemdata::{empty_itemdata, hand2hand_itemdata, itemdata_from_formdata, ItemData};
-pub use itemkind::{get_icon_file, kind_has_count, kind_is_magic};
+pub use itemkind::{get_icon_fallback, get_icon_file, kind_has_count, kind_is_magic};
 pub use layout::{deserialize_align, hud_layout};
 pub use settings::{user_settings, UserSettings};

@@ -247,7 +247,7 @@ namespace player
 		game::boundObjectForForm(form, player, bound_obj, extra);
 		if (!bound_obj) { return; }
 
-		logger::info("re-equipping item in left hand; name='{}'; formID={}"sv,
+		logger::info("Re-equipping item in left hand; name='{}'; formID={}"sv,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
 		RE::BGSEquipSlot* slot;

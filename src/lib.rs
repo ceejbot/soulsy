@@ -167,9 +167,9 @@ pub mod plugin {
         Conjuration,
         Crossbow,
         Dagger,
-        DestructionFire,
-        DestructionFrost,
-        DestructionShock,
+        DestructionFire,  // novice
+        DestructionFrost, // novice
+        DestructionShock, // novice
         Destruction,
         Food,
         Halberd,
@@ -205,6 +205,55 @@ pub mod plugin {
         WeaponDefault,
         Whip,
         NotFound,
+        // must follow the earlier kinds
+        ArmorClothingHead,
+        ArmorClothingHands,
+        ArmorClothingFeet,
+        ArmorLightHead,
+        ArmorLightHands,
+        ArmorLightFeet,
+        ArmorHeavyHead,
+        ArmorHeavyHands,
+        ArmorHeavyFeet,
+        ArmorCloak,
+        ArmorBackpack,
+        ArmorBelt,
+        ArmorRing,
+        ArmorAmulet,
+        AlterationDetect,
+        AlterationFeather,
+        AlterationLight,
+        AlterationWind,
+        ConjurationBoundWeapon,
+        ConjurationSkeleton,
+        ConjurationSoulTrap,
+        ConjurationWolf,
+        ConjurationZombie,
+        DestructionFireApprentice,
+        DestructionFireAdept,
+        DestructionFireExpert,
+        DestructionFireMaster,
+        DestructionFrostApprentice,
+        DestructionFrostAdept,
+        DestructionFrostExpert,
+        DestructionFrostMaster,
+        DestructionShockApprentice,
+        DestructionShockAdept,
+        DestructionShockExpert,
+        DestructionShockMaster,
+        Flail,
+        Gun,
+        IllusionClairvoyance,
+        IllusionDemoralize,
+        IllusionMuffle,
+        IllusionNightEye,
+        RestorationCure,
+        RestorationHeal,
+        RestorationPoison,
+        RestorationSunDamage,
+        RestorationWard,
+        SpellParalyze,
+        SpellReflect,
     }
 
     /// This enum maps key presses to the desired action. More like a C/java
@@ -326,6 +375,7 @@ pub mod plugin {
         fn kind_is_magic(kind: ItemKind) -> bool;
         /// Get the filename of the svg icon matching this item. Not a full path.
         fn get_icon_file(kind: &ItemKind) -> String;
+        fn get_icon_fallback(kind: &ItemKind) -> String;
 
         // These are called by plugin hooks and sinks.
 

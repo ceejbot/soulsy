@@ -11,6 +11,10 @@ pub fn get_icon_file(kind: &ItemKind) -> String {
     kind.icon_file()
 }
 
+pub fn get_icon_fallback(kind: &ItemKind) -> String {
+    kind.fallback_kind().icon_file()
+}
+
 pub fn kind_has_count(kind: ItemKind) -> bool {
     kind.count_matters()
 }
@@ -54,6 +58,38 @@ impl ItemKind {
                 | ItemKind::Illusion
                 | ItemKind::Restoration
                 | ItemKind::SpellDefault
+                | ItemKind::AlterationDetect
+                | ItemKind::AlterationFeather
+                | ItemKind::AlterationLight
+                | ItemKind::AlterationWind
+                | ItemKind::ConjurationSkeleton
+                | ItemKind::ConjurationSoulTrap
+                | ItemKind::ConjurationWolf
+                | ItemKind::ConjurationZombie
+                | ItemKind::DestructionFireApprentice
+                | ItemKind::DestructionFireAdept
+                | ItemKind::DestructionFireExpert
+                | ItemKind::DestructionFireMaster
+                | ItemKind::DestructionFrostApprentice
+                | ItemKind::DestructionFrostAdept
+                | ItemKind::DestructionFrostExpert
+                | ItemKind::DestructionFrostMaster
+                | ItemKind::DestructionShockApprentice
+                | ItemKind::DestructionShockAdept
+                | ItemKind::DestructionShockExpert
+                | ItemKind::DestructionShockMaster
+                | ItemKind::IllusionClairvoyance
+                | ItemKind::IllusionDemoralize
+                | ItemKind::IllusionMuffle
+                | ItemKind::IllusionNightEye
+                | ItemKind::RestorationCure
+                | ItemKind::RestorationHeal
+                | ItemKind::RestorationPoison
+                | ItemKind::RestorationSunDamage
+                | ItemKind::RestorationWard
+                | ItemKind::SpellParalyze
+                | ItemKind::SpellReflect
+                | ItemKind::ConjurationBoundWeapon
         )
     }
 
@@ -113,6 +149,19 @@ impl ItemKind {
                 | ItemKind::ArmorLight
                 | ItemKind::Lantern
                 | ItemKind::Mask
+                | ItemKind::ArmorClothingHead
+                | ItemKind::ArmorClothingHands
+                | ItemKind::ArmorClothingFeet
+                | ItemKind::ArmorLightHead
+                | ItemKind::ArmorLightHands
+                | ItemKind::ArmorLightFeet
+                | ItemKind::ArmorHeavyHead
+                | ItemKind::ArmorHeavyHands
+                | ItemKind::ArmorHeavyFeet
+                | ItemKind::ArmorCloak
+                | ItemKind::ArmorBackpack
+                | ItemKind::ArmorRing
+                | ItemKind::ArmorAmulet
         )
     }
 
@@ -162,25 +211,128 @@ impl ItemKind {
     ///
     /// These are consumables like potions and food, armor items, and poisons.
     pub fn is_utility(&self) -> bool {
-        matches!(
+        self.is_armor()
+            || matches!(
+                *self,
+                ItemKind::Arrow
+                    | ItemKind::Food
+                    | ItemKind::Lantern
+                    | ItemKind::Mask
+                    | ItemKind::PoisonDefault
+                    | ItemKind::PotionDefault
+                    | ItemKind::PotionFireResist
+                    | ItemKind::PotionFrostResist
+                    | ItemKind::PotionHealth
+                    | ItemKind::PotionMagicka
+                    | ItemKind::PotionMagicResist
+                    | ItemKind::PotionShockResist
+                    | ItemKind::PotionStamina
+            )
+    }
+
+    /// If the player's layout doesn't have a specific icon for this kind, we use a more
+    /// generic one.
+    pub fn fallback_kind(&self) -> &ItemKind {
+        if matches!(
             *self,
-            ItemKind::Arrow
-                | ItemKind::ArmorClothing
-                | ItemKind::ArmorHeavy
-                | ItemKind::ArmorLight
-                | ItemKind::Food
-                | ItemKind::Lantern
-                | ItemKind::Mask
-                | ItemKind::PoisonDefault
-                | ItemKind::PotionDefault
-                | ItemKind::PotionFireResist
-                | ItemKind::PotionFrostResist
-                | ItemKind::PotionHealth
-                | ItemKind::PotionMagicka
-                | ItemKind::PotionMagicResist
-                | ItemKind::PotionShockResist
-                | ItemKind::PotionStamina
-        )
+            ItemKind::ArmorClothingHead
+                | ItemKind::ArmorClothingHands
+                | ItemKind::ArmorClothingFeet
+        ) {
+            return &ItemKind::ArmorClothing;
+        }
+        if matches!(
+            *self,
+            ItemKind::ArmorLightHead | ItemKind::ArmorLightHands | ItemKind::ArmorLightFeet
+        ) {
+            return &ItemKind::ArmorLight;
+        }
+        if matches!(
+            *self,
+            ItemKind::ArmorHeavyHead | ItemKind::ArmorHeavyHands | ItemKind::ArmorHeavyFeet
+        ) {
+            return &ItemKind::ArmorClothing;
+        }
+        if matches!(
+            *self,
+            ItemKind::ArmorCloak
+                | ItemKind::ArmorBackpack
+                | ItemKind::ArmorRing
+                | ItemKind::ArmorAmulet
+        ) {
+            return &ItemKind::ArmorClothing;
+        }
+        if matches!(
+            *self,
+            ItemKind::AlterationDetect
+                | ItemKind::AlterationLight
+                | ItemKind::AlterationWind
+                | ItemKind::AlterationFeather
+        ) {
+            return &ItemKind::Alteration;
+        }
+        if matches!(
+            *self,
+            ItemKind::ConjurationSoulTrap
+                | ItemKind::ConjurationZombie
+                | ItemKind::ConjurationBoundWeapon
+        ) {
+            return &ItemKind::Conjuration;
+        }
+        if matches!(
+            *self,
+            ItemKind::DestructionFireApprentice
+                | ItemKind::DestructionFireAdept
+                | ItemKind::DestructionFireExpert
+                | ItemKind::DestructionFireMaster
+        ) {
+            return &ItemKind::DestructionFire;
+        }
+        if matches!(
+            *self,
+            ItemKind::DestructionFrostApprentice
+                | ItemKind::DestructionFrostAdept
+                | ItemKind::DestructionFrostExpert
+                | ItemKind::DestructionFrostMaster
+        ) {
+            return &ItemKind::DestructionFrost;
+        }
+        if matches!(
+            *self,
+            ItemKind::DestructionShockApprentice
+                | ItemKind::DestructionShockAdept
+                | ItemKind::DestructionShockExpert
+                | ItemKind::DestructionShockMaster
+        ) {
+            return &ItemKind::DestructionShock;
+        }
+        if matches!(
+            *self,
+            ItemKind::IllusionClairvoyance
+                | ItemKind::IllusionDemoralize
+                | ItemKind::IllusionMuffle
+                | ItemKind::IllusionNightEye
+        ) {
+            return &ItemKind::Illusion;
+        }
+        if matches!(
+            *self,
+            ItemKind::RestorationCure
+                | ItemKind::RestorationHeal
+                | ItemKind::RestorationPoison
+                | ItemKind::RestorationSunDamage
+                | ItemKind::RestorationWard
+        ) {
+            return &ItemKind::Restoration;
+        }
+        if matches!(*self, ItemKind::Flail | ItemKind::Gun) {
+            return &ItemKind::WeaponDefault;
+        }
+        if matches!(*self, ItemKind::SpellParalyze | ItemKind::SpellReflect) {
+            return &ItemKind::Alteration;
+        }
+
+        &ItemKind::IconDefault
     }
 }
 
@@ -265,6 +417,145 @@ static ICON_MAP: Lazy<HashMap<ItemKind, String>> = Lazy::new(|| {
             "weapon_sword_one_handed.svg".to_string(),
         ),
         (ItemKind::Whip, "weapon_whip.svg".to_string()),
+        // newer items
+        (
+            ItemKind::ArmorClothingHead,
+            "armor_clothing_head.svg".to_string(),
+        ),
+        (
+            ItemKind::ArmorClothingHands,
+            "armor_clothing_hands.svg".to_string(),
+        ),
+        (
+            ItemKind::ArmorClothingFeet,
+            "armor_clothing_feet.svg".to_string(),
+        ),
+        (ItemKind::ArmorLightHead, "armor_light_head.svg".to_string()),
+        (
+            ItemKind::ArmorLightHands,
+            "armor_light_hands.svg".to_string(),
+        ),
+        (ItemKind::ArmorLightFeet, "armor_light_feed.svg".to_string()),
+        (ItemKind::ArmorHeavyHead, "armor_heavy_head.svg".to_string()),
+        (
+            ItemKind::ArmorHeavyHands,
+            "armor_heavy_hands.svg".to_string(),
+        ),
+        (ItemKind::ArmorHeavyFeet, "armor_heavy_feet.svg".to_string()),
+        (ItemKind::ArmorCloak, "armor_cloak.svg".to_string()),
+        (ItemKind::ArmorBackpack, "armor_backpack.svg".to_string()),
+        (ItemKind::ArmorRing, "armor_ring.svg".to_string()),
+        (ItemKind::ArmorAmulet, "armor_amulet.svg".to_string()),
+        (
+            ItemKind::AlterationDetect,
+            "alteration_detect.svg".to_string(),
+        ),
+        (
+            ItemKind::AlterationFeather,
+            "alteration_feather.svg".to_string(),
+        ),
+        (
+            ItemKind::AlterationLight,
+            "alteration_light.svg".to_string(),
+        ),
+        (ItemKind::AlterationWind, "alteration_wind.svg".to_string()),
+        (
+            ItemKind::ConjurationBoundWeapon,
+            "conjuration_bound_weapon.svg".to_string(),
+        ),
+        (
+            ItemKind::ConjurationSoulTrap,
+            "conjuration_soultrap.svg".to_string(),
+        ),
+        (
+            ItemKind::ConjurationZombie,
+            "conjuration_zombie.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionFireApprentice,
+            "destruction_fire_apprentice.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionFireAdept,
+            "destruction_fire_adept.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionFireExpert,
+            "destruction_fire_expert.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionFireMaster,
+            "destruction_fire_master.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionFrostApprentice,
+            "destruction_frost_apprentice.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionFrostAdept,
+            "destruction_fire_adept.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionFrostExpert,
+            "destruction_fire_expert.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionFrostMaster,
+            "destruction_fire_master.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionShockApprentice,
+            "destruction_frost_apprentice.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionShockAdept,
+            "destruction_fire_adept.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionShockExpert,
+            "destruction_fire_expert.svg".to_string(),
+        ),
+        (
+            ItemKind::DestructionShockMaster,
+            "destruction_fire_master.svg".to_string(),
+        ),
+        (ItemKind::Flail, "flail.svg".to_string()),
+        (ItemKind::Gun, "gun.svg".to_string()),
+        (
+            ItemKind::IllusionClairvoyance,
+            "illusion_clairvoyance.svg".to_string(),
+        ),
+        (
+            ItemKind::IllusionDemoralize,
+            "illusion_demoralize.svg".to_string(),
+        ),
+        (ItemKind::IllusionMuffle, "illusion_muffle.svg".to_string()),
+        (
+            ItemKind::IllusionNightEye,
+            "illusion_nighteye.svg".to_string(),
+        ),
+        (
+            ItemKind::RestorationCure,
+            "restoration_cure.svg".to_string(),
+        ),
+        (
+            ItemKind::RestorationHeal,
+            "restoration_heal.svg".to_string(),
+        ),
+        (
+            ItemKind::RestorationPoison,
+            "restoration_poison.svg".to_string(),
+        ),
+        (
+            ItemKind::RestorationSunDamage,
+            "restoration_sundamage.svg".to_string(),
+        ),
+        (
+            ItemKind::RestorationWard,
+            "restoration_ward.svg".to_string(),
+        ),
+        (ItemKind::SpellParalyze, "spell_paralyze.svg".to_string()),
+        (ItemKind::SpellReflect, "spell_reflect.svg".to_string()),
     ])
 });
 
@@ -372,6 +663,96 @@ impl From<u8> for ItemKind {
             ItemKind::WeaponDefault
         } else if value == ItemKind::Whip.repr {
             ItemKind::Whip
+        } else if value == ItemKind::ArmorClothingHead.repr {
+            ItemKind::ArmorClothingHead
+        } else if value == ItemKind::ArmorClothingHands.repr {
+            ItemKind::ArmorClothingHands
+        } else if value == ItemKind::ArmorClothingFeet.repr {
+            ItemKind::ArmorClothingFeet
+        } else if value == ItemKind::ArmorLightHead.repr {
+            ItemKind::ArmorLightHead
+        } else if value == ItemKind::ArmorLightHands.repr {
+            ItemKind::ArmorLightHands
+        } else if value == ItemKind::ArmorLightFeet.repr {
+            ItemKind::ArmorLightFeet
+        } else if value == ItemKind::ArmorHeavyHead.repr {
+            ItemKind::ArmorHeavyHead
+        } else if value == ItemKind::ArmorHeavyHands.repr {
+            ItemKind::ArmorHeavyHands
+        } else if value == ItemKind::ArmorHeavyFeet.repr {
+            ItemKind::ArmorHeavyFeet
+        } else if value == ItemKind::ArmorCloak.repr {
+            ItemKind::ArmorCloak
+        } else if value == ItemKind::ArmorBackpack.repr {
+            ItemKind::ArmorBackpack
+        } else if value == ItemKind::ArmorRing.repr {
+            ItemKind::ArmorRing
+        } else if value == ItemKind::ArmorAmulet.repr {
+            ItemKind::ArmorAmulet
+        } else if value == ItemKind::AlterationDetect.repr {
+            ItemKind::AlterationDetect
+        } else if value == ItemKind::AlterationFeather.repr {
+            ItemKind::AlterationFeather
+        } else if value == ItemKind::AlterationLight.repr {
+            ItemKind::AlterationLight
+        } else if value == ItemKind::AlterationWind.repr {
+            ItemKind::AlterationWind
+        } else if value == ItemKind::ConjurationBoundWeapon.repr {
+            ItemKind::ConjurationBoundWeapon
+        } else if value == ItemKind::ConjurationSoulTrap.repr {
+            ItemKind::ConjurationSoulTrap
+        } else if value == ItemKind::ConjurationZombie.repr {
+            ItemKind::ConjurationZombie
+        } else if value == ItemKind::DestructionFireApprentice.repr {
+            ItemKind::DestructionFireApprentice
+        } else if value == ItemKind::DestructionFireAdept.repr {
+            ItemKind::DestructionFireAdept
+        } else if value == ItemKind::DestructionFireExpert.repr {
+            ItemKind::DestructionFireExpert
+        } else if value == ItemKind::DestructionFireMaster.repr {
+            ItemKind::DestructionFireMaster
+        } else if value == ItemKind::DestructionFrostApprentice.repr {
+            ItemKind::DestructionFrostApprentice
+        } else if value == ItemKind::DestructionFrostAdept.repr {
+            ItemKind::DestructionFrostAdept
+        } else if value == ItemKind::DestructionFrostExpert.repr {
+            ItemKind::DestructionFrostExpert
+        } else if value == ItemKind::DestructionFrostMaster.repr {
+            ItemKind::DestructionFrostMaster
+        } else if value == ItemKind::DestructionShockApprentice.repr {
+            ItemKind::DestructionShockApprentice
+        } else if value == ItemKind::DestructionShockAdept.repr {
+            ItemKind::DestructionShockAdept
+        } else if value == ItemKind::DestructionShockExpert.repr {
+            ItemKind::DestructionShockExpert
+        } else if value == ItemKind::DestructionShockMaster.repr {
+            ItemKind::DestructionShockMaster
+        } else if value == ItemKind::Flail.repr {
+            ItemKind::Flail
+        } else if value == ItemKind::Gun.repr {
+            ItemKind::Gun
+        } else if value == ItemKind::IllusionClairvoyance.repr {
+            ItemKind::IllusionClairvoyance
+        } else if value == ItemKind::IllusionDemoralize.repr {
+            ItemKind::IllusionDemoralize
+        } else if value == ItemKind::IllusionMuffle.repr {
+            ItemKind::IllusionMuffle
+        } else if value == ItemKind::IllusionNightEye.repr {
+            ItemKind::IllusionNightEye
+        } else if value == ItemKind::RestorationCure.repr {
+            ItemKind::RestorationCure
+        } else if value == ItemKind::RestorationHeal.repr {
+            ItemKind::RestorationHeal
+        } else if value == ItemKind::RestorationPoison.repr {
+            ItemKind::RestorationPoison
+        } else if value == ItemKind::RestorationSunDamage.repr {
+            ItemKind::RestorationSunDamage
+        } else if value == ItemKind::RestorationWard.repr {
+            ItemKind::RestorationWard
+        } else if value == ItemKind::SpellParalyze.repr {
+            ItemKind::SpellParalyze
+        } else if value == ItemKind::SpellReflect.repr {
+            ItemKind::SpellReflect
         } else {
             ItemKind::Empty
         }

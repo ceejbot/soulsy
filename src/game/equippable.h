@@ -24,4 +24,12 @@ namespace equippable
 	ItemKind subKindForConsumable(RE::TESForm*& form);
 	ItemKind subKindForArmor(RE::TESForm*& form);
 	ItemKind subKindForConsumableByEffect(RE::ActorValue& actor_value);
+
+	bool isAmulet(const RE::TESObjectARMO* armor);
+	bool isCloak(const RE::TESObjectARMO* armor);
+	bool isFeet(const RE::TESObjectARMO* armor);
+	bool isHands(const RE::TESObjectARMO* armor);
+	bool isHead(const RE::TESObjectARMO* armor);
+	bool isRing(const RE::TESObjectARMO* armor);
+
 }

@@ -116,10 +116,7 @@ namespace equippable
 				//Simple Wearable Lanterns do not have a keyword, but will be equipped on 49 (30+19)
 				return ItemKind::Lantern;
 			}
-			else if (armor->IsClothing() && armor->HasKeywordString("BOS_DisplayMaskKeyword"))
-			{
-				return ItemKind::Mask;
-			}
+			else if (armor->HasKeywordString("BOS_DisplayMaskKeyword")) { return ItemKind::Mask; }
 
 			return subKindForArmor(item_form);
 		}
@@ -155,43 +152,100 @@ namespace equippable
 
 	ItemKind subKindForWeapon(RE::TESForm*& item_form)
 	{
+		// ItemKind::Hammer, ItemKind::Lance, Scythe, Scimitar ?
 		if (!item_form || !item_form->IsWeapon()) { return ItemKind::IconDefault; }
-		switch (const auto* weapon = item_form->As<RE::TESObjectWEAP>(); weapon->GetWeaponType())
+
+		const auto* weapon = item_form->As<RE::TESObjectWEAP>();
+
+		// Bullet-proofing ourselves against mods doing different base weapon types.
+		if (weapon->HasKeywordString("WeapTypeClaw")) { return ItemKind::Claw; }
+		if (weapon->HasKeywordString("WeapTypeGun")) { return ItemKind::Gun; }
+		if (weapon->HasKeywordString("WeapTypeHalberd")) { return ItemKind::Halberd; }
+		if (weapon->HasKeywordString("WeapTypeKatana")) { return ItemKind::Katana; }
+		if (weapon->HasKeywordString("WeapTypePike")) { return ItemKind::Pike; }
+		if (weapon->HasKeywordString("WeapTypeQtrStaff")) { return ItemKind::QuarterStaff; }
+		if (weapon->HasKeywordString("WeapTypeRapier")) { return ItemKind::Rapier; }
+		if (weapon->HasKeywordString("WeapTypeWhip")) { return ItemKind::Whip; }
+
+		switch (weapon->GetWeaponType())
 		{
-			case RE::WEAPON_TYPE::kHandToHandMelee: return ItemKind::HandToHand;
-
-			case RE::WEAPON_TYPE::kOneHandSword:
-				if (weapon->HasKeywordString("WeapTypeRapier")) { return ItemKind::Rapier; }
-				else if (weapon->HasKeywordString("WeapTypeKatana")) { return ItemKind::Katana; }
-				return ItemKind::SwordOneHanded;
-
-			case RE::WEAPON_TYPE::kOneHandDagger:
-				if (weapon->HasKeywordString("WeapTypeClaw")) { return ItemKind::Claw; }
-				return ItemKind::Dagger;
-
-			case RE::WEAPON_TYPE::kOneHandAxe: return ItemKind::AxeOneHanded;
-
-			case RE::WEAPON_TYPE::kOneHandMace:
-				if (weapon->HasKeywordString("WeapTypeWhip")) { return ItemKind::Whip; }
-				return ItemKind::Mace;
-
-			case RE::WEAPON_TYPE::kTwoHandSword:
-				if (weapon->HasKeywordString("WeapTypePike")) { return ItemKind::Pike; }
-				return ItemKind::SwordTwoHanded;
-
-			case RE::WEAPON_TYPE::kTwoHandAxe:
-				if (weapon->HasKeywordString("WeapTypeHalberd")) { return ItemKind::Halberd; }
-				else if (weapon->HasKeywordString("WeapTypeQtrStaff")) { return ItemKind::QuarterStaff; }
-				return ItemKind::AxeTwoHanded;
-
 			case RE::WEAPON_TYPE::kBow: return ItemKind::Bow;
-
-			case RE::WEAPON_TYPE::kStaff: return ItemKind::Staff;
-
 			case RE::WEAPON_TYPE::kCrossbow: return ItemKind::Crossbow;
+			case RE::WEAPON_TYPE::kHandToHandMelee: return ItemKind::HandToHand;
+			case RE::WEAPON_TYPE::kOneHandAxe: return ItemKind::AxeOneHanded;
+			case RE::WEAPON_TYPE::kOneHandDagger: return ItemKind::Dagger;
+			case RE::WEAPON_TYPE::kOneHandMace: return ItemKind::Mace;
+			case RE::WEAPON_TYPE::kOneHandSword: return ItemKind::SwordOneHanded;
+			case RE::WEAPON_TYPE::kStaff: return ItemKind::Staff;
+			case RE::WEAPON_TYPE::kTwoHandAxe: return ItemKind::AxeTwoHanded;
+			case RE::WEAPON_TYPE::kTwoHandSword: return ItemKind::SwordTwoHanded;
 		}
 
-		return ItemKind::IconDefault;
+		return ItemKind::WeaponDefault;
+	}
+
+	using BipedObjectSlot = RE::BIPED_MODEL::BipedObjectSlot;
+
+	bool isAmulet(const RE::TESObjectARMO* armor) { return armor->HasPartOf(BipedObjectSlot::kAmulet); }
+
+	bool isBackpack(const RE::TESObjectARMO* armor)
+	{
+		// backpacks are 47
+		return armor->HasPartOf(BipedObjectSlot::kModBack);
+	}
+	bool isCloak(const RE::TESObjectARMO* armor)
+	{
+		// cloaks are 46
+		return armor->HasPartOf(BipedObjectSlot::kModBack);
+	}
+
+	bool isFeet(const RE::TESObjectARMO* armor)
+	{
+		return armor->HasPartOf(BipedObjectSlot::kFeet) || armor->HasPartOf(BipedObjectSlot::kCalves);
+	}
+	bool isHands(const RE::TESObjectARMO* armor)
+	{
+		return armor->HasPartOf(BipedObjectSlot::kHands) || armor->HasPartOf(BipedObjectSlot::kForearms);
+	}
+	bool isHead(const RE::TESObjectARMO* armor)
+	{
+		return armor->HasPartOf(BipedObjectSlot::kHead) || armor->HasPartOf(BipedObjectSlot::kHair) ||
+		       armor->HasPartOf(BipedObjectSlot::kCirclet);
+	}
+	bool isRing(const RE::TESObjectARMO* armor) { return armor->HasPartOf(BipedObjectSlot::kRing); }
+
+	ItemKind subKindForArmor(RE::TESForm*& item_form)
+	{
+		if (!item_form || !item_form->IsArmor()) { return ItemKind::IconDefault; }
+		const auto* armor = item_form->As<RE::TESObjectARMO>();
+
+		if (isRing(armor)) { return ItemKind::ArmorRing; }
+		else if (isAmulet(armor)) { return ItemKind::ArmorAmulet; }
+		else if (isCloak(armor)) { return ItemKind::ArmorCloak; }
+
+		if (armor->IsClothing())
+		{
+			if (isHead(armor)) { return ItemKind::ArmorClothingHead; }
+			else if (isHands(armor)) { return ItemKind::ArmorClothingHands; }
+			else if (isFeet(armor)) { return ItemKind::ArmorClothingFeet; }
+			else { return ItemKind::ArmorClothing; }
+		}
+		else if (armor->IsLightArmor())
+		{
+			if (isHead(armor)) { return ItemKind::ArmorLightHead; }
+			else if (isHands(armor)) { return ItemKind::ArmorLightHands; }
+			else if (isFeet(armor)) { return ItemKind::ArmorLightFeet; }
+			else { return ItemKind::ArmorLight; }
+		}
+		else if (armor->IsHeavyArmor())
+		{
+			if (isHead(armor)) { return ItemKind::ArmorHeavyHead; }
+			else if (isHands(armor)) { return ItemKind::ArmorHeavyHands; }
+			else if (isFeet(armor)) { return ItemKind::ArmorHeavyFeet; }
+			else { return ItemKind::ArmorHeavy; }
+		}
+
+		return ItemKind::ArmorHeavy;
 	}
 
 	ItemKind subKindForMagic(RE::TESForm*& item_form)
@@ -200,28 +254,123 @@ namespace equippable
 
 		auto* spell        = item_form->As<RE::SpellItem>();
 		const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
-		auto actor_value   = effect->GetMagickSkill();
-		if (actor_value == RE::ActorValue::kNone) { actor_value = effect->data.primaryAV; }
+		auto skill_level   = effect->GetMinimumSkillLevel();
+		auto magic_school  = effect->GetMagickSkill();
+		if (magic_school == RE::ActorValue::kNone) { magic_school = effect->data.primaryAV; }
 
-		switch (actor_value)
+		/*
+		kMagicka = 25,
+		kStamina = 26,
+		kHealRate = 27,
+		kMagickaRate = 28,
+		kStaminaRate = 29,
+		kParalysis = 53,
+		kInvisibility = 54,
+		kWaterBreathing = 57,
+		kWaterWalking = 58,
+		kTelekinesis = 88,
+
+		kCalm = 6,
+		kFrenzy = 8,
+		kDisarm = 9,
+		kCommandSummoned = 10,
+		kInvisibility = 11,
+		kDarkness = 13,
+		kNightEye = 14,
+		kTelekinesis = 20,
+		kParalysis = 21,
+		kTurnUndead = 24,
+ */
+
+		switch (effect->data.archetype)
 		{
-			case RE::ActorValue::kAlteration: return ItemKind::Alteration;
+			case RE::EffectArchetypes::ArchetypeID::kBoundWeapon: return ItemKind::ConjurationBoundWeapon;
+			// case RE::EffectArchetypes::ArchetypeID::kCalm: return ItemKind::ConjurationSoulTrap;  // no
+			case RE::EffectArchetypes::ArchetypeID::kCureDisease: return ItemKind::RestorationCure;
+			case RE::EffectArchetypes::ArchetypeID::kDemoralize: return ItemKind::IllusionDemoralize;
+			case RE::EffectArchetypes::ArchetypeID::kDetectLife: return ItemKind::AlterationDetect;
+			// case RE::EffectArchetypes::ArchetypeID::kFrenzy: return ItemKind::ConjurationSoulTrap;  // no
+			case RE::EffectArchetypes::ArchetypeID::kGuide: return ItemKind::IllusionClairvoyance;
+			// case RE::EffectArchetypes::ArchetypeID::kInvisibility: return ItemKind::ConjurationSoulTrap;  // no
+			case RE::EffectArchetypes::ArchetypeID::kLight: return ItemKind::AlterationLight;
+			case RE::EffectArchetypes::ArchetypeID::kReanimate: return ItemKind::ConjurationZombie;
+			case RE::EffectArchetypes::ArchetypeID::kSoulTrap: return ItemKind::ConjurationSoulTrap;
+			case RE::EffectArchetypes::ArchetypeID::kTurnUndead: return ItemKind::RestorationSunDamage;
+		}
 
-			case RE::ActorValue::kConjuration: return ItemKind::Conjuration;
+		switch (magic_school)
+		{
+			case RE::ActorValue::kAlteration:
+				{
+					switch (effect->data.primaryAV)
+					{
+						case RE::ActorValue::kCarryWeight: return ItemKind::AlterationFeather;
+						case RE::ActorValue::kSpeedMult: return ItemKind::AlterationWind;
+						case RE::ActorValue::kWaterBreathing: return ItemKind::Alteration;
+						case RE::ActorValue::kWaterWalking: return ItemKind::Alteration;
+					}
+					return ItemKind::Alteration;
+				}
+
+			case RE::ActorValue::kConjuration:
+				{
+					return ItemKind::Conjuration;
+				}
 
 			case RE::ActorValue::kDestruction:
 				switch (effect->data.resistVariable)
 				{
-					case RE::ActorValue::kResistFire: return ItemKind::DestructionFire;
-					case RE::ActorValue::kResistFrost: return ItemKind::DestructionFrost;
-					case RE::ActorValue::kResistShock: return ItemKind::DestructionShock;
+					case RE::ActorValue::kResistFire:
+						{
+							if (skill_level == 100) return ItemKind::DestructionFireMaster;
+							else if (skill_level >= 75) return ItemKind::DestructionFireExpert;
+							else if (skill_level >= 50) return ItemKind::DestructionFireAdept;
+							else if (skill_level >= 25) return ItemKind::DestructionFireApprentice;
+							else return ItemKind::DestructionFire;
+						}
+					case RE::ActorValue::kResistFrost:
+						{
+							if (skill_level == 100) return ItemKind::DestructionFrostMaster;
+							else if (skill_level >= 75) return ItemKind::DestructionFrostExpert;
+							else if (skill_level >= 50) return ItemKind::DestructionFrostAdept;
+							else if (skill_level >= 25) return ItemKind::DestructionFrostApprentice;
+							else return ItemKind::DestructionFrost;
+						}
+
+					case RE::ActorValue::kResistShock:
+						{
+							if (skill_level == 100) return ItemKind::DestructionShockMaster;
+							else if (skill_level >= 75) return ItemKind::DestructionShockExpert;
+							else if (skill_level >= 50) return ItemKind::DestructionShockAdept;
+							else if (skill_level >= 25) return ItemKind::DestructionShockApprentice;
+							else return ItemKind::DestructionShock;
+						}
+
 					default: return ItemKind::Destruction;
 				}
-			case RE::ActorValue::kIllusion: return ItemKind::Illusion;
+			case RE::ActorValue::kIllusion:
+				{
+					switch (effect->data.primaryAV)
+					{
+						case RE::ActorValue::kInvisibility: return ItemKind::Illusion;
+						case RE::ActorValue::kMovementNoiseMult: return ItemKind::IllusionMuffle;
+						case RE::ActorValue::kParalysis: return ItemKind::SpellParalyze;
+						case RE::ActorValue::kReflectDamage: return ItemKind::SpellReflect;
+					}
 
+					return ItemKind::Illusion;
+				}
 			case RE::ActorValue::kRestoration:
-				//might not fit all spells
-				return ItemKind::Restoration;
+				{
+					switch (effect->data.primaryAV)
+					{
+						case RE::ActorValue::kHealth: return ItemKind::RestorationHeal;
+						case RE::ActorValue::kWardPower: return ItemKind::RestorationWard;
+						case RE::ActorValue::kPoisonResist: return ItemKind::RestorationPoison;
+					}
+
+					return ItemKind::Restoration;
+				}
 
 			default: return ItemKind::SpellDefault;
 		}
@@ -232,24 +381,11 @@ namespace equippable
 		if (!item_form || !item_form->Is(RE::FormType::AlchemyItem)) { return ItemKind::IconDefault; }
 
 		auto* alchemy_potion = item_form->As<RE::AlchemyItem>();
-		if (alchemy_potion->IsFood()) { return ItemKind::Food; }
+		if (alchemy_potion->IsFood()) { return ItemKind::Food; }  // TODO soup, water, meat, veggies
 		if (alchemy_potion->IsPoison()) { return ItemKind::PoisonDefault; }
 
 		auto actor_value = getPotionEffect(alchemy_potion, false);
 		return subKindForConsumableByEffect(actor_value);
-	}
-
-	ItemKind subKindForArmor(RE::TESForm*& item_form)
-	{
-		if (!item_form || !item_form->IsArmor()) { return ItemKind::IconDefault; }
-		switch (const auto* armor = item_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
-		{
-			case RE::BIPED_MODEL::ArmorType::kLightArmor: return ItemKind::ArmorLight;
-			case RE::BIPED_MODEL::ArmorType::kHeavyArmor: return ItemKind::ArmorHeavy;
-			case RE::BIPED_MODEL::ArmorType::kClothing: return ItemKind::ArmorClothing;
-		}
-
-		return ItemKind::IconDefault;
 	}
 
 	ItemKind subKindForConsumableByEffect(RE::ActorValue& actor_value)

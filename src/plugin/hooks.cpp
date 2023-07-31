@@ -18,12 +18,12 @@ namespace hooks
 
 	void MenuHook::install()
 	{
-		logger::info("Hooking menu..."sv);
+		logger::info("Hooking menus to get keystrokes..."sv);
 
 		REL::Relocation<std::uintptr_t> menu_controls_vtbl{ RE::VTABLE_MenuControls[0] };
 		process_event_ = menu_controls_vtbl.write_vfunc(0x1, &MenuHook::process_event);
 
-		logger::info("Menu hooked."sv);
+		logger::info("Menus hooked."sv);
 	}
 
 	RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
@@ -70,7 +70,7 @@ namespace hooks
 						if (selection->bound_obj)
 						{
 							auto entry = equippable::makeItemDataFromForm(selection->bound_obj);
-							logger::debug("got bound object; name='{}'; kind={};"sv,
+							logger::trace("got bound object; name='{}'; kind={};"sv,
 								selection->bound_obj->GetName(),
 								static_cast<uint8_t>(entry->kind()));
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
@@ -78,7 +78,7 @@ namespace hooks
 						else if (selection->form)
 						{
 							auto entry = equippable::makeItemDataFromForm(selection->form);
-							logger::debug("got form; name='{}'; kind={}"sv,
+							logger::trace("got form; name='{}'; kind={}"sv,
 								selection->form->GetName(),
 								static_cast<uint8_t>(entry->kind()));
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
@@ -121,7 +121,7 @@ namespace hooks
 
 	void PlayerHook::install()
 	{
-		logger::info("Hooking player..."sv);
+		logger::info("Hooking player so we get equip events plus inventory changes..."sv);
 
 		REL::Relocation<std::uintptr_t> player_character_vtbl{ RE::VTABLE_PlayerCharacter[0] };
 		add_object_to_container_ = player_character_vtbl.write_vfunc(0x5A, add_object_to_container);

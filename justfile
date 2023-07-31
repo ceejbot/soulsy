@@ -137,12 +137,28 @@ build-layouts:
             mkdir -p "$dest/resources/fonts"
             cp -p "layouts/${font}" "$dest/resources/fonts"
         fi
+
         cd releases
         ${ar} -y -bsp0 -bso0 a "${name}.7z" "${name}"
         rm -rf "${name}"
         cd ..
         echo "Built ${name}.7z"
     done
+
+    # hexagons bestagons
+    dest="releases/SoulsyHUD-hexagons-1/SKSE/plugins"
+    mkdir -p $dest/resources/{backgrounds,fonts}
+    cp -p layouts/hexagons/SoulsyHUD_hexagons_lr.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -p layouts/hexagons/hexagons_lr.svg "$dest/resources/backgrounds/hud_bg.svg"
+    font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
+    cp -p "layouts/$font" "$dest/resources/fonts/"
+
+    dest="releases/SoulsyHUD-hexagons-2/SKSE/plugins"
+    mkdir -p $dest/resources/{backgrounds,fonts}
+    cp -p layouts/hexagons/SoulsyHUD_hexagons_tb.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -p layouts/hexagons/hexagons_tb.svg "$dest/resources/backgrounds/hud_bg.svg"
+    font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
+    cp -p "layouts/${font}" "$dest/resources/fonts/"
 
     # hexagons bestagons
     dest="releases/SoulsyHUD-hexagons-1/SKSE/plugins"
@@ -172,7 +188,13 @@ build-layouts:
     cp -p layouts/curvy/left-bottom-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
     cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
 
-    layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD-hexagons-1 SoulsyHUD-hexagons-2"
+    # build the icon remix
+    dest="releases/SoulsyHUD_icon_remix/SKSE/plugins"
+    mkdir -p ${dest}/resources
+    cp -p layouts/icon-remix/SoulsyHUD_ceejremix.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -rp layouts/icon-remix/icons "$dest/resources/"
+
+    layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD_icon_remix"
     cd releases
     for i in $layouts; do
          ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"

@@ -15,7 +15,6 @@ namespace papyrus
 	{
 		const auto* papyrus = SKSE::GetPapyrusInterface();
 		papyrus->Register(Register);
-		logger::info("Registered papyrus functions. return."sv);
 	}
 
 	bool Register(RE::BSScript::IVirtualMachine* a_vm)
@@ -24,7 +23,7 @@ namespace papyrus
 		a_vm->RegisterFunction("GetResolutionWidth", mcm_name, get_resolution_width);
 		a_vm->RegisterFunction("GetResolutionHeight", mcm_name, get_resolution_height);
 
-		logger::info("Registered {} class. return."sv, mcm_name);
+		logger::info("Registered papyrus functions for the MCM; classname {}."sv, mcm_name);
 		return true;
 	}
 
