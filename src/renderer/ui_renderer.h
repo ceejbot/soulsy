@@ -63,7 +63,7 @@ namespace ui
 			const ImVec2 size,
 			const float angle,
 			const Color color);
-		static void drawText(const char* text,
+		static void drawText(const std::string text,
 			const ImVec2 center,
 			const float font_size,
 			const Color color,

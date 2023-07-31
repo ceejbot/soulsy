@@ -17,7 +17,19 @@ namespace player
 {
 	using string_util = util::string_util;
 
-	rust::String playerName() { return RE::PlayerCharacter::GetSingleton()->GetName(); }
+	rust::Vec<uint16_t> playerName()
+	{
+		auto* name   = RE::PlayerCharacter::GetSingleton()->GetName();
+		auto cbytes = helpers::chars_to_vec(name);
+		rust::Vec<uint16_t> bytes;
+		bytes.reserve(cbytes.size() + 1);
+		for (auto iter = cbytes.cbegin(); iter != cbytes.cend(); iter++)
+		{
+			bytes.push_back(*iter);
+		}
+
+		return std::move(bytes);
+	}
 
 	bool isInCombat() { return RE::PlayerCharacter::GetSingleton()->IsInCombat(); }
 
@@ -94,7 +106,8 @@ namespace player
 
 		const auto formspec = helpers::makeFormSpecString(current_ammo);
 		auto count          = inventoryCount(current_ammo, RE::FormType::Ammo, player);
-		return itemdata_from_formdata(ItemKind::Arrow, false, true, count, current_ammo->GetName(), formspec);
+		auto chonker        = helpers::chars_to_vec(current_ammo->GetName());
+		return itemdata_from_formdata(ItemKind::Arrow, false, true, count, std::move(chonker), formspec);
 	}
 
 	void unequipSlot(Action which)

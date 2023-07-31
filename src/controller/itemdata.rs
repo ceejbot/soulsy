@@ -1,3 +1,4 @@
+use std::ffi::CString;
 use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
@@ -7,7 +8,13 @@ use crate::plugin::ItemKind;
 /// ItemData, exposed to C++ as an opaque type.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
 pub struct ItemData {
-    /// Player-visible name.
+    #[serde(skip)]
+    /// Player-visible name as its underlying bytes.
+    name_bytes: Vec<u8>,
+    #[serde(skip)]
+    /// a bit saying if we had to lose data to encode the name
+    name_is_utf8: bool,
+    /// Name as utf8
     name: String,
     /// A string that can be turned back into form data; for serializing.
     form_string: String,
@@ -19,6 +26,7 @@ pub struct ItemData {
     has_count: bool,
     /// Cached count from inventory data. Relies on hooks to be updated.
     count: u32,
+    #[serde(skip)]
     /// is currently highlighted for some reason
     highlighted: bool,
 }
@@ -33,36 +41,43 @@ impl PartialEq for ItemData {
 
 impl Display for ItemData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name())
+        write!(
+            f,
+            "name='{}'; form_string='{}'; kind='{:?}'",
+            self.name(),
+            self.form_string(),
+            self.kind()
+        )
     }
 }
 
-/// Make a ItemData struct from the given data.
+/// This is called from C++ when handing us a new item.
 pub fn itemdata_from_formdata(
     icon_kind: ItemKind,
     two_handed: bool,
     has_count: bool,
     count: u32,
-    name: &str,
+    bytes_ffi: &cxx::CxxVector<u8>,
     form_string: &str,
 ) -> Box<ItemData> {
+    let name_bytes: Vec<u8> = bytes_ffi.iter().map(|xs| *xs).collect();
     Box::new(ItemData::new(
         icon_kind,
         two_handed,
         has_count,
         count,
-        name,
+        name_bytes,
         form_string,
     ))
 }
 
 pub fn hand2hand_itemdata() -> Box<ItemData> {
-    Box::new(ItemData::new(
+    Box::new(ItemData::new_with_name(
         ItemKind::HandToHand,
         false,
         false,
         1,
-        "Unarmed",
+        "Unarmed".to_string(),
         "",
     ))
 }
@@ -74,17 +89,30 @@ pub fn empty_itemdata() -> Box<ItemData> {
 }
 
 impl ItemData {
-    /// This is called from C++ when handing us a new item.
     pub fn new(
         icon_kind: ItemKind,
         two_handed: bool,
         has_count: bool,
         count: u32,
-        name: &str,
+        name_bytes: Vec<u8>,
         form_string: &str,
     ) -> Self {
+        let mut name_is_utf8 = false;
+        let name = if let Ok(cstring) = CString::new(name_bytes.clone()) {
+            if let Ok(v) = cstring.clone().into_string() {
+                name_is_utf8 = true;
+                v
+            } else {
+                "".to_string() // todo try lossy
+            }
+        } else {
+            String::default()
+        };
+
         ItemData {
-            name: name.to_string(),
+            name,
+            name_bytes,
+            name_is_utf8,
             form_string: form_string.to_string(),
             kind: icon_kind,
             two_handed,
@@ -94,9 +122,40 @@ impl ItemData {
         }
     }
 
-    /// Get the name of the item. Cloned string. Might be empty string.
+    pub fn new_with_name(
+        icon_kind: ItemKind,
+        two_handed: bool,
+        has_count: bool,
+        count: u32,
+        name: String,
+        form_string: &str,
+    ) -> Self {
+        let mut name_bytes: Vec<u8> = name.as_bytes().iter().copied().collect();
+        name_bytes.push(0x00);
+        Self {
+            name,
+            name_bytes,
+            name_is_utf8: true,
+            form_string: form_string.to_string(),
+            kind: icon_kind,
+            two_handed,
+            has_count,
+            count,
+            highlighted: false,
+        }
+    }
+
+    /// Get the utf8 name of this item, if possible.
     pub fn name(&self) -> String {
         self.name.clone()
+    }
+
+    pub fn name_is_utf8(&self) -> bool {
+        self.name_is_utf8
+    }
+
+    pub fn name_bytes(&self) -> Vec<u8> {
+        self.name_bytes.clone()
     }
 
     /// Check if this item must be equipped with both hands.

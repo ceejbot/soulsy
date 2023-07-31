@@ -1,6 +1,7 @@
 ﻿#include "ui_renderer.h"
 #include "animation_handler.h"
 #include "constant.h"
+#include "gear.h"
 #include "helpers.h"
 #include "image_path.h"
 #include "key_path.h"
@@ -223,16 +224,16 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::drawText(const char* text,
+	void ui_renderer::drawText(const std::string text,
 		const ImVec2 center,
 		const float font_size,
 		const Color color,
 		const Align align)
 	{
-		if (!text || !*text || color.a == 0) { return; }
+		if (!text.length() || color.a == 0) { return; }
 
 		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a * hud_alpha);
-		const ImVec2 text_bounds = ImGui::CalcTextSize(text);
+		const ImVec2 text_bounds = ImGui::CalcTextSize(text.c_str());
 		auto* font               = loaded_font;
 		if (!font) { font = ImGui::GetDefaultFont(); }
 
@@ -243,7 +244,8 @@ namespace ui
 
 		ImVec2 aligned_center = ImVec2(center.x + adjustment, center.y);
 
-		ImGui::GetWindowDrawList()->AddText(font, font_size, aligned_center, text_color, text, nullptr, 0.0f, nullptr);
+		ImGui::GetWindowDrawList()->AddText(
+			font, font_size, aligned_center, text_color, text.c_str(), nullptr, 0.0f, nullptr);
 	}
 
 
@@ -395,7 +397,6 @@ namespace ui
 		anchor.y = std::max(hudsize.y / 2.0f, anchor.y);
 		anchor.y = std::min(screenHeight - hudsize.y / 2.0f, anchor.y);
 
-
 		// Draw the HUD background if requested.
 		if (top_layout.bg_color.a > 0)
 		{
@@ -410,9 +411,21 @@ namespace ui
 		{
 			rust::Box<ItemData> entry = entry_to_show_in_slot(slot_layout.element);
 			const auto entry_kind     = entry->kind();
-			const auto entry_name     = entry->name();
-			auto* name                = new std::string(entry_name);
-			const auto hotkey         = settings->hotkey_for(slot_layout.element);
+			auto entry_name           = std::string("");
+
+			// We use the data cached in the entry if at all possible
+			if (entry->name_is_utf8()) { entry_name = std::string(entry->name()); }
+			else
+			{
+				// use the bytes from the cstring, which are identical to the data the form gave us
+				// note that imgui cannot draw non-utf8-valid characters, so we'll get the ?? subs.
+				// I am *guessing* that the Flash menus are old enough that they handle UCS-16 BE
+				// data, which is why people do it. OMFG this explains the translation files too.
+				auto bytes = entry->name_bytes();
+				entry_name = helpers::vec_to_stdstring(bytes);
+			}
+
+			const auto hotkey = settings->hotkey_for(slot_layout.element);
 			const auto slot_center =
 				ImVec2(anchor.x + slot_layout.offset.x * global_scale, anchor.y + slot_layout.offset.y * global_scale);
 
@@ -454,12 +467,12 @@ namespace ui
 			*/
 
 			// Now decide if we should draw the text showing the item's name.
-			if (slot_layout.name_color.a > 0 && !entry_name.empty())
+			if (slot_layout.name_color.a > 0 && (entry_name.size() > 0))
 			{
 				const auto text_pos = ImVec2(slot_center.x + slot_layout.name_offset.x * global_scale,
 					slot_center.y + slot_layout.name_offset.y * global_scale);
 
-				drawText(name->c_str(),
+				drawText(entry_name,
 					text_pos,
 					top_layout.font_size * global_scale,
 					slot_layout.name_color,
@@ -477,7 +490,7 @@ namespace ui
 				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
-					drawText(slot_text.c_str(),
+					drawText(slot_text,
 						text_pos,
 						slot_layout.count_font_size * global_scale,
 						slot_layout.count_color,

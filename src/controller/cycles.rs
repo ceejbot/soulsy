@@ -1,7 +1,8 @@
 //! Management of the cycle data: serialization and mutation.
 
+use std::ffi::OsString;
 use std::fmt::Display;
-use std::path::PathBuf;
+use std::os::windows::ffi::OsStringExt;
 
 use anyhow::Result;
 use cxx::CxxVector;
@@ -29,7 +30,8 @@ pub struct CycleData {
 }
 
 // where to persist
-static CYCLE_PATH: &str = "./data/SKSE/Plugins";
+static CYCLE_PATH_START: &str = "./data/SKSE/Plugins/SoulsyHUD_";
+static CYCLE_PATH_END: &str = "_Cycles.toml";
 
 impl CycleData {
     /// Advance the given cycle by one. Returns a copy of the newly-top item.
@@ -278,12 +280,12 @@ impl CycleData {
             } else {
                 startAlphaTransition(false, 0.0);
             }
-            match self.write() {
-                Ok(_) => {}
-                Err(e) => {
-                    log::warn!("failed to persist cycle data on visibility change; {e:?}");
-                }
-            }
+            // match self.write() {
+            //     Ok(_) => {}
+            //     Err(e) => {
+            //         log::warn!("failed to persist cycle data on visibility change; {e:?}");
+            //     }
+            // }
         }
     }
 
@@ -318,14 +320,7 @@ impl CycleData {
             cycle.retain(|item| {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 let hasit = item.kind().is_ammo() || hasItemOrSpell(&form_spec);
-                log::info!(
-                    "    {}: name='{}'; kind={:?}; form={}; player has={};",
-                    name,
-                    item.name(),
-                    item.kind(),
-                    item.form_string(),
-                    hasit
-                );
+                log::info!("    {}: {item}; player has={};", name, hasit);
                 hasit
             });
         });
@@ -335,13 +330,22 @@ impl CycleData {
 
     // ---------- TOML serialization
 
-    /// Write the cycle data to its file.
-    fn cycle_storage() -> PathBuf {
-        let name = playerName()
+    /// Write the cycle data to its file. Yet another reason to get rid of this...
+    fn cycle_storage() -> OsString {
+        let bytes = playerName();
+        let name = OsString::from_wide(bytes.as_slice());
+        let name = name
+            .to_string_lossy()
             .trim()
             .replace(' ', "_")
             .replace(['\\', '\''], "");
-        PathBuf::from(CYCLE_PATH).join(format!("SoulsyHUD_{}_Cycles.toml", name))
+
+        let mut ret =
+            OsString::with_capacity(CYCLE_PATH_START.len() + name.len() + CYCLE_PATH_END.len());
+        ret.push(OsString::from(CYCLE_PATH_START));
+        ret.push(name);
+        ret.push(OsString::from(CYCLE_PATH_END));
+        ret
     }
 
     /// Write serialized toml to the cycle storage file for this character.
@@ -363,10 +367,11 @@ impl CycleData {
             self.right.len()
         );
         let fname = CycleData::cycle_storage();
-        let backup = format!("{}.bak", fname.display());
-        std::fs::copy(fname, backup)?;
+        let mut backup = fname.clone();
+        backup.push(OsString::from(".bak"));
+        std::fs::copy(fname.clone(), backup)?;
         let buf = toml::to_string(self)?;
-        std::fs::write(CycleData::cycle_storage(), buf)?;
+        std::fs::write(fname, buf)?;
         Ok(())
     }
 
@@ -376,7 +381,7 @@ impl CycleData {
         let data = toml::from_str::<CycleData>(&buf)?;
         log::info!(
             "read cycle data from {}; initial cycle lengths are:",
-            CycleData::cycle_storage().display()
+            CycleData::cycle_storage().to_string_lossy()
         );
         log::info!(
             "powers={}; utilities={}; left={}; right={};",
@@ -423,7 +428,8 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
     )
 }
 
-mod archive {
+pub mod archive {
+
     use bincode::{Decode, Encode};
     use cxx::CxxVector;
 
@@ -466,7 +472,7 @@ mod archive {
 
     #[derive(Decode, Encode, Hash, Debug, Clone, Default, PartialEq, Eq)]
     pub struct ItemSerialized {
-        name: String,
+        name_bytes: Vec<u8>,
         form_string: String,
         kind: u8,
         two_handed: bool,
@@ -502,7 +508,7 @@ mod archive {
     impl From<&ItemData> for ItemSerialized {
         fn from(value: &ItemData) -> Self {
             Self {
-                name: value.name(),
+                name_bytes: value.name_bytes(),
                 form_string: value.form_string(),
                 kind: value.kind().repr,
                 two_handed: value.two_handed(),
@@ -519,7 +525,7 @@ mod archive {
                 value.two_handed,
                 value.has_count,
                 value.count,
-                &value.name,
+                value.name_bytes.clone(),
                 &value.form_string,
             )
         }

@@ -175,8 +175,7 @@ impl UserSettings {
 
         self.how_to_toggle = read_from_ini(self.how_to_toggle, "uHowToggleInMenus", controls);
         self.menu_modifier = read_from_ini(self.menu_modifier, "iMenuModifierKey", controls);
-        self.link_to_favorites =
-            read_from_ini(self.link_to_favorites, "bLinkToFavorites", options);
+        self.link_to_favorites = read_from_ini(self.link_to_favorites, "bLinkToFavorites", options);
 
         self.how_to_activate = read_from_ini(self.how_to_activate, "uHowToActivate", controls);
         self.activate = read_from_ini(self.activate, "uUtilityActivateKey", controls);

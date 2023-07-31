@@ -247,7 +247,8 @@ pub mod plugin {
 
     extern "Rust" {
         /// Tell the rust side where to log.
-        fn initialize_rust_logging(logdir: &CxxString);
+        fn initialize_rust_logging(logdir: &CxxVector<u16>);
+
         /// Trigger rust to read config, figure out what the player has equipped,
         /// and figure out what it should draw.
         fn initialize_hud();
@@ -294,15 +295,19 @@ pub mod plugin {
             two_handed: bool,
             has_count: bool,
             count: u32,
-            name: &str,
+            name_bytes: &CxxVector<u8>,
             form_string: &str,
         ) -> Box<ItemData>;
         /// Get the item category, fine-grained to help with icon choices.
         fn kind(self: &ItemData) -> ItemKind;
         /// Check if any UI for this item should be drawn highlighted. UNUSED.
         fn highlighted(self: &ItemData) -> bool;
-        /// Get the game's human-readable name for this item.
+        /// Get the underlying bytes of a possibly non-utf8 name for this item.
         fn name(self: &ItemData) -> String;
+        /// Check if the item name is representable in utf8.
+        fn name_is_utf8(self: &ItemData) -> bool;
+        /// Get the item name as a possibly-lossy utf8 string.
+        fn name_bytes(self: &ItemData) -> Vec<u8>;
         /// Check whether this item is stacked in inventory, like potions are.
         fn has_count(self: &ItemData) -> bool;
         /// Get how many of this item the player has. Updated on inventory changes.
@@ -311,6 +316,7 @@ pub mod plugin {
         fn empty_itemdata() -> Box<ItemData>;
         /// Make an item that represents hand-to-hand combat, aka an empty hand.
         fn hand2hand_itemdata() -> Box<ItemData>;
+        fn form_string(self: &ItemData) -> String;
 
         /// Check if this item category can be stacked in inventory.
         fn kind_has_count(kind: ItemKind) -> bool;
@@ -334,7 +340,12 @@ pub mod plugin {
         /// Update the entire HUD without any hints about what just changed.
         fn update_hud() -> bool;
         /// Handle equipment-changed events from the game.
-        fn handle_item_equipped(equipped: bool, item: Box<ItemData>, right: bool, left: bool) -> bool;
+        fn handle_item_equipped(
+            equipped: bool,
+            item: Box<ItemData>,
+            right: bool,
+            left: bool,
+        ) -> bool;
         /// Handle inventory-count changed events from the game.
         fn handle_inventory_changed(item: Box<ItemData>, delta: i32);
         /// Favoriting & unfavoriting.
@@ -378,6 +389,7 @@ pub mod plugin {
         fn enterSlowMotion();
         /// Exit slow time.
         fn exitSlowMotion();
+        /// Show the hud very briefly on a cycle change.
         fn show_briefly();
     }
 
@@ -387,7 +399,7 @@ pub mod plugin {
         include!("player.h");
 
         /// Get the player's name.
-        fn playerName() -> String;
+        fn playerName() -> Vec<u16>;
 
         /// Is the player in combat?
         fn isInCombat() -> bool;

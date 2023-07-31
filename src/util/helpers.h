@@ -12,7 +12,6 @@ namespace helpers
 	std::string makeFormSpecString(RE::TESForm* form);
 	// uint32_t getSelectedFormFromMenu(RE::UI*& a_ui);
 
-
 	void notifyPlayer(const std::string& message);
 	void startAlphaTransition(const bool shift, const float target);
 	void show_briefly();
@@ -30,9 +29,11 @@ namespace helpers
 
 	bool itemIsFavorited(RE::TESForm* item_form);
 
+	std::string vec_to_stdstring(rust::Vec<uint8_t> input);
+	std::vector<uint8_t> chars_to_vec(const char* input);
+
 	//void addCycleKeyword(const std::string& form_spec);
 	//void removeCycleKeyword(const std::string& form_spec);
-
 
 	struct MenuSelection
 	{
