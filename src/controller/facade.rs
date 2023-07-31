@@ -2,8 +2,10 @@
 //! of import into the bridge. It should have as little logic as is compatible
 //! with keeping opaque Rust types from having to be exposed to C++.
 
+use std::ffi::OsString;
 use std::fs::File;
-use std::path::PathBuf;
+use std::os::windows::ffi::OsStringExt;
+use std::path::Path;
 
 use cxx::CxxVector;
 use simplelog::*;
@@ -16,7 +18,7 @@ use crate::{control, hud_layout};
 
 // ---------- logging
 
-pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
+pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
     let hudl = hud_layout(); // yeah, it's in here, sorry.
     let log_level = if hudl.debug {
         LevelFilter::Trace
@@ -24,11 +26,10 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxString) {
         LevelFilter::Info
     };
 
-    let cleaned_log = logdir.to_string_lossy();
-    let mut pathbuf = PathBuf::from(cleaned_log.to_string());
-    pathbuf.set_file_name("SoulsyHUD_rust.log");
+    let chonky_path = OsString::from_wide(logdir.as_slice());
+    let path = Path::new(chonky_path.as_os_str()).with_file_name("SoulsyHUD_rust.log");
 
-    if let Ok(logfile) = File::create(&pathbuf) {
+    if let Ok(logfile) = File::create(path) {
         let _ = WriteLogger::init(log_level, Config::default(), logfile);
         log::info!("rust side logging standing by");
     } else {
@@ -102,8 +103,11 @@ pub fn handle_inventory_changed(item: Box<ItemData>, count: i32) {
     control::get().handle_inventory_changed(item, count);
 }
 
-pub fn handle_favorite_event(button: &ButtonEvent, is_favorite: bool, item: Box<ItemData>)
-{
+pub fn handle_favorite_event(
+    button: &ButtonEvent,
+    is_favorite: bool,
+    #[allow(clippy::boxed_local)] item: Box<ItemData>, // needed to bridge with C++
+) {
     control::get().handle_favorite_event(button, is_favorite, *item);
 }
 

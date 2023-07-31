@@ -27,7 +27,7 @@ namespace player
 	rust::Box<ItemData> boundObjectLeftHand();
 	rust::Box<ItemData> boundObjectRightHand();
 
-	rust::String playerName();
+	rust::Vec<uint16_t> playerName();
 
 	bool isInCombat();
 	bool weaponsAreDrawn();

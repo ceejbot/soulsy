@@ -26,7 +26,14 @@ void init_logger()
 		spdlog::set_default_logger(std::move(log));
 		spdlog::set_pattern("%H:%M:%S.%f [%l] %s(%#) %v"s);
 
-		initialize_rust_logging(path->string());
+		const auto input = path->generic_wstring();
+		std::vector<uint16_t> bytes;
+		bytes.reserve(input.length());
+		for (auto iter = input.cbegin(); iter != input.cend(); iter++)
+		{
+			bytes.push_back(static_cast<uint16_t>(*iter));
+		}
+		initialize_rust_logging(std::move(bytes));
 	}
 	catch (const std::exception& e)
 	{

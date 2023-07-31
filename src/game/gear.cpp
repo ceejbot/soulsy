@@ -56,7 +56,7 @@ namespace game
 
 		if (!bound_obj)
 		{
-			// logger::trace("unable to find any bound objects for item; bailing. name='{}'; "sv, form->GetName());
+			logger::debug("unable to find any bound objects for item; bailing. name='{}'; "sv, form->GetName());
 			return 0;
 		}
 

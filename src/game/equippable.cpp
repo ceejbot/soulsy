@@ -1,5 +1,6 @@
 #include "equippable.h"
 
+#include "helpers.h"
 #include "lib.rs.h"
 #include "player.h"
 
@@ -7,14 +8,19 @@ namespace equippable
 {
 	rust::Box<ItemData> makeItemDataFromForm(RE::TESForm* item_form)
 	{
+		if (!item_form) {
+			logger::warn("Called makeItemDataFromForm() with null pointer.");
+			return empty_itemdata();
+		}
+		logger::info("making itemdata for '{}'"sv, item_form->GetName());
 		bool two_handed         = equippable::requiresTwoHands(item_form);
 		std::string form_string = helpers::makeFormSpecString(item_form);
 		auto kind               = equippable::itemKindFromForm(item_form);
 		auto count              = player::getInventoryCountByForm(item_form);
 		bool show_count         = kind_has_count(kind);
-		std::string name        = item_form->GetName();
+		auto chonker            = helpers::chars_to_vec(item_form->GetName());
 
-		return itemdata_from_formdata(kind, two_handed, show_count, count, name, form_string);
+		return itemdata_from_formdata(kind, two_handed, show_count, count, std::move(chonker), form_string);
 	}
 
 	bool canInstantCast(RE::TESForm* item_form, const ItemKind kind)

@@ -86,11 +86,7 @@ impl Controller {
         #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
         delta: i32,
     ) {
-        log::debug!(
-            "inventory count changed; name='{}'; formID={}; count={delta}",
-            item.name(),
-            item.form_string()
-        );
+        log::debug!("inventory count changed; {}; count={delta}", item);
 
         let current = item.count();
         let new_count = if delta.is_negative() {
@@ -536,7 +532,7 @@ impl Controller {
 
         if matches!(which, Action::Power) {
             // Equip that fus-ro-dah, dovahkin!
-            log::info!("Fus-ro-dah! {}!", item.name());
+            log::info!("Fus-ro-dah!");
             cxx::let_cxx_string!(form_spec = item.form_string());
             equipShout(&form_spec);
             return;
@@ -560,12 +556,7 @@ impl Controller {
 
         let kind = item.kind();
         cxx::let_cxx_string!(form_spec = item.form_string());
-        log::trace!(
-            "equip_item: which={:?}; form_spec={}; name='{}'",
-            which,
-            item.form_string(),
-            item.name()
-        );
+        log::trace!("about to equip this item: slot={:?}; {}", which, item);
 
         if kind.is_magic() || kind.left_hand_ok() || kind.right_hand_ok() {
             equipWeapon(&form_spec, which);
@@ -574,10 +565,7 @@ impl Controller {
         } else if kind == ItemKind::Arrow {
             equipAmmo(&form_spec);
         } else {
-            log::info!(
-                "we did nothing with item name='{}'; kind={kind:?};",
-                item.name()
-            );
+            log::info!("we did nothing with item {}", item);
         }
     }
 
@@ -603,7 +591,6 @@ impl Controller {
         if item.kind().is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
                 if visible.form_string() != item.form_string() {
-                    log::debug!("updating visible ammo; name='{}';", item.name());
                     self.update_slot(HudElement::Ammo, &item);
                     return true;
                 } else {
@@ -623,7 +610,6 @@ impl Controller {
         if item.kind().is_power() {
             if let Some(visible) = self.visible.get(&HudElement::Power) {
                 if visible.form_string() != item.form_string() {
-                    log::debug!("updating visible power/shout; name='{}';", item.name());
                     self.update_slot(HudElement::Power, &item);
                     self.cycles.set_top(&CycleSlot::Power, &item);
                     return true;
@@ -636,6 +622,10 @@ impl Controller {
             }
         }
 
+        if !left && !right {
+            return false;
+        }
+
         // ----------
         // The hard part starts. Left hand vs right hand. Earlier, we did our
         // best to set up the HUD to show what we want in each hand. So we look
@@ -643,17 +633,17 @@ impl Controller {
         // the other decision happen as well. If the equip event was NOT driven
         // by the HUD, we have some more work to do.
 
-        // log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
-        //     equipped,
-        //     right,
-        //     left,
-        //     item.name(),
-        //     item.kind(),
-        //     item.two_handed(),
-        //     self.two_hander_equipped,
-        //     self.left_hand_cached.clone().map_or("".to_string(), |xs| xs.name()),
-        //     self.right_hand_cached.clone().map_or("".to_string(), |xs| xs.name())
-        // );
+        log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+            equipped,
+            right,
+            left,
+            item.name(),
+            item.kind(),
+            item.two_handed(),
+            self.two_hander_equipped,
+            self.left_hand_cached.clone().map_or("".to_string(), |xs| xs.name()),
+            self.right_hand_cached.clone().map_or("".to_string(), |xs| xs.name())
+        );
 
         if item.two_handed() {
             let changed = self.update_slot(HudElement::Right, &item);
@@ -663,6 +653,7 @@ impl Controller {
             }
             self.update_slot(HudElement::Left, &ItemData::default());
             self.two_hander_equipped = true;
+            log::info!("finished handling two-hander being equipped. all good; changed={changed}");
             return changed;
         }
 
@@ -681,11 +672,13 @@ impl Controller {
         };
 
         log::trace!(
-            "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={};",
+            "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
             item.form_string(),
             rightie.form_string(),
             leftie.form_string(),
-            self.two_hander_equipped
+            self.two_hander_equipped,
+            item.two_handed(),
+            item.name(),
         );
         let leftvis = self
             .visible
@@ -844,13 +837,7 @@ impl Controller {
         }
 
         log::info!("handle_favorite_event(); is_favorite={is_favorite};");
-        log::info!(
-            "    name='{}'; form={}; kind={:?}; two-handed={};",
-            item.name(),
-            item.form_string(),
-            item.kind(),
-            item.two_handed()
-        );
+        log::info!("    {item}; two-handed={};", item.two_handed());
 
         let maybe_message = if !is_favorite {
             // This formerly-favorite item is now disliked.
@@ -901,13 +888,7 @@ impl Controller {
                 } else {
                     None
                 }
-            } else if item.two_handed() {
-                if self.cycles.add_item(CycleSlot::Right, &item) {
-                    Some(format!("{} added to right hand.", item.name()))
-                } else {
-                    None
-                }
-            } else if matches!(item.kind(), ItemKind::Scroll) {
+            } else if item.two_handed() || matches!(item.kind(), ItemKind::Scroll) {
                 if self.cycles.add_item(CycleSlot::Right, &item) {
                     Some(format!("{} added to right hand.", item.name()))
                 } else {
@@ -931,12 +912,10 @@ impl Controller {
                 } else {
                     None
                 }
+            } else if self.cycles.add_item(CycleSlot::Left, &item) {
+                Some(format!("{} added to left hand.", item.name()))
             } else {
-                if self.cycles.add_item(CycleSlot::Left, &item) {
-                    Some(format!("{} added to left hand.", item.name()))
-                } else {
-                    None
-                }
+                None
             }
         };
 
