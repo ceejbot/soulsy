@@ -97,16 +97,26 @@ impl ItemData {
         name_bytes: Vec<u8>,
         form_string: &str,
     ) -> Self {
+        // let's try to get a name string out of the bytes
         let mut name_is_utf8 = false;
-        let name = if let Ok(cstring) = CString::new(name_bytes.clone()) {
-            if let Ok(v) = cstring.clone().into_string() {
-                name_is_utf8 = true;
-                v
-            } else {
-                "".to_string() // todo try lossy
+        let cstring = match CString::from_vec_with_nul(name_bytes.clone()) {
+            Ok(cstring) => cstring,
+            Err(e) => {
+                if let Ok(cstring) = CString::new(name_bytes.clone()) {
+                    cstring
+                } else {
+                    log::info!("Surprising: item name bytes were an invalid c string; error: {e:#}");
+                    CString::default()
+                }
             }
+        };
+
+        let name = if let Ok(v) = cstring.clone().into_string() {
+            name_is_utf8 = true;
+            v
         } else {
-            String::default()
+            log::trace!("item name is invalid utf-8; falling back to lossy string");
+            cstring.to_string_lossy().to_string()
         };
 
         ItemData {
