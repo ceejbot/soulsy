@@ -335,12 +335,12 @@ impl CycleData {
         let bytes = playerName();
         // These bytes are nul-terminated.
         let sliced = bytes.as_slice();
-        let name = if slice.last() == 0x00 {
-            OsString::from_wide(sliced)
+        let name = if let Some(0) = sliced.last() {
+            OsString::from_wide(&sliced[0..(bytes.len() - 1)])
         } else {
-            OsString::from_wide(sliced[0..(bytes.len())])
+            OsString::from_wide(&sliced)
         };
-        let name = name.trim().replace(' ', "_").replace(['\\', '\''], "");
+        // let name = name.trim().replace(' ', "_").replace(['\\', '\''], "");
 
         let mut ret =
             OsString::with_capacity(CYCLE_PATH_START.len() + name.len() + CYCLE_PATH_END.len());
