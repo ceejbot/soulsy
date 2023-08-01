@@ -333,12 +333,14 @@ impl CycleData {
     /// Write the cycle data to its file. Yet another reason to get rid of this...
     fn cycle_storage() -> OsString {
         let bytes = playerName();
-        let name = OsString::from_wide(bytes.as_slice());
-        let name = name
-            .to_string_lossy()
-            .trim()
-            .replace(' ', "_")
-            .replace(['\\', '\''], "");
+        // These bytes are nul-terminated.
+        let sliced = bytes.as_slice();
+        let name = if slice.last() == 0x00 {
+            OsString::from_wide(sliced)
+        } else {
+            OsString::from_wide(sliced[0..(bytes.len())])
+        };
+        let name = name.trim().replace(' ', "_").replace(['\\', '\''], "");
 
         let mut ret =
             OsString::with_capacity(CYCLE_PATH_START.len() + name.len() + CYCLE_PATH_END.len());

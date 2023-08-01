@@ -19,14 +19,11 @@ namespace player
 
 	rust::Vec<uint16_t> playerName()
 	{
-		auto* name   = RE::PlayerCharacter::GetSingleton()->GetName();
+		auto* name  = RE::PlayerCharacter::GetSingleton()->GetName();
 		auto cbytes = helpers::chars_to_vec(name);
 		rust::Vec<uint16_t> bytes;
 		bytes.reserve(cbytes.size() + 1);
-		for (auto iter = cbytes.cbegin(); iter != cbytes.cend(); iter++)
-		{
-			bytes.push_back(*iter);
-		}
+		for (auto iter = cbytes.cbegin(); iter != cbytes.cend(); iter++) { bytes.push_back(*iter); }
 
 		return std::move(bytes);
 	}

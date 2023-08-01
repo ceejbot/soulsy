@@ -105,7 +105,9 @@ impl ItemData {
                 if let Ok(cstring) = CString::new(name_bytes.clone()) {
                     cstring
                 } else {
-                    log::info!("Surprising: item name bytes were an invalid c string; error: {e:#}");
+                    log::info!(
+                        "Surprising: item name bytes were an invalid c string; error: {e:#}"
+                    );
                     CString::default()
                 }
             }

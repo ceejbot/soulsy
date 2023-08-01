@@ -101,13 +101,13 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	auto* g_message = SKSE::GetMessagingInterface();
 	if (!g_message)
 	{
-		logger::error("Messaging Interface Not Found. return."sv);
+		logger::error("Cannot get the SKSE messaging interface. Stopping initialization."sv);
 		return false;
 	}
 
 	g_message->RegisterListener(message_callback);
 
-	logger::info("{} load successful"sv, Version::PROJECT);
+	logger::info("{} load successful."sv, Version::PROJECT);
 	return true;
 }
 
