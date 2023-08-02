@@ -12,6 +12,9 @@ namespace helpers
 	std::string makeFormSpecString(RE::TESForm* form);
 	// uint32_t getSelectedFormFromMenu(RE::UI*& a_ui);
 
+	// play failure sound
+	void honk();
+
 	void notifyPlayer(const std::string& message);
 	void startAlphaTransition(const bool shift, const float target);
 	void show_briefly();

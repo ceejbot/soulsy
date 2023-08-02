@@ -52,7 +52,7 @@ pub fn initialize_hud() {
         log::info!("Cosave data not found. Falling back to toml or defaults.");
         ctrl.cycles = CycleData::read().unwrap_or_default();
     }
-    ctrl.update_hud();
+    // ctrl.update_hud();
 }
 
 /// Function for C++ to call to send a relevant button event to us.
