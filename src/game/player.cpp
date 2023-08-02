@@ -178,6 +178,13 @@ namespace player
 		return a_player->GetInventory([a_type](const RE::TESBoundObject& a_object) { return a_object.Is(a_type); });
 	}
 
+	uint32_t itemCount(const std::string& form_spec)
+	{
+		auto* form = helpers::formSpecToFormItem(form_spec);
+		if (!form) { return 0; }
+		return getInventoryCountByForm(form);
+	}
+
 	uint32_t getInventoryCountByForm(const RE::TESForm* form)
 	{
 		uint32_t count = 0;
@@ -293,4 +300,36 @@ namespace player
 			logger::trace("played sound"sv);
 		}
 	}
-}  // util
+
+	// ---------- counting potions for display in the HUD
+
+	uint32_t potionCountByActorValue(RE::ActorValue vital_stat)
+	{
+		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		if (!the_player) return 0;
+
+		uint32_t count = 0;
+
+		for (auto candidates = player::getInventoryForType(the_player, RE::FormType::AlchemyItem);
+			 const auto& [item, inv_data] : candidates)
+		{
+			const auto& [num_items, entry] = inv_data;
+
+			auto* alchemy_item = item->As<RE::AlchemyItem>();
+			if (alchemy_item->IsPoison() || alchemy_item->IsFood()) { continue; }
+			auto actor_value = equippable::getPotionEffect(item, true);
+			if (actor_value == vital_stat) count += num_items;
+		}
+
+		return count;
+	}
+
+	uint32_t staminaPotionCount() { return potionCountByActorValue(RE::ActorValue::kStamina); }
+	uint32_t healthPotionCount() { return potionCountByActorValue(RE::ActorValue::kHealth); }
+	uint32_t magickaPotionCount() { return potionCountByActorValue(RE::ActorValue::kMagicka); }
+
+	void chooseStaminaPotion() { game::consumeBestOption(RE::ActorValue::kStamina); }
+	void chooseHealthPotion() { game::consumeBestOption(RE::ActorValue::kHealth); }
+	void chooseMagickaPotion() { game::consumeBestOption(RE::ActorValue::kMagicka); }
+
+}  // player

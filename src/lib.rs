@@ -391,6 +391,8 @@ pub mod plugin {
         fn exitSlowMotion();
         /// Show the hud very briefly on a cycle change.
         fn show_briefly();
+        /// Play an activation failed UI sound.
+        fn honk();
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
@@ -431,13 +433,27 @@ pub mod plugin {
         fn equipMagic(form_spec: &CxxString, which: Action);
         /// Equip the weapon matching the form spec.
         fn equipWeapon(form_spec: &CxxString, which: Action);
+        /// Re-equip an item in the left hand. This forces an un-equip first.
+        fn reequipHand(which: Action, form_spec: &CxxString);
         /// Equip the armor matching the form spec.
         fn equipArmor(form_spec: &CxxString);
         /// Equip the amoo matching the form spec.
         fn equipAmmo(form_spec: &CxxString);
         /// Consume a potion matching the form spec. Skips dynamic items (for now).
+        
+        /// Potions great and small.
         fn consumePotion(form_spec: &CxxString);
-        /// Re-equip an item in the left hand. This forces an un-equip first.
-        fn reequipHand(which: Action, form_spec: &CxxString);
+        /// Choose and then consume the best potion for the given stat.
+        fn chooseMagickaPotion();
+        /// Choose a life. Choose a job. Choose a career. Choose a family.
+        fn chooseHealthPotion();
+        /// Choose a big television. Choose washing machines, cars, etc.
+        fn chooseStaminaPotion();
+        /// Potion counts for the auto-select item display.
+        fn staminaPotionCount() -> u32;
+        fn healthPotionCount()-> u32;
+        fn magickaPotionCount() -> u32;
+        fn itemCount(form_spec: &CxxString) -> u32;
+    
     }
 }

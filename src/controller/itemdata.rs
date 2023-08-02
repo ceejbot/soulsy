@@ -71,6 +71,8 @@ pub fn itemdata_from_formdata(
     ))
 }
 
+// ---------- Special items that do not correspond with game form items.
+
 pub fn hand2hand_itemdata() -> Box<ItemData> {
     Box::new(ItemData::new_with_name(
         ItemKind::HandToHand,
@@ -78,8 +80,41 @@ pub fn hand2hand_itemdata() -> Box<ItemData> {
         false,
         1,
         "Unarmed".to_string(),
-        "",
+        "unarmed_proxy",
     ))
+}
+
+pub fn make_magicka_proxy(count: u32) -> ItemData {
+    ItemData::new_with_name(
+        ItemKind::PotionMagicka,
+        false,
+        true,
+        count,
+        "Best Magicka Potion".to_string(),
+        "magicka_proxy",
+    )
+}
+
+pub fn make_health_proxy(count: u32) -> ItemData {
+    ItemData::new_with_name(
+        ItemKind::PotionHealth,
+        false,
+        true,
+        count,
+        "Best Health Potion".to_string(),
+        "health_proxy",
+    )
+}
+
+pub fn make_stamina_proxy(count: u32) -> ItemData {
+    ItemData::new_with_name(
+        ItemKind::PotionStamina,
+        false,
+        true,
+        count,
+        "Best Stamina Potion".to_string(),
+        "stamina_proxy",
+    )
 }
 
 /// Construct a default ItemData struct, which is displayed as
@@ -87,6 +122,8 @@ pub fn hand2hand_itemdata() -> Box<ItemData> {
 pub fn empty_itemdata() -> Box<ItemData> {
     Box::<ItemData>::default()
 }
+
+// ---------- end of special items
 
 impl ItemData {
     pub fn new(

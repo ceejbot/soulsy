@@ -36,14 +36,23 @@ namespace player
 	void unequipShout();
 	void equipShout(const std::string& form_spec);
 	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout);
+	void reequipHand(Action which, const std::string& form_spec);
 	void equipArmor(const std::string& form_spec);
 	void equipMagic(const std::string& form_spec, Action slot);
 	void equipWeapon(const std::string& form_spec, Action slot);
 	void equipAmmo(const std::string& form_spec);
+	
 	void consumePotion(const std::string& form_spec);
-	bool hasItemOrSpell(const std::string& form_spec);
-	void reequipHand(Action which, const std::string& form_spec);
-
-	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& a_player);
 	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count);
+
+	bool hasItemOrSpell(const std::string& form_spec);
+	uint32_t itemCount(const std::string& form_spec);
+	uint32_t staminaPotionCount();
+	uint32_t healthPotionCount();
+	uint32_t magickaPotionCount();
+
+	void chooseMagickaPotion();
+	void chooseHealthPotion();
+	void chooseStaminaPotion();
+
 }

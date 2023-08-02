@@ -209,6 +209,15 @@
       "position": 1
     },
     {
+      "id": "bGroupPotions:Options",
+      "text": "$SoulsyHUD_Controls_GroupPotions_Text",
+      "help": "$SoulsyHUD_Controls_GroupPotions_Help",
+      "type": "toggle",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
+    },
+    {
       "id": "uUtilityCycleKey:Controls",
       "text": "$SoulsyHUD_Controls_UtilityCycleKey_Text",
       "help": "$SoulsyHUD_Controls_UtilityCycleKey_Help",

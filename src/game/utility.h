@@ -16,7 +16,7 @@ namespace game
 		RE::ActorEquipManager*& a_actor_equip_manager);
 
 	void consumePotion(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
-	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& a_player);
+	void consumeBestOption(RE::ActorValue a_actor_value);
 	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count);
 
 	class perk_visitor : public RE::PerkEntryVisitor

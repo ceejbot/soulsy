@@ -47,7 +47,7 @@ impl Controller {
 
     pub fn validate_cycles(&mut self) {
         self.cycles.validate();
-        // log::info!("after validation, cycles are: {}", self.cycles);
+        log::info!("after validation, cycles are: {}", self.cycles);
         self.update_hud();
     }
 
@@ -69,6 +69,34 @@ impl Controller {
                     .filter_kind(&CycleSlot::Right, ItemKind::HandToHand);
             }
         }
+
+        if settings.group_potions() {
+            self.cycles
+                .filter_kind(&CycleSlot::Utility, ItemKind::PotionStamina);
+            let count = staminaPotionCount();
+            let proxy = make_stamina_proxy(count);
+            self.cycles.include_item(CycleSlot::Utility, &proxy);
+
+            self.cycles
+                .filter_kind(&CycleSlot::Utility, ItemKind::PotionHealth);
+            let count = healthPotionCount();
+            let proxy = make_health_proxy(count);
+            self.cycles.include_item(CycleSlot::Utility, &proxy);
+
+            self.cycles
+                .filter_kind(&CycleSlot::Utility, ItemKind::PotionMagicka);
+            let count = magickaPotionCount();
+            let proxy = make_magicka_proxy(count);
+            self.cycles.include_item(CycleSlot::Utility, &proxy);
+        } else {
+            let proxy = make_stamina_proxy(1);
+            self.cycles.remove_item(CycleSlot::Utility, &proxy);
+            let proxy = make_health_proxy(1);
+            self.cycles.remove_item(CycleSlot::Utility, &proxy);
+            let proxy = make_magicka_proxy(1);
+            self.cycles.remove_item(CycleSlot::Utility, &proxy);
+        }
+
         self.flush_cycle_data();
 
         if !settings.autofade() {
@@ -99,16 +127,65 @@ impl Controller {
             current + delta as u32
         };
 
+        // At some point I'm going to want to rework everything to use references
+        // to simplify all of this. A sketch of this might be that the controller
+        // maintains a vec of tracked objects, and everything else points into this
+        // vec. TODO a branch for that work.
         if item.kind().is_ammo() {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
                 if *candidate.form_string() == *item.form_string() {
                     candidate.set_count(new_count);
                 }
             }
+        } else if item.kind().is_utility() {
+            if let Some(candidate) = self.visible.get_mut(&HudElement::Utility) {
+                if *candidate.form_string() == *item.form_string() {
+                    candidate.set_count(new_count);
+                }
+            }
+        } else {
+            if let Some(candidate) = self.visible.get_mut(&HudElement::Left) {
+                if *candidate.form_string() == *item.form_string() {
+                    candidate.set_count(new_count);
+                }
+            }
+            if let Some(candidate) = self.visible.get_mut(&HudElement::Right) {
+                if *candidate.form_string() == *item.form_string() {
+                    candidate.set_count(new_count);
+                }
+            }
         }
 
-        // This function does most of the work. 
         self.cycles.update_count(*item.clone(), new_count);
+
+        // update count of magicka, health, or stamina potions if we're grouped
+        if item.kind().is_potion() && user_settings().group_potions() {
+            if matches!(item.kind(), ItemKind::PotionHealth) {
+                let count = healthPotionCount();
+                self.cycles.update_count_by_formid(
+                    "health_proxy".to_string(),
+                    ItemKind::PotionHealth,
+                    count,
+                );
+            }
+            if matches!(item.kind(), ItemKind::PotionMagicka) {
+                let count = magickaPotionCount();
+                self.cycles.update_count_by_formid(
+                    "magicka_proxy".to_string(),
+                    ItemKind::PotionMagicka,
+                    count,
+                );
+            }
+            if matches!(item.kind(), ItemKind::PotionStamina) {
+                let count = staminaPotionCount();
+                self.cycles.update_count_by_formid(
+                    "stamina_proxy".to_string(),
+                    ItemKind::PotionStamina,
+                    count,
+                );
+            }
+        }
+
         if new_count > 0 {
             return;
         }
@@ -362,8 +439,7 @@ impl Controller {
         } else if cycle_requested {
             self.advance_hand_cycle(&cycleslot)
         } else {
-            // TODO honk
-            log::info!("you need a modifier key down for {cycleslot}");
+            log::trace!("you need a modifier key down for {cycleslot}");
             KeyEventResponse::default()
         }
     }
@@ -432,7 +508,7 @@ impl Controller {
             // The worst case! Somebody's got to lose the battle for the single item,
             // and in this case it's the hand trying to cycle forward.
             let Some(candidate) = self.cycles.advance_skipping(which, return_to.clone()) else {
-                // We have no good options. TODO honk
+                honk();
                 return KeyEventResponse {
                     handled: true,
                     ..Default::default()
@@ -497,9 +573,16 @@ impl Controller {
         log::debug!("using utility item");
 
         if let Some(item) = self.cycles.get_top(&CycleSlot::Utility) {
-            if item.kind().is_potion()
-                || matches!(item.kind(), ItemKind::PoisonDefault | ItemKind::Food)
-            {
+            if matches!(item.kind(), ItemKind::PoisonDefault | ItemKind::Food) {
+                cxx::let_cxx_string!(form_spec = item.form_string());
+                consumePotion(&form_spec);
+            } else if item.form_string() == "health_proxy" {
+                chooseHealthPotion();
+            } else if item.form_string() == "magicka_proxy" {
+                chooseMagickaPotion();
+            } else if item.form_string() == "stamina_proxy" {
+                chooseStaminaPotion();
+            } else if item.kind().is_potion() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 consumePotion(&form_spec);
             } else if item.kind().is_armor() {
@@ -602,6 +685,30 @@ impl Controller {
         }
     }
 
+    pub fn handle_item_unequipped(&mut self, item: ItemData, right: bool, left: bool) -> bool {
+        // Here we only care about updating the HUD. We let the rest fall where may.
+
+        let right_vis = self.visible.get(&HudElement::Right);
+        let left_vis = self.visible.get(&HudElement::Left);
+        if right {
+            if let Some(visible) = right_vis {
+                if visible.form_string() == item.form_string() {
+                    let empty = *empty_itemdata();
+                    return self.update_slot(HudElement::Right, &empty);
+                }
+            }
+        } else if left {
+            if let Some(visible) = left_vis {
+                if visible.form_string() == item.form_string() {
+                    let empty = *empty_itemdata();
+                    return self.update_slot(HudElement::Left, &empty);
+                }
+            }
+        }
+
+        false
+    }
+
     /// The game informs us that our equipment has changed. Update.
     ///
     /// The item we're handed was either equipped or UNequipped. There are some
@@ -615,11 +722,12 @@ impl Controller {
         right: bool,
         left: bool,
     ) -> bool {
-        if !equipped {
-            return false;
-        }
+        log::info!("entering handle_item_equipped; equipped={equipped}; right={right}; left={left}; {item}");
 
         let item = *item; // insert unboxing video
+        if !equipped {
+            return self.handle_item_unequipped(item, right, left);
+        }
 
         if item.kind().is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
@@ -666,17 +774,17 @@ impl Controller {
         // the other decision happen as well. If the equip event was NOT driven
         // by the HUD, we have some more work to do.
 
-        log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
-            equipped,
-            right,
-            left,
-            item.name(),
-            item.kind(),
-            item.two_handed(),
-            self.two_hander_equipped,
-            self.left_hand_cached.clone().map_or("".to_string(), |xs| xs.name()),
-            self.right_hand_cached.clone().map_or("".to_string(), |xs| xs.name())
-        );
+        // log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+        //     equipped,
+        //     right,
+        //     left,
+        //     item.name(),
+        //     item.kind(),
+        //     item.two_handed(),
+        //     self.two_hander_equipped,
+        //     self.left_hand_cached.clone().map_or("n/a".to_string(), |xs| xs.name()),
+        //     self.right_hand_cached.clone().map_or("n/a".to_string(), |xs| xs.name())
+        // );
 
         if item.two_handed() {
             let changed = self.update_slot(HudElement::Right, &item);
@@ -684,9 +792,9 @@ impl Controller {
                 // Change was out of band. We need to react.
                 self.cycles.set_top(&CycleSlot::Right, &item);
             }
+            self.left_hand_cached = self.visible.get(&HudElement::Left).cloned();
             self.update_slot(HudElement::Left, &ItemData::default());
             self.two_hander_equipped = true;
-            log::info!("finished handling two-hander being equipped. all good; changed={changed}");
             return changed;
         }
 
@@ -704,15 +812,15 @@ impl Controller {
             boundObjectLeftHand()
         };
 
-        log::trace!(
-            "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
-            item.form_string(),
-            rightie.form_string(),
-            leftie.form_string(),
-            self.two_hander_equipped,
-            item.two_handed(),
-            item.name(),
-        );
+        // log::trace!(
+        //     "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
+        //     item.form_string(),
+        //     rightie.form_string(),
+        //     leftie.form_string(),
+        //     self.two_hander_equipped,
+        //     item.two_handed(),
+        //     item.name(),
+        // );
         let leftvis = self
             .visible
             .get(&HudElement::Left)
@@ -738,7 +846,7 @@ impl Controller {
 
         if left {
             // update was out of band
-            if left_unexpected {
+            if !left_unexpected {
                 self.update_slot(HudElement::Left, &item);
             } else {
                 // we expected the left hand change. Force the right hand to show what we wanted.
@@ -808,10 +916,13 @@ impl Controller {
         }
 
         let left_entry = boundObjectLeftHand();
-        let left_unexpected = self.update_slot(HudElement::Left, &left_entry);
-        if !left_entry.two_handed() {
+        let left_unexpected = if !left_entry.two_handed() {
             self.left_hand_cached = Some(*left_entry.clone());
-        }
+            self.update_slot(HudElement::Left, &left_entry)
+        } else {
+            self.left_hand_cached = self.cycles.get_top(&CycleSlot::Left);
+            self.update_slot(HudElement::Left, &empty_itemdata())
+        };
         self.two_hander_equipped = right_entry.two_handed(); // same item will be in both hands
 
         let power = equippedPower();
@@ -820,9 +931,12 @@ impl Controller {
         let ammo = equippedAmmo();
         let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
 
-        let utility_changed = if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {
-            self.update_slot(HudElement::Utility, &utility);
-            true
+        let utility_changed = if self.visible.get(&HudElement::Utility).is_none() {
+            if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {
+                self.update_slot(HudElement::Utility, &utility)
+            } else {
+                false
+            }
         } else {
             false
         };

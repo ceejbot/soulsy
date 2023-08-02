@@ -59,6 +59,8 @@ pub struct UserSettings {
     activate: u32,
     /// An optional modifier key for activating the utility item. iUtilityActivateModifier
     activate_modifier: i32,
+    /// If magicka, health, and stamina potions are grouped and auto-selected.
+    group_potions: bool,
 
     /// How the player wants to advance a cycle. uHowToAdvance
     how_to_cycle: ActivationMethod,
@@ -108,6 +110,7 @@ impl Default for UserSettings {
             how_to_activate: ActivationMethod::Hotkey,
             activate: 4,
             activate_modifier: -1,
+            group_potions: false,
             how_to_cycle: ActivationMethod::Hotkey,
             cycle_modifier: -1,
             how_to_toggle: ActivationMethod::Hotkey,
@@ -181,6 +184,7 @@ impl UserSettings {
         self.activate = read_from_ini(self.activate, "uUtilityActivateKey", controls);
         self.activate_modifier =
             read_from_ini(self.activate_modifier, "iUtilityActivateModifier", controls);
+        self.group_potions = read_from_ini(self.group_potions, "bGroupPotions", options);
 
         self.showhide = read_from_ini(self.showhide, "uShowHideKey", controls);
         self.refresh_layout = read_from_ini(self.refresh_layout, "uRefreshKey", controls);
@@ -299,6 +303,9 @@ impl UserSettings {
     }
     pub fn activate(&self) -> u32 {
         self.activate
+    }
+    pub fn group_potions(&self) -> bool {
+        self.group_potions
     }
 
     pub fn showhide(&self) -> u32 {

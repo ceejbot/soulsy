@@ -134,7 +134,7 @@ namespace game
 		if (!obj || remaining == 0)
 		{
 			logger::warn("couldn't find requested potion in inventory!"sv);
-			// TODO honk
+			helpers::honk();
 			return;
 		}
 
@@ -149,7 +149,7 @@ namespace game
 
 		if (!obj->Is(RE::FormType::AlchemyItem))
 		{
-			// TODO honk
+			helpers::honk();
 			logger::warn("bound object is not an alchemy item? name='{}'; formID={};"sv,
 				obj->GetName(),
 				string_util::int_to_hex(obj->formID));
@@ -176,7 +176,7 @@ namespace game
 		if (task)
 		{
 			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item, extra); });
-			player::play_sound(sound, player);
+			// player::play_sound(sound, player);
 		}
 	}
 
@@ -246,31 +246,39 @@ the MCM setting will be left for overwrite handling
 		}
 	}
 
-	// Not yet in use. Remove if I decide to definitely never do a choose-consumable feature.
-	void find_and_consume_fitting_option(RE::ActorValue a_actor_value, RE::PlayerCharacter*& the_player)
-	{
-		// get player missing value
-		auto current_actor_value   = the_player->AsActorValueOwner()->GetActorValue(a_actor_value);
-		auto permanent_actor_value = the_player->AsActorValueOwner()->GetPermanentActorValue(a_actor_value);
-		auto temporary_actor_value =
-			the_player->GetActorValueModifier(RE::ACTOR_VALUE_MODIFIER::kTemporary, RE::ActorValue::kHealth);
-		auto max_actor_value = permanent_actor_value + temporary_actor_value;
-		auto missing         = max_actor_value - current_actor_value;
-		logger::trace("actor value {}, current {}, max {}, missing {}"sv,
-			static_cast<int>(a_actor_value),
-			fmt::format(FMT_STRING("{:.2f}"), current_actor_value),
-			fmt::format(FMT_STRING("{:.2f}"), max_actor_value),
-			fmt::format(FMT_STRING("{:.2f}"), missing));
+	// ---------- potion selection
 
-		// min heal, max heal
-		auto min_perfect = 0.7f;
-		auto max_perfect = 1.2f;
-		logger::trace("min perfect {}, max perfect {}, missing {}"sv,
-			fmt::format(FMT_STRING("{:.2f}"), missing * min_perfect),
-			fmt::format(FMT_STRING("{:.2f}"), missing * max_perfect),
-			fmt::format(FMT_STRING("{:.2f}"), missing));
+	const static float MIN_PERFECT = 0.7f;
+	const static float MAX_PERFECT = 1.2f;
+
+	void consumeBestOption(RE::ActorValue vital_stat)
+	{
+		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		if (!the_player) return;
+
+		auto current         = the_player->AsActorValueOwner()->GetActorValue(vital_stat);
+		auto permanent       = the_player->AsActorValueOwner()->GetPermanentActorValue(vital_stat);
+		auto temporary       = the_player->GetActorValueModifier(RE::ACTOR_VALUE_MODIFIER::kTemporary, vital_stat);
+		auto max_actor_value = permanent + temporary;
+		auto deficit         = max_actor_value - current;
+		auto goalMin         = deficit * MIN_PERFECT;
+		auto goalMax         = deficit * MAX_PERFECT;
+
+		if (deficit == 0)
+		{
+			logger::info("Not drinking a {} potion because you don't need one."sv, vital_stat);
+			helpers::honk();
+			return;
+		}
+
+		logger::debug("goal potion: deficit={}; min={}; max={};"sv,
+			fmt::format(FMT_STRING("{:.2f}"), deficit),
+			fmt::format(FMT_STRING("{:.2f}"), goalMin),
+			fmt::format(FMT_STRING("{:.2f}"), goalMax));
 
 		RE::TESBoundObject* obj = nullptr;
+		float prev_rating       = 0.0f;
+
 		for (auto candidates = player::getInventoryForType(the_player, RE::FormType::AlchemyItem);
 			 const auto& [item, inv_data] : candidates)
 		{
@@ -278,14 +286,11 @@ the MCM setting will be left for overwrite handling
 
 			auto* alchemy_item = item->As<RE::AlchemyItem>();
 			if (alchemy_item->IsPoison() || alchemy_item->IsFood()) { continue; }
-			// returns currently only the types we want
 			auto actor_value = equippable::getPotionEffect(item, true);
 			if (actor_value == RE::ActorValue::kNone) { continue; }
 
-			if (actor_value == a_actor_value)
+			if (actor_value == vital_stat)
 			{
-				// set obj here, because if we do not have a perfect hit, we still need to
-				// consume something
 				if (alchemy_item->IsDynamicForm() && num_items == 1)
 				{
 					logger::warn(
@@ -294,29 +299,48 @@ the MCM setting will be left for overwrite handling
 						alchemy_item->GetName());
 					continue;
 				}
-				obj = alchemy_item;
 
 				auto magnitude = alchemy_item->GetCostliestEffectItem()->GetMagnitude();
 				auto duration  = alchemy_item->GetCostliestEffectItem()->GetDuration();
 				if (duration == 0) { duration = 1; }
+				auto max_restored = magnitude * duration;
+				auto rating       = max_restored - deficit;
 
-				auto max_healed = magnitude * duration;
-				if (max_healed >= (missing * min_perfect) && max_healed <= (missing * max_perfect))
+				// any match is better than no match
+				if (!obj)
 				{
-					logger::trace("found potion {}, magnitude * duration {}"sv,
-						obj->GetName(),
-						fmt::format(FMT_STRING("{:.2f}"), max_healed));
-					break;
+					obj         = alchemy_item;
+					prev_rating = rating;
+					if (rating == 0) break;  // this item is perfect already
+					continue;
+				}
+
+				// We have at least a second candidate. Is it better than our current choice?
+				if (std::fabs(prev_rating) < std::fabs(prev_rating))
+				{
+					logger::debug("improved selection: rating={}; max_restored={}; deficit={};"sv,
+						prev_rating,
+						max_restored,
+						deficit);
+
+					obj         = alchemy_item;
+					prev_rating = rating;
+					if (rating == 0) break;  // perfection
+					continue;
 				}
 			}
 		}
 
 		if (obj)
 		{
-			logger::trace("Calling consume potion; name='{}';"sv, obj->GetName());
+			logger::debug("found a potion: rating={}; name='{}';"sv, prev_rating, obj->GetName());
 			consumePotion(obj, the_player);
 		}
-		else { logger::warn("No suitable potion found. return."); }
+		else
+		{
+			logger::warn("We couldn't find any {} potions!"sv, vital_stat);
+			helpers::honk();
+		}
 	}
 
 	// ---------- perk visitor, used only by the actor value potion selection

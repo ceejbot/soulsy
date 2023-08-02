@@ -12,6 +12,17 @@ namespace helpers
 {
 	using string_util = util::string_util;
 
+	// play a denied/failure/no sound
+	void honk()
+	{
+		// UIActivateFail   0x0006d1c6
+		// UIMenuInactiveSD 0x00057f93
+		// UIAlchemyFail    0x000c8c72
+		auto* the_player =  RE::PlayerCharacter::GetSingleton();
+		auto* sound = RE::TESForm::LookupByID(0x0006d1c6)->As<RE::BGSSoundDescriptorForm>();
+		player::play_sound(sound->soundDescriptor, the_player);
+	}
+
 	// How you know I've been replaced by a pod person: if I ever declare that
 	// I love dealing with strings in systems programming languages.
 
@@ -228,13 +239,12 @@ namespace helpers
 				outSelection = selection;
 			}
 		}
-		logger::info("fell through without finding our object.");
+		logger::debug("fell through without finding our object.");
 	}
 
 	void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection*& outSelection)
 	{
 		if (!menu) return;
-		logger::debug("makeFromInventoryMenu()");
 
 		auto* itemList = menu->GetRuntimeData().itemList;
 		auto* selected = itemList->GetSelectedItem();
@@ -294,15 +304,14 @@ namespace helpers
 		if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 		{
 			form_id = static_cast<std::uint32_t>(result.GetNumber());
-			logger::debug("magic menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
 		}
-		else { logger::info("got result type: {}"sv, static_cast<uint8_t>(result.GetType())); }
+		else { logger::debug("magic menu selection lookup failed; got result type: {}"sv, static_cast<uint8_t>(result.GetType())); }
 
 		auto* mfaves = RE::MagicFavorites::GetSingleton();
 
 		for (auto* form : mfaves->spells)
 		{
-			logger::info(
+			logger::debug(
 				"mfave form: id={}; name='{}'"sv, util::string_util::int_to_hex(form->GetFormID()), form->GetName());
 			if (form->GetFormID() == form_id)
 			{

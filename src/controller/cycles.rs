@@ -12,7 +12,10 @@ use super::control::MenuEventResponse;
 use super::itemdata::*;
 use super::keys::CycleSlot;
 use super::user_settings;
-use crate::plugin::{hasItemOrSpell, playerName, startAlphaTransition, ItemKind};
+use crate::plugin::{
+    hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, playerName,
+    staminaPotionCount, startAlphaTransition, ItemKind,
+};
 
 /// Manage the player's configured item cycles. Track changes, persist data in
 /// files, and advance the cycle when the player presses a cycle button. This
@@ -170,7 +173,7 @@ impl CycleData {
             }
         };
 
-        // We have at most 15 items, so we do this blithely.
+        // We have at most 20 items, so we do this blithely.
         let settings = user_settings();
         if let Some(idx) = cycle.iter().position(|xs| *xs == item) {
             cycle.remove(idx);
@@ -183,11 +186,15 @@ impl CycleData {
         }
     }
 
-    pub fn update_count(&mut self, item: ItemData, count: u32) {
+    pub fn update_count_by_formid(&mut self, form_id: String, kind: ItemKind, count: u32) {
         // If count is zero, remove from any cycles it's in.
         // If count is zero and item is equipped, advance the relevant cycle.
-        if item.kind().is_utility() {
-            if let Some(found) = self.utility.iter_mut().find(|xs| **xs == item) {
+        if kind.is_utility() {
+            if let Some(found) = self
+                .utility
+                .iter_mut()
+                .find(|xs| *xs.form_string() == form_id)
+            {
                 log::trace!("updating count for utility cycle item; count={count}; item: {found}");
                 found.set_count(count);
                 if count == 0 {
@@ -196,8 +203,8 @@ impl CycleData {
             }
         };
 
-        if item.kind().left_hand_ok() {
-            if let Some(found) = self.left.iter_mut().find(|xs| **xs == item) {
+        if kind.left_hand_ok() {
+            if let Some(found) = self.left.iter_mut().find(|xs| *xs.form_string() == form_id) {
                 log::trace!("updating count for left cycle item; count={count}; item: {found}");
                 found.set_count(count);
                 if count == 0 {
@@ -206,8 +213,12 @@ impl CycleData {
             }
         }
 
-        if item.kind().right_hand_ok() {
-            if let Some(found) = self.right.iter_mut().find(|xs| **xs == item) {
+        if kind.right_hand_ok() {
+            if let Some(found) = self
+                .right
+                .iter_mut()
+                .find(|xs| *xs.form_string() == form_id)
+            {
                 log::trace!("updating count for right cycle item; count={count}; item: {found}");
                 found.set_count(count);
                 if count == 0 {
@@ -215,6 +226,10 @@ impl CycleData {
                 }
             }
         }
+    }
+
+    pub fn update_count(&mut self, item: ItemData, count: u32) {
+        self.update_count_by_formid(item.form_string(), item.kind(), count);
     }
 
     pub fn includes(&self, which: &CycleSlot, item: &ItemData) -> bool {
@@ -333,12 +348,50 @@ impl CycleData {
                 CycleSlot::Right => &mut self.right,
             };
             log::info!("validating {name} cycle");
-            cycle.retain(|item| {
-                cxx::let_cxx_string!(form_spec = item.form_string());
-                let hasit = item.kind().is_ammo() || hasItemOrSpell(&form_spec);
-                log::info!("    {}: {item}; player has={};", name, hasit);
-                hasit
-            });
+            let filtered: Vec<_> = cycle
+                .iter_mut()
+                .map(|incoming| {
+                    let mut item = incoming.clone();
+
+                    let spec = item.form_string();
+                    if spec.is_empty() {
+                        return item;
+                    }
+
+                    cxx::let_cxx_string!(form_spec = spec.clone());
+                    if !item.has_count() && hasItemOrSpell(&form_spec) {
+                        return item;
+                    }
+
+                    let count = match spec.as_str() {
+                        "health_proxy" => healthPotionCount(),
+                        "magicka_proxy" => magickaPotionCount(),
+                        "stamina_proxy" => staminaPotionCount(),
+                        _ => itemCount(&form_spec),
+                    };
+                    item.set_count(count);
+                    item
+                })
+                .filter(|xs| {
+                    log::info!("    {xs}");
+                    !xs.has_count() || xs.count() > 0 || xs.form_string().contains("_proxy")
+                })
+                .collect();
+
+            match &xs.0 {
+                CycleSlot::Power => {
+                    self.power = filtered;
+                }
+                CycleSlot::Utility => {
+                    self.utility = filtered;
+                }
+                CycleSlot::Left => {
+                    self.left = filtered;
+                }
+                CycleSlot::Right => {
+                    self.right = filtered;
+                }
+            }
         });
         //log::info!("hud_visible: {}", self.hud_visible);
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
