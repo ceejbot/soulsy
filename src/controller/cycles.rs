@@ -183,22 +183,38 @@ impl CycleData {
         }
     }
 
-    pub fn update_count(&mut self, item: ItemData, count: u32) -> bool {
+    pub fn update_count(&mut self, item: ItemData, count: u32) {
+        // If count is zero, remove from any cycles it's in.
+        // If count is zero and item is equipped, advance the relevant cycle.
         if item.kind().is_utility() {
-            if let Some(candidate) = self.utility.iter_mut().find(|xs| **xs == item) {
-                log::trace!(
-                    "updating count for tracked item; formID={}; count={count}",
-                    item.form_string()
-                );
-                candidate.set_count(count);
+            if let Some(found) = self.utility.iter_mut().find(|xs| **xs == item) {
+                log::trace!("updating count for utility cycle item; count={count}; item: {found}");
+                found.set_count(count);
+                if count == 0 {
+                    self.utility.retain(|xs| xs.count() > 0);
+                }
             }
-            if count == 0 {
-                self.utility.retain(|xs| xs.count() > 0);
-                return true;
+        };
+
+        if item.kind().left_hand_ok() {
+            if let Some(found) = self.left.iter_mut().find(|xs| **xs == item) {
+                log::trace!("updating count for left cycle item; count={count}; item: {found}");
+                found.set_count(count);
+                if count == 0 {
+                    self.left.retain(|xs| xs.count() > 0);
+                }
             }
         }
-        // TODO This does not update counts for other types!!!!!
-        false
+
+        if item.kind().right_hand_ok() {
+            if let Some(found) = self.right.iter_mut().find(|xs| **xs == item) {
+                log::trace!("updating count for right cycle item; count={count}; item: {found}");
+                found.set_count(count);
+                if count == 0 {
+                    self.right.retain(|xs| xs.count() > 0);
+                }
+            }
+        }
     }
 
     pub fn includes(&self, which: &CycleSlot, item: &ItemData) -> bool {

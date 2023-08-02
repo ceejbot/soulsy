@@ -107,7 +107,40 @@ impl Controller {
             }
         }
 
-        _ = self.cycles.update_count(*item, new_count);
+        // This function does most of the work. 
+        self.cycles.update_count(*item.clone(), new_count);
+        if new_count > 0 {
+            return;
+        }
+
+        if item.kind().is_utility() {
+            if let Some(vis) = self.visible.get(&HudElement::Utility) {
+                if vis.form_string() == item.form_string() {
+                    if let Some(showme) = self.cycles.get_top(&CycleSlot::Utility) {
+                        self.update_slot(HudElement::Utility, &showme);
+                    }
+                }
+            }
+        }
+        if item.kind().left_hand_ok() {
+            if let Some(vis) = self.visible.get(&HudElement::Left) {
+                if vis.form_string() == item.form_string() {
+                    if let Some(equipme) = self.cycles.get_top(&CycleSlot::Left) {
+                        self.equip_item(&equipme, Action::Left);
+                    }
+                }
+            }
+        }
+        if item.kind().right_hand_ok() {
+            if let Some(vis) = self.visible.get(&HudElement::Right) {
+                if vis.form_string() == item.form_string() {
+                    if let Some(equipme) = self.cycles.get_top(&CycleSlot::Right) {
+                        self.equip_item(&equipme, Action::Right);
+                        // this might race with the left hand. IDEK.
+                    }
+                }
+            }
+        }
     }
 
     /// Handle a key-press event that the event system decided we need to know about.
