@@ -19,17 +19,18 @@ namespace helpers
 	{
 		auto incoming_len = strlen(input);
 		if (incoming_len == 0) { return std::move(std::vector<uint8_t>()); }
- 
+
 		std::vector<uint8_t> result;
 		result.reserve(incoming_len + 1);  // null terminator
 		for (auto* ptr = input; *ptr != 0; ptr++) { result.push_back(static_cast<uint8_t>(*ptr)); }
-		result.push_back(0x00);  // there it is
+		result.push_back(0x00);            // there it is
 		return std::move(result);
 	}
 
 	std::string vec_to_stdstring(rust::Vec<uint8_t> input)
 	{
-		auto chars =  new char[input.size()]; // the vec has a null byte terminator already
+		if (input.size() == 0) { return std::move(std::string()); }
+		auto chars  = new char[input.size()];  // the vec has a null byte terminator already
 		int counter = 0;
 		for (auto byte : input) { chars[counter++] = static_cast<char>(byte); }
 		auto result = std::string(chars);
