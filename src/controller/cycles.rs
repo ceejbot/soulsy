@@ -296,12 +296,6 @@ impl CycleData {
             } else {
                 startAlphaTransition(false, 0.0);
             }
-            // match self.write() {
-            //     Ok(_) => {}
-            //     Err(e) => {
-            //         log::warn!("failed to persist cycle data on visibility change; {e:?}");
-            //     }
-            // }
         }
     }
 

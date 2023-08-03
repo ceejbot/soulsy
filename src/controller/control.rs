@@ -1049,12 +1049,15 @@ impl Controller {
     }
 
     fn flush_cycle_data(&self) {
+        log::trace!("used to write cycle data; not doing it now");
+        /*
         match self.cycles.write() {
             Ok(_) => {}
             Err(e) => {
                 log::warn!("failed to persist cycle data, but gamely continuing; {e:?}");
             }
         }
+        */
     }
 
     // watching the keys
