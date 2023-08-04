@@ -321,7 +321,7 @@ dependencies = [
 
 [[package]]
 name = "soulsy"
-version = "0.8.0-beta2"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "bincode",
