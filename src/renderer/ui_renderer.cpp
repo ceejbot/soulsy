@@ -34,11 +34,11 @@ namespace ui
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 
-	auto hud_alpha        = 1.0f;
+	auto hud_alpha        = 0.0f;
 	auto goal_alpha       = 1.0f;
 	auto fade_in          = true;
-	auto fade_duration    = 3.0f;   // seconds
-	auto transition_timer = 2.0f;   // seconds
+	auto fade_duration    = 3.0f;  // seconds
+	auto transition_timer = 2.0f;  // seconds
 	auto is_transitioning = false;
 	auto fade_out_timer   = 0.33f;  // seconds
 	bool doing_brief_peek = false;

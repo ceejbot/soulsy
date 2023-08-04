@@ -10,7 +10,7 @@ Check out the remarkably terse [user docs](./docs/). Or take a peek at a [this t
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project has just had its first release. I expect to hear about bugs or mistakes in my use of the APIs. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish. See the TODO list at the end of this readme for details about my next steps.
+This project has been released and is in active use. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish. See the TODO list at the end of this readme for details about my next steps.
 
 ## Building
 
@@ -30,6 +30,8 @@ The plugin requires the following vcpkg libraries, which will be installed for y
 - [imgui](https://github.com/ocornut/imgui)
 
 There are a number of development conveniences in the [justfile](https://just.systems), including build and archive recipes for Powershell. `cargo install just` if you do not have it. Because I am more comfortable on Unixes than on Windows, some recipes are written in Bash.
+The just recipes can build, copy to a test mod directory, update version
+numbers and tag a new release, and build archives for upload to the Nexus.
 
 `cargo --doc open` displays programmer documentation for the Rust side of the plugin. The C++ side is commented, but not to the same degree.
 
