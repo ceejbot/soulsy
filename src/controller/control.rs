@@ -249,12 +249,21 @@ impl Controller {
             };
         }
 
+        let settings = user_settings();
+
         match hotkey {
             HotkeyKind::Power => self.handle_cycle_power(),
             HotkeyKind::Utility => self.handle_cycle_utility(),
             HotkeyKind::Left => self.handle_cycle_hand(CycleSlot::Left, &hotkey),
             HotkeyKind::Right => self.handle_cycle_hand(CycleSlot::Right, &hotkey),
-            HotkeyKind::Activate => self.use_utility_item(),
+            HotkeyKind::Activate => {
+                let activation_method = settings.how_to_activate();
+                if matches!(activation_method, ActivationMethod::Hotkey) {
+                    self.use_utility_item()
+                } else {
+                    KeyEventResponse::default()
+                }
+            },
             HotkeyKind::Refresh => {
                 HudLayout::refresh();
                 KeyEventResponse {
@@ -308,35 +317,12 @@ impl Controller {
         let settings = user_settings();
         let cycle_method = settings.how_to_cycle();
         let activation_method = settings.how_to_activate();
-
-        match cycle_method {
-            ActivationMethod::Hotkey => {
-                log::debug!("cycling utilities/consumables");
-                return self.advance_simple_cycle(&CycleSlot::Utility);
-            }
-            ActivationMethod::LongPress => {
-                let hotkey = self.get_tracked_key(&HotkeyKind::Utility);
-                if hotkey.is_long_press() {
-                    return self.advance_simple_cycle(&CycleSlot::Utility);
-                }
-            }
-            ActivationMethod::Modifier => {
-                let hotkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
-                if hotkey.is_pressed() {
-                    log::debug!("cycling utilities/consumables");
-                    return self.advance_simple_cycle(&CycleSlot::Utility);
-                }
-            }
-        }
+        let hotkey = self.get_tracked_key(&HotkeyKind::Utility);
+        let is_long_press = hotkey.is_long_press();
 
         match activation_method {
-            ActivationMethod::Hotkey => {
-                // should be unreachable-- this is its own key handler
-                return KeyEventResponse::default();
-            }
             ActivationMethod::LongPress => {
-                let hotkey = self.get_tracked_key(&HotkeyKind::Utility);
-                if hotkey.is_long_press() {
+                if is_long_press {
                     return self.use_utility_item();
                 }
             }
@@ -345,6 +331,26 @@ impl Controller {
                 if hotkey.is_pressed() {
                     log::debug!("activating utilities/consumables");
                     return self.use_utility_item();
+                }
+            }
+            _ => {},
+        }
+
+        match cycle_method {
+            ActivationMethod::Hotkey => {
+                log::debug!("cycling utilities/consumables");
+                return self.advance_simple_cycle(&CycleSlot::Utility);
+            }
+            ActivationMethod::LongPress => {
+                if is_long_press {
+                    return self.advance_simple_cycle(&CycleSlot::Utility);
+                }
+            }
+            ActivationMethod::Modifier => {
+                let hotkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                if hotkey.is_pressed() {
+                    log::debug!("cycling utilities/consumables");
+                    return self.advance_simple_cycle(&CycleSlot::Utility);
                 }
             }
         }
