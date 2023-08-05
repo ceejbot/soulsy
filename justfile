@@ -138,6 +138,27 @@ build-layouts:
         echo "Built ${name}.7z"
     done
 
+    # build the curvy layout archives
+    dest="releases/SoulsyHUD_curvy_top/SKSE/plugins"
+    mkdir -p "${dest}/resources/backgrounds/}"
+    cp -p layouts/curvy/SoulsyHUD_curvy_left_top.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
+    cp -p layouts/curvy/top-left-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
+
+    dest="releases/SoulsyHUD_curvy_bottom/SKSE/plugins"
+    cp -rp releases/SoulsyHUD_curvy_top releases/SoulsyHUD_curvy_bottom
+    cp -p layouts/curvy/SoulsyHUD_curvy_left_top.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -p layouts/curvy/bottom-left-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
+
+    layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top"
+    cd releases
+    for i in $layouts; do
+        7zz -y -bsp0 -bso0 a "$i.7z" "$i"
+        rm -rf "$i"
+        echo "Built $i.7z"
+    done
+    cd ..
+
 # The traditional
 @clean:
     rm -f archive.7z

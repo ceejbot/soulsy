@@ -1,0 +1,393 @@
+# Global scaling factor: the whole hud size changes when you change this.
+global_scale = 1.0
+# Enable to turn on debug logging. Requires a restart.
+debug = false
+# Typeface to use. Must be truetype. Must be in resources/fonts.
+font = "futura-book-bt.ttf"
+# Point size to use for all name text. Scales with the global_scale.
+font_size = 20.0
+# unused right now
+animation_alpha = 51
+# unused right now
+animation_duration = 0.2
+# Enable any of these you need text rendering for.
+chinese_full_glyphs = false
+simplified_chinese_glyphs = true
+cyrillic_glyphs = true
+japanese_glyphs = false
+korean_glyphs = false
+thai_glyphs = false
+vietnamese_glyphs = false
+
+# The location of the *center* of the HUD, in pixels.
+# This location is NOT scaled.
+[anchor]
+x = 20.0
+y = 20.0
+
+# The size of the hud, in pixels. Will be scaled.
+[size]
+x = 300.0
+y = 300.0
+
+# The HUD background color. Red, green, blue, alpha. Alpha of zero means not drawn.
+[bg_color]
+r = 0
+g = 0
+b = 0
+a = 64
+
+[[layouts]]
+name = "Shouts/Powers"
+count_font_size = 15.0
+
+[layouts.element]
+repr = 0
+
+[layouts.offset]
+x = 0.0
+y = -83.0
+
+[layouts.size]
+x = 94.0
+y = 94.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 128
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 200
+a = 255
+
+[layouts.icon_size]
+x = 40.0
+y = 40.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = -41.0
+y = 41.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 110.0
+y = 110.0
+
+[[layouts]]
+name = "Consumables"
+count_font_size = 20.0
+
+[layouts.element]
+repr = 1
+
+[layouts.offset]
+x = 0.0
+y = 83.0
+
+[layouts.size]
+x = 94.0
+y = 94.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 128
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 210
+a = 255
+
+[layouts.icon_size]
+x = 40.0
+y = 40.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = 41.0
+y = -41.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 25.0
+y = 40.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 30.0
+y = 40.0
+
+[[layouts]]
+name = "Left Hand"
+count_font_size = 20.0
+
+[layouts.element]
+repr = 2
+
+[layouts.offset]
+x = -83.0
+y = 0.0
+
+[layouts.size]
+x = 94.0
+y = 94.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 128
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 210
+a = 255
+
+[layouts.icon_size]
+x = 40.0
+y = 40.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = 41.0
+y = 41.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 175.0
+y = 50.0
+
+[[layouts]]
+name = "Right Hand"
+count_font_size = 20.0
+
+[layouts.element]
+repr = 3
+
+[layouts.offset]
+x = 83.0
+y = 0.0
+
+[layouts.size]
+x = 94.0
+y = 94.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 128
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 210
+a = 255
+
+[layouts.icon_size]
+x = 40.0
+y = 40.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.hotkey_offset]
+x = -41.0
+y = -41.0
+
+[layouts.hotkey_size]
+x = 30.0
+y = 30.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 0.0
+y = 0.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = -15.0
+y = 75.0
+
+[[layouts]]
+name = "Ammo"
+count_font_size = 20.0
+
+[layouts.element]
+repr = 4
+
+[layouts.offset]
+x = 0.0
+y = 0.0
+
+[layouts.size]
+x = 50.0
+y = 50.0
+
+[layouts.bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.icon_color]
+r = 200
+g = 200
+b = 200
+a = 255
+
+[layouts.icon_size]
+x = 35.0
+y = 35.0
+
+[layouts.hotkey_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.hotkey_offset]
+x = 0.0
+y = 0.0
+
+[layouts.hotkey_size]
+x = 20.0
+y = 20.0
+
+[layouts.hotkey_bg_color]
+r = 255
+g = 255
+b = 255
+a = 0
+
+[layouts.count_offset]
+x = 50.0
+y = 100.0
+
+[layouts.count_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[layouts.name_offset]
+x = 75.0
+y = 100.0
