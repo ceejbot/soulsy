@@ -244,8 +244,8 @@ namespace ui
 
 		// It's left-aligned by default.
 		float adjustment = 0;
-		if (align == Align::Center) { adjustment = -0.5f * text_bounds.x; }
-		else if (align == Align::Right) { adjustment = -1.0f * text_bounds.x; }
+		if (align == Align::Center) { adjustment = -0.25f * text_bounds.x; }
+		else if (align == Align::Right) { adjustment = -0.5f * text_bounds.x; }
 
 		ImVec2 aligned_center = ImVec2(center.x + adjustment, center.y);
 
@@ -503,7 +503,7 @@ namespace ui
 				}
 			}
 
-			if (entry_kind != ItemKind::Arrow && slot_layout.hotkey_color.a > 0)
+			if (slot_layout.hotkey_color.a > 0)
 			{
 				const auto hk_im_center = ImVec2(slot_center.x + slot_layout.hotkey_offset.x * global_scale,
 					slot_center.y + slot_layout.hotkey_offset.y * global_scale);
