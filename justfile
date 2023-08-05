@@ -74,8 +74,8 @@ archive:
     mkdir -p "releases/$release_name"
     cp -rp data/* "releases/${release_name}/"
     cp -p build/Release/SoulsyHUD.dll "releases/${release_name}/SKSE/plugins/SoulsyHUD.dll"
-    cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}"/SKSE/plugins/SoulsyHUD.pdb"
-    rm "${release_name}"/scripts/source/TESV_Papyrus_Flags.flg
+    cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}/SKSE/plugins/SoulsyHUD.pdb"
+    rm "${release_name}/scripts/source/TESV_Papyrus_Flags.flg"
     cd releases
     7z a "$release_name".7z "$release_name"
     cd ..
@@ -124,7 +124,7 @@ build-layouts:
         ar=$(which 7z)
     fi
     if [[ -z "$ar" ]]; then
-        echo "7zip not found at 7z or 7zz. You'll need to install or alias it to archive."
+        echo "7zip not found at 7z or 7zz. You need to install or alias it to archive."
         exit 1
     fi
 
