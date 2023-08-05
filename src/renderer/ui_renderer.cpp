@@ -95,6 +95,11 @@ namespace ui
 		device_  = forwarder;
 		context_ = context;
 
+		// Not the right solution, but noting here anyway: to get alpha blending, we need to
+		// enable it in the ID3D11Device. I think. But this is not the correct call for the
+		// version we get from the call? or something. TODO: learn more dx11 trivia.
+		// device_->OMSetBlendState(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_FUNC_ADD);
+
 		logger::info("Initializing ImGui..."sv);
 		ImGui::CreateContext();
 		if (!ImGui_ImplWin32_Init(sd.OutputWindow))
