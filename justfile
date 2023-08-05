@@ -75,7 +75,7 @@ archive:
     cp -rp data/* "releases/${release_name}/"
     cp -p build/Release/SoulsyHUD.dll "releases/${release_name}/SKSE/plugins/SoulsyHUD.dll"
     cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}/SKSE/plugins/SoulsyHUD.pdb"
-    rm "${release_name}/scripts/source/TESV_Papyrus_Flags.flg"
+    rm "releases/${release_name}/scripts/source/TESV_Papyrus_Flags.flg"
     cd releases
     7z a "$release_name".7z "$release_name"
     cd ..
