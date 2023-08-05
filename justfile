@@ -70,14 +70,16 @@ archive:
     #!/usr/bin/env bash
     set -e
     version=$(tomato get package.version Cargo.toml)
-    outdir=SoulsyHUD_v${version}
-    mkdir -p "$outdir"
-    cp -rp data/* "$outdir"/
-    cp -p build/Release/SoulsyHUD.dll "$outdir"/SKSE/plugins/SoulsyHUD.dll
-    cp -p build/Release/SoulsyHUD.pdb "$outdir"/SKSE/plugins/SoulsyHUD.pdb
-    rm "${outdir}"/scripts/source/TESV_Papyrus_Flags.flg
-    7z a "$outdir".7z "$outdir"
-    echo "Mod directory ready at ${outdir}; archive at ${outdir}.7z"
+    release_name=SoulsyHUD_v${version}
+    mkdir -p "releases/$release_name"
+    cp -rp data/* "releases/${release_name}/"
+    cp -p build/Release/SoulsyHUD.dll "releases/${release_name}/SKSE/plugins/SoulsyHUD.dll"
+    cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}"/SKSE/plugins/SoulsyHUD.pdb"
+    rm "${release_name}"/scripts/source/TESV_Papyrus_Flags.flg
+    cd releases
+    7z a "$release_name".7z "$release_name"
+    cd ..
+    echo "Mod archive for v${version} ready at releases/${release_name}.7z"
 
 # copy files to my test mod
 test:
@@ -87,7 +89,6 @@ test:
     cp -rp data/* "$outdir"
     cp -p build/Release/SoulsyHUD.dll "${outdir}/SKSE/plugins/SoulsyHUD.dll"
     cp -p build/Release/SoulsyHUD.pdb "${outdir}/SKSE/plugins/SoulsyHUD.pdb"
-
 
 # Copy English translation to other translation files.
 translations:
@@ -140,15 +141,16 @@ build-layouts:
 
     # build the curvy layout archives
     dest="releases/SoulsyHUD_curvy_top/SKSE/plugins"
-    mkdir -p "${dest}/resources/backgrounds/}"
+    mkdir -p "${dest}/resources/backgrounds/"
     cp -p layouts/curvy/SoulsyHUD_curvy_left_top.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -p layouts/curvy/left-top-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
     cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
-    cp -p layouts/curvy/top-left-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
 
     dest="releases/SoulsyHUD_curvy_bottom/SKSE/plugins"
-    cp -rp releases/SoulsyHUD_curvy_top releases/SoulsyHUD_curvy_bottom
-    cp -p layouts/curvy/SoulsyHUD_curvy_left_top.toml "$dest/SoulsyHUD_Layout.toml"
-    cp -p layouts/curvy/bottom-left-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
+    mkdir -p "${dest}/resources/backgrounds/"
+    cp -p layouts/curvy/SoulsyHUD_curvy_left_bottom.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -p layouts/curvy/left-bottom-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
+    cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
 
     layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top"
     cd releases
