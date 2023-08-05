@@ -1,19 +1,19 @@
 # Global scaling factor: the whole hud size changes when you change this.
-global_scale = 1.0
+global_scale = 0.5
 # Enable to turn on debug logging. Requires a restart.
 debug = false
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "futura-book-bt.ttf"
 # Point size to use for all name text. Scales with the global_scale.
-font_size = 20.0
+font_size = 36.0
 # unused right now
 animation_alpha = 51
 # unused right now
 animation_duration = 0.2
 # Enable any of these you need text rendering for.
 chinese_full_glyphs = false
-simplified_chinese_glyphs = true
-cyrillic_glyphs = true
+simplified_chinese_glyphs = false
+cyrillic_glyphs = false
 japanese_glyphs = false
 korean_glyphs = false
 thai_glyphs = false
@@ -23,12 +23,12 @@ vietnamese_glyphs = false
 # This location is NOT scaled.
 [anchor]
 x = 20.0
-y = 20.0
+y = 1420.0
 
 # The size of the hud, in pixels. Will be scaled.
 [size]
-x = 300.0
-y = 300.0
+x = 1000.0
+y = 1000.0
 
 # The HUD background color. Red, green, blue, alpha. Alpha of zero means not drawn.
 [bg_color]
@@ -40,17 +40,18 @@ a = 64
 [[layouts]]
 name = "Shouts/Powers"
 count_font_size = 15.0
+align_text = "left"
 
 [layouts.element]
 repr = 0
 
 [layouts.offset]
-x = 0.0
-y = -83.0
+x = -325.0
+y = -75.0
 
 [layouts.size]
-x = 94.0
-y = 94.0
+x = 280.0
+y = 280.0
 
 [layouts.bg_color]
 r = 255
@@ -65,8 +66,8 @@ b = 200
 a = 255
 
 [layouts.icon_size]
-x = 40.0
-y = 40.0
+x = 175.0
+y = 175.0
 
 [layouts.hotkey_color]
 r = 255
@@ -75,12 +76,12 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = -41.0
-y = 41.0
+x = 0.0
+y = 90.0
 
 [layouts.hotkey_size]
-x = 30.0
-y = 30.0
+x = 60.0
+y = 60.0
 
 [layouts.hotkey_bg_color]
 r = 255
@@ -105,23 +106,24 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 110.0
-y = 110.0
+x = -140.0
+y = 150.0
 
 [[layouts]]
 name = "Consumables"
 count_font_size = 20.0
+align_text = "center"
 
 [layouts.element]
 repr = 1
 
 [layouts.offset]
-x = 0.0
-y = 83.0
+x = -125.0
+y = 125.0
 
 [layouts.size]
-x = 94.0
-y = 94.0
+x = 200.0
+y = 200.0
 
 [layouts.bg_color]
 r = 255
@@ -132,12 +134,12 @@ a = 128
 [layouts.icon_color]
 r = 200
 g = 200
-b = 210
+b = 200
 a = 255
 
 [layouts.icon_size]
-x = 40.0
-y = 40.0
+x = 150.0
+y = 150.0
 
 [layouts.hotkey_color]
 r = 255
@@ -146,12 +148,12 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 41.0
-y = -41.0
+x = 0.0
+y = 65.0
 
 [layouts.hotkey_size]
-x = 30.0
-y = 30.0
+x = 40.0
+y = 40.0
 
 [layouts.hotkey_bg_color]
 r = 255
@@ -182,17 +184,18 @@ y = 40.0
 [[layouts]]
 name = "Left Hand"
 count_font_size = 20.0
+align_text = "left"
 
 [layouts.element]
 repr = 2
 
 [layouts.offset]
-x = -83.0
-y = 0.0
+x = -325.0
+y = 320.0
 
 [layouts.size]
-x = 94.0
-y = 94.0
+x = 280.0
+y = 280.0
 
 [layouts.bg_color]
 r = 255
@@ -207,8 +210,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 40.0
-y = 40.0
+x = 175.0
+y = 175.0
 
 [layouts.hotkey_color]
 r = 255
@@ -217,12 +220,12 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = 41.0
-y = 41.0
+x = 0.0
+y = 90.0
 
 [layouts.hotkey_size]
-x = 30.0
-y = 30.0
+x = 60.0
+y = 60.0
 
 [layouts.hotkey_bg_color]
 r = 255
@@ -247,23 +250,24 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = 175.0
-y = 50.0
+x = -140.0
+y = -190.0
 
 [[layouts]]
 name = "Right Hand"
 count_font_size = 20.0
+align_text = "right"
 
 [layouts.element]
 repr = 3
 
 [layouts.offset]
-x = 83.0
-y = 0.0
+x = 85.0
+y = 320.0
 
 [layouts.size]
-x = 94.0
-y = 94.0
+x = 280.0
+y = 280.0
 
 [layouts.bg_color]
 r = 255
@@ -278,8 +282,8 @@ b = 210
 a = 255
 
 [layouts.icon_size]
-x = 40.0
-y = 40.0
+x = 175.0
+y = 175.0
 
 [layouts.hotkey_color]
 r = 255
@@ -288,12 +292,12 @@ b = 255
 a = 255
 
 [layouts.hotkey_offset]
-x = -41.0
-y = -41.0
+x = 0.0
+y = 90.0
 
 [layouts.hotkey_size]
-x = 30.0
-y = 30.0
+x = 60.0
+y = 60.0
 
 [layouts.hotkey_bg_color]
 r = 255
@@ -318,8 +322,8 @@ b = 255
 a = 255
 
 [layouts.name_offset]
-x = -15.0
-y = 75.0
+x = 0.0
+y = -190.0
 
 [[layouts]]
 name = "Ammo"
@@ -329,18 +333,18 @@ count_font_size = 20.0
 repr = 4
 
 [layouts.offset]
-x = 0.0
-y = 0.0
+x = 50.0
+y = -50.0
 
 [layouts.size]
-x = 50.0
-y = 50.0
+x = 200.0
+y = 200.0
 
 [layouts.bg_color]
 r = 255
 g = 255
 b = 255
-a = 0
+a = 128
 
 [layouts.icon_color]
 r = 200
@@ -349,8 +353,8 @@ b = 200
 a = 255
 
 [layouts.icon_size]
-x = 35.0
-y = 35.0
+x = 150.0
+y = 150.0
 
 [layouts.hotkey_color]
 r = 255
@@ -360,11 +364,11 @@ a = 0
 
 [layouts.hotkey_offset]
 x = 0.0
-y = 0.0
+y = 90.0
 
 [layouts.hotkey_size]
-x = 20.0
-y = 20.0
+x = 60.0
+y = 60.0
 
 [layouts.hotkey_bg_color]
 r = 255
