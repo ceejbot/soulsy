@@ -74,8 +74,6 @@ name_offset = { x = 110.0, y = 110.0 }
 [[layouts]]
 name = "Consumables"
 element = { repr = 1 }
-count_font_size = 20.0
-align_text = "left"
 offset = { x = 0.0, y = 83.0 }
 size = { x = 94.0 , y = 94.0 }
 align_text = "left"
@@ -95,7 +93,6 @@ name_offset = { x = 30.0, y = 40.0 }
 [[layouts]]
 name = "Left Hand"
 element = { repr = 2 }
-count_font_size = 20.0
 offset = { x = -83.0, y = 0.0 }
 size = { x = 94.0 , y = 94.0 }
 align_text = "left"
@@ -115,7 +112,6 @@ name_offset = { x = 175.0, y = 50.0 }
 [[layouts]]
 name = "Right Hand"
 element = { repr = 3 }
-count_font_size = 20.0
 offset = { x = 83.0, y = 0.0 }
 size = { x = 94.0 , y = 94.0 }
 align_text = "left"
@@ -136,7 +132,6 @@ name_offset = { x = -15.0, y = 75.0 }
 [[layouts]]
 name = "Ammo"
 element = { repr = 4 }
-count_font_size = 20.0
 offset = { x = 0.0, y = 0.0 }
 size = { x = 50.0 , y = 50.0 }
 align_text = "left"

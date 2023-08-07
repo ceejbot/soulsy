@@ -90,7 +90,7 @@ pub fn make_magicka_proxy(count: u32) -> ItemData {
         false,
         true,
         count,
-        "Best Magicka Potion".to_string(),
+        "Best Magicka".to_string(),
         "magicka_proxy",
     )
 }
@@ -101,7 +101,7 @@ pub fn make_health_proxy(count: u32) -> ItemData {
         false,
         true,
         count,
-        "Best Health Potion".to_string(),
+        "Best Health".to_string(),
         "health_proxy",
     )
 }
@@ -112,7 +112,7 @@ pub fn make_stamina_proxy(count: u32) -> ItemData {
         false,
         true,
         count,
-        "Best Stamina Potion".to_string(),
+        "Best Stamina".to_string(),
         "stamina_proxy",
     )
 }
