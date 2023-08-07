@@ -47,6 +47,7 @@
       "valueOptions": {
         "options": [
           "$SoulsyHUD_Cycle_Enum_Hotkey",
+          "$SoulsyHUD_Cycle_Enum_LongPress",
           "$SoulsyHUD_Cycle_Enum_Mod"
         ],
         "sourceType": "ModSettingInt",
@@ -321,7 +322,10 @@
       "type": "enum",
       "help": "$SoulsyHUD_Options_Controller_Help",
       "valueOptions": {
-        "options": ["$SoulsyHUD_Controls_PS", "$SoulsyHUD_Controls_Xbox"],
+        "options": [
+          "$SoulsyHUD_Controls_PS",
+          "$SoulsyHUD_Controls_Xbox"
+        ],
         "sourceType": "ModSettingInt",
         "defaultValue": 0
       }

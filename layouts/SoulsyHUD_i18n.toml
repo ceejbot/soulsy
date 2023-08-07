@@ -1,17 +1,20 @@
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
 # Enable to turn on debug logging. Requires a restart.
-debug = false
+debug = true
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "Inter-Medium.ttf"
 # Point size to use for all name text. Scales with the global_scale.
 font_size = 20.0
-# unused right now
-animation_alpha = 51
-# unused right now
-animation_duration = 0.2
-# Enable any of these you need text rendering for. Disable ones you don't need.
-# The Inter typeface should support all of these options.
+# The location of the *center* of the HUD, in pixels. This does not scale.
+anchor = { x = 170.0, y = 1225.0 }
+# The size of the hud, before the global scaling factor is applied.
+size = { x = 300.0, y = 300.0 }
+# The color of the HUD background file. Set alpha to 0 to skip drawing a background.
+bg_color = { r = 0, g = 0, b = 0, a = 64 }
+
+# Enable any of these you need text rendering for.
+# Inter should be able to render all of them.
 chinese_full_glyphs = false
 simplified_chinese_glyphs = true
 cyrillic_glyphs = true
@@ -20,401 +23,132 @@ korean_glyphs = false
 thai_glyphs = false
 vietnamese_glyphs = false
 
-# The location of the *center* of the HUD, in pixels. This does not scale.
-[anchor]
-x = 170.0
-y = 1225.0
-
-# The size of the hud, before the global scaling factor is applied.
-[size]
-x = 300.0
-y = 300.0
-
-# The color of the HUD background file. Set alpha to 0 to skip drawing a background.
-[bg_color]
-r = 0
-g = 0
-b = 0
-a = 64
-
 # This is the sub-layout for the shouts and powers slot.
 [[layouts]]
-# This name is to help people figure out which slot they're on. It's not
-# drawn in the HUD.
+# This name is to help humans editing this file figure out which slot they're on.
+# It's not drawn in the HUD.
 name = "Shouts/Powers"
-# Not used for this slot, since powers don't have counts.
-count_font_size = 15.0
+# Used to help the hud renderer figure out which slot this is. Complicated
+# handwave about serializing TOML. You must not change this number, but you can ignore it.
+element = { repr = 0 }
+# The offset of the center of this slot relative to the center of the HUD.
+# This gets scaled when the global scaling factor is applied.
+offset = { x = 0.0, y = -83.0 }
+# Size of this slot, before scaling.
+size = { x = 94.0 , y = 94.0 }
 # How to align name and count text for this slot.
 align_text = "left"
 
-# Used to help the hud renderer figure out which slot this is. Complicated
-# handwave about serializing TOML.
-[layouts.element]
-repr = 0
-
-# The offset of the center of this slot relative to the center of the HUD.
-# This gets scaled when the global scaling factor is applied.
-[layouts.offset]
-x = 0.0
-y = -83.0
-
-# Size of this slot, before scaling.
-[layouts.size]
-x = 94.0
-y = 94.0
-
 # The color to use to draw this slot's background. Alpha of 0 means it's not visible.
-[layouts.bg_color]
-r = 255
-g = 255
-b = 255
-a = 128
-
+# Color is expressed as RGBA; values are 0-255.
+bg_color = { r = 255, g = 255, b = 255, a = 128 }
 # Color for this HUD's icon. Alpha of 0 means it's not drawn. The icon is
 # always centered in the slot.
-[layouts.icon_color]
-r = 200
-g = 200
-b = 200
-a = 255
-
+icon_color = { r = 200, g = 200, b = 200, a = 255 }
 # Size of the icon for this slot, before scaling.
-[layouts.icon_size]
-x = 40.0
-y = 40.0
+icon_size = { x = 40.0, y = 40.0 }
 
 # Color for this HUD's hotkey. Alpha of 0 means it's not drawn.
-[layouts.hotkey_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
+hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the hotkey. Gets scaled.
-[layouts.hotkey_offset]
-x = -41.0
-y = 41.0
-
+hotkey_offset = { x = -41.0, y = 41.0 }
 # Size of the hotkey. Also scaled.
-[layouts.hotkey_size]
-x = 30.0
-y = 30.0
-
-# Background color. Alpha means invisible.
-[layouts.hotkey_bg_color]
-r = 255
-g = 255
-b = 255
-a = 0
+hotkey_size = { x = 30.0, y = 30.0 }
+# Background color for the hotkey. Alpha means invisible.
+hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 
 # Offset for any count text. Gets scaled.
-[layouts.count_offset]
-x = 0.0
-y = 0.0
-
-# The color for any count displays.
-[layouts.count_color]
-r = 255
-g = 255
-b = 255
-a = 0
+count_offset = { x = 0.0, y = 0.0 }
+# The color for any count displays. An alpha of 0 means not drawn.
+count_color = { r = 200, g = 200, b = 200, a = 0 }
+# Font size for item count.
+count_font_size = 20.0
 
 # The color for the name text of any item in this slot.
-[layouts.name_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
+name_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the item name. Gets scaled.
-[layouts.name_offset]
-x = 110.0
-y = 110.0
+name_offset = { x = 110.0, y = 110.0 }
 
+# The consumables slot. You can change all of these values
+# independently from the other slots.
 [[layouts]]
 name = "Consumables"
+element = { repr = 1 }
 count_font_size = 20.0
 align_text = "left"
-
-[layouts.element]
-repr = 1
-
-[layouts.offset]
-x = 0.0
-y = 83.0
-
-[layouts.size]
-x = 94.0
-y = 94.0
-
-[layouts.bg_color]
-r = 255
-g = 255
-b = 255
-a = 128
-
-[layouts.icon_color]
-r = 200
-g = 200
-b = 210
-a = 255
-
-[layouts.icon_size]
-x = 40.0
-y = 40.0
-
-[layouts.hotkey_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.hotkey_offset]
-x = 41.0
-y = -41.0
-
-[layouts.hotkey_size]
-x = 30.0
-y = 30.0
-
-[layouts.hotkey_bg_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.count_offset]
-x = 55.0
-y = 0.0
-
-[layouts.count_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.name_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.name_offset]
-x = 30.0
-y = 40.0
+offset = { x = 0.0, y = 83.0 }
+size = { x = 94.0 , y = 94.0 }
+align_text = "left"
+bg_color = { r = 255, g = 255, b = 255, a = 128 }
+icon_color = { r = 200, g = 200, b = 200, a = 255 }
+icon_size = { x = 40.0, y = 40.0 }
+hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
+hotkey_offset = { x = 41.0, y = -41.0 }
+hotkey_size = { x = 30.0, y = 30.0 }
+hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
+count_offset = { x = 55.0, y = 0.0 }
+count_color = { r = 200, g = 200, b = 200, a = 255 }
+count_font_size = 20.0
+name_color = { r = 255, g = 255, b = 255, a = 255 }
+name_offset = { x = 30.0, y = 40.0 }
 
 [[layouts]]
 name = "Left Hand"
+element = { repr = 2 }
 count_font_size = 20.0
+offset = { x = -83.0, y = 0.0 }
+size = { x = 94.0 , y = 94.0 }
 align_text = "left"
-
-[layouts.element]
-repr = 2
-
-[layouts.offset]
-x = -83.0
-y = 0.0
-
-[layouts.size]
-x = 94.0
-y = 94.0
-
-[layouts.bg_color]
-r = 255
-g = 255
-b = 255
-a = 128
-
-[layouts.icon_color]
-r = 200
-g = 200
-b = 210
-a = 255
-
-[layouts.icon_size]
-x = 40.0
-y = 40.0
-
-[layouts.hotkey_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.hotkey_offset]
-x = 41.0
-y = 41.0
-
-[layouts.hotkey_size]
-x = 30.0
-y = 30.0
-
-[layouts.hotkey_bg_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.count_offset]
-x = 0.0
-y = 0.0
-
-[layouts.count_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.name_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.name_offset]
-x = 175.0
-y = 50.0
+bg_color = { r = 255, g = 255, b = 255, a = 128 }
+icon_color = { r = 200, g = 200, b = 200, a = 255 }
+icon_size = { x = 40.0, y = 40.0 }
+hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
+hotkey_offset = { x = 41.0, y = 41.0 }
+hotkey_size = { x = 30.0, y = 30.0 }
+hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
+count_offset = { x = 0.0, y = 0.0 }
+count_color = { r = 255, g = 255, b = 255, a = 0 }
+count_font_size = 20.0
+name_color = { r = 255, g = 255, b = 255, a = 255 }
+name_offset = { x = 175.0, y = 50.0 }
 
 [[layouts]]
 name = "Right Hand"
+element = { repr = 3 }
 count_font_size = 20.0
+offset = { x = 83.0, y = 0.0 }
+size = { x = 94.0 , y = 94.0 }
 align_text = "left"
+bg_color = { r = 255, g = 255, b = 255, a = 128 }
+icon_color = { r = 200, g = 200, b = 200, a = 255 }
+icon_size = { x = 40.0, y = 40.0 }
+hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
+hotkey_offset = { x = -41.0, y = -41.0 }
+hotkey_size = { x = 30.0, y = 30.0 }
+hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
+count_offset = { x = 0.0, y = 0.0 }
+count_color = { r = 255, g = 255, b = 255, a = 0 }
+count_font_size = 20.0
+name_color = { r = 255, g = 255, b = 255, a = 255 }
+name_offset = { x = -15.0, y = 75.0 }
 
-[layouts.element]
-repr = 3
-
-[layouts.offset]
-x = 83.0
-y = 0.0
-
-[layouts.size]
-x = 94.0
-y = 94.0
-
-[layouts.bg_color]
-r = 255
-g = 255
-b = 255
-a = 128
-
-[layouts.icon_color]
-r = 200
-g = 200
-b = 210
-a = 255
-
-[layouts.icon_size]
-x = 40.0
-y = 40.0
-
-[layouts.hotkey_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.hotkey_offset]
-x = -41.0
-y = -41.0
-
-[layouts.hotkey_size]
-x = 30.0
-y = 30.0
-
-[layouts.hotkey_bg_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.count_offset]
-x = 0.0
-y = 0.0
-
-[layouts.count_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.name_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.name_offset]
-x = -15.0
-y = 75.0
 
 [[layouts]]
 name = "Ammo"
+element = { repr = 4 }
 count_font_size = 20.0
+offset = { x = 0.0, y = 0.0 }
+size = { x = 50.0 , y = 50.0 }
 align_text = "left"
-
-[layouts.element]
-repr = 4
-
-[layouts.offset]
-x = 0.0
-y = 0.0
-
-[layouts.size]
-x = 50.0
-y = 50.0
-
-[layouts.bg_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.icon_color]
-r = 200
-g = 200
-b = 200
-a = 255
-
-[layouts.icon_size]
-x = 35.0
-y = 35.0
-
-[layouts.hotkey_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.hotkey_offset]
-x = 0.0
-y = 0.0
-
-[layouts.hotkey_size]
-x = 20.0
-y = 20.0
-
-[layouts.hotkey_bg_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.count_offset]
-x = 50.0
-y = 100.0
-
-[layouts.count_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.name_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.name_offset]
-x = 75.0
-y = 100.0
+bg_color = { r = 255, g = 255, b = 255, a = 0 }
+icon_color = { r = 200, g = 200, b = 200, a = 255 }
+icon_size = { x = 35.0, y = 35.0 }
+hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
+hotkey_offset = { x = 0.0, y = 0.0 }
+hotkey_size = { x = 30.0, y = 30.0 }
+hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
+count_offset = { x = 50.0, y = 100.0 }
+count_color = { r = 255, g = 255, b = 255, a = 255 }
+count_font_size = 20.0
+name_color = { r = 255, g = 255, b = 255, a = 255 }
+name_offset = { x = 75.0, y = 100.0 }

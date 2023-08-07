@@ -3,7 +3,7 @@ global_scale = 0.5
 # Enable to turn on debug logging. Requires a restart.
 debug = false
 # Typeface to use. Must be truetype. Must be in resources/fonts.
-font = "Inter-Medium.ttf"
+font = "Inter-Thin.ttf"
 # Point size to use for all name text. Scales with the global_scale.
 font_size = 30.0
 # Enable any of these you need text rendering for.

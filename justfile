@@ -138,9 +138,9 @@ build-layouts:
         mkdir -p "releases/${name}/SKSE/plugins"
         cp -p "$layout" "$dest/SoulsyHUD_Layout.toml"
         font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
-        if [ "$font" = "Inter-Medium.ttf" ]; then
+        if [[ "$font" =~ "Inter" ]]; then
             mkdir -p "$dest/resources/fonts"
-            cp -p "layouts/Inter-Medium.ttf" "$dest/resources/fonts"
+            cp -p "layouts/${font}" "$dest/resources/fonts"
         fi
         cd releases
         ${ar} -y -bsp0 -bso0 a "${name}.7z" "${name}"
@@ -150,29 +150,34 @@ build-layouts:
     done
 
     # hexagons bestagons
-    dest="releases/SoulsyHUD_hexagons_lr/SKSE/plugins"
-    mkdir -p "${dest}/resources/backgrounds/"
+    dest="releases/SoulsyHUD-hexagons-1/SKSE/plugins"
+    mkdir -p $dest/resources/{backgrounds,fonts}
     cp -p layouts/hexagons/SoulsyHUD_hexagons_lr.toml "$dest/SoulsyHUD_Layout.toml"
     cp -p layouts/hexagons/hexagons_lr.svg "$dest/resources/backgrounds/hud_bg.svg"
-    dest="releases/SoulsyHUD_hexagons_tb/SKSE/plugins"
-    mkdir -p "${dest}/resources/backgrounds/"
+    font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
+    cp -p "layouts/$font" "$dest/resources/fonts/"
+
+    dest="releases/SoulsyHUD-hexagons-2/SKSE/plugins"
+    mkdir -p $dest/resources/{backgrounds,fonts}
     cp -p layouts/hexagons/SoulsyHUD_hexagons_tb.toml "$dest/SoulsyHUD_Layout.toml"
     cp -p layouts/hexagons/hexagons_tb.svg "$dest/resources/backgrounds/hud_bg.svg"
+    font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
+    cp -p "layouts/${font}" "$dest/resources/fonts/"
 
     # build the curvy layout archives
     dest="releases/SoulsyHUD_curvy_top/SKSE/plugins"
-    mkdir -p "${dest}/resources/backgrounds/"
+    mkdir -p "$dest/resources/backgrounds/"
     cp -p layouts/curvy/SoulsyHUD_curvy_left_top.toml "$dest/SoulsyHUD_Layout.toml"
     cp -p layouts/curvy/left-top-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
     cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
 
     dest="releases/SoulsyHUD_curvy_bottom/SKSE/plugins"
-    mkdir -p "${dest}/resources/backgrounds/"
+    mkdir -p "$dest/resources/backgrounds/"
     cp -p layouts/curvy/SoulsyHUD_curvy_left_bottom.toml "$dest/SoulsyHUD_Layout.toml"
     cp -p layouts/curvy/left-bottom-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
     cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
 
-    layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD_hexagons_lr SoulsyHUD_hexagons_tb"
+    layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD-hexagons-1 SoulsyHUD-hexagons-2"
     cd releases
     for i in $layouts; do
          ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"
@@ -190,13 +195,3 @@ build-layouts:
 spotless: clean
     cargo clean
     rm -rf build
-
-# Pwsh version of the timeless classic.
-@clean-win:
-    if (test-path archive.7z) { remove-item archive.7z }
-    if (test-path archive) { rm archive -r -force }
-
-# Pwsh version of the recipe for the ultra-tidy
-@spotless-win: clean-win
-    cargo clean
-    if (test-path build) { rm build -r -force }
