@@ -5,7 +5,7 @@ debug = false
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "Inter-Light.ttf"
 # Point size to use for all name text. Scales with the global_scale.
-font_size = 40.0
+font_size = 35.0
 # Enable any of these you need text rendering for.
 chinese_full_glyphs = false
 simplified_chinese_glyphs = false
@@ -41,11 +41,11 @@ count_color = { r = 200, g = 200, b = 200, a = 0 }
 count_font_size = 20.0
 count_offset = { x = 0.0, y = 0.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-hotkey_color = { r = 200, g = 200, b = 200, a = 255 }
+hotkey_color = { r = 200, g = 200, b = 200, a = 0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_offset = { x = 0.0, y = -78.0 }
 name_color = { r = 200, g = 200, b = 200, a = 255 }
-name_offset = { x = 100, y = -150 }
+name_offset = { x = 120, y = -150 }
 
 [[layouts]]
 name = "Consumables"
@@ -57,19 +57,19 @@ bg_color = { r = 0, g = 0, b = 0, a = 0 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 100.0, y = 100.0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
-count_font_size = 20.0
-count_offset = { x = 25.0, y = 40.0 }
+count_font_size = 50.0
+count_offset = { x = 55.0, y = -25.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-hotkey_color = { r = 200, g = 200, b = 200, a = 255 }
+hotkey_color = { r = 200, g = 200, b = 200, a = 0 }
 hotkey_offset = { x = 0.0, y = -78.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 name_color = { r = 200, g = 200, b = 200, a = 255 }
-name_offset = { x = -100, y = -120 }
+name_offset = { x = -260, y = -110 }
 
 [[layouts]]
 name = "Left Hand"
 element = { repr = 2 }
-text_align = "center"
+text_align = "left"
 offset = { x = -178.74, y = 100.0 }
 size = { x = 200.0 , y = 200.0 }
 bg_color = { r = 0, g = 0, b = 0, a = 0 }
@@ -77,18 +77,18 @@ count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 20.0
 count_offset = { x = 0.0, y = 0.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-hotkey_color = { r = 200, g = 200, b = 200, a = 255 }
+hotkey_color = { r = 200, g = 200, b = 200, a = 0 }
 hotkey_offset = { x = 0.0, y = 78.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 100.0, y = 100.0 }
 name_color = { r = 200, g = 200, b = 200, a = 255 }
-name_offset = { x = -178.74, y = -200 }
+name_offset = { x = 98.74, y = 110 }
 
 [[layouts]]
 name = "Right Hand"
 element = { repr = 3 }
-text_align = "center"
+text_align = "left"
 offset = { x = 178.74, y = 100.0 }
 size = { x = 200.0 , y = 200.0 }
 bg_color = { r = 0, g = 0, b = 0, a = 0 }
@@ -96,13 +96,13 @@ count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 20.0
 count_offset = { x = 0.0, y = 0.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-hotkey_color = { r = 200, g = 200, b = 200, a = 255 }
+hotkey_color = { r = 200, g = 200, b = 200, a = 0 }
 hotkey_offset = { x = 0.0, y = 78.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 100.0, y = 100.0 }
 name_color = { r = 200, g = 200, b = 200, a = 255 }
-name_offset = { x = 0.0, y = 50.0 }
+name_offset = { x = -258.74, y = 60.0 }
 
 [[layouts]]
 name = "Ammo"
@@ -112,13 +112,13 @@ offset = { x = 0.0, y = 0.0 }
 size = { x = 200.0 , y = 200.0 }
 bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
-count_font_size = 20.0
-count_offset = { x = 50.0, y = 100.0 }
+count_font_size = 40.0
+count_offset = { x = 20.0, y = 20.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 hotkey_color = { r = 200, g = 200, b = 200, a = 0 }
 hotkey_offset = { x = 0.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 100.0, y = 100.0 }
-name_color = { r = 200, g = 200, b = 200, a = 255 }
+name_color = { r = 200, g = 200, b = 200, a = 0 }
 name_offset = { x = 0.0, y = 50.0 }
