@@ -149,6 +149,16 @@ build-layouts:
         echo "Built ${name}.7z"
     done
 
+    # hexagons bestagons
+    dest="releases/SoulsyHUD_hexagons_lr/SKSE/plugins"
+    mkdir -p "${dest}/resources/backgrounds/"
+    cp -p layouts/hexagons/SoulsyHUD_hexagons_lr.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -p layouts/hexagons/hexagons_lr.svg "$dest/resources/backgrounds/hud_bg.svg"
+    dest="releases/SoulsyHUD_hexagons_tb/SKSE/plugins"
+    mkdir -p "${dest}/resources/backgrounds/"
+    cp -p layouts/hexagons/SoulsyHUD_hexagons_tb.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -p layouts/hexagons/hexagons_tb.svg "$dest/resources/backgrounds/hud_bg.svg"
+
     # build the curvy layout archives
     dest="releases/SoulsyHUD_curvy_top/SKSE/plugins"
     mkdir -p "${dest}/resources/backgrounds/"
@@ -162,7 +172,7 @@ build-layouts:
     cp -p layouts/curvy/left-bottom-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
     cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
 
-    layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top"
+    layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD_hexagons_lr SoulsyHUD_hexagons_tb"
     cd releases
     for i in $layouts; do
          ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"
