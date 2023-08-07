@@ -4,9 +4,8 @@
 
 #include "rust/cxx.h"
 
-struct ItemData;
+struct HudItem;
 enum class Action : ::std::uint8_t;
-enum class ItemKind : ::std::uint8_t;
 
 namespace player
 {
@@ -20,12 +19,12 @@ namespace player
 	// Here I start carving out an API that the rust controller can call to
 	// manipulate things about the player, as well as ask questions of it.
 
-	rust::Box<ItemData> equippedLeftHand();
-	rust::Box<ItemData> equippedRightHand();
-	rust::Box<ItemData> equippedPower();
-	rust::Box<ItemData> equippedAmmo();
-	rust::Box<ItemData> boundObjectLeftHand();
-	rust::Box<ItemData> boundObjectRightHand();
+	rust::Box<HudItem> equippedLeftHand();
+	rust::Box<HudItem> equippedRightHand();
+	rust::Box<HudItem> equippedPower();
+	rust::Box<HudItem> equippedAmmo();
+	rust::Box<HudItem> boundObjectLeftHand();
+	rust::Box<HudItem> boundObjectRightHand();
 
 	rust::Vec<uint16_t> playerName();
 
@@ -41,7 +40,7 @@ namespace player
 	void equipMagic(const std::string& form_spec, Action slot);
 	void equipWeapon(const std::string& form_spec, Action slot);
 	void equipAmmo(const std::string& form_spec);
-	
+
 	void consumePotion(const std::string& form_spec);
 	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count);
 

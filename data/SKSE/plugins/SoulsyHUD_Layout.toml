@@ -87,74 +87,8 @@ hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_offset = { x = 55.0, y = 0.0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 20.0
-align_text = "left"
-
-[layouts.element]
-repr = 1
-
-[layouts.offset]
-x = 0.0
-y = 83.0
-
-[layouts.size]
-x = 94.0
-y = 94.0
-
-[layouts.bg_color]
-r = 255
-g = 255
-b = 255
-a = 128
-
-[layouts.icon_color]
-r = 200
-g = 200
-b = 210
-a = 255
-
-[layouts.icon_size]
-x = 40.0
-y = 40.0
-
-[layouts.hotkey_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.hotkey_offset]
-x = 41.0
-y = -41.0
-
-[layouts.hotkey_size]
-x = 30.0
-y = 30.0
-
-[layouts.hotkey_bg_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.count_offset]
-x = 55.0
-y = 0.0
-
-[layouts.count_color]
-r = 255
-g = 255
-b = 255
-a = 0
-
-[layouts.name_color]
-r = 255
-g = 255
-b = 255
-a = 255
-
-[layouts.name_offset]
-x = 30.0
-y = 40.0
+name_color = { r = 255, g = 255, b = 255, a = 255 }
+name_offset = { x = 30.0, y = 40.0 }
 
 [[layouts]]
 name = "Left Hand"

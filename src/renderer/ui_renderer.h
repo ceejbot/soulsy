@@ -4,7 +4,6 @@
 #include "image_path.h"
 
 // Forward declarations of the types we're getting from Rust.
-enum class ItemKind : ::std::uint8_t;
 enum class Action : ::std::uint8_t;
 enum class Align : ::std::uint8_t;
 struct HudLayout;
@@ -98,7 +97,7 @@ namespace ui
 		static image get_key_icon(uint32_t a_key);
 		static void load_font();
 
-		static void load_icon_images(std::map<uint32_t, image>& a_struct, std::string& file_path);
+		static void load_icon_images(std::map<std::string, image>& a_struct, std::string& file_path);
 
 	public:
 		static float get_resolution_scale_width();

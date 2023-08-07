@@ -39,9 +39,9 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	bool worn_right = false;
 	bool worn_left  = false;
 
-	auto item = equippable::makeItemDataFromForm(form);
+	auto item = equippable::hudItemFromForm(form);
 
-	if (form->IsWeapon() || kind_is_magic(item->kind())) {
+	if (form->IsWeapon() || item->is_magic()) {
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto* left_eq = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 		const auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();

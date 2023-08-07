@@ -2,8 +2,116 @@
 use std::collections::HashMap;
 
 use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
+use strum::{Display, EnumString};
 
-use crate::plugin::ItemKind;
+/// The type of an item stored in a cycle.
+///
+/// This lets us determine the icon as well as which cycle slot an item can
+/// be added to.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Display, EnumString)]
+pub enum ItemKind {
+    Empty,
+    Alteration,
+    ArmorClothing,
+    ArmorHeavy,
+    ArmorLight,
+    Arrow,
+    AxeOneHanded,
+    AxeTwoHanded,
+    Bow,
+    Claw,
+    Conjuration,
+    Crossbow,
+    Dagger,
+    DestructionFire,  // novice
+    DestructionFrost, // novice
+    DestructionShock, // novice
+    Destruction,
+    Food,
+    Halberd,
+    HandToHand,
+    IconDefault,
+    Illusion,
+    Katana,
+    Lantern,
+    Mace,
+    Mask,
+    Pike,
+    PoisonDefault,
+    PotionDefault,
+    PotionFireResist,
+    PotionFrostResist,
+    PotionHealth,
+    PotionMagicka,
+    PotionMagicResist,
+    PotionShockResist,
+    PotionStamina,
+    Power,
+    QuarterStaff,
+    Rapier,
+    Restoration,
+    Scroll,
+    Shield,
+    Shout,
+    SpellDefault,
+    Staff,
+    SwordOneHanded,
+    SwordTwoHanded,
+    Torch,
+    WeaponDefault,
+    Whip,
+    NotFound,
+    // must follow the earlier kinds
+    ArmorClothingHead,
+    ArmorClothingHands,
+    ArmorClothingFeet,
+    ArmorLightHead,
+    ArmorLightHands,
+    ArmorLightFeet,
+    ArmorHeavyHead,
+    ArmorHeavyHands,
+    ArmorHeavyFeet,
+    ArmorCloak,
+    ArmorBackpack,
+    ArmorBelt,
+    ArmorRing,
+    ArmorAmulet,
+    AlterationDetect,
+    AlterationFeather,
+    AlterationLight,
+    AlterationWind,
+    ConjurationBoundWeapon,
+    ConjurationSkeleton,
+    ConjurationSoulTrap,
+    ConjurationWolf,
+    ConjurationZombie,
+    DestructionFireApprentice,
+    DestructionFireAdept,
+    DestructionFireExpert,
+    DestructionFireMaster,
+    DestructionFrostApprentice,
+    DestructionFrostAdept,
+    DestructionFrostExpert,
+    DestructionFrostMaster,
+    DestructionShockApprentice,
+    DestructionShockAdept,
+    DestructionShockExpert,
+    DestructionShockMaster,
+    Flail,
+    Gun,
+    IllusionClairvoyance,
+    IllusionDemoralize,
+    IllusionMuffle,
+    IllusionNightEye,
+    RestorationCure,
+    RestorationHeal,
+    RestorationPoison,
+    RestorationSunDamage,
+    RestorationWard,
+    SpellParalyze,
+    SpellReflect,
+}
 
 /// Given an entry kind, return the filename of the icon to use for it.
 /// Exposed to C++.
@@ -16,7 +124,7 @@ pub fn get_icon_fallback(kind: &ItemKind) -> String {
 }
 
 pub fn kind_has_count(kind: ItemKind) -> bool {
-    kind.count_matters()
+    kind.has_count()
 }
 
 pub fn kind_is_magic(kind: ItemKind) -> bool {
@@ -91,6 +199,10 @@ impl ItemKind {
                 | ItemKind::SpellReflect
                 | ItemKind::ConjurationBoundWeapon
         )
+    }
+
+    pub fn has_count(&self) -> bool {
+        self.count_matters()
     }
 
     pub fn count_matters(&self) -> bool {
@@ -563,196 +675,106 @@ static ICON_MAP: Lazy<HashMap<ItemKind, String>> = Lazy::new(|| {
 // A way to iterate, perhaps?
 impl From<u8> for ItemKind {
     fn from(value: u8) -> Self {
-        if value == ItemKind::Empty.repr {
+        if value == 0 {
             ItemKind::Empty
-        } else if value == ItemKind::Alteration.repr {
+        } else if value == 1 {
             ItemKind::Alteration
-        } else if value == ItemKind::ArmorClothing.repr {
+        } else if value == 2 {
             ItemKind::ArmorClothing
-        } else if value == ItemKind::ArmorHeavy.repr {
+        } else if value == 3 {
             ItemKind::ArmorHeavy
-        } else if value == ItemKind::ArmorLight.repr {
+        } else if value == 4 {
             ItemKind::ArmorLight
-        } else if value == ItemKind::Arrow.repr {
+        } else if value == 5 {
             ItemKind::Arrow
-        } else if value == ItemKind::AxeOneHanded.repr {
+        } else if value == 6 {
             ItemKind::AxeOneHanded
-        } else if value == ItemKind::AxeTwoHanded.repr {
+        } else if value == 7 {
             ItemKind::AxeTwoHanded
-        } else if value == ItemKind::Bow.repr {
+        } else if value == 8 {
             ItemKind::Bow
-        } else if value == ItemKind::Claw.repr {
+        } else if value == 9 {
             ItemKind::Claw
-        } else if value == ItemKind::Conjuration.repr {
+        } else if value == 10 {
             ItemKind::Conjuration
-        } else if value == ItemKind::Crossbow.repr {
+        } else if value == 11 {
             ItemKind::Crossbow
-        } else if value == ItemKind::Dagger.repr {
+        } else if value == 12 {
             ItemKind::Dagger
-        } else if value == ItemKind::DestructionFire.repr {
+        } else if value == 13 {
             ItemKind::DestructionFire
-        } else if value == ItemKind::DestructionFrost.repr {
+        } else if value == 14 {
             ItemKind::DestructionFrost
-        } else if value == ItemKind::DestructionShock.repr {
+        } else if value == 15 {
             ItemKind::DestructionShock
-        } else if value == ItemKind::Destruction.repr {
+        } else if value == 16 {
             ItemKind::Destruction
-        } else if value == ItemKind::Food.repr {
+        } else if value == 17 {
             ItemKind::Food
-        } else if value == ItemKind::Halberd.repr {
+        } else if value == 18 {
             ItemKind::Halberd
-        } else if value == ItemKind::HandToHand.repr {
+        } else if value == 19 {
             ItemKind::HandToHand
-        } else if value == ItemKind::IconDefault.repr {
+        } else if value == 20 {
             ItemKind::IconDefault
-        } else if value == ItemKind::Illusion.repr {
+        } else if value == 21 {
             ItemKind::Illusion
-        } else if value == ItemKind::Katana.repr {
+        } else if value == 22 {
             ItemKind::Katana
-        } else if value == ItemKind::Lantern.repr {
+        } else if value == 23 {
             ItemKind::Lantern
-        } else if value == ItemKind::Mace.repr {
+        } else if value == 24 {
             ItemKind::Mace
-        } else if value == ItemKind::Mask.repr {
+        } else if value == 25 {
             ItemKind::Mask
-        } else if value == ItemKind::Pike.repr {
+        } else if value == 26 {
             ItemKind::Pike
-        } else if value == ItemKind::PoisonDefault.repr {
+        } else if value == 27 {
             ItemKind::PoisonDefault
-        } else if value == ItemKind::PotionDefault.repr {
+        } else if value == 28 {
             ItemKind::PotionDefault
-        } else if value == ItemKind::PotionFireResist.repr {
+        } else if value == 29 {
             ItemKind::PotionFireResist
-        } else if value == ItemKind::PotionFrostResist.repr {
+        } else if value == 30 {
             ItemKind::PotionFrostResist
-        } else if value == ItemKind::PotionHealth.repr {
+        } else if value == 31 {
             ItemKind::PotionHealth
-        } else if value == ItemKind::PotionMagicka.repr {
+        } else if value == 32 {
             ItemKind::PotionMagicka
-        } else if value == ItemKind::PotionMagicResist.repr {
+        } else if value == 33 {
             ItemKind::PotionMagicResist
-        } else if value == ItemKind::PotionShockResist.repr {
+        } else if value == 34 {
             ItemKind::PotionShockResist
-        } else if value == ItemKind::PotionStamina.repr {
+        } else if value == 35 {
             ItemKind::PotionStamina
-        } else if value == ItemKind::Power.repr {
+        } else if value == 36 {
             ItemKind::Power
-        } else if value == ItemKind::QuarterStaff.repr {
+        } else if value == 37 {
             ItemKind::QuarterStaff
-        } else if value == ItemKind::Rapier.repr {
+        } else if value == 38 {
             ItemKind::Rapier
-        } else if value == ItemKind::Restoration.repr {
+        } else if value == 39 {
             ItemKind::Restoration
-        } else if value == ItemKind::Scroll.repr {
+        } else if value == 40 {
             ItemKind::Scroll
-        } else if value == ItemKind::Shield.repr {
+        } else if value == 41 {
             ItemKind::Shield
-        } else if value == ItemKind::Shout.repr {
+        } else if value == 42 {
             ItemKind::Shout
-        } else if value == ItemKind::SpellDefault.repr {
+        } else if value == 43 {
             ItemKind::SpellDefault
-        } else if value == ItemKind::Staff.repr {
+        } else if value == 44 {
             ItemKind::Staff
-        } else if value == ItemKind::SwordOneHanded.repr {
+        } else if value == 45 {
             ItemKind::SwordOneHanded
-        } else if value == ItemKind::SwordTwoHanded.repr {
+        } else if value == 46 {
             ItemKind::SwordTwoHanded
-        } else if value == ItemKind::Torch.repr {
+        } else if value == 47 {
             ItemKind::Torch
-        } else if value == ItemKind::WeaponDefault.repr {
+        } else if value == 48 {
             ItemKind::WeaponDefault
-        } else if value == ItemKind::Whip.repr {
+        } else if value == 49 {
             ItemKind::Whip
-        } else if value == ItemKind::ArmorClothingHead.repr {
-            ItemKind::ArmorClothingHead
-        } else if value == ItemKind::ArmorClothingHands.repr {
-            ItemKind::ArmorClothingHands
-        } else if value == ItemKind::ArmorClothingFeet.repr {
-            ItemKind::ArmorClothingFeet
-        } else if value == ItemKind::ArmorLightHead.repr {
-            ItemKind::ArmorLightHead
-        } else if value == ItemKind::ArmorLightHands.repr {
-            ItemKind::ArmorLightHands
-        } else if value == ItemKind::ArmorLightFeet.repr {
-            ItemKind::ArmorLightFeet
-        } else if value == ItemKind::ArmorHeavyHead.repr {
-            ItemKind::ArmorHeavyHead
-        } else if value == ItemKind::ArmorHeavyHands.repr {
-            ItemKind::ArmorHeavyHands
-        } else if value == ItemKind::ArmorHeavyFeet.repr {
-            ItemKind::ArmorHeavyFeet
-        } else if value == ItemKind::ArmorCloak.repr {
-            ItemKind::ArmorCloak
-        } else if value == ItemKind::ArmorBackpack.repr {
-            ItemKind::ArmorBackpack
-        } else if value == ItemKind::ArmorRing.repr {
-            ItemKind::ArmorRing
-        } else if value == ItemKind::ArmorAmulet.repr {
-            ItemKind::ArmorAmulet
-        } else if value == ItemKind::AlterationDetect.repr {
-            ItemKind::AlterationDetect
-        } else if value == ItemKind::AlterationFeather.repr {
-            ItemKind::AlterationFeather
-        } else if value == ItemKind::AlterationLight.repr {
-            ItemKind::AlterationLight
-        } else if value == ItemKind::AlterationWind.repr {
-            ItemKind::AlterationWind
-        } else if value == ItemKind::ConjurationBoundWeapon.repr {
-            ItemKind::ConjurationBoundWeapon
-        } else if value == ItemKind::ConjurationSoulTrap.repr {
-            ItemKind::ConjurationSoulTrap
-        } else if value == ItemKind::ConjurationZombie.repr {
-            ItemKind::ConjurationZombie
-        } else if value == ItemKind::DestructionFireApprentice.repr {
-            ItemKind::DestructionFireApprentice
-        } else if value == ItemKind::DestructionFireAdept.repr {
-            ItemKind::DestructionFireAdept
-        } else if value == ItemKind::DestructionFireExpert.repr {
-            ItemKind::DestructionFireExpert
-        } else if value == ItemKind::DestructionFireMaster.repr {
-            ItemKind::DestructionFireMaster
-        } else if value == ItemKind::DestructionFrostApprentice.repr {
-            ItemKind::DestructionFrostApprentice
-        } else if value == ItemKind::DestructionFrostAdept.repr {
-            ItemKind::DestructionFrostAdept
-        } else if value == ItemKind::DestructionFrostExpert.repr {
-            ItemKind::DestructionFrostExpert
-        } else if value == ItemKind::DestructionFrostMaster.repr {
-            ItemKind::DestructionFrostMaster
-        } else if value == ItemKind::DestructionShockApprentice.repr {
-            ItemKind::DestructionShockApprentice
-        } else if value == ItemKind::DestructionShockAdept.repr {
-            ItemKind::DestructionShockAdept
-        } else if value == ItemKind::DestructionShockExpert.repr {
-            ItemKind::DestructionShockExpert
-        } else if value == ItemKind::DestructionShockMaster.repr {
-            ItemKind::DestructionShockMaster
-        } else if value == ItemKind::Flail.repr {
-            ItemKind::Flail
-        } else if value == ItemKind::Gun.repr {
-            ItemKind::Gun
-        } else if value == ItemKind::IllusionClairvoyance.repr {
-            ItemKind::IllusionClairvoyance
-        } else if value == ItemKind::IllusionDemoralize.repr {
-            ItemKind::IllusionDemoralize
-        } else if value == ItemKind::IllusionMuffle.repr {
-            ItemKind::IllusionMuffle
-        } else if value == ItemKind::IllusionNightEye.repr {
-            ItemKind::IllusionNightEye
-        } else if value == ItemKind::RestorationCure.repr {
-            ItemKind::RestorationCure
-        } else if value == ItemKind::RestorationHeal.repr {
-            ItemKind::RestorationHeal
-        } else if value == ItemKind::RestorationPoison.repr {
-            ItemKind::RestorationPoison
-        } else if value == ItemKind::RestorationSunDamage.repr {
-            ItemKind::RestorationSunDamage
-        } else if value == ItemKind::RestorationWard.repr {
-            ItemKind::RestorationWard
-        } else if value == ItemKind::SpellParalyze.repr {
-            ItemKind::SpellParalyze
-        } else if value == ItemKind::SpellReflect.repr {
-            ItemKind::SpellReflect
         } else {
             ItemKind::Empty
         }

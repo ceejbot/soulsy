@@ -32,79 +32,79 @@ namespace player
 
 	bool weaponsAreDrawn() { return RE::PlayerCharacter::GetSingleton()->AsActorState()->IsWeaponDrawn(); }
 
-	rust::Box<ItemData> equippedLeftHand()
+	rust::Box<HudItem> equippedLeftHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return hand2hand_itemdata();
+		if (!obj) return make_unarmed_proxy();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand2hand_itemdata();
-		return equippable::makeItemDataFromForm(item_form);
+		if (!item_form) return make_unarmed_proxy();
+		return equippable::hudItemFromForm(item_form);
 	}
 
-	rust::Box<ItemData> equippedRightHand()
+	rust::Box<HudItem> equippedRightHand()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return hand2hand_itemdata();
+		if (!obj) return make_unarmed_proxy();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand2hand_itemdata();
-		return equippable::makeItemDataFromForm(item_form);
+		if (!item_form) return make_unarmed_proxy();
+		return equippable::hudItemFromForm(item_form);
 	}
 
-	rust::Box<ItemData> boundObjectLeftHand()
+	rust::Box<HudItem> boundObjectLeftHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return hand2hand_itemdata();
+		if (!obj) return make_unarmed_proxy();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand2hand_itemdata();
+		if (!item_form) return make_unarmed_proxy();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		game::boundObjectForForm(item_form, player, bound_obj, extra);
 
-		if (!bound_obj) { return equippable::makeItemDataFromForm(item_form); }
-		return equippable::makeItemDataFromForm(bound_obj);
+		if (!bound_obj) { return equippable::hudItemFromForm(item_form); }
+		return equippable::hudItemFromForm(bound_obj);
 	}
 
-	rust::Box<ItemData> boundObjectRightHand()
+	rust::Box<HudItem> boundObjectRightHand()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return hand2hand_itemdata();
+		if (!obj) return make_unarmed_proxy();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand2hand_itemdata();
+		if (!item_form) return make_unarmed_proxy();
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		game::boundObjectForForm(item_form, player, bound_obj, extra);
-		if (!bound_obj) { return equippable::makeItemDataFromForm(item_form); }
+		if (!bound_obj) { return equippable::hudItemFromForm(item_form); }
 
-		return equippable::makeItemDataFromForm(bound_obj);
+		return equippable::hudItemFromForm(bound_obj);
 	}
 
-	rust::Box<ItemData> equippedPower()
+	rust::Box<HudItem> equippedPower()
 	{
 		auto* player    = RE::PlayerCharacter::GetSingleton();
 		const auto* obj = player->GetActorRuntimeData().selectedPower;
-		if (!obj) return empty_itemdata();
+		if (!obj) return empty_huditem();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return empty_itemdata();
-		return equippable::makeItemDataFromForm(item_form);
+		if (!item_form) return empty_huditem();
+		return equippable::hudItemFromForm(item_form);
 	}
 
-	rust::Box<ItemData> equippedAmmo()
+	rust::Box<HudItem> equippedAmmo()
 	{
 		auto player        = RE::PlayerCharacter::GetSingleton();
 		auto* current_ammo = player->GetCurrentAmmo();
-		if (!current_ammo || !current_ammo->IsAmmo()) { return empty_itemdata(); }
+		if (!current_ammo || !current_ammo->IsAmmo()) { return empty_huditem(); }
 
 		const auto formspec = helpers::makeFormSpecString(current_ammo);
 		auto count          = inventoryCount(current_ammo, RE::FormType::Ammo, player);
 		auto chonker        = helpers::chars_to_vec(current_ammo->GetName());
-		return itemdata_from_formdata(ItemKind::Arrow, false, true, count, std::move(chonker), formspec);
+		return make_base_ammo(count, std::move(chonker), formspec);
 	}
 
 	void unequipSlot(Action which)

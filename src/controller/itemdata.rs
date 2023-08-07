@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::plugin::ItemKind;
+use crate::itemkind::ItemKind;
 
 /// ItemData, exposed to C++ as an opaque type.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
@@ -53,7 +53,7 @@ impl Display for ItemData {
 
 /// This is called from C++ when handing us a new item.
 pub fn itemdata_from_formdata(
-    icon_kind: ItemKind,
+    icon_kind: Box<ItemKind>,
     two_handed: bool,
     has_count: bool,
     count: u32,
@@ -62,7 +62,7 @@ pub fn itemdata_from_formdata(
 ) -> Box<ItemData> {
     let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     Box::new(ItemData::new(
-        icon_kind,
+        *icon_kind,
         two_handed,
         has_count,
         count,
@@ -233,8 +233,12 @@ impl ItemData {
     }
 
     /// Get the enum representing this entry's kind (1-handed sword, dagger, health potion, etc.)
+    pub fn boxed_kind(&self) -> Box<ItemKind> {
+        Box::new(self.kind.clone())
+    }
+
     pub fn kind(&self) -> ItemKind {
-        self.kind
+        self.kind.clone()
     }
 
     /// True if this entry should be drawn with a highlight.

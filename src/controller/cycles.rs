@@ -6,12 +6,14 @@ use cxx::CxxVector;
 use serde::{Deserialize, Serialize};
 
 use super::control::MenuEventResponse;
-use super::itemdata::*;
 use super::keys::CycleSlot;
 use super::user_settings;
+use crate::data::{BaseType, HudItem, IsHudItem};
+#[cfg(target_os = "windows")]
+use crate::plugin::playerName;
 use crate::plugin::{
     hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
-    startAlphaTransition, ItemKind,
+    startAlphaTransition,
 };
 
 /// Manage the player's configured item cycles. Track changes, persist data in
@@ -19,10 +21,10 @@ use crate::plugin::{
 /// struct now holds all data we need to persist across game starts.
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct CycleData {
-    left: Vec<ItemData>,
-    right: Vec<ItemData>,
-    power: Vec<ItemData>,
-    utility: Vec<ItemData>,
+    left: Vec<HudItem>,
+    right: Vec<HudItem>,
+    power: Vec<HudItem>,
+    utility: Vec<HudItem>,
     #[serde(default)]
     hud_visible: bool,
     #[serde(default)]
@@ -34,7 +36,7 @@ impl CycleData {
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
     /// This does not equip or try to use the item in any way. It's pure management.
-    pub fn advance(&mut self, which: &CycleSlot, amount: usize) -> Option<ItemData> {
+    pub fn advance(&mut self, which: &CycleSlot, amount: usize) -> Option<HudItem> {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -43,15 +45,12 @@ impl CycleData {
         };
         if cycle.is_empty() {
             return None;
-        }
-        if let Some(previous) = cycle.first_mut() {
-            previous.set_highlighted(false);
         }
         cycle.rotate_left(amount);
         cycle.first().cloned()
     }
 
-    pub fn advance_skipping(&mut self, which: &CycleSlot, skip: ItemData) -> Option<ItemData> {
+    pub fn advance_skipping(&mut self, which: &CycleSlot, skip: HudItem) -> Option<HudItem> {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -62,9 +61,6 @@ impl CycleData {
             return None;
         }
 
-        if let Some(previous) = cycle.first_mut() {
-            previous.set_highlighted(false);
-        }
         cycle.rotate_left(1);
         let candidate = cycle
             .iter()
@@ -79,7 +75,7 @@ impl CycleData {
         }
     }
 
-    pub fn advance_skipping_twohanders(&mut self) -> Option<ItemData> {
+    pub fn advance_skipping_twohanders(&mut self) -> Option<HudItem> {
         // This can only be called for the right hand.
         if self.right.is_empty() {
             return None;
@@ -112,7 +108,7 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, which: &CycleSlot, item: &ItemData) {
+    pub fn set_top(&mut self, which: &CycleSlot, item: &HudItem) {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -126,7 +122,7 @@ impl CycleData {
     }
 
     // the programmer error is annoying, but it's a shared struct...
-    pub fn get_top(&self, which: &CycleSlot) -> Option<ItemData> {
+    pub fn get_top(&self, which: &CycleSlot) -> Option<HudItem> {
         let cycle = match which {
             CycleSlot::Power => &self.power,
             CycleSlot::Left => &self.left,
@@ -137,7 +133,7 @@ impl CycleData {
         cycle.first().cloned()
     }
 
-    pub fn peek_next(&self, which: &CycleSlot) -> Option<ItemData> {
+    pub fn peek_next(&self, which: &CycleSlot) -> Option<HudItem> {
         let cycle = match which {
             CycleSlot::Power => &self.power,
             CycleSlot::Left => &self.left,
@@ -156,10 +152,10 @@ impl CycleData {
     ///
     /// Does not change the current item in the cycle, unless the current item is
     /// the one removed. Adds at the end.
-    pub fn toggle(&mut self, which: &CycleSlot, item: ItemData) -> MenuEventResponse {
+    pub fn toggle(&mut self, which: &CycleSlot, item: HudItem) -> MenuEventResponse {
         let cycle = match which {
             CycleSlot::Power => {
-                if !item.kind().is_power() {
+                if !matches!(item.kind(), BaseType::Power) {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.power
@@ -197,7 +193,7 @@ impl CycleData {
         }
     }
 
-    pub fn update_count_by_formid(&mut self, form_id: String, kind: ItemKind, count: u32) {
+    pub fn update_count_by_formid(&mut self, form_id: String, kind: &BaseType, count: u32) {
         // If count is zero, remove from any cycles it's in.
         // If count is zero and item is equipped, advance the relevant cycle.
         if kind.is_utility() {
@@ -239,11 +235,11 @@ impl CycleData {
         }
     }
 
-    pub fn update_count(&mut self, item: ItemData, count: u32) {
+    pub fn update_count(&mut self, item: HudItem, count: u32) {
         self.update_count_by_formid(item.form_string(), item.kind(), count);
     }
 
-    pub fn includes(&self, which: &CycleSlot, item: &ItemData) -> bool {
+    pub fn includes(&self, which: &CycleSlot, item: &HudItem) -> bool {
         let cycle = match which {
             CycleSlot::Power => &self.power,
             CycleSlot::Left => &self.left,
@@ -255,7 +251,7 @@ impl CycleData {
             .any(|xs| xs.form_string() == item.form_string())
     }
 
-    pub fn include_item(&mut self, which: CycleSlot, item: &ItemData) -> bool {
+    pub fn include_item(&mut self, which: CycleSlot, item: &HudItem) -> bool {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -273,7 +269,7 @@ impl CycleData {
         }
     }
 
-    pub fn add_item(&mut self, which: CycleSlot, item: &ItemData) -> bool {
+    pub fn add_item(&mut self, which: CycleSlot, item: &HudItem) -> bool {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -291,7 +287,7 @@ impl CycleData {
         }
     }
 
-    pub fn remove_item(&mut self, which: CycleSlot, item: &ItemData) -> bool {
+    pub fn remove_item(&mut self, which: CycleSlot, item: &HudItem) -> bool {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -304,14 +300,14 @@ impl CycleData {
         orig_len != cycle.len()
     }
 
-    pub fn filter_kind(&mut self, which: &CycleSlot, kind: ItemKind) {
+    pub fn filter_kind(&mut self, which: &CycleSlot, unwanted: BaseType) {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
             CycleSlot::Right => &mut self.right,
             CycleSlot::Utility => &mut self.utility,
         };
-        cycle.retain(|xs| xs.kind() != kind);
+        cycle.retain(|xs| !matches!(xs.kind(), unwanted));
     }
 
     pub fn set_hud_visible(&mut self, visible: bool) {
@@ -355,17 +351,17 @@ impl CycleData {
             log::info!("validating {name} cycle");
             let filtered: Vec<_> = cycle
                 .iter_mut()
-                .map(|incoming| {
+                .filter_map(|incoming| {
                     let mut item = incoming.clone();
-
                     let spec = item.form_string();
                     if spec.is_empty() {
-                        return item;
+                        return Some(item);
                     }
 
                     cxx::let_cxx_string!(form_spec = spec.clone());
-                    if !item.has_count() && hasItemOrSpell(&form_spec) {
-                        return item;
+                    if hasItemOrSpell(&form_spec) {
+                        log::info!("    {incoming}");
+                        return Some(item);
                     }
 
                     let count = match spec.as_str() {
@@ -374,12 +370,13 @@ impl CycleData {
                         "stamina_proxy" => staminaPotionCount(),
                         _ => itemCount(&form_spec),
                     };
-                    item.set_count(count);
-                    item
-                })
-                .filter(|xs| {
-                    log::info!("    {xs}");
-                    !xs.has_count() || xs.count() > 0 || xs.form_string().contains("_proxy")
+                    if count > 0 {
+                        item.set_count(count);
+                        log::info!("    {incoming}");
+                        Some(item)
+                    } else {
+                        None
+                    }
                 })
                 .collect();
 
@@ -407,6 +404,8 @@ impl CycleData {
     pub fn serialize_version() -> u32 {
         archive_v1::VERSION
     }
+
+    // bincode serialization to cosave
 
     pub fn serialize(&self) -> Vec<u8> {
         archive_v1::serialize(self)
@@ -437,7 +436,7 @@ impl Display for CycleData {
     }
 }
 
-fn vec_to_debug_string(input: &[ItemData]) -> String {
+fn vec_to_debug_string(input: &[HudItem]) -> String {
     format!(
         "[{}]",
         input
@@ -543,7 +542,7 @@ pub mod archive_v0 {
     use bincode::{Decode, Encode};
     use cxx::CxxVector;
 
-    use super::{CycleData, ItemData};
+    use super::{CycleData, HudItem};
 
     const VERSION: u8 = 0;
 
@@ -581,30 +580,20 @@ pub mod archive_v0 {
 
     #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
     pub struct CycleSerialized {
-        left: Vec<ItemSerialized>,
-        right: Vec<ItemSerialized>,
-        power: Vec<ItemSerialized>,
-        utility: Vec<ItemSerialized>,
+        left: Vec<HudItem>,
+        right: Vec<HudItem>,
+        power: Vec<HudItem>,
+        utility: Vec<HudItem>,
         hud_visible: bool,
-    }
-
-    #[derive(Decode, Encode, Hash, Debug, Clone, Default, PartialEq, Eq)]
-    pub struct ItemSerialized {
-        name_bytes: Vec<u8>,
-        form_string: String,
-        kind: u8,
-        two_handed: bool,
-        has_count: bool,
-        count: u32,
     }
 
     impl From<&CycleData> for CycleSerialized {
         fn from(value: &CycleData) -> Self {
             Self {
-                left: value.left.iter().map(|xs| xs.into()).collect(),
-                right: value.right.iter().map(|xs| xs.into()).collect(),
-                power: value.power.iter().map(|xs| xs.into()).collect(),
-                utility: value.utility.iter().map(|xs| xs.into()).collect(),
+                left: value.left.iter().cloned().collect(),
+                right: value.right.iter().cloned().collect(),
+                power: value.power.iter().cloned().collect(),
+                utility: value.utility.iter().cloned().collect(),
                 hud_visible: value.hud_visible,
             }
         }
@@ -613,39 +602,13 @@ pub mod archive_v0 {
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
             Self {
-                left: value.left.iter().map(|xs| xs.into()).collect(),
-                right: value.right.iter().map(|xs| xs.into()).collect(),
-                power: value.power.iter().map(|xs| xs.into()).collect(),
-                utility: value.utility.iter().map(|xs| xs.into()).collect(),
+                left: value.left.iter().cloned().collect(),
+                right: value.right.iter().cloned().collect(),
+                power: value.power.iter().cloned().collect(),
+                utility: value.utility.iter().cloned().collect(),
                 hud_visible: value.hud_visible,
                 loaded: true,
             }
-        }
-    }
-
-    impl From<&ItemData> for ItemSerialized {
-        fn from(value: &ItemData) -> Self {
-            Self {
-                name_bytes: value.name_bytes(),
-                form_string: value.form_string(),
-                kind: value.kind().repr,
-                two_handed: value.two_handed(),
-                has_count: value.has_count(),
-                count: value.count(),
-            }
-        }
-    }
-
-    impl From<&ItemSerialized> for ItemData {
-        fn from(value: &ItemSerialized) -> ItemData {
-            ItemData::new(
-                value.kind.into(),
-                value.two_handed,
-                value.has_count,
-                value.count,
-                value.name_bytes.clone(),
-                &value.form_string,
-            )
         }
     }
 }

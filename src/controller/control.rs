@@ -4,9 +4,10 @@ use std::sync::Mutex;
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
-use super::itemdata::*;
 use super::keys::*;
 use super::settings::{user_settings, ActivationMethod, UnarmedMethod};
+use crate::data::potion::PotionType;
+use crate::data::*;
 use crate::plugin::*;
 
 /// There can be only one. Not public because we want access managed.
@@ -24,13 +25,13 @@ pub struct Controller {
     /// Our currently-active cycles.
     pub cycles: CycleData,
     /// The items the HUD should show right now.
-    visible: HashMap<HudElement, ItemData>,
+    visible: HashMap<HudElement, HudItem>,
     /// True if we've got a two-handed weapon equipped right now.
     two_hander_equipped: bool,
     /// We cache the left-hand item we had before a two-hander was equipped.
-    left_hand_cached: Option<ItemData>,
+    left_hand_cached: Option<HudItem>,
     /// We cache the right-hand item we had similarly.
-    right_hand_cached: Option<ItemData>,
+    right_hand_cached: Option<HudItem>,
     tracked_keys: HashMap<HotkeyKind, TrackedKey>,
 }
 
@@ -56,7 +57,7 @@ impl Controller {
 
         match settings.unarmed_handling() {
             UnarmedMethod::AddToCycles => {
-                let h2h = hand2hand_itemdata();
+                let h2h = make_unarmed_proxy();
                 let h2h = *h2h;
                 self.cycles.include_item(CycleSlot::Left, &h2h);
                 self.cycles.include_item(CycleSlot::Right, &h2h);
@@ -64,27 +65,27 @@ impl Controller {
             _ => {
                 // remove any item with h2h type from cycles
                 self.cycles
-                    .filter_kind(&CycleSlot::Left, ItemKind::HandToHand);
+                    .filter_kind(&CycleSlot::Left, BaseType::HandToHand);
                 self.cycles
-                    .filter_kind(&CycleSlot::Right, ItemKind::HandToHand);
+                    .filter_kind(&CycleSlot::Right, BaseType::HandToHand);
             }
         }
 
         if settings.group_potions() {
             self.cycles
-                .filter_kind(&CycleSlot::Utility, ItemKind::PotionStamina);
+                .filter_kind(&CycleSlot::Utility, BaseType::PotionProxy(Proxy::Stamina));
             let count = staminaPotionCount();
             let proxy = make_stamina_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);
 
             self.cycles
-                .filter_kind(&CycleSlot::Utility, ItemKind::PotionHealth);
+                .filter_kind(&CycleSlot::Utility, BaseType::PotionProxy(Proxy::Health));
             let count = healthPotionCount();
             let proxy = make_health_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);
 
             self.cycles
-                .filter_kind(&CycleSlot::Utility, ItemKind::PotionMagicka);
+                .filter_kind(&CycleSlot::Utility, BaseType::PotionProxy(Proxy::Magicka));
             let count = magickaPotionCount();
             let proxy = make_magicka_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);
@@ -109,7 +110,7 @@ impl Controller {
     /// The player's inventory changed! Act on it if we need to.
     pub fn handle_inventory_changed(
         &mut self,
-        #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
+        #[allow(clippy::boxed_local)] item: Box<HudItem>, // boxed because arriving from C++
         delta: i32,
     ) {
         log::debug!("inventory count changed; {}; count={delta}", item);
@@ -158,27 +159,27 @@ impl Controller {
 
         // update count of magicka, health, or stamina potions if we're grouped
         if item.kind().is_potion() && user_settings().group_potions() {
-            if matches!(item.kind(), ItemKind::PotionHealth) {
+            if matches!(item.kind(), BaseType::Potion(PotionType::Health)) {
                 let count = healthPotionCount();
                 self.cycles.update_count_by_formid(
                     "health_proxy".to_string(),
-                    ItemKind::PotionHealth,
+                    &BaseType::PotionProxy(Proxy::Health),
                     count,
                 );
             }
-            if matches!(item.kind(), ItemKind::PotionMagicka) {
+            if matches!(item.kind(), BaseType::Potion(PotionType::Magicka)) {
                 let count = magickaPotionCount();
                 self.cycles.update_count_by_formid(
                     "magicka_proxy".to_string(),
-                    ItemKind::PotionMagicka,
+                    &BaseType::PotionProxy(Proxy::Magicka),
                     count,
                 );
             }
-            if matches!(item.kind(), ItemKind::PotionStamina) {
+            if matches!(item.kind(), BaseType::Potion(PotionType::Stamina)) {
                 let count = staminaPotionCount();
                 self.cycles.update_count_by_formid(
                     "stamina_proxy".to_string(),
-                    ItemKind::PotionStamina,
+                    &BaseType::PotionProxy(Proxy::Stamina),
                     count,
                 );
             }
@@ -431,7 +432,7 @@ impl Controller {
 
         if unequip_requested {
             log::info!("unequipping slot {cycleslot} by request");
-            let empty_item = *hand2hand_itemdata(); // unbox
+            let empty_item = HudItem::make_unarmed_proxy();
             unequipSlot(action);
             self.update_slot(HudElement::from(&cycleslot), &empty_item);
             self.cycles.set_top(&cycleslot, &empty_item);
@@ -515,7 +516,7 @@ impl Controller {
                             self.cycles.set_top(&other_hand, &advance_to);
                             self.right_hand_cached = Some(advance_to);
                         } else {
-                            self.right_hand_cached = Some(*hand2hand_itemdata());
+                            self.right_hand_cached = Some(*hand2hand_HudItem());
                         }
                     }
                     */
@@ -575,7 +576,7 @@ impl Controller {
         }
     }
 
-    fn update_and_record(&mut self, which: &CycleSlot, next: &ItemData) -> KeyEventResponse {
+    fn update_and_record(&mut self, which: &CycleSlot, next: &HudItem) -> KeyEventResponse {
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
 
@@ -599,7 +600,10 @@ impl Controller {
         log::debug!("using utility item");
 
         if let Some(item) = self.cycles.get_top(&CycleSlot::Utility) {
-            if matches!(item.kind(), ItemKind::PoisonDefault | ItemKind::Food) {
+            if matches!(
+                item.kind(),
+                BaseType::Potion(PotionType::Poison) | BaseType::Food(_)
+            ) {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 consumePotion(&form_spec);
             } else if item.form_string() == "health_proxy" {
@@ -661,12 +665,12 @@ impl Controller {
 
         // We equip whatever the HUD is showing right now.
         let kind = item.kind();
-        if matches!(kind, ItemKind::HandToHand) {
+        if matches!(kind, BaseType::HandToHand) {
             log::info!("melee time! unequipping slot {which:?}");
             if which == Action::Left {
-                self.left_hand_cached = Some(*hand2hand_itemdata());
+                self.left_hand_cached = Some(HudItem::make_unarmed_proxy());
             } else {
-                self.right_hand_cached = Some(*hand2hand_itemdata());
+                self.right_hand_cached = Some(HudItem::make_unarmed_proxy());
             }
             unequipSlot(which);
             return;
@@ -691,7 +695,7 @@ impl Controller {
     }
 
     /// Convenience function for equipping any equippable.
-    fn equip_item(&self, item: &ItemData, which: Action) {
+    fn equip_item(&self, item: &HudItem, which: Action) {
         if !matches!(which, Action::Right | Action::Left | Action::Utility) {
             return;
         }
@@ -704,14 +708,14 @@ impl Controller {
             equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
             equipArmor(&form_spec);
-        } else if kind == ItemKind::Arrow {
+        } else if matches!(kind, BaseType::Ammo(_)) {
             equipAmmo(&form_spec);
         } else {
             log::info!("we did nothing with item {}", item);
         }
     }
 
-    pub fn handle_item_unequipped(&mut self, item: ItemData, right: bool, left: bool) -> bool {
+    pub fn handle_item_unequipped(&mut self, item: HudItem, right: bool, left: bool) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
         log::info!("item UNequipped; right={right}; left={left}; {item}");
 
@@ -720,14 +724,14 @@ impl Controller {
         if right {
             if let Some(visible) = right_vis {
                 if visible.form_string() == item.form_string() {
-                    let empty = *empty_itemdata();
+                    let empty = HudItem::default();
                     return self.update_slot(HudElement::Right, &empty);
                 }
             }
         } else if left {
             if let Some(visible) = left_vis {
                 if visible.form_string() == item.form_string() {
-                    let empty = *empty_itemdata();
+                    let empty = HudItem::default();
                     return self.update_slot(HudElement::Left, &empty);
                 }
             }
@@ -745,7 +749,7 @@ impl Controller {
     pub fn handle_item_equipped(
         &mut self,
         equipped: bool,
-        #[allow(clippy::boxed_local)] item: Box<ItemData>, // boxed because arriving from C++
+        #[allow(clippy::boxed_local)] item: Box<HudItem>, // boxed because arriving from C++
         right: bool,
         left: bool,
     ) -> bool {
@@ -819,7 +823,7 @@ impl Controller {
                 // Change was out of band. We need to react.
                 self.cycles.set_top(&CycleSlot::Right, &item);
             }
-            self.update_slot(HudElement::Left, &ItemData::default());
+            self.update_slot(HudElement::Left, &HudItem::default());
             self.two_hander_equipped = true;
             return changed;
         }
@@ -878,7 +882,7 @@ impl Controller {
         if right {
             if let Some(prev_left) = self.left_hand_cached.clone() {
                 log::debug!("considering re-requipping LEFT; {prev_left}");
-                if prev_left.kind() == ItemKind::HandToHand {
+                if matches!(prev_left.kind(), BaseType::HandToHand) {
                     unequipSlot(Action::Left);
                 } else {
                     cxx::let_cxx_string!(form_spec = prev_left.form_string());
@@ -896,7 +900,7 @@ impl Controller {
         if left {
             if let Some(prev_right) = self.right_hand_cached.clone() {
                 log::debug!("considering re-requipping RIGHT; {prev_right}");
-                if prev_right.kind() == ItemKind::HandToHand {
+                if matches!(prev_right.kind(), BaseType::HandToHand) {
                     unequipSlot(Action::Right);
                 } else {
                     cxx::let_cxx_string!(form_spec = prev_right.form_string());
@@ -912,9 +916,9 @@ impl Controller {
 
     /// Get the item equipped in a specific slot.
     /// Called by the HUD rendering loop in the ImGui code.
-    pub fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<ItemData> {
+    pub fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<HudItem> {
         let Some(candidate) = self.visible.get(&slot) else {
-            return Box::<ItemData>::default();
+            return Box::<HudItem>::default();
         };
 
         Box::new(candidate.clone())
@@ -938,7 +942,7 @@ impl Controller {
             self.update_slot(HudElement::Left, &left_entry)
         } else {
             self.left_hand_cached = self.cycles.get_top(&CycleSlot::Left);
-            self.update_slot(HudElement::Left, &empty_itemdata())
+            self.update_slot(HudElement::Left, &HudItem::default())
         };
         self.two_hander_equipped = right_entry.two_handed(); // same item will be in both hands
 
@@ -981,7 +985,7 @@ impl Controller {
     }
 
     /// Update the displayed slot for the specified HUD element.
-    fn update_slot(&mut self, slot: HudElement, new_item: &ItemData) -> bool {
+    fn update_slot(&mut self, slot: HudElement, new_item: &HudItem) -> bool {
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
         } else {
@@ -993,7 +997,7 @@ impl Controller {
         &mut self,
         _button: &ButtonEvent,
         is_favorite: bool,
-        item: ItemData,
+        item: HudItem,
     ) {
         let settings = user_settings();
         if !settings.link_to_favorites() {
@@ -1050,7 +1054,7 @@ impl Controller {
                 } else {
                     None
                 }
-            } else if item.two_handed() || matches!(item.kind(), ItemKind::Scroll) {
+            } else if item.two_handed() || matches!(item.kind(), BaseType::Scroll(_)) {
                 if self.cycles.add_item(CycleSlot::Right, &item) {
                     Some(format!("{} added to right hand.", item.name()))
                 } else {
@@ -1128,7 +1132,7 @@ impl Controller {
     /// This function is called when the player has pressed a hot key while hovering over an
     /// item in a menu. We'll remove the item if it's already in the matching cycle,
     /// or add it if it's an appropriate item. We signal back to the UI layer what we did.
-    pub fn handle_toggle_item(&mut self, action: Action, item: ItemData) {
+    pub fn handle_toggle_item(&mut self, action: Action, item: HudItem) {
         let Ok(cycle_slot) = CycleSlot::try_from(action) else {
             return;
         };
@@ -1139,7 +1143,7 @@ impl Controller {
             if let Some(topmost) = self.cycles.get_top(&CycleSlot::Utility) {
                 self.update_slot(HudElement::Utility, &topmost);
             } else {
-                self.update_slot(HudElement::Utility, &ItemData::default());
+                self.update_slot(HudElement::Utility, &HudItem::default());
             }
         }
 
