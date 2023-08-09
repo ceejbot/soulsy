@@ -1,6 +1,7 @@
 #include "hooks.h"
 #include "equippable.h"
 #include "gear.h"
+#include "keycodes.h"
 #include "string_util.h"
 
 #include "lib.rs.h"
@@ -39,7 +40,7 @@ namespace hooks
 		auto* userEvents = RE::UserEvents::GetSingleton();
 		if (!controlMap || !userEvents) return process_event_(this, eventPtr, eventSource);
 		auto favconst  = userEvents->togglePOV;       // m&k shortcut
-		auto favtoggle = userEvents->toggleFavorite;  // controller shortcut
+		auto favtoggle = userEvents->jump;  // controller shortcut
 
 		if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
 
@@ -107,19 +108,13 @@ namespace hooks
 		return process_event_(this, eventPtr, eventSource);
 	}
 
+	using INPUT_CONTEXT_ID = RE::UserEvents::INPUT_CONTEXT_IDS::INPUT_CONTEXT_ID;
+
 	bool MenuHook::buttonMatchesEvent(RE::ControlMap* controlMap, RE::BSFixedString eventID, RE::ButtonEvent* button)
 	{
-		auto the_device   = button->GetDevice();
-		auto mapForDevice = controlMap->controlMap[the_device];
-		if (!mapForDevice) return false;
-
-		auto contextMap = mapForDevice->deviceMappings[0];  // gameplay map
-		for (auto& mapping : contextMap)
-		{
-			if (button->GetIDCode() == mapping.inputKey) { return (mapping.eventID == eventID); }
-		}
-
-		return false;
+		auto the_device  = button->GetDevice();
+		auto key = controlMap->GetMappedKey(eventID, the_device, static_cast<RE::ControlMap::InputContextID>(0));
+		return key == button->GetIDCode();
 	}
 
 	// ---------- PlayerHook
