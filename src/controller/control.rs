@@ -263,7 +263,7 @@ impl Controller {
                 } else {
                     KeyEventResponse::default()
                 }
-            },
+            }
             HotkeyKind::Refresh => {
                 HudLayout::refresh();
                 KeyEventResponse {
@@ -333,7 +333,7 @@ impl Controller {
                     return self.use_utility_item();
                 }
             }
-            _ => {},
+            _ => {}
         }
 
         match cycle_method {

@@ -28,14 +28,18 @@ namespace hooks
 	RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 		RE::BSTEventSource<RE::InputEvent*>* eventSource)
 	{
-		auto* ui                         = RE::UI::GetSingleton();
-		if (!ui) return process_event_(this, eventPtr, eventSource);;
+		auto* ui = RE::UI::GetSingleton();
+		if (!ui) return process_event_(this, eventPtr, eventSource);
+
 		rust::Box<UserSettings> settings = user_settings();
 		bool check_favorites             = settings->link_to_favorites();
 		auto relevantMenuOpen            = helpers::relevantMenuOpen();
 
 		auto* controlMap = RE::ControlMap::GetSingleton();
-		auto favconst    = RE::UserEvents::GetSingleton()->togglePOV;
+		auto* userEvents = RE::UserEvents::GetSingleton();
+		if (!controlMap || !userEvents) return process_event_(this, eventPtr, eventSource);
+		auto favconst  = userEvents->togglePOV;       // m&k shortcut
+		auto favtoggle = userEvents->toggleFavorite;  // controller shortcut
 
 		if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
 
@@ -51,20 +55,21 @@ namespace hooks
 
 				if (button->IsUp() && check_favorites)
 				{
-					if (buttonMatchesEvent(controlMap, favconst, button))
+					if (buttonMatchesEvent(controlMap, favconst, button) ||
+						buttonMatchesEvent(controlMap, favtoggle, button))
 					{
 						helpers::MenuSelection* selection = nullptr;
-						auto menu_form = helpers::MenuSelection::getSelectionFromMenu(ui, selection);
+						auto menu_form                    = helpers::MenuSelection::getSelectionFromMenu(ui, selection);
 						if (!menu_form) continue;
 
-						logger::info("hey, we didn't crash. form_id={}; is-favorited={}"sv,
+						logger::debug("Got toggled favorite: form_id={}; is-favorited={}"sv,
 							util::string_util::int_to_hex(selection->form_id),
 							selection->favorite);
 
 						if (selection->bound_obj)
 						{
 							auto entry = equippable::makeItemDataFromForm(selection->bound_obj);
-							logger::info("got bound object; name='{}'; kind={};"sv,
+							logger::debug("got bound object; name='{}'; kind={};"sv,
 								selection->bound_obj->GetName(),
 								static_cast<uint8_t>(entry->kind()));
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
@@ -72,7 +77,7 @@ namespace hooks
 						else if (selection->form)
 						{
 							auto entry = equippable::makeItemDataFromForm(selection->form);
-							logger::info("got form; name='{}'; kind={}"sv,
+							logger::debug("got form; name='{}'; kind={}"sv,
 								selection->form->GetName(),
 								static_cast<uint8_t>(entry->kind()));
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
