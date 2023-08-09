@@ -18,8 +18,8 @@ namespace helpers
 		// UIActivateFail   0x0006d1c6
 		// UIMenuInactiveSD 0x00057f93
 		// UIAlchemyFail    0x000c8c72
-		auto* the_player =  RE::PlayerCharacter::GetSingleton();
-		auto* sound = RE::TESForm::LookupByID(0x0006d1c6)->As<RE::BGSSoundDescriptorForm>();
+		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		auto* sound      = RE::TESForm::LookupByID(0x0006d1c6)->As<RE::BGSSoundDescriptorForm>();
 		player::play_sound(sound->soundDescriptor, the_player);
 	}
 
@@ -248,10 +248,10 @@ namespace helpers
 
 		auto* itemList = menu->GetRuntimeData().itemList;
 		auto* selected = itemList->GetSelectedItem();
-		auto* obj      = selected->data.objDesc->object;
 
-		if (obj)
+		if (selected && selected->data.objDesc->object)
 		{
+			auto* obj            = selected->data.objDesc->object;
 			auto form_id         = obj->GetFormID();
 			auto* selection      = new MenuSelection(obj->GetFormID());
 			selection->count     = selected->data.GetCount();
@@ -305,7 +305,11 @@ namespace helpers
 		{
 			form_id = static_cast<std::uint32_t>(result.GetNumber());
 		}
-		else { logger::debug("magic menu selection lookup failed; got result type: {}"sv, static_cast<uint8_t>(result.GetType())); }
+		else
+		{
+			logger::debug(
+				"magic menu selection lookup failed; got result type: {}"sv, static_cast<uint8_t>(result.GetType()));
+		}
 
 		auto* mfaves = RE::MagicFavorites::GetSingleton();
 
