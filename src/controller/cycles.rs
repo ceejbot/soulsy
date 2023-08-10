@@ -419,7 +419,7 @@ impl CycleData {
         let name = if let Some(0) = sliced.last() {
             OsString::from_wide(&sliced[0..(bytes.len() - 1)])
         } else {
-            OsString::from_wide(&sliced)
+            OsString::from_wide(sliced)
         };
         // let name = name.trim().replace(' ', "_").replace(['\\', '\''], "");
 

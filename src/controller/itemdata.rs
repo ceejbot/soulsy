@@ -60,7 +60,7 @@ pub fn itemdata_from_formdata(
     bytes_ffi: &cxx::CxxVector<u8>,
     form_string: &str,
 ) -> Box<ItemData> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().map(|xs| *xs).collect();
+    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     Box::new(ItemData::new(
         icon_kind,
         two_handed,
@@ -179,7 +179,7 @@ impl ItemData {
         name: String,
         form_string: &str,
     ) -> Self {
-        let mut name_bytes: Vec<u8> = name.as_bytes().iter().copied().collect();
+        let mut name_bytes: Vec<u8> = name.as_bytes().to_vec();
         name_bytes.push(0x00);
         Self {
             name,
