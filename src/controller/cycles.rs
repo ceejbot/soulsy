@@ -93,9 +93,7 @@ impl CycleData {
         }
 
         self.right.rotate_left(1);
-        let candidate = self.right
-            .iter()
-            .find(|xs| !xs.two_handed());
+        let candidate = self.right.iter().find(|xs| !xs.two_handed());
         if let Some(v) = candidate {
             let result = v.clone();
             self.set_top(&CycleSlot::Right, &result);
