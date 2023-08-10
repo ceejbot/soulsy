@@ -498,8 +498,31 @@ impl Controller {
             // we are golden. We update both HUD slots and start a timer.
             if candidate.form_string() != return_to.form_string() {
                 self.cycles.advance(which, 1);
-                let _changed = self.update_slot(other_hud, &return_to.clone());
-                self.cycles.set_top(&other_hand, &return_to.clone());
+
+                // are we bouncing back to something in a cycle or not? This is fun.
+                if self.cycles.includes(&other_hand, &return_to) {
+                    let _changed = self.update_slot(other_hud, &return_to);
+                    self.cycles.set_top(&other_hand, &return_to);    
+                } else {
+                    // The return to item was removed from the cycle at some point. This is
+                    // a question of design now. We can either select the next *single-handed*
+                    // item in the cycle or bounce back anyway.
+                    // We choose to bounce back anyway.
+                    let _changed = self.update_slot(other_hud, &return_to);
+                    /* if we chose to advance, it would look like this.
+                    log::debug!("return-to item is no longer in the other hand's cycle.");
+                    if matches!(other_hand, CycleSlot::Right) {
+                        if let Some(advance_to) = self.cycles.advance_skipping_twohanders() {
+                            let _changed = self.update_slot(other_hud, &advance_to.clone());
+                            self.cycles.set_top(&other_hand, &advance_to); 
+                            self.right_hand_cached = Some(advance_to);
+                        } else {
+                            self.right_hand_cached = Some(*hand2hand_itemdata());
+                        }
+                    }
+                    */
+                }
+
                 return self.update_and_record(which, &candidate);
             }
 
@@ -693,6 +716,7 @@ impl Controller {
 
     pub fn handle_item_unequipped(&mut self, item: ItemData, right: bool, left: bool) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
+        log::info!("item UNequipped; right={right}; left={left}; {item}");
 
         let right_vis = self.visible.get(&HudElement::Right);
         let left_vis = self.visible.get(&HudElement::Left);
@@ -728,12 +752,11 @@ impl Controller {
         right: bool,
         left: bool,
     ) -> bool {
-        log::info!("entering handle_item_equipped; equipped={equipped}; right={right}; left={left}; {item}");
-
         let item = *item; // insert unboxing video
         if !equipped {
             return self.handle_item_unequipped(item, right, left);
         }
+        log::info!("item equipped; right={right}; left={left}; {item}");
 
         if item.kind().is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
@@ -806,16 +829,16 @@ impl Controller {
 
         // It's a one-hander. Does it match an earlier decision?
 
-        let rightie = if !item.kind().is_weapon() {
-            equippedRightHand()
-        } else {
+        let rightie = if item.kind().is_weapon() {
             boundObjectRightHand()
+        } else {
+            equippedRightHand()
         };
 
-        let leftie = if !item.kind().is_weapon() {
-            equippedLeftHand()
-        } else {
+        let leftie = if item.kind().is_weapon() {
             boundObjectLeftHand()
+        } else {
+            equippedLeftHand()
         };
 
         // log::trace!(
@@ -852,7 +875,7 @@ impl Controller {
 
         if left {
             // update was out of band
-            if !left_unexpected {
+            if left_unexpected {
                 self.update_slot(HudElement::Left, &item);
             } else {
                 // we expected the left hand change. Force the right hand to show what we wanted.

@@ -86,6 +86,26 @@ impl CycleData {
         }
     }
 
+    pub fn advance_skipping_twohanders(&mut self) -> Option<ItemData> {
+        // This can only be called for the right hand.
+        if self.right.is_empty() {
+            return None;
+        }
+
+        self.right.rotate_left(1);
+        let candidate = self.right
+            .iter()
+            .find(|xs| !xs.two_handed());
+        if let Some(v) = candidate {
+            let result = v.clone();
+            self.set_top(&CycleSlot::Right, &result);
+            Some(result)
+        } else {
+            log::trace!("no one-handers in the right cycle");
+            None
+        }
+    }
+
     /// Get the length of the given cycle.
     pub fn cycle_len(&self, which: &CycleSlot) -> usize {
         match which {
