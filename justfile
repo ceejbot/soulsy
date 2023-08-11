@@ -55,7 +55,7 @@ tag VERSION:
     # update the version header for the plugin
     sed -i -e 's/set(VERSION [0-9][0-9]*\.[0-9]*\.[0-9]*\(\.[0-9]*\)/set(VERSION {{VERSION}}\1/' CMakeLists.txt
     # update the lock file
-    cargo check
+    #cargo check
     git commit CMakeLists.txt Cargo.toml Cargo.lock -m "v{{VERSION}}"
     git tag "v{{VERSION}}"
     echo "Release tagged for version v{{VERSION}}"
