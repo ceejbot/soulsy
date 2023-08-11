@@ -105,8 +105,6 @@ impl Controller {
             } else {
                 startAlphaTransition(false, 0.0);
             }
-        } else {
-            self.cycles.set_hud_visible(true);
         }
     }
 
@@ -504,7 +502,7 @@ impl Controller {
                 // are we bouncing back to something in a cycle or not? This is fun.
                 if self.cycles.includes(&other_hand, &return_to) {
                     let _changed = self.update_slot(other_hud, &return_to);
-                    self.cycles.set_top(&other_hand, &return_to);
+                    self.cycles.set_top(&other_hand, &return_to);    
                 } else {
                     // The return to item was removed from the cycle at some point. This is
                     // a question of design now. We can either select the next *single-handed*
@@ -516,7 +514,7 @@ impl Controller {
                     if matches!(other_hand, CycleSlot::Right) {
                         if let Some(advance_to) = self.cycles.advance_skipping_twohanders() {
                             let _changed = self.update_slot(other_hud, &advance_to.clone());
-                            self.cycles.set_top(&other_hand, &advance_to);
+                            self.cycles.set_top(&other_hand, &advance_to); 
                             self.right_hand_cached = Some(advance_to);
                         } else {
                             self.right_hand_cached = Some(*hand2hand_itemdata());
@@ -877,7 +875,7 @@ impl Controller {
 
         if left {
             // update was out of band
-            if left_unexpected {
+            if !left_unexpected {
                 self.update_slot(HudElement::Left, &item);
             } else {
                 // we expected the left hand change. Force the right hand to show what we wanted.
