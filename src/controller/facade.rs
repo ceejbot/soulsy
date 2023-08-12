@@ -4,6 +4,7 @@
 
 use std::ffi::OsString;
 use std::fs::File;
+#[cfg(target_os = "windows")]
 use std::os::windows::ffi::OsStringExt;
 use std::path::Path;
 
@@ -26,6 +27,9 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
         LevelFilter::Info
     };
 
+    #[cfg(any(target_os = "macos", target_os = "unix"))]
+    let chonky_path = OsString::from("placeholder");
+    #[cfg(target_os = "windows")]
     let chonky_path = OsString::from_wide(logdir.as_slice());
     let path = Path::new(chonky_path.as_os_str()).with_file_name("SoulsyHUD_rust.log");
 

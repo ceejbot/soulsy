@@ -2,6 +2,7 @@
 
 use std::ffi::OsString;
 use std::fmt::Display;
+#[cfg(target_os = "windows")]
 use std::os::windows::ffi::OsStringExt;
 
 use anyhow::Result;
@@ -12,9 +13,11 @@ use super::control::MenuEventResponse;
 use super::itemdata::*;
 use super::keys::CycleSlot;
 use super::user_settings;
+#[cfg(target_os = "windows")]
+use crate::plugin::playerName;
 use crate::plugin::{
-    hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, playerName,
-    staminaPotionCount, startAlphaTransition, ItemKind,
+    hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
+    startAlphaTransition, ItemKind,
 };
 
 /// Manage the player's configured item cycles. Track changes, persist data in
@@ -411,16 +414,26 @@ impl CycleData {
 
     // ---------- TOML serialization
 
-    /// Write the cycle data to its file. Yet another reason to get rid of this...
-    fn cycle_storage() -> OsString {
+    #[cfg(any(target_os = "macos", target_os = "unix"))]
+    fn get_player_name() -> OsString {
+        OsString::from("Placeholder")
+    }
+
+    #[cfg(target_os = "windows")]
+    fn get_player_name() -> OsString {
         let bytes = playerName();
         // These bytes are nul-terminated.
         let sliced = bytes.as_slice();
-        let name = if let Some(0) = sliced.last() {
+        if let Some(0) = sliced.last() {
             OsString::from_wide(&sliced[0..(bytes.len() - 1)])
         } else {
             OsString::from_wide(sliced)
-        };
+        }
+    }
+
+    /// Write the cycle data to its file. Yet another reason to get rid of this...
+    fn cycle_storage() -> OsString {
+        let name = CycleData::get_player_name();
         // let name = name.trim().replace(' ', "_").replace(['\\', '\''], "");
 
         let mut ret =
@@ -476,7 +489,7 @@ impl CycleData {
         Ok(data)
     }
 
-    // rkyv serialization to cosave
+    // bincode serialization to cosave
 
     pub fn serialize(&self) -> Vec<u8> {
         archive::serialize(self)
