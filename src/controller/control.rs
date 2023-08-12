@@ -47,7 +47,7 @@ impl Controller {
 
     pub fn validate_cycles(&mut self) {
         self.cycles.validate();
-        log::info!("after validation, cycles are: {}", self.cycles);
+        // log::info!("after validation, cycles are: {}", self.cycles);
         self.update_hud();
     }
 
@@ -96,8 +96,6 @@ impl Controller {
             let proxy = make_magicka_proxy(1);
             self.cycles.remove_item(CycleSlot::Utility, &proxy);
         }
-
-        self.flush_cycle_data();
 
         if !settings.autofade() {
             if self.cycles.hud_visible() {
@@ -580,7 +578,6 @@ impl Controller {
     fn update_and_record(&mut self, which: &CycleSlot, next: &ItemData) -> KeyEventResponse {
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
-        // self.flush_cycle_data();
 
         if user_settings().autofade() {
             show_briefly();
@@ -864,7 +861,7 @@ impl Controller {
         let right_unexpected = rightvis != rightie.form_string();
         let left_unexpected = leftvis != leftie.form_string();
 
-        if right && right_unexpected{
+        if right && right_unexpected {
             self.update_slot(HudElement::Right, &item);
         } else if left && left_unexpected {
             self.update_slot(HudElement::Left, &item);
@@ -888,13 +885,11 @@ impl Controller {
                     reequipHand(Action::Left, &form_spec);
                 }
                 self.update_slot(HudElement::Left, &prev_left);
-            } else {
-                if let Some(left_next) = self.cycles.get_top(&CycleSlot::Left) {
-                    self.left_hand_cached = Some(left_next.clone());
-                    cxx::let_cxx_string!(form_spec = left_next.form_string());
-                    reequipHand(Action::Left, &form_spec);
-                    self.update_slot(HudElement::Left, &left_next);
-                }
+            } else if let Some(left_next) = self.cycles.get_top(&CycleSlot::Left) {
+                self.left_hand_cached = Some(left_next.clone());
+                cxx::let_cxx_string!(form_spec = left_next.form_string());
+                reequipHand(Action::Left, &form_spec);
+                self.update_slot(HudElement::Left, &left_next);
             }
         }
 
@@ -1092,7 +1087,6 @@ impl Controller {
             log::info!("{msg}");
             cxx::let_cxx_string!(message = msg);
             notifyPlayer(&message);
-            self.flush_cycle_data();
         } else {
             log::info!("no changes made.");
         }
@@ -1169,31 +1163,6 @@ impl Controller {
         let message = format!("{} {} {} cycle", item.name(), verb, cyclename);
         cxx::let_cxx_string!(msg = message);
         notifyPlayer(&msg);
-
-        if matches!(
-            result,
-            MenuEventResponse::ItemAdded | MenuEventResponse::ItemRemoved
-        ) {
-            // the data changed. flush it to disk
-            log::debug!(
-                "persisted cycle data after change; verb='{}'; item='{}';",
-                verb,
-                item.name()
-            );
-            self.flush_cycle_data();
-        }
-    }
-
-    fn flush_cycle_data(&self) {
-        log::trace!("used to write cycle data; not doing it now");
-        /*
-        match self.cycles.write() {
-            Ok(_) => {}
-            Err(e) => {
-                log::warn!("failed to persist cycle data, but gamely continuing; {e:?}");
-            }
-        }
-        */
     }
 
     // watching the keys

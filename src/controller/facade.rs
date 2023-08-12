@@ -4,6 +4,7 @@
 
 use std::ffi::OsString;
 use std::fs::File;
+#[cfg(target_os = "windows")]
 use std::os::windows::ffi::OsStringExt;
 use std::path::Path;
 
@@ -26,6 +27,9 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
         LevelFilter::Info
     };
 
+    #[cfg(any(target_os = "macos", target_os = "unix"))]
+    let chonky_path = OsString::from("placeholder");
+    #[cfg(target_os = "windows")]
     let chonky_path = OsString::from_wide(logdir.as_slice());
     let path = Path::new(chonky_path.as_os_str()).with_file_name("SoulsyHUD_rust.log");
 
@@ -49,10 +53,9 @@ pub fn initialize_hud() {
     let _hud = hud_layout();
     ctrl.apply_settings();
     if !ctrl.cycles.loaded {
-        log::info!("Cosave data not found. Falling back to toml or defaults.");
-        ctrl.cycles = CycleData::read().unwrap_or_default();
+        log::info!("Cosave data not yet loaded.");
+        ctrl.cycles = CycleData::default();
     }
-    // ctrl.update_hud();
 }
 
 /// Function for C++ to call to send a relevant button event to us.
@@ -119,20 +122,24 @@ pub fn refresh_user_settings() {
     control::get().apply_settings();
 }
 
+pub fn serialize_version() -> u32 {
+    CycleData::serialize_version()
+}
+
 /// Serialize cycles for cosave.
 pub fn serialize_cycles() -> Vec<u8> {
     control::get().cycles.serialize()
 }
 
 /// Cycle data loaded from cosave.
-pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>) {
+pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32) {
     let mut ctrl = control::get();
-    if let Some(cosave_cycle) = CycleData::deserialize(bytes) {
+    if let Some(cosave_cycle) = CycleData::deserialize(bytes, version) {
         ctrl.cycles = cosave_cycle;
+        ctrl.validate_cycles();
         log::info!("Cycles loaded and ready to rock.");
     } else {
-        log::warn!("Cosave load failed. Staying with TOML fallback.");
-        ctrl.cycles = CycleData::read().unwrap_or_default();
+        log::warn!("Cosave load failed. Defaulting to fresh start.");
+        ctrl.cycles = CycleData::default();
     }
-    ctrl.validate_cycles();
 }

@@ -1,10 +1,7 @@
 //! Management of the cycle data: serialization and mutation.
 
-use std::ffi::OsString;
 use std::fmt::Display;
-use std::os::windows::ffi::OsStringExt;
 
-use anyhow::Result;
 use cxx::CxxVector;
 use serde::{Deserialize, Serialize};
 
@@ -13,8 +10,8 @@ use super::itemdata::*;
 use super::keys::CycleSlot;
 use super::user_settings;
 use crate::plugin::{
-    hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, playerName,
-    staminaPotionCount, startAlphaTransition, ItemKind,
+    hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
+    startAlphaTransition, ItemKind,
 };
 
 /// Manage the player's configured item cycles. Track changes, persist data in
@@ -31,10 +28,6 @@ pub struct CycleData {
     #[serde(default)]
     pub loaded: bool,
 }
-
-// where to persist
-static CYCLE_PATH_START: &str = "./data/SKSE/Plugins/SoulsyHUD_";
-static CYCLE_PATH_END: &str = "_Cycles.toml";
 
 impl CycleData {
     /// Advance the given cycle by one. Returns a copy of the newly-top item.
@@ -409,81 +402,25 @@ impl CycleData {
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
     }
 
-    // ---------- TOML serialization
+    // bincode serialization to cosave
 
-    /// Write the cycle data to its file. Yet another reason to get rid of this...
-    fn cycle_storage() -> OsString {
-        let bytes = playerName();
-        // These bytes are nul-terminated.
-        let sliced = bytes.as_slice();
-        let name = if let Some(0) = sliced.last() {
-            OsString::from_wide(&sliced[0..(bytes.len() - 1)])
-        } else {
-            OsString::from_wide(sliced)
-        };
-        // let name = name.trim().replace(' ', "_").replace(['\\', '\''], "");
-
-        let mut ret =
-            OsString::with_capacity(CYCLE_PATH_START.len() + name.len() + CYCLE_PATH_END.len());
-        ret.push(OsString::from(CYCLE_PATH_START));
-        ret.push(name);
-        ret.push(OsString::from(CYCLE_PATH_END));
-        ret
+    pub fn serialize_version() -> u32 {
+        archive_v1::VERSION
     }
-
-    /// Write serialized toml to the cycle storage file for this character.
-    pub fn write(&self) -> Result<()> {
-        if self.power.is_empty()
-            && self.utility.is_empty()
-            && self.left.is_empty()
-            && self.right.is_empty()
-        {
-            log::debug!("Declining to write empty/default cycles.");
-            return Ok(());
-        }
-
-        log::debug!(
-            "writing cycles to disk; lengths are: powers={}; utilities={}; left={}; right={};",
-            self.power.len(),
-            self.utility.len(),
-            self.left.len(),
-            self.right.len()
-        );
-        let fname = CycleData::cycle_storage();
-        let mut backup = fname.clone();
-        backup.push(OsString::from(".bak"));
-        std::fs::copy(fname.clone(), backup)?;
-        let buf = toml::to_string(self)?;
-        std::fs::write(fname, buf)?;
-        Ok(())
-    }
-
-    /// Read cycle data from the serialization file for this character.
-    pub fn read() -> Result<Self> {
-        let buf = std::fs::read_to_string(CycleData::cycle_storage())?;
-        let data = toml::from_str::<CycleData>(&buf)?;
-        log::info!(
-            "read cycle data from {}; initial cycle lengths are:",
-            CycleData::cycle_storage().to_string_lossy()
-        );
-        log::info!(
-            "powers={}; utilities={}; left={}; right={};",
-            data.power.len(),
-            data.utility.len(),
-            data.left.len(),
-            data.right.len()
-        );
-        Ok(data)
-    }
-
-    // rkyv serialization to cosave
 
     pub fn serialize(&self) -> Vec<u8> {
-        archive::serialize(self)
+        archive_v1::serialize(self)
     }
 
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        archive::deserialize(bytes)
+    pub fn deserialize(bytes: &CxxVector<u8>, version: u32) -> Option<CycleData> {
+        if version == 0 {
+            archive_v0::deserialize(bytes)
+        } else if version == 1 {
+            archive_v1::deserialize(bytes)
+        } else {
+            log::info!("The cosave data is format version {version}, which this version of the plugin has never heard of.");
+            None
+        }
     }
 }
 
@@ -511,26 +448,124 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
     )
 }
 
-pub mod archive {
-
+pub mod archive_v1 {
     use bincode::{Decode, Encode};
     use cxx::CxxVector;
 
-    use super::{CycleData, ItemData};
+    use super::CycleData;
+    use crate::controller::itemdata::ItemData;
+    use crate::plugin::{formSpecToItemData, ItemKind};
 
-    // cosave implemention starts with a very packed set of bytes
-    // I'm implementing this to the side of the toml for safety.
+    pub const VERSION: u32 = 1;
 
     pub fn serialize(cycle: &CycleData) -> Vec<u8> {
         let value = CycleSerialized::from(cycle);
         let config = bincode::config::standard();
         let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        log::debug!(
+            "writing cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
         bytes
     }
 
     pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
         let bytes: Vec<u8> = bytes.iter().copied().collect();
         let config = bincode::config::standard();
+        log::debug!(
+            "reading cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
+
+        match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
+            Ok((value, _len)) => {
+                log::info!("Cycles successfully read from cosave data.");
+                Some(value.into())
+            }
+            Err(e) => {
+                log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
+                log::error!("{e:?}");
+                None
+            }
+        }
+    }
+
+    /// The serialization format is a list of form strings. Two drivers for
+    /// this choice: 1) It's compact. 2) It can be deserialized into any
+    /// representation of a TES form item we want, thus making it not care about
+    /// implementation details of the hud item cache.
+    #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
+    pub struct CycleSerialized {
+        left: Vec<String>,
+        right: Vec<String>,
+        power: Vec<String>,
+        utility: Vec<String>,
+        hud_visible: bool,
+    }
+
+    impl From<&CycleData> for CycleSerialized {
+        fn from(value: &CycleData) -> Self {
+            Self {
+                left: value.left.iter().map(|xs| xs.form_string()).collect(),
+                right: value.right.iter().map(|xs| xs.form_string()).collect(),
+                power: value.power.iter().map(|xs| xs.form_string()).collect(),
+                utility: value.utility.iter().map(|xs| xs.form_string()).collect(),
+                hud_visible: value.hud_visible,
+            }
+        }
+    }
+
+    impl From<CycleSerialized> for CycleData {
+        fn from(value: CycleSerialized) -> Self {
+            fn filter_func(xs: &String) -> Option<ItemData> {
+                cxx::let_cxx_string!(form_spec = xs);
+                let item = *formSpecToItemData(&form_spec);
+                if item.kind() == ItemKind::Empty {
+                    None
+                } else {
+                    Some(item)
+                }
+            }
+
+            Self {
+                left: value.left.iter().filter_map(filter_func).collect(),
+                right: value.right.iter().filter_map(filter_func).collect(),
+                power: value.power.iter().filter_map(filter_func).collect(),
+                utility: value.utility.iter().filter_map(filter_func).collect(),
+                hud_visible: value.hud_visible,
+                loaded: true,
+            }
+        }
+    }
+}
+
+pub mod archive_v0 {
+    use bincode::{Decode, Encode};
+    use cxx::CxxVector;
+
+    use super::{CycleData, ItemData};
+
+    const VERSION: u8 = 0;
+
+    pub fn serialize(cycle: &CycleData) -> Vec<u8> {
+        let value = CycleSerialized::from(cycle);
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        log::debug!(
+            "writing cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
+        bytes
+    }
+
+    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
+        let bytes: Vec<u8> = bytes.iter().copied().collect();
+        let config = bincode::config::standard();
+        log::debug!(
+            "reading cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
+
         match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
             Ok((value, _len)) => {
                 log::info!("Cycles successfully read from cosave data.");
