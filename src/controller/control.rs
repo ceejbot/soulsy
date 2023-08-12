@@ -502,7 +502,7 @@ impl Controller {
                 // are we bouncing back to something in a cycle or not? This is fun.
                 if self.cycles.includes(&other_hand, &return_to) {
                     let _changed = self.update_slot(other_hud, &return_to);
-                    self.cycles.set_top(&other_hand, &return_to);    
+                    self.cycles.set_top(&other_hand, &return_to);
                 } else {
                     // The return to item was removed from the cycle at some point. This is
                     // a question of design now. We can either select the next *single-handed*
@@ -514,7 +514,7 @@ impl Controller {
                     if matches!(other_hand, CycleSlot::Right) {
                         if let Some(advance_to) = self.cycles.advance_skipping_twohanders() {
                             let _changed = self.update_slot(other_hud, &advance_to.clone());
-                            self.cycles.set_top(&other_hand, &advance_to); 
+                            self.cycles.set_top(&other_hand, &advance_to);
                             self.right_hand_cached = Some(advance_to);
                         } else {
                             self.right_hand_cached = Some(*hand2hand_itemdata());
@@ -701,7 +701,7 @@ impl Controller {
 
         let kind = item.kind();
         cxx::let_cxx_string!(form_spec = item.form_string());
-        log::trace!("about to equip this item: slot={:?}; {}", which, item);
+        log::info!("about to equip this item: slot={:?}; {}", which, item);
 
         if kind.is_magic() || kind.left_hand_ok() || kind.right_hand_ok() {
             equipWeapon(&form_spec, which);
@@ -803,17 +803,17 @@ impl Controller {
         // the other decision happen as well. If the equip event was NOT driven
         // by the HUD, we have some more work to do.
 
-        // log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
-        //     equipped,
-        //     right,
-        //     left,
-        //     item.name(),
-        //     item.kind(),
-        //     item.two_handed(),
-        //     self.two_hander_equipped,
-        //     self.left_hand_cached.clone().map_or("n/a".to_string(), |xs| xs.name()),
-        //     self.right_hand_cached.clone().map_or("n/a".to_string(), |xs| xs.name())
-        // );
+        log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+            equipped,
+            right,
+            left,
+            item.name(),
+            item.kind(),
+            item.two_handed(),
+            self.two_hander_equipped,
+            self.left_hand_cached.clone().map_or("n/a".to_string(), |xs| xs.name()),
+            self.right_hand_cached.clone().map_or("n/a".to_string(), |xs| xs.name())
+        );
 
         if item.two_handed() {
             let changed = self.update_slot(HudElement::Right, &item);
@@ -821,7 +821,15 @@ impl Controller {
                 // Change was out of band. We need to react.
                 self.cycles.set_top(&CycleSlot::Right, &item);
             }
-            self.left_hand_cached = self.visible.get(&HudElement::Left).cloned();
+            if let Some(prev_left) = self.visible.get(&HudElement::Left) {
+                if prev_left.two_handed() {
+                    log::info!("wat; leftie was a 2-hander");
+                    self.left_hand_cached = Some(*hand2hand_itemdata());
+                } else {
+                    self.left_hand_cached = Some(prev_left.clone());
+                }
+            }
+            // self.left_hand_cached = self.visible.get(&HudElement::Left).cloned();
             self.update_slot(HudElement::Left, &ItemData::default());
             self.two_hander_equipped = true;
             return changed;
