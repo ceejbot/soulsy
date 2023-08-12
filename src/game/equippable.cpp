@@ -46,16 +46,21 @@ namespace equippable
 		auto two_handed = false;
 		if (item_form->Is(RE::FormType::Spell))
 		{
-			if (const auto* spell = item_form->As<RE::SpellItem>(); spell->IsTwoHanded()) { two_handed = true; }
+			if (const auto* spell = item_form->As<RE::SpellItem>(); spell->IsTwoHanded()) { return true; }
 		}
 		else if (item_form->IsWeapon())
 		{
 			if (const auto* weapon = item_form->As<RE::TESObjectWEAP>();
 				weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow() || weapon->IsCrossbow())
 			{
-				two_handed = true;
+				return true;
 			}
 		}
+		else if (item_form->Is(RE::FormType::Scroll)) { 
+			auto* scroll = item_form->As<RE::ScrollItem>();
+			return scroll->IsTwoHanded();
+		 }
+
 
 		//logger::trace("form {}, two handed {}"sv, item_form->GetName(), two_handed);
 		return two_handed;

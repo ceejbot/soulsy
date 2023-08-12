@@ -816,20 +816,12 @@ impl Controller {
         );
 
         if item.two_handed() {
+            log::trace!("we have a two-hander. we should exit after this block.");
             let changed = self.update_slot(HudElement::Right, &item);
             if changed {
                 // Change was out of band. We need to react.
                 self.cycles.set_top(&CycleSlot::Right, &item);
             }
-            if let Some(prev_left) = self.visible.get(&HudElement::Left) {
-                if prev_left.two_handed() {
-                    log::info!("wat; leftie was a 2-hander");
-                    self.left_hand_cached = Some(*hand2hand_itemdata());
-                } else {
-                    self.left_hand_cached = Some(prev_left.clone());
-                }
-            }
-            // self.left_hand_cached = self.visible.get(&HudElement::Left).cloned();
             self.update_slot(HudElement::Left, &ItemData::default());
             self.two_hander_equipped = true;
             return changed;
@@ -837,27 +829,29 @@ impl Controller {
 
         // It's a one-hander. Does it match an earlier decision?
 
-        let rightie = if item.kind().is_weapon() {
+        let rightie = equippedRightHand();
+        let rightie = if rightie.kind().is_weapon() {
             boundObjectRightHand()
         } else {
-            equippedRightHand()
+            rightie
         };
 
-        let leftie = if item.kind().is_weapon() {
+        let leftie = equippedLeftHand();
+        let leftie = if leftie.kind().is_weapon() {
             boundObjectLeftHand()
         } else {
-            equippedLeftHand()
+            leftie
         };
 
-        // log::trace!(
-        //     "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
-        //     item.form_string(),
-        //     rightie.form_string(),
-        //     leftie.form_string(),
-        //     self.two_hander_equipped,
-        //     item.two_handed(),
-        //     item.name(),
-        // );
+        log::trace!(
+            "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
+            item.form_string(),
+            rightie.form_string(),
+            leftie.form_string(),
+            self.two_hander_equipped,
+            item.two_handed(),
+            item.name(),
+        );
         let leftvis = self
             .visible
             .get(&HudElement::Left)
@@ -867,29 +861,13 @@ impl Controller {
             .get(&HudElement::Right)
             .map_or("".to_string(), |xs| xs.form_string());
 
-        let left_unexpected = leftvis != leftie.form_string();
         let right_unexpected = rightvis != rightie.form_string();
+        let left_unexpected = leftvis != leftie.form_string();
 
-        if right {
-            // update was out of band
-            if right_unexpected {
-                self.update_slot(HudElement::Right, &item);
-            } else {
-                // we expected the right hand change. Force the left hand to show what we wanted.
-                cxx::let_cxx_string!(form_spec = leftvis);
-                reequipHand(Action::Left, &form_spec);
-            }
-        }
-
-        if left {
-            // update was out of band
-            if !left_unexpected {
-                self.update_slot(HudElement::Left, &item);
-            } else {
-                // we expected the left hand change. Force the right hand to show what we wanted.
-                cxx::let_cxx_string!(form_spec = rightvis);
-                reequipHand(Action::Right, &form_spec);
-            }
+        if right && right_unexpected{
+            self.update_slot(HudElement::Right, &item);
+        } else if left && left_unexpected {
+            self.update_slot(HudElement::Left, &item);
         }
 
         if !self.two_hander_equipped {
@@ -902,7 +880,7 @@ impl Controller {
 
         if right {
             if let Some(prev_left) = self.left_hand_cached.clone() {
-                log::debug!("considering re-requipping or unequipping LEFT");
+                log::debug!("considering re-requipping LEFT; {prev_left}");
                 if prev_left.kind() == ItemKind::HandToHand {
                     unequipSlot(Action::Left);
                 } else {
@@ -910,12 +888,19 @@ impl Controller {
                     reequipHand(Action::Left, &form_spec);
                 }
                 self.update_slot(HudElement::Left, &prev_left);
+            } else {
+                if let Some(left_next) = self.cycles.get_top(&CycleSlot::Left) {
+                    self.left_hand_cached = Some(left_next.clone());
+                    cxx::let_cxx_string!(form_spec = left_next.form_string());
+                    reequipHand(Action::Left, &form_spec);
+                    self.update_slot(HudElement::Left, &left_next);
+                }
             }
         }
 
         if left {
             if let Some(prev_right) = self.right_hand_cached.clone() {
-                log::debug!("considering re-requipping or unequipping RIGHT");
+                log::debug!("considering re-requipping RIGHT; {prev_right}");
                 if prev_right.kind() == ItemKind::HandToHand {
                     unequipSlot(Action::Right);
                 } else {
