@@ -3,6 +3,7 @@
 #include "lib.rs.h"
 
 inline const auto CYCLE_RECORD = _byteswap_ulong('CYCL');
+inline const auto FORMAT_VERSION = 1;
 
 namespace cosave
 {
@@ -19,7 +20,7 @@ namespace cosave
 
 	void gameSavedHandler(SKSE::SerializationInterface* cosave)
 	{
-		if (!cosave->OpenRecord(CYCLE_RECORD, 0))
+		if (!cosave->OpenRecord(CYCLE_RECORD, FORMAT_VERSION))
 		{
 			logger::error("Unable to open record to write cosave data.");
 			return;
@@ -46,9 +47,11 @@ namespace cosave
 		{
 			if (type == CYCLE_RECORD)
 			{
-				if (version != 0) {
-					logger::info("surprised to get version {}"sv, version);
+				if (version == 0)
+				{
+					logger::info("Reading version 0 cosave data and upgrading.");
 				}
+
 				uint32_t bufSize;
 				std::vector<uint8_t> buffer;
 				cosave->ReadRecordData(bufSize);
@@ -57,7 +60,7 @@ namespace cosave
 				const auto read = cosave->ReadRecordData(buffer.data(), bufSize);
 				buffer.resize(read);
 				logger::debug("read {} bytes from cosave; buffer len is {}"sv, read, buffer.size());
-				cycle_loaded_from_cosave(buffer);
+				cycle_loaded_from_cosave(buffer, version);
 			}
 			else { logger::warn("Unknown record type in cosave; type={}", type); }
 		}
