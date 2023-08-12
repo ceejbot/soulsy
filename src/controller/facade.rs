@@ -53,7 +53,7 @@ pub fn initialize_hud() {
     let _hud = hud_layout();
     ctrl.apply_settings();
     if !ctrl.cycles.loaded {
-        log::info!("Cosave data not found. Falling back to defaults.");
+        log::info!("Cosave data not yet loaded.");
         ctrl.cycles = CycleData::default();
     }
 }
@@ -122,15 +122,19 @@ pub fn refresh_user_settings() {
     control::get().apply_settings();
 }
 
+pub fn serialize_version() -> u32 {
+    CycleData::serialize_version()
+}
+
 /// Serialize cycles for cosave.
 pub fn serialize_cycles() -> Vec<u8> {
     control::get().cycles.serialize()
 }
 
 /// Cycle data loaded from cosave.
-pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>) {
+pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32) {
     let mut ctrl = control::get();
-    if let Some(cosave_cycle) = CycleData::deserialize(bytes) {
+    if let Some(cosave_cycle) = CycleData::deserialize(bytes, version) {
         ctrl.cycles = cosave_cycle;
         ctrl.validate_cycles();
         log::info!("Cycles loaded and ready to rock.");

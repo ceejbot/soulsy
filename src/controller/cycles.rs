@@ -404,12 +404,23 @@ impl CycleData {
 
     // bincode serialization to cosave
 
-    pub fn serialize(&self) -> Vec<u8> {
-        archive::serialize(self)
+    pub fn serialize_version() -> u32 {
+        archive_v1::VERSION
     }
 
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        archive::deserialize(bytes)
+    pub fn serialize(&self) -> Vec<u8> {
+        archive_v1::serialize(self)
+    }
+
+    pub fn deserialize(bytes: &CxxVector<u8>, version: u32) -> Option<CycleData> {
+        if version == 0 {
+            archive_v0::deserialize(bytes)
+        } else if version == 1 {
+            archive_v1::deserialize(bytes)
+        } else {
+            log::info!("The cosave data is format version {version}, which this version of the plugin has never heard of.");
+            None
+        }
     }
 }
 
@@ -437,26 +448,124 @@ fn vec_to_debug_string(input: &[ItemData]) -> String {
     )
 }
 
-pub mod archive {
-
+pub mod archive_v1 {
     use bincode::{Decode, Encode};
     use cxx::CxxVector;
 
-    use super::{CycleData, ItemData};
+    use super::CycleData;
+    use crate::controller::itemdata::ItemData;
+    use crate::plugin::{formSpecToItemData, ItemKind};
 
-    // cosave implemention starts with a very packed set of bytes
-    // I'm implementing this to the side of the toml for safety.
+    pub const VERSION: u32 = 1;
 
     pub fn serialize(cycle: &CycleData) -> Vec<u8> {
         let value = CycleSerialized::from(cycle);
         let config = bincode::config::standard();
         let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        log::debug!(
+            "writing cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
         bytes
     }
 
     pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
         let bytes: Vec<u8> = bytes.iter().copied().collect();
         let config = bincode::config::standard();
+        log::debug!(
+            "reading cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
+
+        match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
+            Ok((value, _len)) => {
+                log::info!("Cycles successfully read from cosave data.");
+                Some(value.into())
+            }
+            Err(e) => {
+                log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
+                log::error!("{e:?}");
+                None
+            }
+        }
+    }
+
+    /// The serialization format is a list of form strings. Two drivers for
+    /// this choice: 1) It's compact. 2) It can be deserialized into any
+    /// representation of a TES form item we want, thus making it not care about
+    /// implementation details of the hud item cache.
+    #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
+    pub struct CycleSerialized {
+        left: Vec<String>,
+        right: Vec<String>,
+        power: Vec<String>,
+        utility: Vec<String>,
+        hud_visible: bool,
+    }
+
+    impl From<&CycleData> for CycleSerialized {
+        fn from(value: &CycleData) -> Self {
+            Self {
+                left: value.left.iter().map(|xs| xs.form_string()).collect(),
+                right: value.right.iter().map(|xs| xs.form_string()).collect(),
+                power: value.power.iter().map(|xs| xs.form_string()).collect(),
+                utility: value.utility.iter().map(|xs| xs.form_string()).collect(),
+                hud_visible: value.hud_visible,
+            }
+        }
+    }
+
+    impl From<CycleSerialized> for CycleData {
+        fn from(value: CycleSerialized) -> Self {
+            fn filter_func(xs: &String) -> Option<ItemData> {
+                cxx::let_cxx_string!(form_spec = xs);
+                let item = *formSpecToItemData(&form_spec);
+                if item.kind() == ItemKind::Empty {
+                    None
+                } else {
+                    Some(item)
+                }
+            }
+
+            Self {
+                left: value.left.iter().filter_map(filter_func).collect(),
+                right: value.right.iter().filter_map(filter_func).collect(),
+                power: value.power.iter().filter_map(filter_func).collect(),
+                utility: value.utility.iter().filter_map(filter_func).collect(),
+                hud_visible: value.hud_visible,
+                loaded: true,
+            }
+        }
+    }
+}
+
+pub mod archive_v0 {
+    use bincode::{Decode, Encode};
+    use cxx::CxxVector;
+
+    use super::{CycleData, ItemData};
+
+    const VERSION: u8 = 0;
+
+    pub fn serialize(cycle: &CycleData) -> Vec<u8> {
+        let value = CycleSerialized::from(cycle);
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        log::debug!(
+            "writing cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
+        bytes
+    }
+
+    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
+        let bytes: Vec<u8> = bytes.iter().copied().collect();
+        let config = bincode::config::standard();
+        log::debug!(
+            "reading cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
+
         match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
             Ok((value, _len)) => {
                 log::info!("Cycles successfully read from cosave data.");
