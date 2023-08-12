@@ -6,3 +6,4 @@ build
 .DS_Store
 releases
 SoulsyHUD_v*
+/vcpkg_installed
