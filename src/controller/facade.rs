@@ -53,10 +53,9 @@ pub fn initialize_hud() {
     let _hud = hud_layout();
     ctrl.apply_settings();
     if !ctrl.cycles.loaded {
-        log::info!("Cosave data not found. Falling back to toml or defaults.");
-        ctrl.cycles = CycleData::read().unwrap_or_default();
+        log::info!("Cosave data not found. Falling back to defaults.");
+        ctrl.cycles = CycleData::default();
     }
-    // ctrl.update_hud();
 }
 
 /// Function for C++ to call to send a relevant button event to us.
@@ -133,10 +132,10 @@ pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>) {
     let mut ctrl = control::get();
     if let Some(cosave_cycle) = CycleData::deserialize(bytes) {
         ctrl.cycles = cosave_cycle;
+        ctrl.validate_cycles();
         log::info!("Cycles loaded and ready to rock.");
     } else {
-        log::warn!("Cosave load failed. Staying with TOML fallback.");
-        ctrl.cycles = CycleData::read().unwrap_or_default();
+        log::warn!("Cosave load failed. Defaulting to fresh start.");
+        ctrl.cycles = CycleData::default();
     }
-    ctrl.validate_cycles();
 }

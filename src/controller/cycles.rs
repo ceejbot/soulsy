@@ -1,11 +1,7 @@
 //! Management of the cycle data: serialization and mutation.
 
-use std::ffi::OsString;
 use std::fmt::Display;
-#[cfg(target_os = "windows")]
-use std::os::windows::ffi::OsStringExt;
 
-use anyhow::Result;
 use cxx::CxxVector;
 use serde::{Deserialize, Serialize};
 
@@ -13,8 +9,6 @@ use super::control::MenuEventResponse;
 use super::itemdata::*;
 use super::keys::CycleSlot;
 use super::user_settings;
-#[cfg(target_os = "windows")]
-use crate::plugin::playerName;
 use crate::plugin::{
     hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
     startAlphaTransition, ItemKind,
@@ -34,10 +28,6 @@ pub struct CycleData {
     #[serde(default)]
     pub loaded: bool,
 }
-
-// where to persist
-static CYCLE_PATH_START: &str = "./data/SKSE/Plugins/SoulsyHUD_";
-static CYCLE_PATH_END: &str = "_Cycles.toml";
 
 impl CycleData {
     /// Advance the given cycle by one. Returns a copy of the newly-top item.
@@ -410,83 +400,6 @@ impl CycleData {
         });
         //log::info!("hud_visible: {}", self.hud_visible);
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
-    }
-
-    // ---------- TOML serialization
-
-    #[cfg(any(target_os = "macos", target_os = "unix"))]
-    fn get_player_name() -> OsString {
-        OsString::from("Placeholder")
-    }
-
-    #[cfg(target_os = "windows")]
-    fn get_player_name() -> OsString {
-        let bytes = playerName();
-        // These bytes are nul-terminated.
-        let sliced = bytes.as_slice();
-        if let Some(0) = sliced.last() {
-            OsString::from_wide(&sliced[0..(bytes.len() - 1)])
-        } else {
-            OsString::from_wide(sliced)
-        }
-    }
-
-    /// Write the cycle data to its file. Yet another reason to get rid of this...
-    fn cycle_storage() -> OsString {
-        let name = CycleData::get_player_name();
-        // let name = name.trim().replace(' ', "_").replace(['\\', '\''], "");
-
-        let mut ret =
-            OsString::with_capacity(CYCLE_PATH_START.len() + name.len() + CYCLE_PATH_END.len());
-        ret.push(OsString::from(CYCLE_PATH_START));
-        ret.push(name);
-        ret.push(OsString::from(CYCLE_PATH_END));
-        ret
-    }
-
-    /// Write serialized toml to the cycle storage file for this character.
-    pub fn write(&self) -> Result<()> {
-        if self.power.is_empty()
-            && self.utility.is_empty()
-            && self.left.is_empty()
-            && self.right.is_empty()
-        {
-            log::debug!("Declining to write empty/default cycles.");
-            return Ok(());
-        }
-
-        log::debug!(
-            "writing cycles to disk; lengths are: powers={}; utilities={}; left={}; right={};",
-            self.power.len(),
-            self.utility.len(),
-            self.left.len(),
-            self.right.len()
-        );
-        let fname = CycleData::cycle_storage();
-        let mut backup = fname.clone();
-        backup.push(OsString::from(".bak"));
-        std::fs::copy(fname.clone(), backup)?;
-        let buf = toml::to_string(self)?;
-        std::fs::write(fname, buf)?;
-        Ok(())
-    }
-
-    /// Read cycle data from the serialization file for this character.
-    pub fn read() -> Result<Self> {
-        let buf = std::fs::read_to_string(CycleData::cycle_storage())?;
-        let data = toml::from_str::<CycleData>(&buf)?;
-        log::info!(
-            "read cycle data from {}; initial cycle lengths are:",
-            CycleData::cycle_storage().to_string_lossy()
-        );
-        log::info!(
-            "powers={}; utilities={}; left={}; right={};",
-            data.power.len(),
-            data.utility.len(),
-            data.left.len(),
-            data.right.len()
-        );
-        Ok(data)
     }
 
     // bincode serialization to cosave
