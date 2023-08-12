@@ -2,11 +2,10 @@
 
 #include "lib.rs.h"
 
-inline const auto CYCLE_RECORD = _byteswap_ulong('CYCL');
-inline const auto FORMAT_VERSION = 1;
-
 namespace cosave
 {
+	inline const auto CYCLE_RECORD   = _byteswap_ulong('CYCL');
+	inline const auto FORMAT_VERSION = 1;
 
 	void initializeCosaves()
 	{
@@ -20,18 +19,18 @@ namespace cosave
 
 	void gameSavedHandler(SKSE::SerializationInterface* cosave)
 	{
-		if (!cosave->OpenRecord(CYCLE_RECORD, FORMAT_VERSION))
+		// The format is an ad-hoc bag of bytes that we interpret
+		// as we wish. So we serialize to a bag of bytes on the Rust side.
+		const uint32_t version    = serialize_version();
+		rust::Vec<uint8_t> buffer = serialize_cycles();
+		uint32_t bufsize          = static_cast<uint32_t>(buffer.size());
+		logger::debug("cycles serialized into a Vec<u8> of size={};"sv, bufsize);
+
+		if (!cosave->OpenRecord(CYCLE_RECORD, version))
 		{
 			logger::error("Unable to open record to write cosave data.");
 			return;
 		}
-
-		// The format is an ad-hoc bag of bytes that we interpret
-		// as we wish. So we serialize to a bag of bytes on the Rust side.
-
-		rust::Vec<uint8_t> buffer = serialize_cycles();
-		uint32_t bufsize          = static_cast<uint32_t>(buffer.size());
-		logger::debug("cycles serialized into a Vec<u8> of size={};"sv, bufsize);
 
 		cosave->WriteRecordData(bufsize);
 		cosave->WriteRecordData(buffer.data(), bufsize);
@@ -47,11 +46,6 @@ namespace cosave
 		{
 			if (type == CYCLE_RECORD)
 			{
-				if (version == 0)
-				{
-					logger::info("Reading version 0 cosave data and upgrading.");
-				}
-
 				uint32_t bufSize;
 				std::vector<uint8_t> buffer;
 				cosave->ReadRecordData(bufSize);

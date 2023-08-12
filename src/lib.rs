@@ -256,7 +256,9 @@ pub mod plugin {
         fn show_ui() -> bool;
         /// Get cycle data for cosave.
         fn serialize_cycles() -> Vec<u8>;
-        fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>);
+        /// Serialization format version.
+        fn serialize_version() -> u32;
+        fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32);
 
         /// Give access to the settings to the C++ side.
         type UserSettings;
@@ -393,6 +395,8 @@ pub mod plugin {
         fn show_briefly();
         /// Play an activation failed UI sound.
         fn honk();
+        /// Make a full rust-side item from a form spec string.
+        fn formSpecToItemData(form_spec: &CxxString) -> Box<ItemData>;
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
