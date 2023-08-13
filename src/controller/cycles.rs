@@ -452,8 +452,9 @@ pub mod archive_v1 {
     use cxx::CxxVector;
 
     use super::CycleData;
-    use crate::controller::itemdata::ItemData;
-    use crate::plugin::{formSpecToItemData, ItemKind};
+    use crate::data::HudItem;
+    use crate::data::base::BaseType;
+    use crate::plugin::formSpecToHudItem;
 
     pub const VERSION: u32 = 1;
 
@@ -516,13 +517,22 @@ pub mod archive_v1 {
 
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
-            fn filter_func(xs: &String) -> Option<ItemData> {
-                cxx::let_cxx_string!(form_spec = xs);
-                let item = *formSpecToItemData(&form_spec);
-                if item.kind() == ItemKind::Empty {
-                    None
-                } else {
-                    Some(item)
+            fn filter_func(xs: &String) -> Option<HudItem> {
+                match xs.as_str() {
+                    "health_proxy" => Some(*crate::data::make_unarmed_proxy()),
+                    "magicka_proxy" => Some(crate::data::make_magicka_proxy(1)),
+                    "stamina_proxy" => Some(crate::data::make_stamina_proxy(1)),
+                    "unarmed_proxy" => Some(crate::data::make_health_proxy(1)),
+                    "" => None,
+                    _ => {
+                        cxx::let_cxx_string!(form_spec = xs);
+                        let found = *formSpecToHudItem(&form_spec);
+                        if matches!(found.kind(), BaseType::Empty) {
+                            None
+                        } else {
+                            Some(found)
+                        }
+                    }
                 }
             }
 
@@ -543,19 +553,9 @@ pub mod archive_v0 {
     use cxx::CxxVector;
 
     use super::{CycleData, HudItem};
+    use crate::{controller::itemdata::ItemData, plugin::formSpecToHudItem, data::base::BaseType};
 
     const VERSION: u8 = 0;
-
-    pub fn serialize(cycle: &CycleData) -> Vec<u8> {
-        let value = CycleSerialized::from(cycle);
-        let config = bincode::config::standard();
-        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
-        log::debug!(
-            "writing cosave format version {VERSION}; data len={};",
-            bytes.len()
-        );
-        bytes
-    }
 
     pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
         let bytes: Vec<u8> = bytes.iter().copied().collect();
@@ -564,8 +564,7 @@ pub mod archive_v0 {
             "reading cosave format version {VERSION}; data len={};",
             bytes.len()
         );
-
-        match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
+       match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
             Ok((value, _len)) => {
                 log::info!("Cycles successfully read from cosave data.");
                 Some(value.into())
@@ -580,35 +579,74 @@ pub mod archive_v0 {
 
     #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
     pub struct CycleSerialized {
-        left: Vec<HudItem>,
-        right: Vec<HudItem>,
-        power: Vec<HudItem>,
-        utility: Vec<HudItem>,
+        left: Vec<ItemSerialized>,
+        right: Vec<ItemSerialized>,
+        power: Vec<ItemSerialized>,
+        utility: Vec<ItemSerialized>,
         hud_visible: bool,
     }
 
-    impl From<&CycleData> for CycleSerialized {
-        fn from(value: &CycleData) -> Self {
-            Self {
-                left: value.left.iter().cloned().collect(),
-                right: value.right.iter().cloned().collect(),
-                power: value.power.iter().cloned().collect(),
-                utility: value.utility.iter().cloned().collect(),
-                hud_visible: value.hud_visible,
-            }
-        }
+    #[derive(Decode, Encode, Hash, Debug, Clone, Default, PartialEq, Eq)]
+    pub struct ItemSerialized {
+        name_bytes: Vec<u8>,
+        form_string: String,
+        kind: u8,
+        two_handed: bool,
+        has_count: bool,
+        count: u32,
     }
 
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
+
+            fn filter_func(item: &ItemSerialized) -> Option<HudItem> {
+                let formstr = item.form_string.clone();
+                match formstr.as_str() {
+                    "health_proxy" => Some(*crate::data::make_unarmed_proxy()),
+                    "magicka_proxy" => Some(crate::data::make_magicka_proxy(1)),
+                    "stamina_proxy" => Some(crate::data::make_stamina_proxy(1)),
+                    "unarmed_proxy" => Some(crate::data::make_health_proxy(1)),
+                    "" => None,
+                    _ => {
+                        cxx::let_cxx_string!(form_spec = formstr);
+                        let found = *formSpecToHudItem(&form_spec);
+                        if matches!(found.kind(), BaseType::Empty) {
+                            None
+                        } else {
+                            Some(found)
+                        }
+                    }
+                }
+            }
+
             Self {
-                left: value.left.iter().cloned().collect(),
-                right: value.right.iter().cloned().collect(),
-                power: value.power.iter().cloned().collect(),
-                utility: value.utility.iter().cloned().collect(),
+                left: value.left.iter().filter_map(filter_func).collect(),
+                right: value.right.iter().filter_map(filter_func).collect(),
+                power: value.power.iter().filter_map(filter_func).collect(),
+                utility: value.utility.iter().filter_map(filter_func).collect(),
                 hud_visible: value.hud_visible,
                 loaded: true,
             }
+
+        }
+    }
+
+    impl From<&ItemSerialized> for HudItem {
+        fn from(value: &ItemSerialized) -> Self {
+            todo!()
+        }
+    }
+
+    impl From<&ItemSerialized> for ItemData {
+        fn from(value: &ItemSerialized) -> ItemData {
+            ItemData::new(
+                value.kind.into(),
+                value.two_handed,
+                value.has_count,
+                value.count,
+                value.name_bytes.clone(),
+                &value.form_string,
+            )
         }
     }
 }

@@ -380,7 +380,7 @@ pub mod plugin {
         /// Play an activation failed UI sound.
         fn honk();
         /// Make a full rust-side item from a form spec string.
-        fn formSpecToItemData(form_spec: &CxxString) -> Box<ItemData>;
+        fn formSpecToHudItem(form_spec: &CxxString) -> Box<HudItem>;
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.

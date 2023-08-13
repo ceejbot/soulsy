@@ -46,7 +46,7 @@ namespace cosave
 		{
 			if (type == CYCLE_RECORD)
 			{
-				if (version != 0) { logger::info("surprised to get version {} in cosave"sv, version); }
+				logger::info("reading cosave data version {}"sv, version);
 				uint32_t bufSize;
 				std::vector<uint8_t> buffer;
 				cosave->ReadRecordData(bufSize);

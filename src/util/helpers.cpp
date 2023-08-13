@@ -207,11 +207,11 @@ namespace helpers
 		return form;
 	}
 
-	rust::Box<ItemData> formSpecToItemData(const std::string& spec)
+	rust::Box<HudItem> formSpecToHudItem(const std::string& spec)
 	{
 		auto* form_item = formSpecToFormItem(spec);
-		if (!form_item) { return empty_itemdata(); }
-		return equippable::makeItemDataFromForm(form_item);
+		if (!form_item) { return empty_huditem(); }
+		return equippable::hudItemFromForm(form_item);
 	}
 
 	MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid) {}
