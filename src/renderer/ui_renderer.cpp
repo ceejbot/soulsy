@@ -246,7 +246,7 @@ namespace ui
 		// It's left-aligned by default.
 		float adjustment = 0;
 		if (align == Align::Center) { adjustment = -0.25f * text_bounds.x; }
-		else if (align == Align::Right) { adjustment = -0.5f * text_bounds.x; }
+		else if (align == Align::Right) { adjustment = -1.25f * text_bounds.x; }
 
 		ImVec2 aligned_center = ImVec2(center.x + adjustment, center.y);
 

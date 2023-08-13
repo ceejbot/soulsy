@@ -293,7 +293,7 @@ impl IsHudItem for BaseType {
                     | BaseType::Scroll(_)
                     | BaseType::Spell(SpellData {
                         effect: _,
-                        resist: _,
+                        damage: _,
                         twohanded: false,
                         school: _,
                         level: _,

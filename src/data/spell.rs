@@ -16,11 +16,11 @@ use crate::plugin::Color;
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellData {
     pub effect: ActorValue,
-    pub resist: ActorValue,
     pub twohanded: bool,
     pub school: School,
     pub level: MagicSpellLevel,
     pub archetype: SpellArchetype,
+    pub damage: MagicDamageType,
     pub variant: SpellVariant,
 }
 
@@ -48,6 +48,7 @@ impl SpellData {
             // sun damage is in here somewhere -- is it healing? todo SSEdit
             _ => MagicDamageType::None,
         };
+
 
         // well, this will be fun™
         let variant = match archetype {
@@ -85,11 +86,11 @@ impl SpellData {
 
         Self {
             effect,
-            resist,
             twohanded,
             school,
             archetype,
             level: level.into(),
+            damage,
             variant,
         }
     }
@@ -171,16 +172,16 @@ impl HasIcon for SpellData {
             SpellVariant::Blizzard => todo!(),
             SpellVariant::Calm => todo!(),
             SpellVariant::CarryWeight => Icon::SpellFeather.icon_file(),
-            SpellVariant::Cloak(_) => todo!(),
+            SpellVariant::Cloak(_) => Icon::ArmorCloak.icon_file(),
             SpellVariant::Demoralize => Icon::SpellFear.icon_file(),
             SpellVariant::Detect => Icon::SpellDetect.icon_file(),
-            SpellVariant::Fear => todo!(),
-            SpellVariant::Fireball => todo!(),
+            SpellVariant::Fear => Icon::SpellFear.icon_file(),
+            SpellVariant::Fireball => Icon::SpellFireball.icon_file(),
             SpellVariant::Firebolt => todo!(),
             SpellVariant::FireboltStorm => todo!(),
             SpellVariant::FireWall => todo!(),
-            SpellVariant::Frost => todo!(),
-            SpellVariant::FrostWall => todo!(),
+            SpellVariant::Frost => Icon::SpellFrost.icon_file(),
+            SpellVariant::FrostWall => Icon::SpellFrost.icon_file(), // TODO frostwall
             SpellVariant::Guide => Icon::SpellWisp.icon_file(),
             SpellVariant::Heal => Icon::SpellHeal.icon_file(),
             SpellVariant::IceSpike => todo!(),
@@ -198,13 +199,13 @@ impl HasIcon for SpellData {
             SpellVariant::Reflect => Icon::SpellReflect.icon_file(),
             SpellVariant::Rout => todo!(),
             SpellVariant::Rune => Icon::SpellRune.icon_file(),
-            SpellVariant::Shock => todo!(),
+            SpellVariant::Shock => Icon::SpellShockStrong.icon_file(),
             SpellVariant::SoulTrap => Icon::SpellSoultrap.icon_file(),
-            SpellVariant::Sparks => todo!(),
+            SpellVariant::Sparks => Icon::SpellShock.icon_file(),
             SpellVariant::StormWall => todo!(),
             SpellVariant::Summon => Icon::SpellSummon.icon_file(),
             SpellVariant::Teleport => Icon::SpellTeleport.icon_file(),
-            SpellVariant::Thunderbolt => todo!(),
+            SpellVariant::Thunderbolt => Icon::SpellLightningBlast.icon_file(),
             SpellVariant::TurnUndead => todo!(),
             SpellVariant::Ward => Icon::SpellWard.icon_file(),
         }
@@ -258,8 +259,9 @@ pub enum MagicSpellLevel {
     Expert,
 }
 
-#[derive(Clone, Debug, Display, Hash, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Display, Hash, Eq, PartialEq)]
 pub enum MagicDamageType {
+    #[default]
     None,
     Disease,
     Fire,
