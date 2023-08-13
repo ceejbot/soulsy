@@ -69,7 +69,7 @@ impl InvColor {
             InvColor::OCF_InvColorCopper => Color::rgb(184, 115, 51),
             InvColor::OCF_InvColorDaedric => Color::rgb(171, 35, 0),
             InvColor::OCF_InvColorDwarven => Color::rgb(255, 175, 0),
-            InvColor::OCF_InvColorEldritch => Color::default(), // TODO
+            InvColor::OCF_InvColorEldritch => Color::rgb(230, 230, 250),
             InvColor::OCF_InvColorFire => Color::rgb(255, 76, 0), // orange
             InvColor::OCF_InvColorFrost => Color::rgb(0, 237, 255),
             InvColor::OCF_InvColorGold => Color::rgb(218, 165, 32),

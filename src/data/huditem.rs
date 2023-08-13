@@ -1,8 +1,6 @@
 use std::ffi::CString;
 use std::fmt::Display;
 
-use bincode::{Decode, Encode};
-use serde::{Deserialize, Serialize};
 
 use super::base::BaseType;
 use super::{HasIcon, IsHudItem};
@@ -10,12 +8,10 @@ use crate::plugin::{Color, ItemCategory};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.
-#[derive(Encode, Decode, Hash, Deserialize, Serialize, Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Hash, Debug, Clone, Default, PartialEq, Eq)]
 pub struct HudItem {
-    #[serde(skip)]
     /// Player-visible name as its underlying bytes.
     name_bytes: Vec<u8>,
-    #[serde(skip)]
     /// a bit saying if we had to lose data to encode the name
     name_is_utf8: bool,
     /// Name as utf8
@@ -26,7 +22,6 @@ pub struct HudItem {
     kind: BaseType,
     /// Cached count from inventory data. Relies on hooks to be updated.
     count: u32,
-    #[serde(skip)]
     icon_file: Option<String>, // runtime cache
 }
 
@@ -41,9 +36,8 @@ impl HudItem {
     ) -> Self {
         let (name_is_utf8, name) = name_from_bytes(&name_bytes);
 
-        log::info!("calling BaseType::classify() with keywords={keywords:?};");
+        log::debug!("calling BaseType::classify() with keywords={keywords:?};");
         let kind: BaseType = BaseType::classify(category, keywords, twohanded);
-        log::info!("got back kind={kind}");
         let icon_file = kind.icon_file();
         Self {
             name_bytes,

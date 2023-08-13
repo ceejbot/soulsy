@@ -3,14 +3,11 @@
 use std::fmt::Display;
 
 use cxx::CxxVector;
-use serde::{Deserialize, Serialize};
 
 use super::control::MenuEventResponse;
 use super::keys::CycleSlot;
 use super::user_settings;
 use crate::data::{BaseType, HudItem, IsHudItem};
-#[cfg(target_os = "windows")]
-use crate::plugin::playerName;
 use crate::plugin::{
     hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
     startAlphaTransition,
@@ -19,15 +16,13 @@ use crate::plugin::{
 /// Manage the player's configured item cycles. Track changes, persist data in
 /// files, and advance the cycle when the player presses a cycle button. This
 /// struct now holds all data we need to persist across game starts.
-#[derive(Deserialize, Serialize, Debug, Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct CycleData {
     left: Vec<HudItem>,
     right: Vec<HudItem>,
     power: Vec<HudItem>,
     utility: Vec<HudItem>,
-    #[serde(default)]
     hud_visible: bool,
-    #[serde(default)]
     pub loaded: bool,
 }
 
@@ -300,14 +295,14 @@ impl CycleData {
         orig_len != cycle.len()
     }
 
-    pub fn filter_kind(&mut self, which: &CycleSlot, unwanted: BaseType) {
+    pub fn filter_kind(&mut self, which: &CycleSlot, unwanted: &BaseType) {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
             CycleSlot::Right => &mut self.right,
             CycleSlot::Utility => &mut self.utility,
         };
-        cycle.retain(|xs| !matches!(xs.kind(), unwanted));
+        cycle.retain(|xs| xs.kind() != unwanted);
     }
 
     pub fn set_hud_visible(&mut self, visible: bool) {

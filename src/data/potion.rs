@@ -1,16 +1,15 @@
 #![allow(non_snake_case, non_camel_case_types)]
 
-use bincode::{Decode, Encode};
-use serde::{Deserialize, Serialize};
 use strum::Display;
 
 use super::game_enums::ActorValue;
 use super::spell::MagicDamageType;
 use super::{HasIcon, InvColor};
 use crate::plugin::Color;
+use super::icons::Icon;
 
 #[derive(
-    Decode, Encode, Clone, Debug, Default, Deserialize, Display, Hash, Eq, PartialEq, Serialize,
+    Clone, Debug, Default, Display, Hash, Eq, PartialEq,
 )]
 #[strum(serialize_all = "snake_case")]
 pub enum PotionType {
@@ -73,25 +72,25 @@ impl HasIcon for PotionType {
 
     fn icon_file(&self) -> String {
         match self {
-            PotionType::Poison => "potion_poison_default.svg".to_string(),
+            PotionType::Poison => Icon::PotionPoison.icon_file(),
             PotionType::Resist(t) => match t {
-                MagicDamageType::Disease => "potion_resist.svg".to_string(),
-                MagicDamageType::Fire => "potion_resist_fire.svg".to_string(),
-                MagicDamageType::Frost => "potion_resist_frost.svg".to_string(),
-                MagicDamageType::Magic => "potion_resist_magic.svg".to_string(),
-                MagicDamageType::Poison => "potion_resist.svg".to_string(),
-                MagicDamageType::Shock => "potion_resist_shock.svg".to_string(),
-                MagicDamageType::Sun => "potion_resist_fire.svg".to_string(),
-                MagicDamageType::None => "potion_resist.svg".to_string(),
+                MagicDamageType::Disease => Icon::PotionResist.icon_file(),
+                MagicDamageType::Fire => Icon::PotionResistFire.icon_file(),
+                MagicDamageType::Frost => Icon::PotionResistFrost.icon_file(),
+                MagicDamageType::Magic => Icon::PotionResist.icon_file(),
+                MagicDamageType::Poison => Icon::PotionResist.icon_file(),
+                MagicDamageType::Shock => Icon::PotionResistShock.icon_file(),
+                MagicDamageType::Sun => Icon::PotionResistFire.icon_file(),
+                MagicDamageType::None => Icon::PotionResist.icon_file(),
             },
-            PotionType::Health => "potion_health.svg".to_string(),
-            PotionType::Magicka => "potion_magicka.svg".to_string(),
-            PotionType::Stamina => "potion_stamina.svg".to_string(),
-            _ => format!("potion_default.svg"),
+            PotionType::Health => Icon::PotionHealth.icon_file(),
+            PotionType::Magicka => Icon::PotionMagicka.icon_file(),
+            PotionType::Stamina => Icon::PotionStamina.icon_file(),
+            _ => Icon::PotionDefault.icon_file(),
         }
     }
 
     fn icon_fallback(&self) -> String {
-        "potion_default.svg".to_string()
+        Icon::PotionDefault.icon_file()
     }
 }

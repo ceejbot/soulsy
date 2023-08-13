@@ -448,11 +448,12 @@ namespace ui
 			// now draw the icon over the background...
 			if (slot_layout.icon_color.a > 0)
 			{
+				const auto icon_color = entry->color();
 				auto icon_file                      = std::string(entry->icon_file());
 				const auto [texture, width, height] = icon_struct[icon_file];
 				const auto size =
 					ImVec2(slot_layout.icon_size.x * global_scale, slot_layout.icon_size.y * global_scale);
-				drawElement(texture, slot_center, size, 0.f, slot_layout.icon_color);
+				drawElement(texture, slot_center, size, 0.f, icon_color);
 			}
 
 			// Now decide if we should draw the text showing the item's name.

@@ -176,9 +176,11 @@ build-layouts:
 
     # build the icon remix
     dest="releases/SoulsyHUD_icon_remix/SKSE/plugins"
-    mkdir -p ${dest}/resources
+    mkdir -p ${dest}/resources/fonts
     cp -p layouts/ceej-remix/SoulsyHUD_ceejremix.toml "$dest/SoulsyHUD_Layout.toml"
     cp -rp layouts/ceej-remix/icons "$dest/resources/"
+    font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
+    cp -p "layouts/$font" "$dest/resources/fonts/"
 
     layouts="SoulsyHUD_icon_remix SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD-hexagons-1 SoulsyHUD-hexagons-2"
     cd releases

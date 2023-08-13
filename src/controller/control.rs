@@ -48,7 +48,7 @@ impl Controller {
 
     pub fn validate_cycles(&mut self) {
         self.cycles.validate();
-        // log::info!("after validation, cycles are: {}", self.cycles);
+        log::info!("after validation, cycles are: {}", self.cycles);
         self.update_hud();
     }
 
@@ -65,27 +65,27 @@ impl Controller {
             _ => {
                 // remove any item with h2h type from cycles
                 self.cycles
-                    .filter_kind(&CycleSlot::Left, BaseType::HandToHand);
+                    .filter_kind(&CycleSlot::Left, &BaseType::HandToHand);
                 self.cycles
-                    .filter_kind(&CycleSlot::Right, BaseType::HandToHand);
+                    .filter_kind(&CycleSlot::Right, &BaseType::HandToHand);
             }
         }
 
         if settings.group_potions() {
             self.cycles
-                .filter_kind(&CycleSlot::Utility, BaseType::PotionProxy(Proxy::Stamina));
+                .filter_kind(&CycleSlot::Utility, &BaseType::Potion(PotionType::Stamina));
             let count = staminaPotionCount();
             let proxy = make_stamina_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);
 
             self.cycles
-                .filter_kind(&CycleSlot::Utility, BaseType::PotionProxy(Proxy::Health));
+                .filter_kind(&CycleSlot::Utility, &BaseType::Potion(PotionType::Health));
             let count = healthPotionCount();
             let proxy = make_health_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);
 
             self.cycles
-                .filter_kind(&CycleSlot::Utility, BaseType::PotionProxy(Proxy::Magicka));
+                .filter_kind(&CycleSlot::Utility, &BaseType::Potion(PotionType::Magicka));
             let count = magickaPotionCount();
             let proxy = make_magicka_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);

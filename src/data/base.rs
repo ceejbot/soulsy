@@ -1,7 +1,5 @@
 //! Base item kinds, from the starting icon set.
 
-use bincode::{Decode, Encode};
-use serde::{Deserialize, Serialize};
 use strum::Display;
 
 use super::ammo::AmmoType;
@@ -12,9 +10,10 @@ use super::spell::SpellData;
 use super::weapon::{WeaponEquipType, WeaponType};
 use super::{HasIcon, HasKeywords, IsHudItem};
 use crate::plugin::{Color, ItemCategory};
+use super::icons::Icon;
 
 #[derive(
-    Decode, Encode, Clone, Debug, Default, Deserialize, Display, Eq, Hash, PartialEq, Serialize,
+   Clone, Debug, Default, Display, Eq, Hash, PartialEq, 
 )]
 pub enum BaseType {
     #[default]
@@ -33,7 +32,7 @@ pub enum BaseType {
     Weapon(WeaponType),
 }
 
-#[derive(Decode, Encode, Clone, Debug, Deserialize, Display, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum Proxy {
     Health,
     Magicka,
@@ -51,18 +50,18 @@ impl HasIcon for Proxy {
 
     fn icon_file(&self) -> String {
         match self {
-            Proxy::Health => "potion_health.svg".to_string(),
-            Proxy::Magicka => "potion_magicka.svg".to_string(),
-            Proxy::Stamina => "potion_stamina.svg".to_string(),
+            Proxy::Health => Icon::PotionHealth.icon_file(),
+            Proxy::Magicka => Icon::PotionMagicka.icon_file(),
+            Proxy::Stamina => Icon::PotionStamina.icon_file(),
         }
     }
 
     fn icon_fallback(&self) -> String {
-        "potion_default.svg".to_string()
+        Icon::PotionDefault.icon_file()
     }
 }
 
-#[derive(Decode, Encode, Clone, Debug, Deserialize, Display, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum FoodType {
     // TODO
     Soup,
@@ -78,11 +77,11 @@ impl HasIcon for FoodType {
     }
 
     fn icon_file(&self) -> String {
-        "food.svg".to_string()
+        Icon::Food.icon_file()
     }
 
     fn icon_fallback(&self) -> String {
-        "food.svg".to_string()
+        Icon::Food.icon_file()
     }
 }
 
@@ -158,17 +157,17 @@ impl HasIcon for BaseType {
 
     fn icon_file(&self) -> String {
         match self {
-            BaseType::Empty => "icon_default.svg".to_string(),
-            BaseType::Ammo(_) => "arrow.svg".to_string(),
+            BaseType::Empty => Icon::IconDefault.icon_file(),
+            BaseType::Ammo(_) => Icon::Arrow.icon_file(),
             BaseType::Armor(t) => t.icon_file(),
-            BaseType::Food(_) => "food.svg".to_string(), // TODO
-            BaseType::HandToHand => "hand_to_hand.svg".to_string(),
-            BaseType::Light => "torch.svg".to_string(),
+            BaseType::Food(_) => Icon::Food.icon_file(), // TODO
+            BaseType::HandToHand => Icon::HandToHand.icon_file(),
+            BaseType::Light => Icon::Torch.icon_file(),
             BaseType::Potion(t) => t.icon_file(),
             BaseType::PotionProxy(t) => t.icon_file(),
-            BaseType::Power => "power.svg".to_string(),
-            BaseType::Scroll(_) => "scroll.svg".to_string(),
-            BaseType::Shout => "shout.svg".to_string(),
+            BaseType::Power => Icon::Power.icon_file(),
+            BaseType::Scroll(_) => Icon::Scroll.icon_file(),
+            BaseType::Shout => Icon::Shout.icon_file(),
             BaseType::Spell(t) => t.icon_file(),
             BaseType::Weapon(t) => t.icon_file(),
         }

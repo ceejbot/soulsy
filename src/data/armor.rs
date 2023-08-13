@@ -8,6 +8,7 @@ use strum::{Display, EnumString};
 use super::color::InvColor;
 use super::{HasIcon, HasKeywords};
 use crate::plugin::Color;
+use super::icons::Icon;
 
 #[derive(Decode, Encode, Clone, Debug, Display, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum ArmorType {
@@ -127,62 +128,62 @@ impl HasIcon for ArmorType {
     fn icon_file(&self) -> String {
         match self {
             ArmorType::Head(weight, _c) => match weight {
-                ArmorWeight::Clothing => "armor_clothing_head.svg".to_string(),
-                ArmorWeight::Heavy => "armor_heavy_head.svg".to_string(),
-                ArmorWeight::Light => "armor_light_head.svg".to_string(),
+                ArmorWeight::Clothing => Icon::ArmorClothingHead.icon_file(),
+                ArmorWeight::Heavy => Icon::ArmorHeavyHead.icon_file(),
+                ArmorWeight::Light => Icon::ArmorLightHead.icon_file(),
             },
             ArmorType::Body(weight, _c) => match weight {
-                ArmorWeight::Clothing => "armor_clothing.svg".to_string(),
-                ArmorWeight::Heavy => "armor_heavy.svg".to_string(),
-                ArmorWeight::Light => "armor_light.svg".to_string(),
+                ArmorWeight::Clothing => Icon::ArmorClothing.icon_file(),
+                ArmorWeight::Heavy => Icon::ArmorHeavy.icon_file(),
+                ArmorWeight::Light => Icon::ArmorLight.icon_file(),
             },
             ArmorType::Hands(weight, _c) => match weight {
-                ArmorWeight::Clothing => "armor_clothing_hands.svg".to_string(),
-                ArmorWeight::Heavy => "armor_heavy_hands.svg".to_string(),
-                ArmorWeight::Light => "armor_light_hands.svg".to_string(),
+                ArmorWeight::Clothing => Icon::ArmorClothingHands.icon_file(),
+                ArmorWeight::Heavy => Icon::ArmorHeavyHands.icon_file(),
+                ArmorWeight::Light => Icon::ArmorLightHands.icon_file(),
             },
             ArmorType::Feet(weight, _c) => match weight {
-                ArmorWeight::Clothing => "armor_clothing_feet.svg".to_string(),
-                ArmorWeight::Heavy => "armor_heavy_feet.svg".to_string(),
-                ArmorWeight::Light => "armor_light_feet.svg".to_string(),
+                ArmorWeight::Clothing => Icon::ArmorClothingFeet.icon_file(),
+                ArmorWeight::Heavy => Icon::ArmorHeavyFeet.icon_file(),
+                ArmorWeight::Light => Icon::ArmorLightFeet.icon_file(),
             },
             ArmorType::Shield(weight, _c) => match weight {
-                ArmorWeight::Clothing => "armor_light_shield.svg".to_string(),
-                ArmorWeight::Heavy => "armor_heavy_shield.svg".to_string(),
-                ArmorWeight::Light => "armor_light_shield.svg".to_string(),
+                ArmorWeight::Clothing => Icon::ArmorShieldLight.icon_file(),
+                ArmorWeight::Heavy => Icon::ArmorShieldHeavy.icon_file(),
+                ArmorWeight::Light => Icon::ArmorShieldLight.icon_file(),
             },
-            ArmorType::Amulet(_) => "armor_amulet.svg".to_string(),
-            ArmorType::Earring(_) => "armor_earring.svg".to_string(),
-            ArmorType::Circlet(_) => "armor_circlet.svg".to_string(),
-            ArmorType::Cloak(_) => "armor_cloak.svg".to_string(),
-            ArmorType::Mask(_) => "armor_mask.svg".to_string(),
-            ArmorType::Ring(_) => "armor_ring.svg".to_string(),
-            ArmorType::Robes(_) => "armor_robes.svg".to_string(),
-            ArmorType::Backpack => "armor_backpack.svg".to_string(),
-            ArmorType::Belt => "armor_belt.svg".to_string(),
-            ArmorType::Lantern => "lantern.svg".to_string(),
-            ArmorType::Default => "armor_clothing.svg".to_string(),
+            ArmorType::Amulet(_) => Icon::ArmorAmulet.icon_file(),
+            ArmorType::Earring(_) => Icon::ArmorEarring.icon_file(),
+            ArmorType::Circlet(_) => Icon::ArmorCirclet.icon_file(),
+            ArmorType::Cloak(_) => Icon::ArmorCloak.icon_file(),
+            ArmorType::Mask(_) => Icon::ArmorMask.icon_file(),
+            ArmorType::Ring(_) => Icon::ArmorRing.icon_file(),
+            ArmorType::Robes(_) => Icon::ArmorRobes.icon_file(),
+            ArmorType::Backpack => Icon::ArmorBackpack.icon_file(),
+            ArmorType::Belt => Icon::ArmorBelt.icon_file(),
+            ArmorType::Lantern => Icon::Lantern.icon_file(),
+            ArmorType::Default => Icon::ArmorClothing.icon_file(),
         }
     }
 
     fn icon_fallback(&self) -> String {
         match self {
-            ArmorType::Head(_, _) => "armor_heavy.svg".to_string(),
-            ArmorType::Body(_, _) => "armor_heavy.svg".to_string(),
-            ArmorType::Hands(_, _) => "armor_heavy.svg".to_string(),
-            ArmorType::Feet(_, _) => "armor_heavy.svg".to_string(),
-            ArmorType::Shield(_, _) => "armor_shield.svg".to_string(),
-            ArmorType::Amulet(_) => "armor_clothing.svg".to_string(),
-            ArmorType::Circlet(_) => "armor_clothing.svg".to_string(),
-            ArmorType::Cloak(_) => "armor_clothing.svg".to_string(),
-            ArmorType::Earring(_) => "armor_clothing.svg".to_string(),
-            ArmorType::Mask(_) => "armor_mask.svg".to_string(),
-            ArmorType::Ring(_) => "armor_clothing.svg".to_string(),
-            ArmorType::Robes(_) => "armor_clothing.svg".to_string(),
-            ArmorType::Backpack => "armor_clothing.svg".to_string(),
-            ArmorType::Belt => "armor_clothing.svg".to_string(),
-            ArmorType::Lantern => "lantern.svg".to_string(),
-            ArmorType::Default => "armor_clothing.svg".to_string(),
+            ArmorType::Head(_, _) => Icon::ArmorHeavy.icon_file(),
+            ArmorType::Body(_, _) => Icon::ArmorHeavy.icon_file(),
+            ArmorType::Hands(_, _) => Icon::ArmorHeavy.icon_file(),
+            ArmorType::Feet(_, _) => Icon::ArmorHeavy.icon_file(),
+            ArmorType::Shield(_, _) => Icon::ArmorShieldHeavy.icon_file(),
+            ArmorType::Amulet(_) => Icon::ArmorClothing.icon_file(),
+            ArmorType::Circlet(_) => Icon::ArmorClothing.icon_file(),
+            ArmorType::Cloak(_) => Icon::ArmorClothing.icon_file(),
+            ArmorType::Earring(_) => Icon::ArmorClothing.icon_file(),
+            ArmorType::Mask(_) => Icon::ArmorClothing.icon_file(),
+            ArmorType::Ring(_) => Icon::ArmorClothing.icon_file(),
+            ArmorType::Robes(_) => Icon::ArmorClothing.icon_file(),
+            ArmorType::Backpack => Icon::ArmorClothing.icon_file(),
+            ArmorType::Belt => Icon::ArmorClothing.icon_file(),
+            ArmorType::Lantern => Icon::Torch.icon_file(),
+            ArmorType::Default => Icon::ArmorClothing.icon_file(),
         }
     }
 }

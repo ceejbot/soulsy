@@ -10,7 +10,7 @@ bg_color = { r = 0, g = 0, b = 0, a = 0 }
 # Enable to turn on debug logging. Requires a game restart.
 debug = true
 # Typeface to use. Must be truetype or otf. Must be in resources/fonts.
-font = "Inter-Medium.ttf"
+font = "Inter-Light.ttf"
 # Point size to use for all name text. Scales with the global_scale.
 font_size = 20.0
 # Enable any of these you need text rendering for. The Inter typeface
@@ -32,7 +32,7 @@ name = "Shouts/Powers"
 align_text = "left"
 # Used to help the hud renderer figure out which slot this is. Complicated
 # handwave about serializing TOML.
-element = { repr = 1 }
+element = { repr = 0 }
 # The offset of the center of this slot relative to the center of the HUD.
 # This gets scaled when the global scaling factor is applied.
 offset = { x = 325.0, y = 0.0 }

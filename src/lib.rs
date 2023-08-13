@@ -253,6 +253,7 @@ pub mod plugin {
         /// Which icon to use for diplaying this item.
         fn icon_file(self: &HudItem) -> String;
         fn icon_fallback(self: &HudItem) -> String;
+        fn color(self: &HudItem) -> Color;
         /// Get the item name as a possibly-lossy utf8 string.
         fn name(self: &HudItem) -> String;
         /// Check if the item name is representable in utf8.

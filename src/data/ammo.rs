@@ -6,6 +6,7 @@ use strum::Display;
 
 use super::color::InvColor;
 use super::{HasIcon, HasKeywords};
+use super::icons::Icon;
 
 #[derive(Decode, Encode, Clone, Debug, Deserialize, Display, Eq, Hash, PartialEq, Serialize)]
 pub enum AmmoType {
@@ -71,11 +72,11 @@ impl HasIcon for AmmoType {
     }
 
     fn icon_file(&self) -> String {
-        format!("{self}.svg")
+        Icon::Arrow.icon_file()
     }
 
     fn icon_fallback(&self) -> String {
-        format!("arrow.svg")
+        Icon::Arrow.icon_file()
     }
 }
 

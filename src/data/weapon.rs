@@ -10,6 +10,7 @@ use strum::EnumString;
 use super::color::InvColor;
 use super::{HasIcon, HasKeywords};
 use crate::plugin::Color;
+use super::icons::Icon;
 
 #[derive(Decode, Encode, Clone, Debug, Deserialize, EnumString, Eq, Hash, PartialEq, Serialize)]
 pub enum WeaponEquipType {
@@ -262,7 +263,32 @@ impl HasIcon for WeaponType {
     }
 
     fn icon_file(&self) -> String {
-        format!("weapon_{self}.svg")
+        match self {
+            WeaponType::AxeOneHanded(_, _) => Icon::WeaponAxeOneHanded.icon_file(),
+            WeaponType::AxeTwoHanded(_, _) => Icon::WeaponAxeTwoHanded.icon_file(),
+            WeaponType::BowShort(_, _) => Icon::WeaponBowShort.icon_file(),
+            WeaponType::Bow(_, _) => Icon::WeaponBow.icon_file(),
+            WeaponType::Claw(_, _) => Icon::WeaponClaw.icon_file(),
+            WeaponType::Crossbow(_, _) => Icon::WeaponCrossbow.icon_file(),
+            WeaponType::Dagger(_, _) => Icon::WeaponDagger.icon_file(),
+            WeaponType::Flail(_, _) => Icon::WeaponFlail.icon_file(),
+            WeaponType::Grenade(_, _) => Icon::WeaponGrenade.icon_file(),
+            WeaponType::Gun(_, _) => Icon::WeaponGun.icon_file(),
+            WeaponType::Halberd(_, _) => Icon::WeaponHalberd.icon_file(),
+            WeaponType::Hammer(_, _) => Icon::WeaponHammer.icon_file(),
+            WeaponType::HandToHand(_, _) => Icon::HandToHand.icon_file(),
+            WeaponType::Katana(_, _) => Icon::WeaponKatana.icon_file(),
+            WeaponType::Lance(_, _) => Icon::WeaponLance.icon_file(),
+            WeaponType::Mace(_, _) => Icon::WeaponMace.icon_file(),
+            WeaponType::Quarterstaff(_, _) => Icon::WeaponQuarterstaff.icon_file(),
+            WeaponType::Rapier(_, _) => Icon::WeaponRapier.icon_file(),
+            WeaponType::Scythe(_, _) => Icon::WeaponScythe.icon_file(),
+            WeaponType::Staff(_, _) => Icon::WeaponStaff.icon_file(),
+            WeaponType::SwordOneHanded(_, _) => Icon::WeaponSwordOneHanded.icon_file(),
+            WeaponType::SwordTwoHanded(_, _) => Icon::WeaponSwordTwoHanded.icon_file(),
+            WeaponType::WeaponDefault(_, _) => Icon::WeaponSwordOneHanded.icon_file(),
+            WeaponType::Whip(_, _) => Icon::WeaponWhip.icon_file(),
+        }
     }
 
     fn icon_fallback(&self) -> String {
