@@ -25,10 +25,11 @@ namespace equippable
 				return true;
 			}
 		}
-		else if (item_form->Is(RE::FormType::Scroll)) { 
+		else if (item_form->Is(RE::FormType::Scroll))
+		{
 			auto* scroll = item_form->As<RE::ScrollItem>();
 			return scroll->IsTwoHanded();
-		 }
+		}
 
 
 		if (item_form->Is(RE::FormType::Scroll))
@@ -204,6 +205,9 @@ namespace equippable
 			{
 				// TODO soup, water, meat, veggies
 				// categorize drinks vs food
+				logger::info("making HudItem for food: '{}'"sv, item_form->GetName());
+				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Food, std::move(chonker), form_string);
+				return item;
 			}
 			else
 			{
