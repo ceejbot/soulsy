@@ -150,13 +150,13 @@ impl CycleData {
     pub fn toggle(&mut self, which: &CycleSlot, item: HudItem) -> MenuEventResponse {
         let cycle = match which {
             CycleSlot::Power => {
-                if !matches!(item.kind(), BaseType::Power) {
+                if !matches!(item.kind(), BaseType::Power | BaseType::Shout(_)) {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.power
             }
             CycleSlot::Left => {
-                if item.two_handed() {
+                if !item.kind().left_hand_ok() {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.left

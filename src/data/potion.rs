@@ -44,7 +44,10 @@ impl PotionType {
             ActorValue::ResistMagic => PotionType::Resist(MagicDamageType::Magic),
             ActorValue::ResistDisease => PotionType::Resist(MagicDamageType::Disease),
             ActorValue::PoisonResist => PotionType::Resist(MagicDamageType::Poison),
-            _ => PotionType::Default,
+            _ => {
+                log::debug!("default potion type; effect={effect};");
+                PotionType::Default
+            }
         }
     }
 }

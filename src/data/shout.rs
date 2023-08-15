@@ -34,15 +34,17 @@ pub enum ShoutVariant {
 
 impl ShoutVariant {
     pub fn from_spell_data(data: SpellData) -> Self {
-        // poss match on archetype?
-        // mostly about selecting a color?
-        match data.effect {
-            ActorValue::DragonRend => Self::DragonRend,
-            _ => match data.archetype {
-                SpellArchetype::SlowTime => Self::Slowtime,
-                _ => Self::UnrelentingForce,
-            },
+        if matches!(data.archetype, SpellArchetype::SlowTime) {
+            Self::Slowtime
+        } else if matches!(data.archetype, SpellArchetype::PeakValueModifier) && matches!(data.effect, ActorValue::Health) {
+            Self::MarkedForDeath
+        } else if matches!(data.effect, ActorValue::DragonRend) {
+            Self::DragonRend
+        } else {
+            log::debug!("default shout; spelldata={data:?}");
+            Self::UnrelentingForce
         }
+
     }
 }
 

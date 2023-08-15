@@ -124,26 +124,27 @@ namespace equippable
 		if (item_form->Is(RE::FormType::Shout))
 		{
 			logger::info("making HudItem for shout: '{}'"sv, item_form->GetName());
-			auto* shout = item_form->As<RE::Shout>();
+			auto* shout = item_form->As<RE::TESShout>();
+			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+			auto* spell = shout->variations[RE::TESShout::VariationIDs::kThree].spell;
+			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
+			if (!effect) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
 
-			const auto* effect = shout->GetCostliestEffectItem()->baseEffect;
-			if (effect)
-			{
-				auto archetype      = effect->data.archetype;
-				auto primary_effect = effect->data.primaryAV;
-				auto resist         = effect->data.resistVariable;
+			auto archetype      = effect->data.archetype;
+			auto primary_effect = effect->data.primaryAV;
+			auto resist         = effect->data.resistVariable;
 
-				rust::Box<SpellData> data =
-					fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
-						static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
-						false,
-						static_cast<std::underlying_type_t<RE::ActorValue>>(RE::ActorValue::kNone),
-						-1,
-						static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype));
-				rust::Box<HudItem> item =
-					magic_from_spelldata(ItemCategory::Shout, std::move(data), std::move(chonker), form_string, 1);
-				return item;
-			}
+			rust::Box<SpellData> data =
+				fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
+					static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
+					false,
+					static_cast<std::underlying_type_t<RE::ActorValue>>(RE::ActorValue::kNone),
+					1,
+					static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype));
+			rust::Box<HudItem> item =
+				magic_from_spelldata(ItemCategory::Shout, std::move(data), std::move(chonker), form_string, 1);
+			return item;
 		}
 
 		if (item_form->Is(RE::FormType::Spell))

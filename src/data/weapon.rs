@@ -51,7 +51,6 @@ pub enum WeaponType {
 
 impl HasKeywords for WeaponType {
     fn classify(keywords: Vec<String>, twohanded: bool) -> Self {
-        log::info!("weapon keywords: {keywords:?}");
         let color_keywords: Vec<InvColor> = keywords
             .iter()
             .filter_map(|xs| InvColor::try_from(xs.as_str()).map_or(None, |color| Some(color)))
@@ -189,6 +188,7 @@ impl HasKeywords for WeaponType {
             if let Some(kind) = maybe_kind {
                 kind
             } else {
+                log::info!("default weapon type; keywords: {keywords:?}");
                 WeaponType::default()
             }
         }

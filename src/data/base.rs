@@ -100,8 +100,8 @@ impl BaseType {
         BaseType::Power
     }
 
-    pub fn create_shout(_spell: SpellData) -> Self {
-        let variant = ShoutVariant::from_spell_data(_spell);
+    pub fn create_shout(spell: SpellData) -> Self {
+        let variant = ShoutVariant::from_spell_data(spell);
         BaseType::Shout(variant)
     }
 

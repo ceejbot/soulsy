@@ -39,8 +39,6 @@ pub enum ArmorWeight {
 
 impl HasKeywords for ArmorType {
     fn classify(keywords: Vec<String>, _ignored: bool) -> Self {
-        log::info!("weapon keywords: {keywords:?}");
-
         let color_keywords: Vec<InvColor> = keywords
             .iter()
             .filter_map(|xs| InvColor::try_from(xs.as_str()).map_or(None, |color| Some(color)))
@@ -113,6 +111,7 @@ impl HasKeywords for ArmorType {
         }) {
             k
         } else {
+            log::info!("default armor type; keywords: {keywords:?}");
             ArmorType::Default
         };
 

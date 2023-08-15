@@ -16,7 +16,7 @@ pub mod weapon;
 
 use cxx::{CxxString, CxxVector};
 
-use self::ammo::AmmoType;
+use self::{ammo::AmmoType, shout::ShoutVariant};
 pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
@@ -94,6 +94,7 @@ pub fn simple_from_formdata(
         ItemCategory::Light => BaseType::Light,
         ItemCategory::Power => BaseType::Power,
         ItemCategory::Food => BaseType::Food(base::FoodType::Fruit),
+        ItemCategory::Shout => BaseType::Shout(ShoutVariant::default()),
         _ => BaseType::Empty,
     };
     let result = HudItem::preclassified(name_bytes, form_string, 1, classification);

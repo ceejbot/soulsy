@@ -15,7 +15,7 @@ help:
     cargo install tomato-toml
     cargo install rust-script
 
-# Run initial cmake step.
+# Run initial cmake step. Cannot be run in WSL.
 setup:
     cmake --preset vs2022-windows
 
