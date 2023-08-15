@@ -10,6 +10,7 @@ pub mod game_enums;
 pub mod huditem;
 pub mod icons;
 pub mod potion;
+pub mod shout;
 pub mod spell;
 pub mod weapon;
 
@@ -75,6 +76,7 @@ pub fn magic_from_spelldata(
     let kind = match which {
         ItemCategory::Scroll => BaseType::create_scroll(data),
         ItemCategory::Spell => BaseType::create_spell(data),
+        ItemCategory::Shout => BaseType::create_shout(data),
         _ => BaseType::create_spell(data),
     };
     let result = HudItem::preclassified(name_bytes, form_string, count, kind);
@@ -91,7 +93,6 @@ pub fn simple_from_formdata(
         ItemCategory::HandToHand => BaseType::HandToHand,
         ItemCategory::Light => BaseType::Light,
         ItemCategory::Power => BaseType::Power,
-        ItemCategory::Shout => BaseType::Shout,
         ItemCategory::Food => BaseType::Food(base::FoodType::Fruit),
         _ => BaseType::Empty,
     };

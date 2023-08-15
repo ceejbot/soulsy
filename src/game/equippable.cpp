@@ -74,13 +74,6 @@ namespace equippable
 		std::string form_string      = helpers::makeFormSpecString(item_form);
 		bool two_handed              = requiresTwoHands(item_form);
 
-		if (item_form->Is(RE::FormType::Shout))
-		{
-			logger::info("making HudItem for shout: '{}'"sv, item_form->GetName());
-			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
-			return item;
-		}
-
 		if (item_form->Is(RE::FormType::Light))
 		{
 			logger::info("making HudItem for torch: '{}'"sv, item_form->GetName());
@@ -126,6 +119,31 @@ namespace equippable
 				hud_item_from_keywords(ItemCategory::Armor, *keywords, std::move(chonker), form_string, count, false);
 
 			return item;
+		}
+
+		if (item_form->Is(RE::FormType::Shout))
+		{
+			logger::info("making HudItem for shout: '{}'"sv, item_form->GetName());
+			auto* shout = item_form->As<RE::Shout>();
+
+			const auto* effect = shout->GetCostliestEffectItem()->baseEffect;
+			if (effect)
+			{
+				auto archetype      = effect->data.archetype;
+				auto primary_effect = effect->data.primaryAV;
+				auto resist         = effect->data.resistVariable;
+
+				rust::Box<SpellData> data =
+					fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
+						static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
+						false,
+						static_cast<std::underlying_type_t<RE::ActorValue>>(RE::ActorValue::kNone),
+						-1,
+						static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype));
+				rust::Box<HudItem> item =
+					magic_from_spelldata(ItemCategory::Shout, std::move(data), std::move(chonker), form_string, 1);
+				return item;
+			}
 		}
 
 		if (item_form->Is(RE::FormType::Spell))

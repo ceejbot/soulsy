@@ -13,6 +13,19 @@ use crate::plugin::Color;
 // In all cases, we choose the primary actor value from the most expensive effect
 // of a spell or potion.
 
+/*
+To get type of bound weapon:
+look at effect.data-> associated item
+bow vs sword vs axe vs battleaxe
+
+
+archetype spawn hazard
+look at asso item
+
+chain lightning -> chain lightning (resist shock, skill level 50)
+
+*/
+
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellData {
     pub effect: ActorValue,
@@ -45,10 +58,9 @@ impl SpellData {
             ActorValue::ResistMagic => MagicDamageType::Magic,
             ActorValue::ResistDisease => MagicDamageType::Disease,
             ActorValue::PoisonResist => MagicDamageType::Poison,
-            // sun damage is in here somewhere -- is it healing? todo SSEdit
+            // ActorValue::SOMETHING => MagicDamageType::Sun, // TODO SSEdit inspection
             _ => MagicDamageType::None,
         };
-
 
         // well, this will be fun™
         let variant = match archetype {
@@ -56,6 +68,7 @@ impl SpellData {
                 if matches!(effect, ActorValue::Health) && matches!(school, School::Restoration) {
                     Some(SpellVariant::Heal)
                 } else {
+                    log::info!("classifying valuemodifier spell; AV={effect}; resist={resist};");
                     None
                 }
             }
@@ -64,6 +77,7 @@ impl SpellData {
             SpellArchetype::CureParalysis => Some(SpellVariant::Cure),
             // SpellArchetype::Calm => SpellVariant::Calm, //do I have one?
             SpellArchetype::Demoralize => Some(SpellVariant::Demoralize),
+            //SpellArchetype::Etherealize => todo!(),
             // SpellArchetype::Invisibility => todo!(),
             SpellArchetype::Light => Some(SpellVariant::Light),
             // SpellArchetype::NightEye => todo!(),
@@ -74,7 +88,28 @@ impl SpellData {
             SpellArchetype::Reanimate => Some(SpellVariant::Reanimate),
             SpellArchetype::SoulTrap => Some(SpellVariant::SoulTrap),
             SpellArchetype::Guide => Some(SpellVariant::Guide),
-            //SpellArchetype::Etherealize => todo!(),
+            SpellArchetype::Dispel => todo!(),
+            SpellArchetype::Absorb => todo!(),
+            SpellArchetype::DualValueModifier => todo!(),
+            SpellArchetype::Calm => todo!(),
+            SpellArchetype::Frenzy => todo!(),
+            SpellArchetype::Disarm => todo!(),
+            SpellArchetype::CommandSummoned => todo!(),
+            SpellArchetype::Invisibility => todo!(),
+            SpellArchetype::Darkness => todo!(),
+            SpellArchetype::Lock => todo!(),
+            SpellArchetype::Open => todo!(),
+            SpellArchetype::Telekinesis => todo!(),
+            SpellArchetype::TurnUndead => todo!(),
+            SpellArchetype::Cloak => todo!(),
+            SpellArchetype::SlowTime => todo!(),
+            SpellArchetype::Rally => todo!(),
+            SpellArchetype::EnhanceWeapon => todo!(),
+            SpellArchetype::SpawnHazard => todo!(),
+            SpellArchetype::Etherealize => todo!(),
+            SpellArchetype::Banish => todo!(),
+            SpellArchetype::Disguise => todo!(),
+            SpellArchetype::GrabActor => todo!(),
             _ => Some(SpellVariant::Damage(damage.clone())),
         };
 
@@ -136,36 +171,26 @@ impl HasIcon for SpellData {
             SpellVariant::BoundWeapon(w) => match w {
                 BoundType::BattleAxe => Icon::WeaponAxeTwoHanded.icon_file(),
                 BoundType::Bow => Icon::WeaponBow.icon_file(),
-                _ => Icon::WeaponSwordOneHanded.icon_file(),
-            }, // TODO give this variations
+                BoundType::Dagger => Icon::WeaponDagger.icon_file(),
+                BoundType::Greatsword => Icon::WeaponSwordOneHanded.icon_file(),
+                BoundType::Hammer => Icon::WeaponHammer.icon_file(),
+                BoundType::Mace => Icon::WeaponMace.icon_file(),
+                BoundType::Shield => Icon::ArmorShieldHeavy.icon_file(),
+                BoundType::Sword => Icon::WeaponSwordOneHanded.icon_file(),
+                BoundType::WarAxe => Icon::WeaponAxeOneHanded.icon_file(),
+                BoundType::Unknown => Icon::WeaponSwordOneHanded.icon_file(),
+            },
             SpellVariant::Burden => self.icon_fallback(),
             SpellVariant::Cure => Icon::SpellCure.icon_file(),
             SpellVariant::Damage(t) => match t {
+                // These spells have ONLY damage type as their distinguisher.
                 MagicDamageType::None => self.icon_fallback(),
                 MagicDamageType::Disease => self.icon_fallback(),
-                MagicDamageType::Fire => match &self.level {
-                    MagicSpellLevel::Novice => Icon::SpellFire.icon_file(),
-                    MagicSpellLevel::Apprentice => Icon::SpellFire.icon_file(),
-                    MagicSpellLevel::Adept => Icon::SpellFire.icon_file(),
-                    MagicSpellLevel::Master => Icon::SpellFire.icon_file(),
-                    MagicSpellLevel::Expert => Icon::SpellFire.icon_file(),
-                },
-                MagicDamageType::Frost => match &self.level {
-                    MagicSpellLevel::Novice => Icon::SpellFrost.icon_file(),
-                    MagicSpellLevel::Apprentice => Icon::SpellFrost.icon_file(),
-                    MagicSpellLevel::Adept => Icon::SpellFrost.icon_file(),
-                    MagicSpellLevel::Master => Icon::SpellFrost.icon_file(),
-                    MagicSpellLevel::Expert => Icon::SpellFrost.icon_file(),
-                },
+                MagicDamageType::Fire => Icon::SpellFire.icon_file(),
+                MagicDamageType::Frost => Icon::SpellFrost.icon_file(),
                 MagicDamageType::Magic => Icon::IconDefault.icon_file(),
                 MagicDamageType::Poison => Icon::SpellPoison.icon_file(),
-                MagicDamageType::Shock => match &self.level {
-                    MagicSpellLevel::Novice => Icon::SpellShock.icon_file(),
-                    MagicSpellLevel::Apprentice => Icon::SpellShockStrong.icon_file(),
-                    MagicSpellLevel::Adept => Icon::SpellChainLightning.icon_file(),
-                    MagicSpellLevel::Master => Icon::SpellLightning.icon_file(),
-                    MagicSpellLevel::Expert => Icon::SpellLightningBlast.icon_file(),
-                },
+                MagicDamageType::Shock => Icon::SpellShock.icon_file(),
                 MagicDamageType::Sun => Icon::SpellHoly.icon_file(),
             },
             SpellVariant::Banish => todo!(),

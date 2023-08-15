@@ -5,16 +5,15 @@ use strum::Display;
 use super::ammo::AmmoType;
 use super::armor::ArmorType;
 use super::color::InvColor;
+use super::icons::Icon;
 use super::potion::PotionType;
+use super::shout::ShoutVariant;
 use super::spell::SpellData;
 use super::weapon::{WeaponEquipType, WeaponType};
 use super::{HasIcon, HasKeywords, IsHudItem};
 use crate::plugin::{Color, ItemCategory};
-use super::icons::Icon;
 
-#[derive(
-   Clone, Debug, Default, Display, Eq, Hash, PartialEq, 
-)]
+#[derive(Clone, Debug, Default, Display, Eq, Hash, PartialEq)]
 pub enum BaseType {
     #[default]
     Empty,
@@ -27,7 +26,7 @@ pub enum BaseType {
     PotionProxy(Proxy),
     Power,
     Scroll(SpellData),
-    Shout,
+    Shout(ShoutVariant),
     Spell(SpellData),
     Weapon(WeaponType),
 }
@@ -102,8 +101,8 @@ impl BaseType {
     }
 
     pub fn create_shout(_spell: SpellData) -> Self {
-        // todo (shout data is spell data yes)
-        BaseType::Shout
+        let variant = ShoutVariant::from_spell_data(_spell);
+        BaseType::Shout(variant)
     }
 
     pub fn classify(category: ItemCategory, keywords: Vec<String>, twohanded: bool) -> Self {
@@ -116,7 +115,7 @@ impl BaseType {
             ItemCategory::Potion => Self::Potion(PotionType::Default),
             ItemCategory::Power => Self::Power,
             ItemCategory::Scroll => Self::Scroll(SpellData::default()),
-            ItemCategory::Shout => Self::Shout,
+            ItemCategory::Shout => Self::Shout(ShoutVariant::default()),
             ItemCategory::Spell => Self::Spell(SpellData::default()),
             ItemCategory::Weapon => Self::Weapon(WeaponType::classify(keywords.clone(), twohanded)),
             _ => BaseType::Empty,
@@ -149,7 +148,7 @@ impl HasIcon for BaseType {
             BaseType::PotionProxy(t) => t.color(),
             BaseType::Power => Color::default(),
             BaseType::Scroll(t) => t.color(),
-            BaseType::Shout => Color::default(),
+            BaseType::Shout(t) => t.color(),
             BaseType::Spell(t) => t.color(),
             BaseType::Weapon(t) => t.color(),
         }
@@ -167,7 +166,7 @@ impl HasIcon for BaseType {
             BaseType::PotionProxy(t) => t.icon_file(),
             BaseType::Power => Icon::Power.icon_file(),
             BaseType::Scroll(_) => Icon::Scroll.icon_file(),
-            BaseType::Shout => Icon::Shout.icon_file(),
+            BaseType::Shout(t) => t.icon_file(),
             BaseType::Spell(t) => t.icon_file(),
             BaseType::Weapon(t) => t.icon_file(),
         }
@@ -175,17 +174,17 @@ impl HasIcon for BaseType {
 
     fn icon_fallback(&self) -> String {
         match self {
-            BaseType::Empty => "icon_default.svg".to_string(),
-            BaseType::Ammo(_) => "arrow.svg".to_string(),
+            BaseType::Empty => Icon::IconDefault.icon_file(),
+            BaseType::Ammo(_) => Icon::Arrow.icon_file(),
             BaseType::Armor(t) => t.icon_fallback(),
-            BaseType::Food(_) => "icon_default.svg".to_string(),
-            BaseType::HandToHand => "hand_to_hand.svg".to_string(),
-            BaseType::Light => "torch.svg".to_string(),
+            BaseType::Food(_) => Icon::IconDefault.icon_file(),
+            BaseType::HandToHand => Icon::HandToHand.icon_file(),
+            BaseType::Light => Icon::Torch.icon_file(),
             BaseType::Potion(t) => t.icon_fallback(),
             BaseType::PotionProxy(t) => t.icon_fallback(),
-            BaseType::Power => "power.svg".to_string(),
-            BaseType::Scroll(_) => "scroll.svg".to_string(),
-            BaseType::Shout => "shout.svg".to_string(),
+            BaseType::Power => Icon::Scroll.icon_file(),
+            BaseType::Scroll(_) => Icon::Scroll.icon_file(),
+            BaseType::Shout(t) => t.icon_fallback(),
             BaseType::Spell(t) => t.icon_fallback(),
             BaseType::Weapon(t) => t.icon_fallback(),
         }
@@ -205,7 +204,7 @@ impl IsHudItem for BaseType {
             BaseType::PotionProxy(_) => true,
             BaseType::Power => false,
             BaseType::Scroll(_) => true,
-            BaseType::Shout => false,
+            BaseType::Shout(_) => false,
             BaseType::Spell(_) => false,
             BaseType::Weapon(_) => true,
         }
@@ -228,7 +227,7 @@ impl IsHudItem for BaseType {
     }
 
     fn is_power(&self) -> bool {
-        matches!(self, BaseType::Power | BaseType::Shout)
+        matches!(self, BaseType::Power | BaseType::Shout(_))
     }
 
     fn is_spell(&self) -> bool {

@@ -447,8 +447,8 @@ pub mod archive_v1 {
     use cxx::CxxVector;
 
     use super::CycleData;
-    use crate::data::HudItem;
     use crate::data::base::BaseType;
+    use crate::data::HudItem;
     use crate::plugin::formSpecToHudItem;
 
     pub const VERSION: u32 = 1;
@@ -548,7 +548,7 @@ pub mod archive_v0 {
     use cxx::CxxVector;
 
     use super::{CycleData, HudItem};
-    use crate::{controller::itemdata::ItemData, plugin::formSpecToHudItem, data::base::BaseType};
+    use crate::{controller::itemdata::ItemData, data::base::BaseType, plugin::formSpecToHudItem};
 
     const VERSION: u8 = 0;
 
@@ -559,7 +559,7 @@ pub mod archive_v0 {
             "reading cosave format version {VERSION}; data len={};",
             bytes.len()
         );
-       match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
+        match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
             Ok((value, _len)) => {
                 log::info!("Cycles successfully read from cosave data.");
                 Some(value.into())
@@ -593,7 +593,6 @@ pub mod archive_v0 {
 
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
-
             fn filter_func(item: &ItemSerialized) -> Option<HudItem> {
                 let formstr = item.form_string.clone();
                 match formstr.as_str() {
@@ -622,13 +621,6 @@ pub mod archive_v0 {
                 hud_visible: value.hud_visible,
                 loaded: true,
             }
-
-        }
-    }
-
-    impl From<&ItemSerialized> for HudItem {
-        fn from(value: &ItemSerialized) -> Self {
-            todo!()
         }
     }
 
