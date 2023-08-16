@@ -40,7 +40,8 @@ pub fn hud_item_from_keywords(
     count: u32,
     twohanded: bool,
 ) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().map(|xs| *xs).collect();
+    // #[allow(clippy::map_clone)]
+    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
     let result = HudItem::from_keywords(
         category,

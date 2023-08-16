@@ -58,8 +58,7 @@ impl Controller {
     }
 
     pub fn validate_cycles(&mut self) {
-        self.cycles.validate();
-        self.cycles.cache(&mut self.cache);
+        self.cycles.validate(&mut self.cache);
         // log::info!("after validation, cycles are: {}", self.cycles);
         self.update_hud();
     }
@@ -77,27 +76,36 @@ impl Controller {
             _ => {
                 // remove any item with h2h type from cycles
                 self.cycles
-                    .filter_kind(&CycleSlot::Left, &BaseType::HandToHand);
+                    .filter_kind(&CycleSlot::Left, &BaseType::HandToHand, &mut self.cache);
                 self.cycles
-                    .filter_kind(&CycleSlot::Right, &BaseType::HandToHand);
+                    .filter_kind(&CycleSlot::Right, &BaseType::HandToHand, &mut self.cache);
             }
         }
 
         if settings.group_potions() {
-            self.cycles
-                .filter_kind(&CycleSlot::Utility, &BaseType::Potion(PotionType::Stamina));
+            self.cycles.filter_kind(
+                &CycleSlot::Utility,
+                &BaseType::Potion(PotionType::Stamina),
+                &mut self.cache,
+            );
             let count = staminaPotionCount();
             let proxy = make_stamina_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);
 
-            self.cycles
-                .filter_kind(&CycleSlot::Utility, &BaseType::Potion(PotionType::Health));
+            self.cycles.filter_kind(
+                &CycleSlot::Utility,
+                &BaseType::Potion(PotionType::Health),
+                &mut self.cache,
+            );
             let count = healthPotionCount();
             let proxy = make_health_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);
 
-            self.cycles
-                .filter_kind(&CycleSlot::Utility, &BaseType::Potion(PotionType::Magicka));
+            self.cycles.filter_kind(
+                &CycleSlot::Utility,
+                &BaseType::Potion(PotionType::Magicka),
+                &mut self.cache,
+            );
             let count = magickaPotionCount();
             let proxy = make_magicka_proxy(count);
             self.cycles.include_item(CycleSlot::Utility, &proxy);
@@ -159,13 +167,13 @@ impl Controller {
         }
 
         self.cycles
-            .update_count_by_formid(form_spec.as_str(), item.kind(), new_count);
+            .remove_zero_count_items(form_spec.as_str(), item.kind(), new_count);
 
         // update count of magicka, health, or stamina potions if we're grouped
         if item.kind().is_potion() && user_settings().group_potions() {
             if matches!(item.kind(), BaseType::Potion(PotionType::Health)) {
                 let count = healthPotionCount();
-                self.cycles.update_count_by_formid(
+                self.cycles.remove_zero_count_items(
                     "health_proxy",
                     &BaseType::PotionProxy(Proxy::Health),
                     count,
@@ -173,7 +181,7 @@ impl Controller {
             }
             if matches!(item.kind(), BaseType::Potion(PotionType::Magicka)) {
                 let count = magickaPotionCount();
-                self.cycles.update_count_by_formid(
+                self.cycles.remove_zero_count_items(
                     "magicka_proxy",
                     &BaseType::PotionProxy(Proxy::Magicka),
                     count,
@@ -181,7 +189,7 @@ impl Controller {
             }
             if matches!(item.kind(), BaseType::Potion(PotionType::Stamina)) {
                 let count = staminaPotionCount();
-                self.cycles.update_count_by_formid(
+                self.cycles.remove_zero_count_items(
                     "stamina_proxy",
                     &BaseType::PotionProxy(Proxy::Stamina),
                     count,
@@ -198,8 +206,9 @@ impl Controller {
         if kind.is_utility() {
             if let Some(vis) = self.visible.get(&HudElement::Utility) {
                 if vis.form_string() == *form_spec {
-                    if let Some(showme) = self.cycles.get_top(&CycleSlot::Utility) {
-                        self.update_slot(HudElement::Utility, &showme);
+                    if let Some(formspec) = self.cycles.get_top(&CycleSlot::Utility) {
+                        let item = self.cache.get_or_create(&formspec);
+                        self.update_slot(HudElement::Utility, &item);
                     }
                 }
             }
@@ -207,8 +216,9 @@ impl Controller {
         if kind.left_hand_ok() {
             if let Some(vis) = self.visible.get(&HudElement::Left) {
                 if vis.form_string() == *form_spec {
-                    if let Some(equipme) = self.cycles.get_top(&CycleSlot::Left) {
-                        self.equip_item(&equipme, Action::Left);
+                    if let Some(formspec) = self.cycles.get_top(&CycleSlot::Left) {
+                        let item = self.cache.get_or_create(&formspec);
+                        self.equip_item(&item, Action::Left);
                     }
                 }
             }
@@ -216,8 +226,9 @@ impl Controller {
         if kind.right_hand_ok() {
             if let Some(vis) = self.visible.get(&HudElement::Right) {
                 if vis.form_string() == *form_spec {
-                    if let Some(equipme) = self.cycles.get_top(&CycleSlot::Right) {
-                        self.equip_item(&equipme, Action::Right);
+                    if let Some(formspec) = self.cycles.get_top(&CycleSlot::Right) {
+                        let item = self.cache.get_or_create(&formspec);
+                        self.equip_item(&item, Action::Right);
                         // this might race with the left hand. IDEK.
                     }
                 }
@@ -383,7 +394,8 @@ impl Controller {
         };
 
         if let Some(next) = candidate {
-            self.update_slot(hud, &next);
+            let item = self.cache.get_or_create(&next);
+            self.update_slot(hud, &item);
             KeyEventResponse {
                 handled: true,
                 start_timer: if !matches!(which, CycleSlot::Utility) {
@@ -441,7 +453,7 @@ impl Controller {
             let empty_item = HudItem::make_unarmed_proxy();
             unequipSlot(action);
             self.update_slot(HudElement::from(&cycleslot), &empty_item);
-            self.cycles.set_top(&cycleslot, &empty_item);
+            self.cycles.set_top(&cycleslot, &empty_item.form_string());
             KeyEventResponse {
                 handled: true,
                 start_timer: Action::None,
@@ -473,12 +485,14 @@ impl Controller {
             // to what was previously equipped. We update both slots in the HUD.
 
             // this should not be None given the first check, but we need to check anyway
-            let Some(candidate) = self.cycles.peek_next(which) else {
+            let Some(form_string) = self.cycles.peek_next(which) else {
                 return KeyEventResponse {
                     handled: true,
                     ..Default::default()
                 };
             };
+
+            let candidate = self.cache.get_or_create(&form_string);
 
             if candidate.two_handed() {
                 // no problem. just cycle to it.
@@ -508,7 +522,7 @@ impl Controller {
                 // are we bouncing back to something in a cycle or not? This is fun.
                 if self.cycles.includes(&other_hand, &return_to) {
                     let _changed = self.update_slot(other_hud, &return_to);
-                    self.cycles.set_top(&other_hand, &return_to);
+                    self.cycles.set_top(&other_hand, &return_to.form_string());
                 } else {
                     // The return to item was removed from the cycle at some point. This is
                     // a question of design now. We can either select the next *single-handed*
@@ -536,13 +550,13 @@ impl Controller {
             if !candidate.kind().count_matters() || candidate.count() > 1 {
                 self.cycles.advance(which, 1);
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
-                self.cycles.set_top(&other_hand, &return_to.clone());
+                self.cycles.set_top(&other_hand, &return_to.form_string());
                 return self.update_and_record(which, &candidate);
             }
 
             // The worst case! Somebody's got to lose the battle for the single item,
             // and in this case it's the hand trying to cycle forward.
-            let Some(candidate) = self.cycles.advance_skipping(which, return_to.clone()) else {
+            let Some(form_string) = self.cycles.advance_skipping(which, return_to.clone()) else {
                 honk();
                 return KeyEventResponse {
                     handled: true,
@@ -550,12 +564,13 @@ impl Controller {
                 };
             };
 
+            let candidate = self.cache.get_or_create(&form_string);
             if candidate.two_handed() {
                 // How lucky we are. We equip it and don't fuss.
                 return self.update_and_record(which, &candidate);
             } else {
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
-                self.cycles.set_top(&other_hand, &return_to);
+                self.cycles.set_top(&other_hand, &return_to.form_string());
                 return self.update_and_record(which, &candidate);
             }
         } else {
@@ -572,7 +587,8 @@ impl Controller {
             };
 
             if let Some(candidate) = maybe_candidate {
-                return self.update_and_record(which, &candidate);
+                let item = self.cache.get_or_create(&candidate);
+                return self.update_and_record(which, &item);
             }
         }
 
@@ -606,7 +622,8 @@ impl Controller {
     fn use_utility_item(&mut self) -> KeyEventResponse {
         log::debug!("using utility item");
 
-        if let Some(item) = self.cycles.get_top(&CycleSlot::Utility) {
+        if let Some(form_string) = self.cycles.get_top(&CycleSlot::Utility) {
+            let item = self.cache.get_or_create(&form_string);
             if matches!(
                 item.kind(),
                 BaseType::Potion(PotionType::Poison) | BaseType::Food(_)
@@ -790,7 +807,7 @@ impl Controller {
             if let Some(visible) = self.visible.get(&HudElement::Power) {
                 if visible.form_string() != *form_spec {
                     self.update_slot(HudElement::Power, &item);
-                    self.cycles.set_top(&CycleSlot::Power, &item);
+                    self.cycles.set_top(&CycleSlot::Power, &item.form_string());
                     return true;
                 } else {
                     return false;
@@ -829,7 +846,7 @@ impl Controller {
             let changed = self.update_slot(HudElement::Right, &item);
             if changed {
                 // Change was out of band. We need to react.
-                self.cycles.set_top(&CycleSlot::Right, &item);
+                self.cycles.set_top(&CycleSlot::Right, &item.form_string());
             }
             self.update_slot(HudElement::Left, &HudItem::default());
             self.two_hander_equipped = true;
@@ -903,9 +920,10 @@ impl Controller {
                     reequipHand(Action::Left, &form_spec);
                 }
             } else if let Some(left_next) = self.cycles.get_top(&CycleSlot::Left) {
-                self.left_hand_cached = left_next.form_string();
-                self.update_slot(HudElement::Left, &left_next);
-                cxx::let_cxx_string!(form_spec = left_next.form_string());
+                let item = self.cache.get_or_create(&left_next);
+                self.left_hand_cached = left_next.clone();
+                self.update_slot(HudElement::Left, &item);
+                cxx::let_cxx_string!(form_spec = left_next);
                 reequipHand(Action::Left, &form_spec);
             }
         }
@@ -924,10 +942,11 @@ impl Controller {
                     reequipHand(Action::Right, &form_spec);
                 }
             } else if let Some(right_next) = self.cycles.get_top(&CycleSlot::Right) {
-                self.right_hand_cached = right_next.form_string();
-                cxx::let_cxx_string!(form_spec = right_next.form_string());
+                self.right_hand_cached = right_next.clone();
+                let item = self.cache.get_or_create(&right_next);
+                cxx::let_cxx_string!(form_spec = right_next);
                 reequipHand(Action::Right, &form_spec);
-                self.update_slot(HudElement::Right, &right_next);
+                self.update_slot(HudElement::Right, &item);
             }
         }
 
@@ -984,7 +1003,7 @@ impl Controller {
             self.left_hand_cached = self
                 .cycles
                 .get_top(&CycleSlot::Left)
-                .map_or("".to_string(), |xs| xs.form_string());
+                .map_or("".to_string(), |xs| xs);
             self.update_slot(HudElement::Left, &HudItem::default())
         };
         self.two_hander_equipped = right_entry.two_handed(); // same item will be in both hands
@@ -999,7 +1018,8 @@ impl Controller {
 
         let utility_changed = if self.visible.get(&HudElement::Utility).is_none() {
             if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {
-                self.update_slot(HudElement::Utility, &utility)
+                let item = self.cache.get_or_create(&utility);
+                self.update_slot(HudElement::Utility, &item)
             } else {
                 false
             }
@@ -1021,9 +1041,11 @@ impl Controller {
 
             // If any of our equipped items is in a cycle, make that item the top item
             // so advancing the cycles works as expected.
-            self.cycles.set_top(&CycleSlot::Power, &power);
-            self.cycles.set_top(&CycleSlot::Left, &left_entry);
-            self.cycles.set_top(&CycleSlot::Right, &right_entry);
+            self.cycles.set_top(&CycleSlot::Power, &power.form_string());
+            self.cycles
+                .set_top(&CycleSlot::Left, &left_entry.form_string());
+            self.cycles
+                .set_top(&CycleSlot::Right, &right_entry.form_string());
         }
 
         changed
@@ -1187,7 +1209,8 @@ impl Controller {
 
         if matches!(result, MenuEventResponse::ItemRemoved) && matches!(action, Action::Utility) {
             if let Some(topmost) = self.cycles.get_top(&CycleSlot::Utility) {
-                self.update_slot(HudElement::Utility, &topmost);
+                let item = self.cache.get_or_create(&topmost);
+                self.update_slot(HudElement::Utility, &item);
             } else {
                 self.update_slot(HudElement::Utility, &HudItem::default());
             }

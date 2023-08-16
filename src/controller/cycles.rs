@@ -19,10 +19,13 @@ use crate::plugin::{
 /// struct now holds all data we need to persist across game starts.
 #[derive(Debug, Clone, Default)]
 pub struct CycleData {
-    left: Vec<HudItem>,
-    right: Vec<HudItem>,
-    power: Vec<HudItem>,
-    utility: Vec<HudItem>,
+    /// Vec of item formspecs. A formspec looks like "mod.esp|0xdeadbeef":
+    /// mod esp file and form id delimited by |.
+    left: Vec<String>,
+    right: Vec<String>,
+    power: Vec<String>,
+    utility: Vec<String>,
+    /// Was the hud visible when we saved?
     hud_visible: bool,
     pub loaded: bool,
 }
@@ -32,7 +35,7 @@ impl CycleData {
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
     /// This does not equip or try to use the item in any way. It's pure management.
-    pub fn advance(&mut self, which: &CycleSlot, amount: usize) -> Option<HudItem> {
+    pub fn advance(&mut self, which: &CycleSlot, amount: usize) -> Option<String> {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -46,7 +49,7 @@ impl CycleData {
         cycle.first().cloned()
     }
 
-    pub fn advance_skipping(&mut self, which: &CycleSlot, skip: HudItem) -> Option<HudItem> {
+    pub fn advance_skipping(&mut self, which: &CycleSlot, skip: HudItem) -> Option<String> {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -58,9 +61,7 @@ impl CycleData {
         }
 
         cycle.rotate_left(1);
-        let candidate = cycle
-            .iter()
-            .find(|xs| xs.form_string() != skip.form_string());
+        let candidate = cycle.iter().find(|xs| *xs != &skip.form_string());
         if let Some(v) = candidate {
             let result = v.clone();
             self.set_top(which, &result);
@@ -71,14 +72,18 @@ impl CycleData {
         }
     }
 
-    pub fn advance_skipping_twohanders(&mut self) -> Option<HudItem> {
+    pub fn advance_skipping_twohanders(&mut self, cache: &mut ItemCache) -> Option<String> {
         // This can only be called for the right hand.
         if self.right.is_empty() {
             return None;
         }
 
+        // This requires cache lookups.
         self.right.rotate_left(1);
-        let candidate = self.right.iter().find(|xs| !xs.two_handed());
+        let candidate = self.right.iter().find(|xs| {
+            let item = cache.get_or_create(xs);
+            !item.two_handed()
+        });
         if let Some(v) = candidate {
             let result = v.clone();
             self.set_top(&CycleSlot::Right, &result);
@@ -104,7 +109,7 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, which: &CycleSlot, item: &HudItem) {
+    pub fn set_top(&mut self, which: &CycleSlot, form_spec: &String) {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
@@ -112,13 +117,13 @@ impl CycleData {
             CycleSlot::Utility => &mut self.utility,
         };
 
-        if let Some(idx) = cycle.iter().position(|xs| xs == item) {
+        if let Some(idx) = cycle.iter().position(|xs| xs == form_spec) {
             cycle.rotate_left(idx);
         }
     }
 
-    // the programmer error is annoying, but it's a shared struct...
-    pub fn get_top(&self, which: &CycleSlot) -> Option<HudItem> {
+    /// What's next in the given cycle?
+    pub fn get_top(&self, which: &CycleSlot) -> Option<String> {
         let cycle = match which {
             CycleSlot::Power => &self.power,
             CycleSlot::Left => &self.left,
@@ -129,7 +134,8 @@ impl CycleData {
         cycle.first().cloned()
     }
 
-    pub fn peek_next(&self, which: &CycleSlot) -> Option<HudItem> {
+    /// Peek at the next item without advancing.
+    pub fn peek_next(&self, which: &CycleSlot) -> Option<String> {
         let cycle = match which {
             CycleSlot::Power => &self.power,
             CycleSlot::Left => &self.left,
@@ -178,60 +184,32 @@ impl CycleData {
 
         // We have at most 20 items, so we do this blithely.
         let settings = user_settings();
-        if let Some(idx) = cycle.iter().position(|xs| *xs == item) {
+        if let Some(idx) = cycle.iter().position(|xs| *xs == item.form_string()) {
             cycle.remove(idx);
             MenuEventResponse::ItemRemoved
         } else if cycle.len() >= settings.maxlen() as usize {
             return MenuEventResponse::TooManyItems;
         } else {
-            cycle.push(item);
+            cycle.push(item.form_string());
             MenuEventResponse::ItemAdded
         }
     }
 
-    pub fn update_count_by_formid(&mut self, form_spec: &str, kind: &BaseType, count: u32) {
+    pub fn remove_zero_count_items(&mut self, form_spec: &str, kind: &BaseType, count: u32) {
         // If count is zero, remove from any cycles it's in.
         // If count is zero and item is equipped, advance the relevant cycle.
-        if kind.is_utility() {
-            if let Some(found) = self
-                .utility
-                .iter_mut()
-                .find(|xs| xs.form_string().as_str() == form_spec)
-            {
-                log::trace!("updating count for utility cycle item; count={count}; item: {found}");
-                found.set_count(count);
-                if count == 0 {
-                    self.utility.retain(|xs| xs.count() > 0);
-                }
-            }
-        };
-
-        if kind.left_hand_ok() {
-            if let Some(found) = self
-                .left
-                .iter_mut()
-                .find(|xs| xs.form_string().as_str() == form_spec)
-            {
-                log::trace!("updating count for left cycle item; count={count}; item: {found}");
-                found.set_count(count);
-                if count == 0 {
-                    self.left.retain(|xs| xs.count() > 0);
-                }
-            }
+        if count > 0 {
+            return;
         }
 
+        if kind.is_utility() {
+            self.utility.retain(|xs| xs != form_spec);
+        }
+        if kind.left_hand_ok() {
+            self.left.retain(|xs| xs != form_spec);
+        }
         if kind.right_hand_ok() {
-            if let Some(found) = self
-                .right
-                .iter_mut()
-                .find(|xs| xs.form_string().as_str() == form_spec)
-            {
-                log::trace!("updating count for right cycle item; count={count}; item: {found}");
-                found.set_count(count);
-                if count == 0 {
-                    self.right.retain(|xs| xs.count() > 0);
-                }
-            }
+            self.right.retain(|xs| xs != form_spec);
         }
     }
 
@@ -242,9 +220,7 @@ impl CycleData {
             CycleSlot::Right => &self.right,
             CycleSlot::Utility => &self.utility,
         };
-        cycle
-            .iter()
-            .any(|xs| xs.form_string() == item.form_string())
+        cycle.iter().any(|xs| *xs == item.form_string())
     }
 
     pub fn include_item(&mut self, which: CycleSlot, item: &HudItem) -> bool {
@@ -254,14 +230,12 @@ impl CycleData {
             CycleSlot::Right => &mut self.right,
             CycleSlot::Utility => &mut self.utility,
         };
-        if !cycle
-            .iter()
-            .any(|xs| xs.kind() == item.kind() || xs.form_string() == item.form_string())
-        {
-            cycle.push(item.clone());
-            true
+        let form = item.form_string();
+        if cycle.iter().any(|xs| xs == &form) {
+            false // we've already got one
         } else {
-            false
+            cycle.push(form);
+            true
         }
     }
 
@@ -272,14 +246,12 @@ impl CycleData {
             CycleSlot::Right => &mut self.right,
             CycleSlot::Utility => &mut self.utility,
         };
-        if !cycle
-            .iter()
-            .any(|xs| xs.form_string() == item.form_string())
-        {
-            cycle.push(item.clone());
-            true
-        } else {
+        let form = item.form_string();
+        if cycle.iter().any(|xs| xs == &form) {
             false
+        } else {
+            cycle.push(form);
+            true
         }
     }
 
@@ -291,19 +263,23 @@ impl CycleData {
             CycleSlot::Utility => &mut self.utility,
         };
 
+        let form = item.form_string();
         let orig_len = cycle.len();
-        cycle.retain(|xs| xs.form_string() != item.form_string());
+        cycle.retain(|xs| xs != &form);
         orig_len != cycle.len()
     }
 
-    pub fn filter_kind(&mut self, which: &CycleSlot, unwanted: &BaseType) {
+    pub fn filter_kind(&mut self, which: &CycleSlot, unwanted: &BaseType, cache: &mut ItemCache) {
         let cycle = match which {
             CycleSlot::Power => &mut self.power,
             CycleSlot::Left => &mut self.left,
             CycleSlot::Right => &mut self.right,
             CycleSlot::Utility => &mut self.utility,
         };
-        cycle.retain(|xs| xs.kind() != unwanted);
+        cycle.retain(|xs| {
+            let found = cache.get_or_create(xs);
+            found.kind() != unwanted
+        });
     }
 
     pub fn set_hud_visible(&mut self, visible: bool) {
@@ -328,8 +304,9 @@ impl CycleData {
     // ---------- validation
 
     /// Remove any items that have vanished from the game or from the player's
-    /// inventory.
-    pub fn validate(&mut self) {
+    /// inventory. This is called rarely and at times where we can spend the
+    /// cycles to look up the answer.
+    pub fn validate(&mut self, cache: &mut ItemCache) {
         let to_check = vec![
             (CycleSlot::Power, "power"),
             (CycleSlot::Utility, "utility"),
@@ -346,30 +323,27 @@ impl CycleData {
             };
             log::info!("validating {name} cycle");
             let filtered: Vec<_> = cycle
-                .iter_mut()
+                .iter()
                 .filter_map(|incoming| {
-                    let mut item = incoming.clone();
-                    let spec = item.form_string();
-                    if spec.is_empty() {
-                        return Some(item);
-                    }
+                    let mut spec = incoming.clone();
+                    let item = cache.get_or_create(&spec);
 
                     cxx::let_cxx_string!(form_spec = spec.clone());
                     if hasItemOrSpell(&form_spec) {
-                        log::info!("    {incoming}");
-                        return Some(item);
+                        log::info!("    {item}");
+                        return Some(spec);
                     }
 
                     let count = match spec.as_str() {
                         "health_proxy" => healthPotionCount(),
                         "magicka_proxy" => magickaPotionCount(),
                         "stamina_proxy" => staminaPotionCount(),
+                        "unarmed_proxy" => 1,
                         _ => itemCount(&form_spec),
                     };
                     if count > 0 {
-                        item.set_count(count);
                         log::info!("    {incoming}");
-                        Some(item)
+                        Some(spec)
                     } else {
                         None
                     }
@@ -393,29 +367,6 @@ impl CycleData {
         });
         //log::info!("hud_visible: {}", self.hud_visible);
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
-    }
-
-    pub fn cache(&self, cache: &mut ItemCache) {
-        self.power.iter().for_each(|xs| {
-            if !xs.form_string().ends_with("_proxy") {
-                cache.record(xs.clone());
-            }
-        });
-        self.utility.iter().for_each(|xs| {
-            if !xs.form_string().ends_with("_proxy") {
-                cache.record(xs.clone());
-            }
-        });
-        self.left.iter().for_each(|xs| {
-            if !xs.form_string().ends_with("_proxy") {
-                cache.record(xs.clone());
-            }
-        });
-        self.right.iter().for_each(|xs| {
-            if !xs.form_string().ends_with("_proxy") {
-                cache.record(xs.clone());
-            }
-        });
     }
 
     // bincode serialization to cosave
@@ -455,15 +406,8 @@ impl Display for CycleData {
     }
 }
 
-fn vec_to_debug_string(input: &[HudItem]) -> String {
-    format!(
-        "[{}]",
-        input
-            .iter()
-            .map(|xs| xs.name())
-            .collect::<Vec<String>>()
-            .join(", ")
-    )
+fn vec_to_debug_string(input: &[String]) -> String {
+    format!("[{}]", input.join(", "))
 }
 
 pub mod archive_v1 {
@@ -472,7 +416,6 @@ pub mod archive_v1 {
 
     use super::CycleData;
     use crate::data::base::BaseType;
-    use crate::data::HudItem;
     use crate::plugin::formSpecToHudItem;
 
     pub const VERSION: u32 = 1;
@@ -525,10 +468,10 @@ pub mod archive_v1 {
     impl From<&CycleData> for CycleSerialized {
         fn from(value: &CycleData) -> Self {
             Self {
-                left: value.left.iter().map(|xs| xs.form_string()).collect(),
-                right: value.right.iter().map(|xs| xs.form_string()).collect(),
-                power: value.power.iter().map(|xs| xs.form_string()).collect(),
-                utility: value.utility.iter().map(|xs| xs.form_string()).collect(),
+                left: value.left.iter().cloned().collect(),
+                right: value.right.iter().cloned().collect(),
+                power: value.power.iter().cloned().collect(),
+                utility: value.utility.iter().cloned().collect(),
                 hud_visible: value.hud_visible,
             }
         }
@@ -536,12 +479,12 @@ pub mod archive_v1 {
 
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
-            fn filter_func(xs: &String) -> Option<HudItem> {
+            fn filter_func(xs: &String) -> Option<String> {
                 match xs.as_str() {
-                    "health_proxy" => Some(*crate::data::make_unarmed_proxy()),
-                    "magicka_proxy" => Some(crate::data::make_magicka_proxy(1)),
-                    "stamina_proxy" => Some(crate::data::make_stamina_proxy(1)),
-                    "unarmed_proxy" => Some(crate::data::make_health_proxy(1)),
+                    "health_proxy" => Some(xs.clone()),
+                    "magicka_proxy" => Some(xs.clone()),
+                    "stamina_proxy" => Some(xs.clone()),
+                    "unarmed_proxy" => Some(xs.clone()),
                     "" => None,
                     _ => {
                         cxx::let_cxx_string!(form_spec = xs);
@@ -549,7 +492,7 @@ pub mod archive_v1 {
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
-                            Some(found)
+                            Some(found.form_string())
                         }
                     }
                 }
@@ -571,7 +514,7 @@ pub mod archive_v0 {
     use bincode::{Decode, Encode};
     use cxx::CxxVector;
 
-    use super::{CycleData, HudItem};
+    use super::CycleData;
     use crate::controller::itemdata::ItemData;
     use crate::data::base::BaseType;
     use crate::plugin::formSpecToHudItem;
@@ -619,13 +562,13 @@ pub mod archive_v0 {
 
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
-            fn filter_func(item: &ItemSerialized) -> Option<HudItem> {
+            fn filter_func(item: &ItemSerialized) -> Option<String> {
                 let formstr = item.form_string.clone();
                 match formstr.as_str() {
-                    "health_proxy" => Some(*crate::data::make_unarmed_proxy()),
-                    "magicka_proxy" => Some(crate::data::make_magicka_proxy(1)),
-                    "stamina_proxy" => Some(crate::data::make_stamina_proxy(1)),
-                    "unarmed_proxy" => Some(crate::data::make_health_proxy(1)),
+                    "health_proxy" => Some(formstr.clone()),
+                    "magicka_proxy" => Some(formstr.clone()),
+                    "stamina_proxy" => Some(formstr.clone()),
+                    "unarmed_proxy" => Some(formstr.clone()),
                     "" => None,
                     _ => {
                         cxx::let_cxx_string!(form_spec = formstr);
@@ -633,7 +576,7 @@ pub mod archive_v0 {
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
-                            Some(found)
+                            Some(found.form_string())
                         }
                     }
                 }
