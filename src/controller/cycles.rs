@@ -447,9 +447,9 @@ pub mod archive_v1 {
     use cxx::CxxVector;
 
     use super::CycleData;
-    use crate::control;
     use crate::data::base::BaseType;
     use crate::data::HudItem;
+    use crate::plugin::formSpecToHudItem;
 
     pub const VERSION: u32 = 1;
 
@@ -520,8 +520,8 @@ pub mod archive_v1 {
                     "unarmed_proxy" => Some(crate::data::make_health_proxy(1)),
                     "" => None,
                     _ => {
-                        let mut controller = control::get();
-                        let found = controller.cache.get_or_create(xs);
+                        cxx::let_cxx_string!(form_spec = xs);
+                        let found = *formSpecToHudItem(&form_spec);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
@@ -548,9 +548,9 @@ pub mod archive_v0 {
     use cxx::CxxVector;
 
     use super::{CycleData, HudItem};
-    use crate::control;
     use crate::controller::itemdata::ItemData;
     use crate::data::base::BaseType;
+    use crate::plugin::formSpecToHudItem;
 
     const VERSION: u8 = 0;
 
@@ -604,8 +604,8 @@ pub mod archive_v0 {
                     "unarmed_proxy" => Some(crate::data::make_health_proxy(1)),
                     "" => None,
                     _ => {
-                        let mut controller = control::get();
-                        let found = controller.cache.get_or_create(&formstr);
+                        cxx::let_cxx_string!(form_spec = formstr);
+                        let found = *formSpecToHudItem(&form_spec);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {

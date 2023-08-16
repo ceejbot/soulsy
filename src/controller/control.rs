@@ -32,10 +32,10 @@ pub struct Controller {
     visible: HashMap<HudElement, HudItem>,
     /// True if we've got a two-handed weapon equipped right now.
     two_hander_equipped: bool,
-    /// We cache the left-hand item we had before a two-hander was equipped.
-    left_hand_cached: Option<HudItem>,
-    /// We cache the right-hand item we had similarly.
-    right_hand_cached: Option<HudItem>,
+    /// We cache the form spec of any left-hand item we were holding before a two-hander was equipped.
+    left_hand_cached: String,
+    /// We cache a right-hand form spec string similarly.
+    right_hand_cached: String,
     tracked_keys: HashMap<HotkeyKind, TrackedKey>,
 }
 
@@ -50,8 +50,8 @@ impl Controller {
             ),
             visible: HashMap::new(),
             two_hander_equipped: false,
-            left_hand_cached: None,
-            right_hand_cached: None,
+            left_hand_cached: "".to_string(),
+            right_hand_cached: "".to_string(),
             tracked_keys: HashMap::new(),
         }
     }
@@ -491,11 +491,12 @@ impl Controller {
                 (self.left_hand_cached.clone(), CycleSlot::Left)
             };
 
-            let Some(return_to) = other_cached else {
+            if other_cached.is_empty() {
                 // The other hand has no opinions. Advance without fear.
                 self.cycles.advance(which, 1);
                 return self.update_and_record(which, &candidate);
             };
+            let return_to = self.cache.get_or_create(&other_cached);
 
             // What do we want to return to? If it's completely different from us,
             // we are golden. We update both HUD slots and start a timer.
@@ -672,9 +673,10 @@ impl Controller {
         if matches!(kind, BaseType::HandToHand) {
             log::info!("melee time! unequipping slot {which:?}");
             if which == Action::Left {
-                self.left_hand_cached = Some(HudItem::make_unarmed_proxy());
+                // TODO wasteful but better than a magic string?
+                self.left_hand_cached = HudItem::make_unarmed_proxy().form_string();
             } else {
-                self.right_hand_cached = Some(HudItem::make_unarmed_proxy());
+                self.right_hand_cached = HudItem::make_unarmed_proxy().form_string();
             }
             unequipSlot(which);
             return;
@@ -690,9 +692,9 @@ impl Controller {
 
         if !item.two_handed() {
             if which == Action::Left {
-                self.left_hand_cached = Some(*item).cloned();
+                self.left_hand_cached = item.form_string();
             } else {
-                self.right_hand_cached = Some(*item).cloned();
+                self.right_hand_cached = item.form_string();
             }
         }
         self.equip_item(item, which);
@@ -816,8 +818,8 @@ impl Controller {
             item.kind(),
             item.two_handed(),
             self.two_hander_equipped,
-            self.left_hand_cached.clone().map_or("n/a".to_string(), |xs| xs.name()),
-            self.right_hand_cached.clone().map_or("n/a".to_string(), |xs| xs.name())
+            self.left_hand_cached,
+            self.right_hand_cached
         );
 
         if item.two_handed() {
@@ -883,34 +885,47 @@ impl Controller {
         // We just swapped from a two-hander to a one-hander.
         // Now we earn our keep.
 
+        let unarmed = HudItem::make_unarmed_proxy();
+
         if right {
-            if let Some(prev_left) = self.left_hand_cached.clone() {
-                log::debug!("considering re-requipping LEFT; {prev_left}");
-                if matches!(prev_left.kind(), BaseType::HandToHand) {
+            if !self.left_hand_cached.is_empty() {
+                let prev_left = self.left_hand_cached.clone();
+                log::debug!("considering re-requipping LEFT; {}", prev_left);
+                if prev_left == unarmed.form_string() {
                     unequipSlot(Action::Left);
+                    self.update_slot(HudElement::Left, &unarmed);
                 } else {
-                    cxx::let_cxx_string!(form_spec = prev_left.form_string());
+                    let item = self.cache.get_or_create(&prev_left);
+                    self.update_slot(HudElement::Left, &item);
+                    cxx::let_cxx_string!(form_spec = prev_left.clone());
                     reequipHand(Action::Left, &form_spec);
                 }
-                self.update_slot(HudElement::Left, &prev_left);
             } else if let Some(left_next) = self.cycles.get_top(&CycleSlot::Left) {
-                self.left_hand_cached = Some(left_next.clone());
+                self.left_hand_cached = left_next.form_string();
+                self.update_slot(HudElement::Left, &left_next);
                 cxx::let_cxx_string!(form_spec = left_next.form_string());
                 reequipHand(Action::Left, &form_spec);
-                self.update_slot(HudElement::Left, &left_next);
             }
         }
 
         if left {
-            if let Some(prev_right) = self.right_hand_cached.clone() {
+            if !self.right_hand_cached.is_empty() {
+                let prev_right = self.right_hand_cached.clone();
                 log::debug!("considering re-requipping RIGHT; {prev_right}");
-                if matches!(prev_right.kind(), BaseType::HandToHand) {
+                if prev_right == unarmed.form_string() {
                     unequipSlot(Action::Right);
+                    self.update_slot(HudElement::Right, &unarmed);
                 } else {
-                    cxx::let_cxx_string!(form_spec = prev_right.form_string());
+                    let item = self.cache.get_or_create(&prev_right);
+                    self.update_slot(HudElement::Right, &item);
+                    cxx::let_cxx_string!(form_spec = prev_right);
                     reequipHand(Action::Right, &form_spec);
                 }
-                self.update_slot(HudElement::Right, &prev_right);
+            } else if let Some(right_next) = self.cycles.get_top(&CycleSlot::Right) {
+                self.right_hand_cached = right_next.form_string();
+                cxx::let_cxx_string!(form_spec = right_next.form_string());
+                reequipHand(Action::Right, &form_spec);
+                self.update_slot(HudElement::Right, &right_next);
             }
         }
 
@@ -937,15 +952,19 @@ impl Controller {
         let right_entry = boundObjectRightHand();
         let right_changed = self.update_slot(HudElement::Right, &right_entry);
         if !right_entry.two_handed() {
-            self.right_hand_cached = Some(*right_entry.clone());
+            self.right_hand_cached = right_entry.form_string();
         }
 
         let left_entry = boundObjectLeftHand();
         let left_unexpected = if !left_entry.two_handed() {
-            self.left_hand_cached = Some(*left_entry.clone());
+            self.left_hand_cached = left_entry.form_string();
             self.update_slot(HudElement::Left, &left_entry)
         } else {
-            self.left_hand_cached = self.cycles.get_top(&CycleSlot::Left);
+            // it's a two-handed item in the left hand.
+            self.left_hand_cached = self
+                .cycles
+                .get_top(&CycleSlot::Left)
+                .map_or("".to_string(), |xs| xs.form_string());
             self.update_slot(HudElement::Left, &HudItem::default())
         };
         self.two_hander_equipped = right_entry.two_handed(); // same item will be in both hands

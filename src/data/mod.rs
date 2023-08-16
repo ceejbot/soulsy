@@ -67,7 +67,7 @@ pub fn fill_out_spell_data(
 
 pub fn magic_from_spelldata(
     which: ItemCategory,
-    spelldata: Box<SpellData>,
+    #[allow(clippy::boxed_local)] spelldata: Box<SpellData>, // this is coming from C++
     bytes_ffi: &CxxVector<u8>,
     form_string: String,
     count: u32,
