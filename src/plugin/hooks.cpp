@@ -39,8 +39,8 @@ namespace hooks
 		auto* controlMap = RE::ControlMap::GetSingleton();
 		auto* userEvents = RE::UserEvents::GetSingleton();
 		if (!controlMap || !userEvents) return process_event_(this, eventPtr, eventSource);
-		auto favconst  = userEvents->togglePOV;       // m&k shortcut
-		auto favtoggle = userEvents->jump;  // controller shortcut
+		auto favconst  = userEvents->togglePOV;  // m&k shortcut
+		auto favtoggle = userEvents->jump;       // controller shortcut
 
 		if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
 
@@ -70,15 +70,13 @@ namespace hooks
 						if (selection->bound_obj)
 						{
 							auto entry = equippable::hudItemFromForm(selection->bound_obj);
-							logger::trace("got bound object; name='{}';"sv,
-								selection->bound_obj->GetName());
+							logger::trace("got bound object; name='{}';"sv, selection->bound_obj->GetName());
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
 						}
 						else if (selection->form)
 						{
 							auto entry = equippable::hudItemFromForm(selection->form);
-							logger::trace("got form; name='{}'"sv,
-								selection->form->GetName());
+							logger::trace("got form; name='{}'"sv, selection->form->GetName());
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
 						}
 						continue;
@@ -110,8 +108,8 @@ namespace hooks
 
 	bool MenuHook::buttonMatchesEvent(RE::ControlMap* controlMap, RE::BSFixedString eventID, RE::ButtonEvent* button)
 	{
-		auto the_device  = button->GetDevice();
-		auto key = controlMap->GetMappedKey(eventID, the_device, static_cast<RE::ControlMap::InputContextID>(0));
+		auto the_device = button->GetDevice();
+		auto key        = controlMap->GetMappedKey(eventID, the_device, static_cast<RE::ControlMap::InputContextID>(0));
 		return key == button->GetIDCode();
 	}
 
@@ -146,7 +144,8 @@ namespace hooks
 			if (item_form)
 			{
 				auto shim = equippable::hudItemFromForm(item_form);
-				handle_inventory_changed(std::move(shim), count);
+				std::string form_string = helpers::makeFormSpecString(item_form);
+				handle_inventory_changed(form_string, count);
 			}
 		}
 	}
@@ -162,8 +161,8 @@ namespace hooks
 		{
 			auto item_form = RE::TESForm::LookupByID(object->formID);
 			if (!item_form) { return; }
-			auto shim = equippable::hudItemFromForm(item_form);
-			handle_inventory_changed(std::move(shim), count);
+			std::string form_string = helpers::makeFormSpecString(item_form);
+			handle_inventory_changed(form_string, count);
 		}
 	}
 
@@ -181,8 +180,8 @@ namespace hooks
 			auto* item_form = RE::TESForm::LookupByID(object->formID);
 			if (item_form)
 			{
-				auto shim = equippable::hudItemFromForm(item_form);
-				handle_inventory_changed(std::move(shim), -count);
+				std::string form_string = helpers::makeFormSpecString(item_form);
+				handle_inventory_changed(form_string, -count);
 			}
 		}
 
@@ -202,8 +201,8 @@ namespace hooks
 			auto item_form = RE::TESForm::LookupByID(object->GetBaseObject()->formID);
 			if (item_form)
 			{
-				auto item = equippable::hudItemFromForm(item_form);
-				handle_inventory_changed(std::move(item), count);
+				std::string form_string = helpers::makeFormSpecString(item_form);
+				handle_inventory_changed(form_string, count);
 			}
 		}
 	}
