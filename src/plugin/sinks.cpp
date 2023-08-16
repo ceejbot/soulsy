@@ -39,18 +39,17 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	bool worn_right = false;
 	bool worn_left  = false;
 
-	auto item = equippable::hudItemFromForm(form);
+	// auto item = equippable::hudItemFromForm(form);
 
-	if (form->IsWeapon() || item->is_magic()) {
-		auto* player   = RE::PlayerCharacter::GetSingleton();
-		const auto* left_eq = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		const auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+	auto* player   = RE::PlayerCharacter::GetSingleton();
+	const auto* left_eq = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+	const auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 
-		worn_left = left_eq ? left_eq->GetFormID() == form->GetFormID() : false;
-		worn_right = right_eq ? right_eq->GetFormID() == form->GetFormID() : false;
-	}
+	worn_left = left_eq ? left_eq->GetFormID() == form->GetFormID() : false;
+	worn_right = right_eq ? right_eq->GetFormID() == form->GetFormID() : false;
 
-	handle_item_equipped(event->equipped, std::move(item), worn_right, worn_left);
+	std::string form_string = helpers::makeFormSpecString(form);
+	handle_item_equipped(event->equipped, form_string, worn_right, worn_left);
 
 	return event_result::kContinue;
 }

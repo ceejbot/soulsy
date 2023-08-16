@@ -329,7 +329,7 @@ pub mod plugin {
         /// Handle equipment-changed events from the game.
         fn handle_item_equipped(
             equipped: bool,
-            item: Box<HudItem>,
+            form_spec: &String,
             right: bool,
             left: bool,
         ) -> bool;

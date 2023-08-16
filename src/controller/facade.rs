@@ -97,8 +97,8 @@ pub fn update_hud() -> bool {
 }
 
 /// We know for sure the player just equipped this item.
-pub fn handle_item_equipped(equipped: bool, item: Box<HudItem>, right: bool, left: bool) -> bool {
-    control::get().handle_item_equipped(equipped, item, right, left)
+pub fn handle_item_equipped(equipped: bool, form_spec: &String, right: bool, left: bool) -> bool {
+    control::get().handle_item_equipped(equipped, form_spec, right, left)
 }
 
 /// A consumable's count changed. Record if relevant.

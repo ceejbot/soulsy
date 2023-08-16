@@ -274,13 +274,16 @@ impl IsHudItem for BaseType {
                 WeaponType::Whip(t, _) => matches!(t, WeaponEquipType::OneHanded),
             },
             BaseType::Spell(v) => !v.twohanded,
-            BaseType::Scroll(_) => true,
-            _ => false,
+            _ => true,
         }
     }
 
     fn two_handed(&self) -> bool {
-        !self.is_one_handed()
+        if matches!(self, BaseType::Armor(..)) {
+            false
+        } else {
+            !self.is_one_handed()
+        }
     }
 
     fn left_hand_ok(&self) -> bool {

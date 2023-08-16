@@ -46,7 +46,8 @@ impl Controller {
         Controller {
             cycles,
             cache: ItemCache::new(
-                NonZeroUsize::new(100).expect("cats and dogs living together! 100 not non-zero!"),
+                NonZeroUsize::new(100)
+                    .expect("cats and dogs living together! 100 is not non-zero!"),
             ),
             visible: HashMap::new(),
             two_hander_equipped: false,
@@ -58,7 +59,8 @@ impl Controller {
 
     pub fn validate_cycles(&mut self) {
         self.cycles.validate();
-        log::info!("after validation, cycles are: {}", self.cycles);
+        self.cycles.cache(&mut self.cache);
+        // log::info!("after validation, cycles are: {}", self.cycles);
         self.update_hud();
     }
 
@@ -721,22 +723,22 @@ impl Controller {
         }
     }
 
-    pub fn handle_item_unequipped(&mut self, item: HudItem, right: bool, left: bool) -> bool {
+    pub fn handle_item_unequipped(&mut self, form_spec: &String, right: bool, left: bool) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
-        log::info!("item UNequipped; right={right}; left={left}; {item}");
+        log::debug!("item UNequipped; right={right}; left={left}; form_spec={form_spec};");
 
         let right_vis = self.visible.get(&HudElement::Right);
         let left_vis = self.visible.get(&HudElement::Left);
         if right {
             if let Some(visible) = right_vis {
-                if visible.form_string() == item.form_string() {
+                if visible.form_string() == *form_spec {
                     let empty = HudItem::default();
                     return self.update_slot(HudElement::Right, &empty);
                 }
             }
         } else if left {
             if let Some(visible) = left_vis {
-                if visible.form_string() == item.form_string() {
+                if visible.form_string() == *form_spec {
                     let empty = HudItem::default();
                     return self.update_slot(HudElement::Left, &empty);
                 }
@@ -755,19 +757,19 @@ impl Controller {
     pub fn handle_item_equipped(
         &mut self,
         equipped: bool,
-        #[allow(clippy::boxed_local)] item: Box<HudItem>, // boxed because arriving from C++
+        form_spec: &String,
         right: bool,
         left: bool,
     ) -> bool {
-        let item = *item; // insert unboxing video
         if !equipped {
-            return self.handle_item_unequipped(item, right, left);
+            return self.handle_item_unequipped(form_spec, right, left);
         }
-        log::info!("item equipped; right={right}; left={left}; {item}");
+        log::debug!("item equipped; right={right}; left={left}; form_spec={form_spec};");
+        let item = self.cache.get_or_create(form_spec);
 
         if item.kind().is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
-                if visible.form_string() != item.form_string() {
+                if visible.form_string() != *form_spec {
                     self.update_slot(HudElement::Ammo, &item);
                     return true;
                 } else {
@@ -786,7 +788,7 @@ impl Controller {
 
         if item.kind().is_power() {
             if let Some(visible) = self.visible.get(&HudElement::Power) {
-                if visible.form_string() != item.form_string() {
+                if visible.form_string() != *form_spec {
                     self.update_slot(HudElement::Power, &item);
                     self.cycles.set_top(&CycleSlot::Power, &item);
                     return true;
@@ -949,17 +951,35 @@ impl Controller {
     /// out of band, e.g., by using a menu, and only then if we screwed
     /// up an equip event.
     pub fn update_hud(&mut self) -> bool {
-        let right_entry = boundObjectRightHand();
+        let right_entry = equippedRightHand();
+        let right_entry = if right_entry.kind().is_weapon() {
+            boundObjectRightHand()
+        } else {
+            right_entry
+        };
+
         let right_changed = self.update_slot(HudElement::Right, &right_entry);
         if !right_entry.two_handed() {
             self.right_hand_cached = right_entry.form_string();
         }
+        self.cache.record(*right_entry.clone());
 
-        let left_entry = boundObjectLeftHand();
+        let left_entry = *equippedLeftHand();
+        let left_entry = if left_entry.kind().is_weapon() || left_entry.kind().is_armor() {
+            log::info!("left entry: {left_entry}");
+            *boundObjectLeftHand()
+        } else {
+            left_entry
+        };
+        log::info!("left entry now: {left_entry}");
+
         let left_unexpected = if !left_entry.two_handed() {
             self.left_hand_cached = left_entry.form_string();
+            self.cache.record(left_entry.clone());
+            log::info!("about to record left: {left_entry}");
             self.update_slot(HudElement::Left, &left_entry)
         } else {
+            log::info!("we think item is two-handed; {left_entry}");
             // it's a two-handed item in the left hand.
             self.left_hand_cached = self
                 .cycles
@@ -971,9 +991,11 @@ impl Controller {
 
         let power = equippedPower();
         let power_changed = self.update_slot(HudElement::Power, &power);
+        self.cache.record(*power.clone());
 
         let ammo = equippedAmmo();
         let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
+        self.cache.record(*ammo.clone());
 
         let utility_changed = if self.visible.get(&HudElement::Utility).is_none() {
             if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {
@@ -1009,6 +1031,7 @@ impl Controller {
 
     /// Update the displayed slot for the specified HUD element.
     fn update_slot(&mut self, slot: HudElement, new_item: &HudItem) -> bool {
+        log::debug!("updating hud slot {slot}; visible: {new_item}");
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
         } else {

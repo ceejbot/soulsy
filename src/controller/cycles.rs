@@ -7,6 +7,7 @@ use cxx::CxxVector;
 use super::control::MenuEventResponse;
 use super::keys::CycleSlot;
 use super::user_settings;
+use crate::data::item_cache::ItemCache;
 use crate::data::{BaseType, HudItem, IsHudItem};
 use crate::plugin::{
     hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
@@ -392,6 +393,29 @@ impl CycleData {
         });
         //log::info!("hud_visible: {}", self.hud_visible);
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
+    }
+
+    pub fn cache(&self, cache: &mut ItemCache) {
+        self.power.iter().for_each(|xs| {
+            if !xs.form_string().ends_with("_proxy") {
+                cache.record(xs.clone());
+            }
+        });
+        self.utility.iter().for_each(|xs| {
+            if !xs.form_string().ends_with("_proxy") {
+                cache.record(xs.clone());
+            }
+        });
+        self.left.iter().for_each(|xs| {
+            if !xs.form_string().ends_with("_proxy") {
+                cache.record(xs.clone());
+            }
+        });
+        self.right.iter().for_each(|xs| {
+            if !xs.form_string().ends_with("_proxy") {
+                cache.record(xs.clone());
+            }
+        });
     }
 
     // bincode serialization to cosave

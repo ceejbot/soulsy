@@ -143,7 +143,6 @@ namespace hooks
 			auto item_form = RE::TESForm::LookupByID(object->formID);
 			if (item_form)
 			{
-				auto shim = equippable::hudItemFromForm(item_form);
 				std::string form_string = helpers::makeFormSpecString(item_form);
 				handle_inventory_changed(form_string, count);
 			}
