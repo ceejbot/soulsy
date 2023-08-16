@@ -1,14 +1,12 @@
 #![allow(non_snake_case, non_camel_case_types)]
 
-use bincode::{Decode, Encode};
-use serde::{Deserialize, Serialize};
 use strum::Display;
 
 use super::color::InvColor;
-use super::{HasIcon, HasKeywords};
 use super::icons::Icon;
+use super::{base, HasIcon, HasKeywords};
 
-#[derive(Decode, Encode, Clone, Debug, Deserialize, Display, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum AmmoType {
     OCF_AmmoTypeArrow(InvColor),
     OCF_AmmoTypeBolt(InvColor),
@@ -27,15 +25,7 @@ impl Default for AmmoType {
 
 impl HasKeywords for AmmoType {
     fn classify(keywords: Vec<String>, _ignored: bool) -> Self {
-        let color_keywords: Vec<InvColor> = keywords
-            .iter()
-            .filter_map(|xs| InvColor::try_from(xs.as_str()).map_or(None, |color| Some(color)))
-            .collect();
-        let color = if let Some(c) = color_keywords.first() {
-            c.clone()
-        } else {
-            InvColor::default()
-        };
+        let color = base::color_from_keywords(&keywords);
 
         let ammo_keywords: Vec<AmmoType> = keywords
             .iter()
@@ -94,9 +84,6 @@ mod tests {
         ];
 
         let result = AmmoType::classify(input, false);
-        assert_eq!(
-            result,
-            AmmoType::OCF_AmmoTypeBullet(InvColor::OCF_InvColorFire)
-        );
+        assert_eq!(result, AmmoType::OCF_AmmoTypeBullet(InvColor::Fire));
     }
 }

@@ -102,8 +102,8 @@ pub fn handle_item_equipped(equipped: bool, item: Box<HudItem>, right: bool, lef
 }
 
 /// A consumable's count changed. Record if relevant.
-pub fn handle_inventory_changed(item: Box<HudItem>, count: i32) {
-    control::get().handle_inventory_changed(item, count);
+pub fn handle_inventory_changed(form_spec: &String, count: i32) {
+    control::get().handle_inventory_changed(form_spec, count);
 }
 
 pub fn handle_favorite_event(

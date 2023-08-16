@@ -1,8 +1,6 @@
 //! OCF color keywords associated with specific colors.
 
-use bincode::{Decode, Encode};
-use serde::{Deserialize, Serialize};
-use strum::{Display, EnumString};
+use strum::{Display, EnumIter, IntoEnumIterator};
 
 use crate::plugin::Color;
 
@@ -12,81 +10,83 @@ impl Color {
     }
 }
 
-#[derive(
-    Decode,
-    Encode,
-    Deserialize,
-    Serialize,
-    Debug,
-    Clone,
-    Default,
-    PartialEq,
-    Eq,
-    Hash,
-    Display,
-    EnumString,
-)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Display, EnumIter)]
+#[strum(serialize_all = "lowercase")]
 pub enum InvColor {
-    OCF_InvColorAedric,
-    OCF_InvColorAsh,
-    OCF_InvColorBlack,
-    OCF_InvColorBlood,
-    OCF_InvColorBlue,
-    OCF_InvColorBrown,
-    OCF_InvColorCopper,
-    OCF_InvColorDaedric,
-    OCF_InvColorDwarven,
-    OCF_InvColorEldritch,
-    OCF_InvColorFire,
-    OCF_InvColorFrost,
-    OCF_InvColorGold,
-    OCF_InvColorGray,
-    OCF_InvColorGreen,
-    OCF_InvColorLegendary,
-    OCF_InvColorOrange,
-    OCF_InvColorPink,
-    OCF_InvColorPoison,
-    OCF_InvColorPurple,
-    OCF_InvColorRed,
-    OCF_InvColorShock,
-    OCF_InvColorSilver,
-    OCF_InvColorSun,
-    OCF_InvColorWater,
+    Aedric,
+    Ash,
+    Black,
+    Blood,
+    Blue,
+    Brown,
+    Copper,
+    Daedric,
+    Dwarven,
+    Eldritch,
+    Fire,
+    Frost,
+    Gold,
+    Gray,
+    Green,
+    Legendary,
+    Orange,
+    Pink,
+    Poison,
+    Purple,
+    Red,
+    Shock,
+    Silver,
+    Sun,
+    Water,
     #[default]
-    OCF_InvColorWhite,
-    OCF_InvColorYellow,
+    White,
+    Yellow,
+}
+
+impl TryFrom<&str> for InvColor {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let color_name = value.replace("OCF_InvColor", "").to_lowercase();
+        let color = InvColor::iter().find(|xs| color_name == xs.to_string());
+        if let Some(c) = color {
+            Ok(c)
+        } else {
+            Err(anyhow::anyhow!("not a valid color type"))
+        }
+    }
 }
 
 impl InvColor {
     pub fn color(&self) -> Color {
         match *self {
-            InvColor::OCF_InvColorAedric => Color::default(), // TODO
-            InvColor::OCF_InvColorAsh => Color::rgb(64, 64, 64),
-            InvColor::OCF_InvColorBlack => Color::rgb(0, 0, 0),
-            InvColor::OCF_InvColorBlue => Color::rgb(59, 106, 249),
-            InvColor::OCF_InvColorBlood => Color::rgb(138, 3, 3),
-            InvColor::OCF_InvColorBrown => Color::rgb(165, 42, 42),
-            InvColor::OCF_InvColorCopper => Color::rgb(184, 115, 51),
-            InvColor::OCF_InvColorDaedric => Color::rgb(171, 35, 0),
-            InvColor::OCF_InvColorDwarven => Color::rgb(255, 175, 0),
-            InvColor::OCF_InvColorEldritch => Color::rgb(230, 230, 250),
-            InvColor::OCF_InvColorFire => Color::rgb(255, 76, 0), // orange
-            InvColor::OCF_InvColorFrost => Color::rgb(0, 237, 255),
-            InvColor::OCF_InvColorGold => Color::rgb(218, 165, 32),
-            InvColor::OCF_InvColorGray => Color::rgb(128, 128, 128),
-            InvColor::OCF_InvColorGreen => Color::rgb(32, 223, 32),
-            InvColor::OCF_InvColorLegendary => Color::rgb(255, 175, 0),
-            InvColor::OCF_InvColorOrange => Color::rgb(255, 76, 0),
-            InvColor::OCF_InvColorPink => Color::rgb(219, 46, 114),
-            InvColor::OCF_InvColorPoison => Color::rgb(192, 128, 255), // purple
-            InvColor::OCF_InvColorPurple => Color::rgb(192, 128, 255),
-            InvColor::OCF_InvColorRed => Color::rgb(255, 0, 0),
-            InvColor::OCF_InvColorShock => Color::rgb(255, 213, 0), // yellow
-            InvColor::OCF_InvColorSilver => Color::rgb(192, 192, 192),
-            InvColor::OCF_InvColorSun => Color::rgb(223, 188, 32),
-            InvColor::OCF_InvColorWater => Color::rgb(212, 241, 249),
-            InvColor::OCF_InvColorWhite => Color::default(),
-            InvColor::OCF_InvColorYellow => Color::rgb(255, 213, 0),
+            InvColor::Aedric => Color::default(), // TODO
+            InvColor::Ash => Color::rgb(64, 64, 64),
+            InvColor::Black => Color::rgb(0, 0, 0),
+            InvColor::Blue => Color::rgb(59, 106, 249),
+            InvColor::Blood => Color::rgb(138, 3, 3),
+            InvColor::Brown => Color::rgb(165, 42, 42),
+            InvColor::Copper => Color::rgb(184, 115, 51),
+            InvColor::Daedric => Color::rgb(171, 35, 0),
+            InvColor::Dwarven => Color::rgb(255, 175, 0),
+            InvColor::Eldritch => Color::rgb(230, 230, 250),
+            InvColor::Fire => Color::rgb(255, 76, 0), // orange
+            InvColor::Frost => Color::rgb(0, 237, 255),
+            InvColor::Gold => Color::rgb(218, 165, 32),
+            InvColor::Gray => Color::rgb(128, 128, 128),
+            InvColor::Green => Color::rgb(32, 223, 32),
+            InvColor::Legendary => Color::rgb(255, 175, 0),
+            InvColor::Orange => Color::rgb(255, 76, 0),
+            InvColor::Pink => Color::rgb(219, 46, 114),
+            InvColor::Poison => Color::rgb(192, 128, 255), // purple
+            InvColor::Purple => Color::rgb(192, 128, 255),
+            InvColor::Red => Color::rgb(255, 0, 0),
+            InvColor::Shock => Color::rgb(255, 213, 0), // yellow
+            InvColor::Silver => Color::rgb(192, 192, 192),
+            InvColor::Sun => Color::rgb(223, 188, 32),
+            InvColor::Water => Color::rgb(212, 241, 249),
+            InvColor::White => Color::default(),
+            InvColor::Yellow => Color::rgb(255, 213, 0),
         }
     }
 }
@@ -96,5 +96,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn can_classify_from_keywords() {}
+    fn can_classify_from_keywords() {
+        let color = InvColor::try_from("OCF_InvColorAedric").expect("aedric is a valid color");
+        assert_eq!(color, InvColor::Aedric);
+        let color = InvColor::try_from("OCF_InvColorWater").expect("aedric is a valid color");
+        assert_eq!(color, InvColor::Water);
+        let color = InvColor::try_from("OCF_InvColorShock").expect("aedric is a valid color");
+        assert_eq!(color, InvColor::Shock);
+        let color = InvColor::try_from("OCF_InvColorSun").expect("aedric is a valid color");
+        assert_eq!(color, InvColor::Sun);
+        let color = InvColor::try_from("OCF_InvColorDaedric").expect("aedric is a valid color");
+        assert_eq!(color, InvColor::Daedric);
+    }
 }

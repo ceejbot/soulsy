@@ -36,7 +36,9 @@ impl ShoutVariant {
     pub fn from_spell_data(data: SpellData) -> Self {
         if matches!(data.archetype, SpellArchetype::SlowTime) {
             Self::Slowtime
-        } else if matches!(data.archetype, SpellArchetype::PeakValueModifier) && matches!(data.effect, ActorValue::Health) {
+        } else if matches!(data.archetype, SpellArchetype::PeakValueModifier)
+            && matches!(data.effect, ActorValue::Health)
+        {
             Self::MarkedForDeath
         } else if matches!(data.effect, ActorValue::DragonRend) {
             Self::DragonRend
@@ -44,35 +46,34 @@ impl ShoutVariant {
             log::debug!("default shout; spelldata={data:?}");
             Self::UnrelentingForce
         }
-
     }
 }
 
 impl HasIcon for ShoutVariant {
     fn color(&self) -> Color {
         match &self {
-            ShoutVariant::AnimalAllegiance => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::AuraWhisper => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::CallDragon => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::CallOfValor => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::ClearSkies => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::Disarm => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::Dismay => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::DragonRend => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::ElementalFury => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::Ethereal => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::FireBall => InvColor::OCF_InvColorFire.color(),
-            ShoutVariant::FireBreath => InvColor::OCF_InvColorFire.color(),
-            ShoutVariant::FrostBreath => InvColor::OCF_InvColorFrost.color(),
-            ShoutVariant::IceForm => InvColor::OCF_InvColorFrost.color(),
-            ShoutVariant::IceStorm => InvColor::OCF_InvColorFrost.color(),
-            ShoutVariant::KynesPeace => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::MarkedForDeath => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::Slowtime => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::StormCall => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::ThrowVoice => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::UnrelentingForce => InvColor::OCF_InvColorWhite.color(),
-            ShoutVariant::WhirlwindSprint => InvColor::OCF_InvColorWhite.color(),
+            ShoutVariant::AnimalAllegiance => InvColor::White.color(),
+            ShoutVariant::AuraWhisper => InvColor::White.color(),
+            ShoutVariant::CallDragon => InvColor::White.color(),
+            ShoutVariant::CallOfValor => InvColor::White.color(),
+            ShoutVariant::ClearSkies => InvColor::White.color(),
+            ShoutVariant::Disarm => InvColor::White.color(),
+            ShoutVariant::Dismay => InvColor::White.color(),
+            ShoutVariant::DragonRend => InvColor::White.color(),
+            ShoutVariant::ElementalFury => InvColor::White.color(),
+            ShoutVariant::Ethereal => InvColor::White.color(),
+            ShoutVariant::FireBall => InvColor::Fire.color(),
+            ShoutVariant::FireBreath => InvColor::Fire.color(),
+            ShoutVariant::FrostBreath => InvColor::Frost.color(),
+            ShoutVariant::IceForm => InvColor::Frost.color(),
+            ShoutVariant::IceStorm => InvColor::Frost.color(),
+            ShoutVariant::KynesPeace => InvColor::White.color(),
+            ShoutVariant::MarkedForDeath => InvColor::White.color(),
+            ShoutVariant::Slowtime => InvColor::White.color(),
+            ShoutVariant::StormCall => InvColor::White.color(),
+            ShoutVariant::ThrowVoice => InvColor::White.color(),
+            ShoutVariant::UnrelentingForce => InvColor::White.color(),
+            ShoutVariant::WhirlwindSprint => InvColor::White.color(),
         }
     }
 

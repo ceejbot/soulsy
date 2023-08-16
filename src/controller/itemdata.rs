@@ -53,7 +53,7 @@ impl Display for ItemData {
 
 /// This is called from C++ when handing us a new item.
 pub fn itemdata_from_formdata(
-    icon_kind: Box<ItemKind>,
+    icon_kind: ItemKind,
     two_handed: bool,
     has_count: bool,
     count: u32,
@@ -62,7 +62,7 @@ pub fn itemdata_from_formdata(
 ) -> Box<ItemData> {
     let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     Box::new(ItemData::new(
-        *icon_kind,
+        icon_kind,
         two_handed,
         has_count,
         count,

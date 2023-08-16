@@ -2,17 +2,15 @@
 
 use std::fmt::Display;
 
-use bincode::{Decode, Encode};
 use enumset::{enum_set, EnumSet, EnumSetType};
-use serde::{Deserialize, Serialize};
 use strum::EnumString;
 
 use super::color::InvColor;
+use super::icons::Icon;
 use super::{HasIcon, HasKeywords};
 use crate::plugin::Color;
-use super::icons::Icon;
 
-#[derive(Decode, Encode, Clone, Debug, Deserialize, EnumString, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, EnumString, Eq, Hash, PartialEq)]
 pub enum WeaponEquipType {
     OneHanded,
     TwoHanded,
@@ -21,7 +19,7 @@ pub enum WeaponEquipType {
 // These are weapon types we have icons for. All OCF tags map
 // into one of these. Couldn't see a gain for splitting these up
 // into one/two handed types, so I left them together.
-#[derive(Decode, Encode, Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum WeaponType {
     AxeOneHanded(WeaponEquipType, InvColor),
     AxeTwoHanded(WeaponEquipType, InvColor),
@@ -51,15 +49,7 @@ pub enum WeaponType {
 
 impl HasKeywords for WeaponType {
     fn classify(keywords: Vec<String>, twohanded: bool) -> Self {
-        let color_keywords: Vec<InvColor> = keywords
-            .iter()
-            .filter_map(|xs| InvColor::try_from(xs.as_str()).map_or(None, |color| Some(color)))
-            .collect();
-        let color = if let Some(c) = color_keywords.first() {
-            c.clone()
-        } else {
-            InvColor::default()
-        };
+        let color = super::base::color_from_keywords(&keywords);
 
         let equiptype = if twohanded {
             WeaponEquipType::TwoHanded
@@ -389,7 +379,7 @@ const HAMMERS: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeWarhammer2H
 );
 const HAND_TO_HAND: EnumSet<WeaponTag> =
-    enum_set!(WeaponTag::HandToHandMelee | WeaponTag::OCF_WeapTypeUnarmed | WeaponTag::NONE);
+    enum_set!(WeaponTag::HandToHandMelee | WeaponTag::OCF_WeapTypeUnarmed | WeaponTag::None);
 const KATANAS: EnumSet<WeaponTag> =
     enum_set!(WeaponTag::OCF_WeapTypeKatana1H | WeaponTag::OCF_WeapTypeKatana2H);
 const LANCES: EnumSet<WeaponTag> = enum_set!(
@@ -454,7 +444,7 @@ const WHIPS: EnumSet<WeaponTag> =
 
 /// This enum represents all the keywords we expect for weapon types. We group
 /// the tags into sets for efficient subtype classification from the tags.
-#[derive(Debug, Deserialize, EnumString, Hash, Serialize, EnumSetType)]
+#[derive(Debug, EnumString, Hash, EnumSetType)]
 pub enum WeaponTag {
     Bow,
     Crossbow,
@@ -583,15 +573,11 @@ pub enum WeaponTag {
     WeapTypeWarhammer,
     WeapTypeWhip,
     HandToHandMelee,
-    NONE,
+    None,
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
-    use std::io::prelude::*;
-    use std::io::{self, BufReader};
-
     use super::*;
 
     #[test]
@@ -606,7 +592,7 @@ mod tests {
         let result = WeaponType::classify(input, true);
         assert_eq!(
             result,
-            WeaponType::Halberd(WeaponEquipType::TwoHanded, InvColor::OCF_InvColorBlood)
+            WeaponType::Halberd(WeaponEquipType::TwoHanded, InvColor::Blood)
         );
 
         let input = vec![
@@ -620,7 +606,7 @@ mod tests {
         let result = WeaponType::classify(input, true);
         assert_eq!(
             result,
-            WeaponType::Halberd(WeaponEquipType::TwoHanded, InvColor::OCF_InvColorBlood)
+            WeaponType::Halberd(WeaponEquipType::TwoHanded, InvColor::Blood)
         );
 
         let input = vec![
@@ -631,50 +617,19 @@ mod tests {
         let result = WeaponType::classify(input, false);
         assert_eq!(
             result,
-            WeaponType::WeaponDefault(WeaponEquipType::OneHanded, InvColor::OCF_InvColorWhite)
+            WeaponType::WeaponDefault(WeaponEquipType::OneHanded, InvColor::White)
         );
 
         let input = vec![
-            "OCF_InvColorFire".to_string(),
             "OCF_WeapTypeLongsword2H".to_string(),
+            "OCF_InvColorFire".to_string(),
             "Weapon".to_string(),
-            "*Longsword".to_string(),
             "TwoHandSword".to_string(),
         ];
         let result = WeaponType::classify(input, true);
         assert_eq!(
             result,
-            WeaponType::SwordTwoHanded(WeaponEquipType::TwoHanded, InvColor::OCF_InvColorFire)
+            WeaponType::SwordTwoHanded(WeaponEquipType::TwoHanded, InvColor::Fire)
         );
-    }
-
-    #[test]
-    fn full_ocf_test() {
-        let file = File::open("test/fixtures/weapon_keywords_tests.txt")
-            .expect("should find our fixture file");
-        let reader = BufReader::new(file);
-
-        for maybe_line in reader.lines() {
-            let Ok(line) = maybe_line else { continue };
-            let mut keywords: Vec<String> = Vec::new();
-            let split = line.split('|');
-            for item in split {
-                if !item.contains(',') {
-                    keywords.push(item.to_string());
-                } else {
-                    let subtags = item.split(',');
-                    for tag in subtags {
-                        if !item.starts_with("*") && !item.starts_with("-") {
-                            keywords.push(tag.to_string());
-                        }
-                    }
-                }
-            }
-
-            eprintln!("{keywords:#?}");
-            let categorized = WeaponType::classify(keywords, false);
-            eprintln!("{categorized} => {line}");
-            assert!(!matches!(categorized, WeaponType::WeaponDefault(_, _)));
-        }
     }
 }

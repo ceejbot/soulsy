@@ -9,6 +9,7 @@ pub mod color;
 pub mod game_enums;
 pub mod huditem;
 pub mod icons;
+pub mod item_cache;
 pub mod potion;
 pub mod shout;
 pub mod spell;
@@ -16,18 +17,19 @@ pub mod weapon;
 
 use cxx::{CxxString, CxxVector};
 
-use self::{ammo::AmmoType, shout::ShoutVariant};
+use self::ammo::AmmoType;
 pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
 use self::potion::PotionType;
+use self::shout::ShoutVariant;
 pub use self::spell::SpellData;
 use crate::plugin::{Color, ItemCategory};
 
 // ---------- Designed for C++ to call.
 
 pub fn empty_huditem() -> Box<HudItem> {
-    Box::new(HudItem::default())
+    Box::<HudItem>::default()
 }
 
 pub fn hud_item_from_keywords(
@@ -199,7 +201,14 @@ mod tests {
         ];
 
         let name_bytes = "Placeholder".as_bytes().to_vec();
-        let item = HudItem::from_keywords(input, name_bytes, "placeholder".to_string(), 2);
+        let item = HudItem::from_keywords(
+            ItemCategory::Weapon,
+            input,
+            name_bytes,
+            "placeholder".to_string(),
+            2,
+            true,
+        );
 
         assert_eq!(
             item.name(),
@@ -210,7 +219,7 @@ mod tests {
             *item.kind(),
             BaseType::Weapon(WeaponType::Halberd(
                 WeaponEquipType::TwoHanded,
-                InvColor::OCF_InvColorBlood
+                InvColor::Blood
             )),
             "classified weapon as halberd"
         );

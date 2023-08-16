@@ -41,9 +41,9 @@ pub enum Proxy {
 impl HasIcon for Proxy {
     fn color(&self) -> Color {
         match self {
-            Proxy::Health => InvColor::OCF_InvColorRed.color(),
-            Proxy::Magicka => InvColor::OCF_InvColorBlue.color(),
-            Proxy::Stamina => InvColor::OCF_InvColorGreen.color(),
+            Proxy::Health => InvColor::Red.color(),
+            Proxy::Magicka => InvColor::Blue.color(),
+            Proxy::Stamina => InvColor::Green.color(),
         }
     }
 
@@ -123,10 +123,10 @@ impl BaseType {
     }
 }
 
-fn color_from_keywords(keywords: Vec<String>) -> InvColor {
+pub fn color_from_keywords(keywords: &[String]) -> InvColor {
     let color_keywords: Vec<InvColor> = keywords
         .iter()
-        .filter_map(|xs| InvColor::try_from(xs.as_str()).map_or(None, |color| Some(color)))
+        .filter_map(|xs| InvColor::try_from(xs.as_str()).ok())
         .collect();
     if let Some(c) = color_keywords.first() {
         c.clone()
@@ -143,7 +143,7 @@ impl HasIcon for BaseType {
             BaseType::Armor(t) => t.color(),
             BaseType::Food(t) => t.color(),
             BaseType::HandToHand => Color::default(),
-            BaseType::Light => InvColor::OCF_InvColorSun.color(),
+            BaseType::Light => InvColor::Sun.color(),
             BaseType::Potion(t) => t.color(),
             BaseType::PotionProxy(t) => t.color(),
             BaseType::Power => Color::default(),
@@ -314,8 +314,13 @@ mod tests {
     use crate::data::weapon::WeaponType;
 
     #[test]
-    fn keywords_convert() {
-        // All keyword test lists adapted from OCF data.
+    fn can_extract_color() {
+        let input = vec![
+            "OCF_InvColorFire".to_string(),
+            "OCF_AccessoryBelt".to_string(),
+            "Armor".to_string(),
+        ];
+        assert_eq!(color_from_keywords(&input), InvColor::Fire);
 
         let input = vec![
             "Ammo".to_string(),
@@ -324,11 +329,28 @@ mod tests {
             "OCF_InvColorWater".to_string(),
             "OCF_AmmoTypeBullet1H_Basic".to_string(),
         ];
+        let color_keywords: Vec<InvColor> = input
+            .iter()
+            .filter_map(|xs| InvColor::try_from(xs.as_str()).ok())
+            .collect();
+        assert_eq!(1, color_keywords.len());
+        assert_eq!(color_from_keywords(&input), InvColor::Water);
+    }
 
-        let result = BaseType::classify(input, true);
+    #[test]
+    fn keywords_convert() {
+        let input = vec![
+            "Ammo".to_string(),
+            "OCF_AmmoTypeBullet1H".to_string(),
+            "OCF_AmmoTypeBullet".to_string(),
+            "OCF_InvColorWater".to_string(),
+            "OCF_AmmoTypeBullet1H_Basic".to_string(),
+        ];
+
+        let result = BaseType::classify(ItemCategory::Ammo, input, true);
         assert_eq!(
             result,
-            BaseType::Ammo(AmmoType::OCF_AmmoTypeBullet(InvColor::OCF_InvColorWater))
+            BaseType::Ammo(AmmoType::OCF_AmmoTypeBullet(InvColor::Water))
         );
 
         let input = vec![
@@ -336,7 +358,7 @@ mod tests {
             "OCF_AccessoryBelt".to_string(),
             "Armor".to_string(),
         ];
-        let result = BaseType::classify(input, false);
+        let result = BaseType::classify(ItemCategory::Armor, input, false);
         assert_eq!(result, BaseType::Armor(ArmorType::Belt));
 
         let input = vec![
@@ -347,12 +369,12 @@ mod tests {
             "-varWeapNotLongsword".to_string(),
             "TwoHandSword".to_string(),
         ];
-        let result = BaseType::classify(input, true);
+        let result = BaseType::classify(ItemCategory::Weapon, input, true);
         assert_eq!(
             result,
             BaseType::Weapon(WeaponType::SwordTwoHanded(
                 WeaponEquipType::TwoHanded,
-                InvColor::OCF_InvColorFire
+                InvColor::Fire
             ))
         );
     }

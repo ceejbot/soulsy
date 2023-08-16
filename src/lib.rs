@@ -334,7 +334,7 @@ pub mod plugin {
             left: bool,
         ) -> bool;
         /// Handle inventory-count changed events from the game.
-        fn handle_inventory_changed(item: Box<HudItem>, delta: i32);
+        fn handle_inventory_changed(form_spec: &String, delta: i32);
         /// Favoriting & unfavoriting.
         fn handle_favorite_event(_button: &ButtonEvent, is_favorite: bool, _item: Box<HudItem>);
     }

@@ -1,10 +1,6 @@
-use bincode::{Decode, Encode};
-use serde::{Deserialize, Serialize};
 use strum::Display;
 
-#[derive(
-    Decode, Encode, Clone, Debug, Default, Deserialize, Display, Eq, Hash, PartialEq, Serialize,
-)]
+#[derive(Clone, Debug, Default, Display, Eq, Hash, PartialEq)]
 pub enum ActorValue {
     #[default]
     None,
@@ -346,9 +342,7 @@ impl From<i32> for ActorValue {
     }
 }
 
-#[derive(
-    Decode, Encode, Deserialize, Serialize, Default, Debug, Clone, Hash, Display, PartialEq, Eq,
-)]
+#[derive(Default, Debug, Clone, Hash, Display, PartialEq, Eq)]
 #[strum(serialize_all = "lowercase")]
 pub enum SpellArchetype {
     #[default]

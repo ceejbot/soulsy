@@ -3,14 +3,12 @@
 use strum::Display;
 
 use super::game_enums::ActorValue;
+use super::icons::Icon;
 use super::spell::MagicDamageType;
 use super::{HasIcon, InvColor};
 use crate::plugin::Color;
-use super::icons::Icon;
 
-#[derive(
-    Clone, Debug, Default, Display, Hash, Eq, PartialEq,
-)]
+#[derive(Clone, Debug, Default, Display, Hash, Eq, PartialEq)]
 #[strum(serialize_all = "snake_case")]
 pub enum PotionType {
     #[default]
@@ -55,20 +53,20 @@ impl PotionType {
 impl HasIcon for PotionType {
     fn color(&self) -> Color {
         match self {
-            PotionType::Poison => InvColor::OCF_InvColorPoison.color(),
+            PotionType::Poison => InvColor::Poison.color(),
             PotionType::Resist(t) => match t {
                 MagicDamageType::Disease => Color::default(), // TODO
-                MagicDamageType::Fire => InvColor::OCF_InvColorFire.color(),
-                MagicDamageType::Frost => InvColor::OCF_InvColorFrost.color(),
-                MagicDamageType::Magic => InvColor::OCF_InvColorBlue.color(),
-                MagicDamageType::Poison => InvColor::OCF_InvColorPoison.color(),
-                MagicDamageType::Shock => InvColor::OCF_InvColorShock.color(),
-                MagicDamageType::Sun => InvColor::OCF_InvColorSun.color(),
+                MagicDamageType::Fire => InvColor::Fire.color(),
+                MagicDamageType::Frost => InvColor::Frost.color(),
+                MagicDamageType::Magic => InvColor::Blue.color(),
+                MagicDamageType::Poison => InvColor::Poison.color(),
+                MagicDamageType::Shock => InvColor::Shock.color(),
+                MagicDamageType::Sun => InvColor::Sun.color(),
                 MagicDamageType::None => Color::default(),
             },
-            PotionType::Health => InvColor::OCF_InvColorRed.color(),
-            PotionType::Magicka => InvColor::OCF_InvColorBlue.color(),
-            PotionType::Stamina => InvColor::OCF_InvColorGreen.color(),
+            PotionType::Health => InvColor::Red.color(),
+            PotionType::Magicka => InvColor::Blue.color(),
+            PotionType::Stamina => InvColor::Green.color(),
             PotionType::Default => Color::default(),
         }
     }

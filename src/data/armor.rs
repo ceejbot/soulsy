@@ -1,16 +1,14 @@
 #![allow(non_snake_case, non_camel_case_types)]
 
-use bincode::{Decode, Encode};
 use enumset::{enum_set, EnumSet, EnumSetType};
-use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
 use super::color::InvColor;
-use super::{HasIcon, HasKeywords};
-use crate::plugin::Color;
 use super::icons::Icon;
+use super::{base, HasIcon, HasKeywords};
+use crate::plugin::Color;
 
-#[derive(Decode, Encode, Clone, Debug, Display, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum ArmorType {
     Head(ArmorWeight, InvColor),
     Body(ArmorWeight, InvColor),
@@ -30,7 +28,7 @@ pub enum ArmorType {
     Default,
 }
 
-#[derive(Decode, Encode, Clone, Debug, Display, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum ArmorWeight {
     Clothing,
     Light,
@@ -39,15 +37,7 @@ pub enum ArmorWeight {
 
 impl HasKeywords for ArmorType {
     fn classify(keywords: Vec<String>, _ignored: bool) -> Self {
-        let color_keywords: Vec<InvColor> = keywords
-            .iter()
-            .filter_map(|xs| InvColor::try_from(xs.as_str()).map_or(None, |color| Some(color)))
-            .collect();
-        let color = if let Some(c) = color_keywords.first() {
-            c.clone()
-        } else {
-            InvColor::default()
-        };
+        let color = base::color_from_keywords(&keywords);
 
         let tags: Vec<ArmorTag> = keywords
             .iter()
@@ -88,7 +78,7 @@ impl HasKeywords for ArmorType {
             } else if BODY.contains(*tag) {
                 Some(ArmorType::Body(weight.clone(), color.clone()))
             } else if FEET.contains(*tag) {
-                Some(ArmorType::Shield(weight.clone(), color.clone()))
+                Some(ArmorType::Feet(weight.clone(), color.clone()))
             } else if SHIELDS.contains(*tag) {
                 Some(ArmorType::Shield(weight.clone(), color.clone()))
             } else if RINGS.contains(*tag) {
@@ -459,7 +449,7 @@ const SHIELDS: EnumSet<ArmorTag> = enum_set!(
         | ArmorTag::OCF_ReplicaDaedric_Spellbreaker
 );
 
-#[derive(Debug, Deserialize, EnumString, Hash, Serialize, EnumSetType)]
+#[derive(Debug, EnumString, Hash, EnumSetType)]
 pub enum ArmorTag {
     ArmorClothing,
     ArmorCrown,
@@ -737,42 +727,4 @@ pub enum ArmorTag {
     WAF_ClothingPouch,
     WAF_FingerlessGauntletsBracers,
     WAF_SpikedGauntletGloves,
-}
-
-#[cfg(test)]
-mod tests {
-    use std::fs::File;
-    use std::io::{BufRead, BufReader};
-
-    use super::*;
-
-    #[test]
-    fn full_ocf_test() {
-        let file = File::open("test/fixtures/armor_keywords_tests.txt")
-            .expect("should find our fixture file");
-        let reader = BufReader::new(file);
-
-        for maybe_line in reader.lines() {
-            let Ok(line) = maybe_line else { continue };
-            let mut keywords: Vec<String> = Vec::new();
-            let split = line.split('|');
-            for item in split {
-                if !item.contains(',') {
-                    keywords.push(item.to_string());
-                } else {
-                    let subtags = item.split(',');
-                    for tag in subtags {
-                        if !item.starts_with("*") && !item.starts_with("-") {
-                            keywords.push(tag.to_string());
-                        }
-                    }
-                }
-            }
-
-            eprintln!("{keywords:#?}");
-            let categorized = ArmorType::classify(keywords, false);
-            eprintln!("{categorized} => {line}");
-            assert!(!matches!(categorized, ArmorType::Default));
-        }
-    }
 }

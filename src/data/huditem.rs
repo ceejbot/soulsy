@@ -1,7 +1,6 @@
 use std::ffi::CString;
 use std::fmt::Display;
 
-
 use super::base::BaseType;
 use super::{HasIcon, IsHudItem};
 use crate::plugin::{Color, ItemCategory};
@@ -148,13 +147,13 @@ impl Display for HudItem {
     }
 }
 
-fn name_from_bytes(name_bytes: &Vec<u8>) -> (bool, String) {
+fn name_from_bytes(name_bytes: &[u8]) -> (bool, String) {
     // let's try to get a name string out of the bytes
     let mut name_is_utf8 = false;
-    let cstring = match CString::from_vec_with_nul(name_bytes.clone()) {
+    let cstring = match CString::from_vec_with_nul(name_bytes.to_owned()) {
         Ok(cstring) => cstring,
         Err(e) => {
-            if let Ok(cstring) = CString::new(name_bytes.clone()) {
+            if let Ok(cstring) = CString::new(name_bytes.to_owned()) {
                 cstring
             } else {
                 log::info!("Surprising: item name bytes were an invalid c string; error: {e:#}");

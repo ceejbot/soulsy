@@ -188,14 +188,14 @@ impl CycleData {
         }
     }
 
-    pub fn update_count_by_formid(&mut self, form_id: String, kind: &BaseType, count: u32) {
+    pub fn update_count_by_formid(&mut self, form_spec: &str, kind: &BaseType, count: u32) {
         // If count is zero, remove from any cycles it's in.
         // If count is zero and item is equipped, advance the relevant cycle.
         if kind.is_utility() {
             if let Some(found) = self
                 .utility
                 .iter_mut()
-                .find(|xs| *xs.form_string() == form_id)
+                .find(|xs| xs.form_string().as_str() == form_spec)
             {
                 log::trace!("updating count for utility cycle item; count={count}; item: {found}");
                 found.set_count(count);
@@ -206,7 +206,11 @@ impl CycleData {
         };
 
         if kind.left_hand_ok() {
-            if let Some(found) = self.left.iter_mut().find(|xs| *xs.form_string() == form_id) {
+            if let Some(found) = self
+                .left
+                .iter_mut()
+                .find(|xs| xs.form_string().as_str() == form_spec)
+            {
                 log::trace!("updating count for left cycle item; count={count}; item: {found}");
                 found.set_count(count);
                 if count == 0 {
@@ -219,7 +223,7 @@ impl CycleData {
             if let Some(found) = self
                 .right
                 .iter_mut()
-                .find(|xs| *xs.form_string() == form_id)
+                .find(|xs| xs.form_string().as_str() == form_spec)
             {
                 log::trace!("updating count for right cycle item; count={count}; item: {found}");
                 found.set_count(count);
@@ -228,10 +232,6 @@ impl CycleData {
                 }
             }
         }
-    }
-
-    pub fn update_count(&mut self, item: HudItem, count: u32) {
-        self.update_count_by_formid(item.form_string(), item.kind(), count);
     }
 
     pub fn includes(&self, which: &CycleSlot, item: &HudItem) -> bool {
@@ -447,9 +447,9 @@ pub mod archive_v1 {
     use cxx::CxxVector;
 
     use super::CycleData;
+    use crate::control;
     use crate::data::base::BaseType;
     use crate::data::HudItem;
-    use crate::plugin::formSpecToHudItem;
 
     pub const VERSION: u32 = 1;
 
@@ -520,8 +520,8 @@ pub mod archive_v1 {
                     "unarmed_proxy" => Some(crate::data::make_health_proxy(1)),
                     "" => None,
                     _ => {
-                        cxx::let_cxx_string!(form_spec = xs);
-                        let found = *formSpecToHudItem(&form_spec);
+                        let mut controller = control::get();
+                        let found = controller.cache.get_or_create(xs);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
@@ -548,7 +548,9 @@ pub mod archive_v0 {
     use cxx::CxxVector;
 
     use super::{CycleData, HudItem};
-    use crate::{controller::itemdata::ItemData, data::base::BaseType, plugin::formSpecToHudItem};
+    use crate::control;
+    use crate::controller::itemdata::ItemData;
+    use crate::data::base::BaseType;
 
     const VERSION: u8 = 0;
 
@@ -602,8 +604,8 @@ pub mod archive_v0 {
                     "unarmed_proxy" => Some(crate::data::make_health_proxy(1)),
                     "" => None,
                     _ => {
-                        cxx::let_cxx_string!(form_spec = formstr);
-                        let found = *formSpecToHudItem(&form_spec);
+                        let mut controller = control::get();
+                        let found = controller.cache.get_or_create(&formstr);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {

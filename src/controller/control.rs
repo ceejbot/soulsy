@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::num::NonZeroUsize;
 use std::sync::Mutex;
 
 use once_cell::sync::Lazy;
@@ -6,6 +7,7 @@ use once_cell::sync::Lazy;
 use super::cycles::*;
 use super::keys::*;
 use super::settings::{user_settings, ActivationMethod, UnarmedMethod};
+use crate::data::item_cache::ItemCache;
 use crate::data::potion::PotionType;
 use crate::data::*;
 use crate::plugin::*;
@@ -20,10 +22,12 @@ pub fn get() -> std::sync::MutexGuard<'static, Controller> {
 }
 
 /// What, model/view/controller? In my UI application? oh no
-#[derive(Clone, Default, Debug)]
+#[derive(Debug)]
 pub struct Controller {
     /// Our currently-active cycles.
     pub cycles: CycleData,
+    /// the hud item cache
+    pub cache: ItemCache,
     /// The items the HUD should show right now.
     visible: HashMap<HudElement, HudItem>,
     /// True if we've got a two-handed weapon equipped right now.
@@ -36,13 +40,19 @@ pub struct Controller {
 }
 
 impl Controller {
-    /// Make a controller. Cycle data is read from disk. Currently-equipped
-    /// items are not handled yet.
+    /// Make a controller with no information in it.
     pub fn new() -> Self {
         let cycles = CycleData::default();
         Controller {
             cycles,
-            ..Default::default()
+            cache: ItemCache::new(
+                NonZeroUsize::new(100).expect("cats and dogs living together! 100 not non-zero!"),
+            ),
+            visible: HashMap::new(),
+            two_hander_equipped: false,
+            left_hand_cached: None,
+            right_hand_cached: None,
+            tracked_keys: HashMap::new(),
         }
     }
 
@@ -108,23 +118,14 @@ impl Controller {
     }
 
     /// The player's inventory changed! Act on it if we need to.
-    pub fn handle_inventory_changed(
-        &mut self,
-        #[allow(clippy::boxed_local)] item: Box<HudItem>, // boxed because arriving from C++
-        delta: i32,
-    ) {
-        log::debug!("inventory count changed; {}; count={delta}", item);
+    pub fn handle_inventory_changed(&mut self, form_spec: &String, delta: i32) {
+        log::debug!("inventory count changed; {}; count={delta}", form_spec);
 
-        let current = item.count();
-        let new_count = if delta.is_negative() {
-            if delta > current as i32 {
-                0
-            } else {
-                current - delta.unsigned_abs()
-            }
-        } else {
-            current + delta as u32
+        let Some(item) = self.cache.update_count(form_spec, delta) else {
+            return;
         };
+
+        let new_count = item.count();
 
         // At some point I'm going to want to rework everything to use references
         // to simplify all of this. A sketch of this might be that the controller
@@ -132,37 +133,38 @@ impl Controller {
         // vec. TODO a branch for that work.
         if item.kind().is_ammo() {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {
-                if *candidate.form_string() == *item.form_string() {
+                if candidate.form_string() == *form_spec {
                     candidate.set_count(new_count);
                 }
             }
         } else if item.kind().is_utility() {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Utility) {
-                if *candidate.form_string() == *item.form_string() {
+                if candidate.form_string() == *form_spec {
                     candidate.set_count(new_count);
                 }
             }
         } else {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Left) {
-                if *candidate.form_string() == *item.form_string() {
+                if candidate.form_string() == *form_spec {
                     candidate.set_count(new_count);
                 }
             }
             if let Some(candidate) = self.visible.get_mut(&HudElement::Right) {
-                if *candidate.form_string() == *item.form_string() {
+                if candidate.form_string() == *form_spec {
                     candidate.set_count(new_count);
                 }
             }
         }
 
-        self.cycles.update_count(*item.clone(), new_count);
+        self.cycles
+            .update_count_by_formid(form_spec.as_str(), item.kind(), new_count);
 
         // update count of magicka, health, or stamina potions if we're grouped
         if item.kind().is_potion() && user_settings().group_potions() {
             if matches!(item.kind(), BaseType::Potion(PotionType::Health)) {
                 let count = healthPotionCount();
                 self.cycles.update_count_by_formid(
-                    "health_proxy".to_string(),
+                    "health_proxy",
                     &BaseType::PotionProxy(Proxy::Health),
                     count,
                 );
@@ -170,7 +172,7 @@ impl Controller {
             if matches!(item.kind(), BaseType::Potion(PotionType::Magicka)) {
                 let count = magickaPotionCount();
                 self.cycles.update_count_by_formid(
-                    "magicka_proxy".to_string(),
+                    "magicka_proxy",
                     &BaseType::PotionProxy(Proxy::Magicka),
                     count,
                 );
@@ -178,7 +180,7 @@ impl Controller {
             if matches!(item.kind(), BaseType::Potion(PotionType::Stamina)) {
                 let count = staminaPotionCount();
                 self.cycles.update_count_by_formid(
-                    "stamina_proxy".to_string(),
+                    "stamina_proxy",
                     &BaseType::PotionProxy(Proxy::Stamina),
                     count,
                 );
@@ -189,27 +191,29 @@ impl Controller {
             return;
         }
 
-        if item.kind().is_utility() {
+        let kind = item.kind().clone();
+
+        if kind.is_utility() {
             if let Some(vis) = self.visible.get(&HudElement::Utility) {
-                if vis.form_string() == item.form_string() {
+                if vis.form_string() == *form_spec {
                     if let Some(showme) = self.cycles.get_top(&CycleSlot::Utility) {
                         self.update_slot(HudElement::Utility, &showme);
                     }
                 }
             }
         }
-        if item.kind().left_hand_ok() {
+        if kind.left_hand_ok() {
             if let Some(vis) = self.visible.get(&HudElement::Left) {
-                if vis.form_string() == item.form_string() {
+                if vis.form_string() == *form_spec {
                     if let Some(equipme) = self.cycles.get_top(&CycleSlot::Left) {
                         self.equip_item(&equipme, Action::Left);
                     }
                 }
             }
         }
-        if item.kind().right_hand_ok() {
+        if kind.right_hand_ok() {
             if let Some(vis) = self.visible.get(&HudElement::Right) {
-                if vis.form_string() == item.form_string() {
+                if vis.form_string() == *form_spec {
                     if let Some(equipme) = self.cycles.get_top(&CycleSlot::Right) {
                         self.equip_item(&equipme, Action::Right);
                         // this might race with the left hand. IDEK.
@@ -1243,4 +1247,10 @@ pub enum MenuEventResponse {
     ItemRemoved,
     ItemInappropriate,
     TooManyItems,
+}
+
+impl Default for Controller {
+    fn default() -> Self {
+        Controller::new()
+    }
 }
