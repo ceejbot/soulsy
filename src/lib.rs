@@ -397,18 +397,14 @@ pub mod plugin {
         /// Are the player's weapons drawn?
         fn weaponsAreDrawn() -> bool;
 
-        /// Get the parent form item for the object equipped in the left hand.
-        fn equippedLeftHand() -> Box<HudItem>;
-        /// Get the bound object (not the parent!) for the object equipped in the left hand.
-        fn boundObjectLeftHand() -> Box<HudItem>;
-        /// Get the parent form item for the object equipped in the right hand.
-        fn equippedRightHand() -> Box<HudItem>;
-        /// Get the bound object (not the parent!) for the object equipped in the right hand.
-        fn boundObjectRightHand() -> Box<HudItem>;
-        /// Get the form for the equipped shout or power.
-        fn equippedPower() -> Box<HudItem>;
-        /// Get the form for the equipped ammo.
-        fn equippedAmmo() -> Box<HudItem>;
+        /// Get the form spec for the item readied in the left hand, bound form if possible.
+        fn specEquippedLeft() -> String;
+        /// Get the form spec for the item readied in the right hand, bound form if possible.
+        fn specEquippedRight() -> String;
+        /// Get the form id in spec format for the equipped power or shout.
+        fn specEquippedPower() -> String;
+        /// Get the form id in spec format for the equipped ammo.
+        fn specEquippedAmmo() -> String;
 
         /// Check if the player still has items from this form in their inventory.
         fn hasItemOrSpell(form_spec: &CxxString) -> bool;

@@ -125,6 +125,8 @@ impl Controller {
                 startAlphaTransition(false, 0.0);
             }
         }
+
+        self.cache.introspect();
     }
 
     /// The player's inventory changed! Act on it if we need to.
@@ -855,25 +857,13 @@ impl Controller {
 
         // It's a one-hander. Does it match an earlier decision?
 
-        let rightie = equippedRightHand();
-        let rightie = if rightie.kind().is_weapon() {
-            boundObjectRightHand()
-        } else {
-            rightie
-        };
-
-        let leftie = equippedLeftHand();
-        let leftie = if leftie.kind().is_weapon() {
-            boundObjectLeftHand()
-        } else {
-            leftie
-        };
-
+        let rightie = specEquippedRight();
+        let leftie = specEquippedLeft();
         log::trace!(
             "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
             item.form_string(),
-            rightie.form_string(),
-            leftie.form_string(),
+            rightie,
+            leftie,
             self.two_hander_equipped,
             item.two_handed(),
             item.name(),
@@ -887,8 +877,8 @@ impl Controller {
             .get(&HudElement::Right)
             .map_or("".to_string(), |xs| xs.form_string());
 
-        let right_unexpected = rightvis != rightie.form_string();
-        let left_unexpected = leftvis != leftie.form_string();
+        let right_unexpected = rightvis != rightie;
+        let left_unexpected = leftvis != leftie;
 
         if right && right_unexpected {
             self.update_slot(HudElement::Right, &item);
@@ -970,35 +960,21 @@ impl Controller {
     /// out of band, e.g., by using a menu, and only then if we screwed
     /// up an equip event.
     pub fn update_hud(&mut self) -> bool {
-        let right_entry = equippedRightHand();
-        let right_entry = if right_entry.kind().is_weapon() {
-            boundObjectRightHand()
-        } else {
-            right_entry
-        };
+        let right_spec = specEquippedRight();
+        let right_entry = self.cache.get_or_create(&right_spec);
 
         let right_changed = self.update_slot(HudElement::Right, &right_entry);
         if !right_entry.two_handed() {
             self.right_hand_cached = right_entry.form_string();
         }
-        self.cache.record(*right_entry.clone());
 
-        let left_entry = *equippedLeftHand();
-        let left_entry = if left_entry.kind().is_weapon() || left_entry.kind().is_armor() {
-            log::info!("left entry: {left_entry}");
-            *boundObjectLeftHand()
-        } else {
-            left_entry
-        };
-        log::info!("left entry now: {left_entry}");
+        let left_spec = specEquippedLeft();
+        let left_entry = self.cache.get_or_create(&left_spec);
 
         let left_unexpected = if !left_entry.two_handed() {
             self.left_hand_cached = left_entry.form_string();
-            self.cache.record(left_entry.clone());
-            log::info!("about to record left: {left_entry}");
             self.update_slot(HudElement::Left, &left_entry)
         } else {
-            log::info!("we think item is two-handed; {left_entry}");
             // it's a two-handed item in the left hand.
             self.left_hand_cached = self
                 .cycles
@@ -1008,13 +984,13 @@ impl Controller {
         };
         self.two_hander_equipped = right_entry.two_handed(); // same item will be in both hands
 
-        let power = equippedPower();
+        let power_form = specEquippedPower();
+        let power = self.cache.get_or_create(&power_form);
         let power_changed = self.update_slot(HudElement::Power, &power);
-        self.cache.record(*power.clone());
 
-        let ammo = equippedAmmo();
+        let ammo_form = specEquippedAmmo();
+        let ammo = self.cache.get_or_create(&ammo_form);
         let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
-        self.cache.record(*ammo.clone());
 
         let utility_changed = if self.visible.get(&HudElement::Utility).is_none() {
             if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {

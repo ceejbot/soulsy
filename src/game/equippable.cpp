@@ -83,6 +83,7 @@ namespace equippable
 
 		if (item_form->Is(RE::FormType::Ammo))
 		{
+			logger::info("making HudItem for ammo: '{}'"sv, item_form->GetName());
 			const auto* ammo = item_form->As<RE::TESAmmo>()->AsKeywordForm();
 			ammo->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::keywords;

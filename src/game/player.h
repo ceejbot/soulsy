@@ -19,12 +19,10 @@ namespace player
 	// Here I start carving out an API that the rust controller can call to
 	// manipulate things about the player, as well as ask questions of it.
 
-	rust::Box<HudItem> equippedLeftHand();
-	rust::Box<HudItem> equippedRightHand();
-	rust::Box<HudItem> equippedPower();
-	rust::Box<HudItem> equippedAmmo();
-	rust::Box<HudItem> boundObjectLeftHand();
-	rust::Box<HudItem> boundObjectRightHand();
+	rust::String specEquippedLeft();
+	rust::String specEquippedRight();
+	rust::String specEquippedPower();
+	rust::String specEquippedAmmo();
 
 	rust::Vec<uint16_t> playerName();
 

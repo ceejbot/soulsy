@@ -20,6 +20,11 @@ impl ItemCache {
         Self { lru }
     }
 
+    pub fn introspect(&self) {
+        log::debug!("cache contains {} items; ", self.lru.len());
+        log::debug!("    least recently-used item is: {:?}", self.lru.peek_lru());
+    }
+
     pub fn get_or_create(&mut self, form_string: &String) -> HudItem {
         if let Some(hit) = self.lru.get(form_string) {
             hit.clone()
