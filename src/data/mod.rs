@@ -24,7 +24,7 @@ pub use self::huditem::HudItem;
 use self::potion::PotionType;
 use self::shout::ShoutVariant;
 pub use self::spell::SpellData;
-use crate::plugin::{Color, ItemCategory};
+use crate::plugin::{Color, ItemCategory, staminaPotionCount, healthPotionCount, magickaPotionCount};
 
 // ---------- Designed for C++ to call.
 
@@ -128,7 +128,8 @@ pub fn make_unarmed_proxy() -> Box<HudItem> {
     Box::new(HudItem::make_unarmed_proxy())
 }
 
-pub fn make_magicka_proxy(count: u32) -> HudItem {
+pub fn make_magicka_proxy() -> HudItem {
+    let count = magickaPotionCount();
     HudItem::preclassified(
         "Best Magicka".as_bytes().to_vec(),
         "magicka_proxy".to_string(),
@@ -137,7 +138,8 @@ pub fn make_magicka_proxy(count: u32) -> HudItem {
     )
 }
 
-pub fn make_health_proxy(count: u32) -> HudItem {
+pub fn make_health_proxy() -> HudItem {
+    let count = healthPotionCount();
     HudItem::preclassified(
         "Best Health".as_bytes().to_vec(),
         "health_proxy".to_string(),
@@ -146,7 +148,8 @@ pub fn make_health_proxy(count: u32) -> HudItem {
     )
 }
 
-pub fn make_stamina_proxy(count: u32) -> HudItem {
+pub fn make_stamina_proxy() -> HudItem {
+    let count = staminaPotionCount();
     HudItem::preclassified(
         "Best Stamina".as_bytes().to_vec(),
         "stamina_proxy".to_string(),

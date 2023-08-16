@@ -6,6 +6,7 @@ use std::num::NonZeroUsize;
 use lru::LruCache;
 
 use super::huditem::HudItem;
+use crate::data::{make_health_proxy, make_magicka_proxy, make_stamina_proxy};
 use crate::plugin::formSpecToHudItem;
 
 #[derive(Debug)]
@@ -23,8 +24,19 @@ impl ItemCache {
         if let Some(hit) = self.lru.get(form_string) {
             hit.clone()
         } else {
-            cxx::let_cxx_string!(form_spec = form_string);
-            let item = *formSpecToHudItem(&form_spec);
+            let item = if form_string == "health_proxy" {
+                make_health_proxy()
+            } else if form_string == "stamina_proxy" {
+                make_stamina_proxy()
+            } else if form_string == "magicka_proxy" {
+                make_magicka_proxy()
+            } else if form_string == "unarmed_proxy" {
+                HudItem::make_unarmed_proxy()
+            } else {
+                cxx::let_cxx_string!(form_spec = form_string);
+                *formSpecToHudItem(&form_spec)
+            };
+
             self.record(item.clone());
             item
         }

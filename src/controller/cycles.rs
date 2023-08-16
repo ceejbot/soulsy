@@ -325,7 +325,7 @@ impl CycleData {
             let filtered: Vec<_> = cycle
                 .iter()
                 .filter_map(|incoming| {
-                    let mut spec = incoming.clone();
+                    let spec = incoming.clone();
                     let item = cache.get_or_create(&spec);
 
                     cxx::let_cxx_string!(form_spec = spec.clone());

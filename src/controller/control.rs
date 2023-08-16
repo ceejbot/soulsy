@@ -68,8 +68,8 @@ impl Controller {
 
         match settings.unarmed_handling() {
             UnarmedMethod::AddToCycles => {
-                let h2h = make_unarmed_proxy();
-                let h2h = *h2h;
+                let h2h = HudItem::make_unarmed_proxy();
+                self.cache.record(h2h.clone());
                 self.cycles.include_item(CycleSlot::Left, &h2h);
                 self.cycles.include_item(CycleSlot::Right, &h2h);
             }
@@ -88,8 +88,8 @@ impl Controller {
                 &BaseType::Potion(PotionType::Stamina),
                 &mut self.cache,
             );
-            let count = staminaPotionCount();
-            let proxy = make_stamina_proxy(count);
+            let proxy = make_stamina_proxy();
+            self.cache.record(proxy.clone());
             self.cycles.include_item(CycleSlot::Utility, &proxy);
 
             self.cycles.filter_kind(
@@ -97,8 +97,8 @@ impl Controller {
                 &BaseType::Potion(PotionType::Health),
                 &mut self.cache,
             );
-            let count = healthPotionCount();
-            let proxy = make_health_proxy(count);
+            let proxy = make_health_proxy();
+            self.cache.record(proxy.clone());
             self.cycles.include_item(CycleSlot::Utility, &proxy);
 
             self.cycles.filter_kind(
@@ -106,15 +106,15 @@ impl Controller {
                 &BaseType::Potion(PotionType::Magicka),
                 &mut self.cache,
             );
-            let count = magickaPotionCount();
-            let proxy = make_magicka_proxy(count);
+            let proxy = make_magicka_proxy();
+            self.cache.record(proxy.clone());
             self.cycles.include_item(CycleSlot::Utility, &proxy);
         } else {
-            let proxy = make_stamina_proxy(1);
+            let proxy = make_stamina_proxy();
             self.cycles.remove_item(CycleSlot::Utility, &proxy);
-            let proxy = make_health_proxy(1);
+            let proxy = make_health_proxy();
             self.cycles.remove_item(CycleSlot::Utility, &proxy);
-            let proxy = make_magicka_proxy(1);
+            let proxy = make_magicka_proxy();
             self.cycles.remove_item(CycleSlot::Utility, &proxy);
         }
 
