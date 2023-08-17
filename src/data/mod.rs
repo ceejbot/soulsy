@@ -63,11 +63,9 @@ pub fn fill_out_spell_data(
     school: i32,
     level: u32,
     archetype: i32,
-    formspec: String,
 ) -> Box<SpellData> {
     let result = SpellData::from_game_data(
-        effect, resist, twohanded, school, level, archetype, formspec,
-    );
+        effect, resist, twohanded, school, level, archetype);
     Box::new(result)
 }
 
@@ -84,7 +82,7 @@ pub fn magic_from_spelldata(
     let kind = match which {
         ItemCategory::Scroll => BaseType::create_scroll(data),
         ItemCategory::Spell => BaseType::create_spell(data),
-        ItemCategory::Shout => BaseType::create_shout(data),
+        ItemCategory::Shout => BaseType::create_shout(data, form_string.clone()),
         _ => BaseType::create_spell(data),
     };
     let result = HudItem::preclassified(name_bytes, form_string, count, kind);

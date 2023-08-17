@@ -274,7 +274,6 @@ pub mod plugin {
             school: i32,
             level: u32,
             archetype: i32,
-            form_string: String,
         ) -> Box<SpellData>;
         fn magic_from_spelldata(
             which: ItemCategory,

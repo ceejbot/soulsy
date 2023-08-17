@@ -28,13 +28,14 @@ pub enum ShoutVariant {
     Slowtime,
     StormCall,  //  form pairs are a1a58, e3f0a / a1a5c, e3f09 / a1a5b, d5e81
     ThrowVoice, // spawn scripted ref, 7430d is only effect
-    #[default]
     UnrelentingForce, // arch is stagger, forms are 13e08, 7f82e, 7f82f
     WhirlwindSprint, // arch is script / 2f789, 4372f, 43730
+    #[default]
+    Unclassified
 }
 
 impl ShoutVariant {
-    pub fn from_spell_data(data: SpellData) -> Self {
+    pub fn from_spell_data(data: SpellData, form_string: String) -> Self {
         if matches!(data.archetype, SpellArchetype::SummonCreature) {
             Self::CallOfValor
         } else if matches!(data.archetype, SpellArchetype::Disarm) {
@@ -64,13 +65,13 @@ impl ShoutVariant {
             Self::MarkedForDeath
         } else if matches!(data.archetype, SpellArchetype::SlowTime) {
             Self::Slowtime
-        } else if data.form_string == "Skyrim.esm|0x0007430d" {
+        } else if form_string == "Skyrim.esm|0x0007430d" {
             Self::ThrowVoice
-        } else if data.form_string.as_str() == "Skyrim.esp|0x0002f789" {
+        } else if form_string.as_str() == "Skyrim.esp|0x0002f789" {
             Self::WhirlwindSprint
         } else {
-            log::debug!("default shout; spelldata={data:?}");
-            Self::UnrelentingForce
+            log::debug!("default shout; form_string={form_string}; spelldata={data:?}");
+            Self::Unclassified
         }
     }
 }
@@ -100,6 +101,7 @@ impl HasIcon for ShoutVariant {
             ShoutVariant::ThrowVoice => InvColor::White.color(),
             ShoutVariant::UnrelentingForce => InvColor::White.color(),
             ShoutVariant::WhirlwindSprint => InvColor::White.color(),
+            ShoutVariant::Unclassified => InvColor::White.color(),
         }
     }
 
@@ -127,6 +129,7 @@ impl HasIcon for ShoutVariant {
             ShoutVariant::ThrowVoice => Icon::Shout.icon_file(),
             ShoutVariant::UnrelentingForce => Icon::Shout.icon_file(),
             ShoutVariant::WhirlwindSprint => Icon::Shout.icon_file(),
+            ShoutVariant::Unclassified => Icon::Shout.icon_file(),
         }
     }
 

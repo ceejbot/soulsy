@@ -34,7 +34,6 @@ pub struct SpellData {
     pub level: MagicSpellLevel,
     pub archetype: SpellArchetype,
     pub damage: MagicDamageType,
-    pub form_string: String,
 }
 
 impl SpellData {
@@ -45,7 +44,6 @@ impl SpellData {
         school: i32,
         level: u32,
         archetype: i32,
-        form_string: String,
     ) -> Self {
         let school = School::from(school);
         let effect = ActorValue::from(effect);
@@ -70,7 +68,6 @@ impl SpellData {
             archetype,
             level: level.into(),
             damage,
-            form_string,
         }
     }
 }
