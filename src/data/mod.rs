@@ -24,7 +24,9 @@ pub use self::huditem::HudItem;
 use self::potion::PotionType;
 use self::shout::ShoutVariant;
 pub use self::spell::SpellData;
-use crate::plugin::{Color, ItemCategory, staminaPotionCount, healthPotionCount, magickaPotionCount};
+use crate::plugin::{
+    healthPotionCount, magickaPotionCount, staminaPotionCount, Color, ItemCategory,
+};
 
 // ---------- Designed for C++ to call.
 
@@ -61,8 +63,11 @@ pub fn fill_out_spell_data(
     school: i32,
     level: u32,
     archetype: i32,
+    formspec: String,
 ) -> Box<SpellData> {
-    let result = SpellData::from_game_data(effect, resist, twohanded, school, level, archetype);
+    let result = SpellData::from_game_data(
+        effect, resist, twohanded, school, level, archetype, formspec,
+    );
     Box::new(result)
 }
 

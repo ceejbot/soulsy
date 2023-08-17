@@ -34,7 +34,7 @@ pub struct SpellData {
     pub level: MagicSpellLevel,
     pub archetype: SpellArchetype,
     pub damage: MagicDamageType,
-    pub variant: SpellVariant,
+    pub form_string: String,
 }
 
 impl SpellData {
@@ -45,6 +45,7 @@ impl SpellData {
         school: i32,
         level: u32,
         archetype: i32,
+        form_string: String,
     ) -> Self {
         let school = School::from(school);
         let effect = ActorValue::from(effect);
@@ -62,13 +63,39 @@ impl SpellData {
             _ => MagicDamageType::None,
         };
 
+        Self {
+            effect,
+            twohanded,
+            school,
+            archetype,
+            level: level.into(),
+            damage,
+            form_string,
+        }
+    }
+}
+
+#[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
+pub struct SpellType {
+    pub data: SpellData,
+    pub variant: SpellVariant,
+}
+
+impl SpellType {
+    pub fn from_spell_data(data: SpellData) -> Self {
         // well, this will be fun™
-        let variant = match archetype {
+        let variant = match data.archetype {
             SpellArchetype::ValueModifier => {
-                if matches!(effect, ActorValue::Health) && matches!(school, School::Restoration) {
+                if matches!(data.effect, ActorValue::Health)
+                    && matches!(data.school, School::Restoration)
+                {
                     Some(SpellVariant::Heal)
                 } else {
-                    log::info!("classifying valuemodifier spell; AV={effect}; resist={resist};");
+                    log::info!(
+                        "classifying valuemodifier spell; AV={}; damage={};",
+                        data.effect,
+                        data.damage
+                    );
                     None
                 }
             }
@@ -110,7 +137,7 @@ impl SpellData {
             //SpellArchetype::Banish => todo!(),
             //SpellArchetype::Disguise => todo!(),
             //SpellArchetype::GrabActor => todo!(),
-            _ => Some(SpellVariant::Damage(damage.clone())),
+            _ => Some(SpellVariant::Damage(data.damage.clone())),
         };
 
         let variant = if let Some(v) = variant {
@@ -120,19 +147,11 @@ impl SpellData {
             SpellVariant::Unknown
         };
 
-        Self {
-            effect,
-            twohanded,
-            school,
-            archetype,
-            level: level.into(),
-            damage,
-            variant,
-        }
+        Self { data, variant }
     }
 }
 
-impl HasIcon for SpellData {
+impl HasIcon for SpellType {
     fn color(&self) -> Color {
         match &self.variant {
             SpellVariant::Unknown => Color::default(),
@@ -238,7 +257,7 @@ impl HasIcon for SpellData {
     }
 
     fn icon_fallback(&self) -> String {
-        match &self.school {
+        match &self.data.school {
             School::Alteration => Icon::Alteration.icon_file(),
             School::Conjuration => Icon::Conjuration.icon_file(),
             School::Destruction => Icon::Destruction.icon_file(),

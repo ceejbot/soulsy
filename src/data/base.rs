@@ -8,7 +8,7 @@ use super::color::InvColor;
 use super::icons::Icon;
 use super::potion::PotionType;
 use super::shout::ShoutVariant;
-use super::spell::SpellData;
+use super::spell::{SpellData, SpellType};
 use super::weapon::{WeaponEquipType, WeaponType};
 use super::{HasIcon, HasKeywords, IsHudItem};
 use crate::plugin::{Color, ItemCategory};
@@ -25,9 +25,9 @@ pub enum BaseType {
     Potion(PotionType),
     PotionProxy(Proxy),
     Power,
-    Scroll(SpellData),
+    Scroll(SpellType),
     Shout(ShoutVariant),
-    Spell(SpellData),
+    Spell(SpellType),
     Weapon(WeaponType),
 }
 
@@ -85,14 +85,12 @@ impl HasIcon for FoodType {
 }
 
 impl BaseType {
-    pub fn create_spell(spell: SpellData) -> Self {
-        // TODO
-        BaseType::Spell(spell)
+    pub fn create_spell(data: SpellData) -> Self {
+        BaseType::Spell(SpellType::from_spell_data(data))
     }
 
-    pub fn create_scroll(spell: SpellData) -> Self {
-        // todo
-        BaseType::Scroll(spell)
+    pub fn create_scroll(data: SpellData) -> Self {
+        BaseType::Scroll(SpellType::from_spell_data(data))
     }
 
     pub fn create_power(_spell: SpellData) -> Self {
@@ -100,8 +98,8 @@ impl BaseType {
         BaseType::Power
     }
 
-    pub fn create_shout(spell: SpellData) -> Self {
-        let variant = ShoutVariant::from_spell_data(spell);
+    pub fn create_shout(data: SpellData) -> Self {
+        let variant = ShoutVariant::from_spell_data(data);
         BaseType::Shout(variant)
     }
 
@@ -114,9 +112,9 @@ impl BaseType {
             ItemCategory::Light => Self::Light, // TODO
             ItemCategory::Potion => Self::Potion(PotionType::Default),
             ItemCategory::Power => Self::Power,
-            ItemCategory::Scroll => Self::Scroll(SpellData::default()),
+            ItemCategory::Scroll => Self::Scroll(SpellType::default()),
             ItemCategory::Shout => Self::Shout(ShoutVariant::default()),
-            ItemCategory::Spell => Self::Spell(SpellData::default()),
+            ItemCategory::Spell => Self::Spell(SpellType::default()),
             ItemCategory::Weapon => Self::Weapon(WeaponType::classify(keywords.clone(), twohanded)),
             _ => BaseType::Empty,
         }
@@ -273,7 +271,7 @@ impl IsHudItem for BaseType {
                 WeaponType::WeaponDefault(t, _) => matches!(t, WeaponEquipType::OneHanded),
                 WeaponType::Whip(t, _) => matches!(t, WeaponEquipType::OneHanded),
             },
-            BaseType::Spell(v) => !v.twohanded,
+            BaseType::Spell(v) => !v.data.twohanded,
             _ => true,
         }
     }
@@ -293,14 +291,12 @@ impl IsHudItem for BaseType {
                 BaseType::Armor(ArmorType::Shield(_, _))
                     | BaseType::Light
                     | BaseType::Scroll(_)
-                    | BaseType::Spell(SpellData {
-                        effect: _,
-                        damage: _,
-                        twohanded: false,
-                        school: _,
-                        level: _,
-                        archetype: _,
-                        variant: _
+                    | BaseType::Spell(SpellType {
+                        data: SpellData {
+                            twohanded: false,
+                            ..
+                        },
+                        ..
                     })
             )
     }

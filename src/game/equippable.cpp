@@ -127,7 +127,7 @@ namespace equippable
 			logger::info("making HudItem for shout: '{}'"sv, item_form->GetName());
 			auto* shout = item_form->As<RE::TESShout>();
 			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
-			auto* spell = shout->variations[RE::TESShout::VariationIDs::kThree].spell;
+			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
 			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
 			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
 			if (!effect) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
@@ -135,13 +135,14 @@ namespace equippable
 			auto archetype      = effect->data.archetype;
 			auto primary_effect = effect->data.primaryAV;
 			auto resist         = effect->data.resistVariable;
+			auto school         = effect->GetMagickSkill();
 
 			rust::Box<SpellData> data =
 				fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
 					static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
-					false,
-					static_cast<std::underlying_type_t<RE::ActorValue>>(RE::ActorValue::kNone),
-					1,
+					false,  // two-handed-ness
+					static_cast<std::underlying_type_t<RE::ActorValue>>(school),
+					1,  // skill
 					static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype));
 			rust::Box<HudItem> item =
 				magic_from_spelldata(ItemCategory::Shout, std::move(data), std::move(chonker), form_string, 1);
