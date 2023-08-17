@@ -120,8 +120,8 @@ impl SpellType {
             //SpellArchetype::Disarm => todo!(),
             //SpellArchetype::Disguise => todo!(),
             //SpellArchetype::Dispel => todo!(),
-            //SpellArchetype::DualValueModifier => todo!(), // this one should look at effect and resist
-            //SpellArchetype::EnhanceWeapon => todo!(),
+            //SpellArchetype::DualValueModifier => todo!(), // most frost spells are this
+            SpellArchetype::EnhanceWeapon => Some(SpellVariant::EnhanceWeapon),
             //SpellArchetype::Etherealize => todo!(),
             //SpellArchetype::Frenzy => todo!(),
             //SpellArchetype::GrabActor => todo!(),
@@ -131,8 +131,8 @@ impl SpellType {
             //SpellArchetype::Open => todo!(),
             //SpellArchetype::Paralysis => todo!(),
             //SpellArchetype::Rally => todo!(),
-            //SpellArchetype::SlowTime => todo!(),
-            //SpellArchetype::SpawnHazard => todo!(),
+            SpellArchetype::SlowTime => Some(SpellVariant::SlowTime),
+            //SpellArchetype::SpawnHazard => todo!(), // frostwall and firewall here?
             //SpellArchetype::Telekinesis => todo!(),
             //SpellArchetype::TurnUndead => todo!(),
             _ => Some(SpellVariant::Unknown),
@@ -178,6 +178,7 @@ impl HasIcon for SpellType {
             SpellVariant::SoulTrap => InvColor::Eldritch.color(),
             SpellVariant::Summon => Color::default(),
             SpellVariant::Teleport => Color::default(),
+            SpellVariant::TurnUndead => InvColor::Sun.color(),
             SpellVariant::Ward => Color::default(),
             _ => Color::default(),
         }
@@ -218,13 +219,14 @@ impl HasIcon for SpellType {
             SpellVariant::Cloak(_) => Icon::ArmorCloak.icon_file(),
             SpellVariant::Demoralize => Icon::SpellFear.icon_file(),
             SpellVariant::Detect => Icon::SpellDetect.icon_file(),
+            SpellVariant::EnhanceWeapon => Icon::SpellSharpen.icon_file(),
             SpellVariant::Fear => Icon::SpellFear.icon_file(),
             SpellVariant::Fireball => Icon::SpellFireball.icon_file(),
-            SpellVariant::Firebolt => self.icon_fallback(),
-            SpellVariant::FireboltStorm => self.icon_fallback(),
-            SpellVariant::FireWall => self.icon_fallback(),
+            SpellVariant::Firebolt => Icon::SpellFireDual.icon_file(),
+            SpellVariant::FireboltStorm => Icon::SpellMeteor.icon_file(),
+            SpellVariant::FireWall => Icon::SpellFireWall.icon_file(),
             SpellVariant::Frost => Icon::SpellFrost.icon_file(),
-            SpellVariant::FrostWall => Icon::SpellFrost.icon_file(), // TODO frostwall
+            SpellVariant::FrostWall => Icon::SpellFrostWall.icon_file(), // TODO frostwall
             SpellVariant::Guide => Icon::SpellWisp.icon_file(),
             SpellVariant::Heal => Icon::SpellHeal.icon_file(),
             SpellVariant::IceSpike => Icon::SpellIceShard.icon_file(),
@@ -243,13 +245,14 @@ impl HasIcon for SpellType {
             SpellVariant::Rout => Icon::SpellFear.icon_file(),
             SpellVariant::Rune => Icon::SpellRune.icon_file(),
             SpellVariant::Shock => Icon::SpellShockStrong.icon_file(),
+            SpellVariant::SlowTime => Icon::SpellTime.icon_file(),
             SpellVariant::SoulTrap => Icon::SpellSoultrap.icon_file(),
             SpellVariant::Sparks => Icon::SpellShock.icon_file(),
             SpellVariant::StormWall => self.icon_fallback(),
             SpellVariant::Summon => Icon::SpellSummon.icon_file(),
             SpellVariant::Teleport => Icon::SpellTeleport.icon_file(),
             SpellVariant::Thunderbolt => Icon::SpellLightningBlast.icon_file(),
-            SpellVariant::TurnUndead => self.icon_fallback(),
+            SpellVariant::TurnUndead => Icon::SpellHoly.icon_file(),
             SpellVariant::Ward => Icon::SpellWard.icon_file(),
         }
     }
@@ -367,6 +370,7 @@ pub enum SpellVariant {
     Demoralize,
     Detect,
     // Drain,
+    EnhanceWeapon,
     Fear,
     Fireball,
     Firebolt,
@@ -394,8 +398,8 @@ pub enum SpellVariant {
     Rout,
     Rune,
     Shock,
+    SlowTime,
     Sparks,
-
     SoulTrap,
     StormWall,
     Summon,

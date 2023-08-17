@@ -26,12 +26,12 @@ pub enum ShoutVariant {
     KynesPeace,
     MarkedForDeath, // archetype is value modifier, damage resist OR peak value, health
     Slowtime,
-    StormCall,  //  form pairs are a1a58, e3f0a / a1a5c, e3f09 / a1a5b, d5e81
-    ThrowVoice, // spawn scripted ref, 7430d is only effect
+    StormCall,        //  form pairs are a1a58, e3f0a / a1a5c, e3f09 / a1a5b, d5e81
+    ThrowVoice,       // spawn scripted ref, 7430d is only effect
     UnrelentingForce, // arch is stagger, forms are 13e08, 7f82e, 7f82f
-    WhirlwindSprint, // arch is script / 2f789, 4372f, 43730
+    WhirlwindSprint,  // arch is script / 2f789, 4372f, 43730
     #[default]
-    Unclassified
+    Unclassified,
 }
 
 impl ShoutVariant {
@@ -95,7 +95,7 @@ impl HasIcon for ShoutVariant {
             ShoutVariant::IceForm => InvColor::Frost.color(),
             ShoutVariant::IceStorm => InvColor::Frost.color(),
             ShoutVariant::KynesPeace => InvColor::Green.color(),
-            ShoutVariant::MarkedForDeath => InvColor::White.color(),
+            ShoutVariant::MarkedForDeath => InvColor::Poison.color(),
             ShoutVariant::Slowtime => InvColor::White.color(),
             ShoutVariant::StormCall => InvColor::Shock.color(),
             ShoutVariant::ThrowVoice => InvColor::White.color(),
