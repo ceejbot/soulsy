@@ -27,9 +27,9 @@ setup:
 
 # Check clippy lints and format both Rust & C++.
 @lint:
-    cargo clippy
     cargo +nightly fmt
     find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
+    cargo clippy
 
 # Generate source files list for CMake. Bash.
 sources:

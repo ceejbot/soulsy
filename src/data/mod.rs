@@ -65,8 +65,8 @@ pub fn fill_out_spell_data(
     level: u32,
     archetype: i32,
 ) -> Box<SpellData> {
-    let result = SpellData::from_game_data(
-        effect, effect2, resist, twohanded, school, level, archetype);
+    let result =
+        SpellData::from_game_data(effect, effect2, resist, twohanded, school, level, archetype);
     Box::new(result)
 }
 

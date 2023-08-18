@@ -41,11 +41,11 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 
 	// auto item = equippable::hudItemFromForm(form);
 
-	auto* player   = RE::PlayerCharacter::GetSingleton();
-	const auto* left_eq = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+	auto* player         = RE::PlayerCharacter::GetSingleton();
+	const auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 	const auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 
-	worn_left = left_eq ? left_eq->GetFormID() == form->GetFormID() : false;
+	worn_left  = left_eq ? left_eq->GetFormID() == form->GetFormID() : false;
 	worn_right = right_eq ? right_eq->GetFormID() == form->GetFormID() : false;
 
 	std::string form_string = helpers::makeFormSpecString(form);

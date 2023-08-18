@@ -132,11 +132,11 @@ namespace equippable
 			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
 			if (!effect) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
 
-			auto archetype      = effect->data.archetype;
-			auto primary_effect = effect->data.primaryAV;
+			auto archetype        = effect->data.archetype;
+			auto primary_effect   = effect->data.primaryAV;
 			auto secondary_effect = effect->data.secondaryAV;
-			auto resist         = effect->data.resistVariable;
-			auto school         = effect->GetMagickSkill();
+			auto resist           = effect->data.resistVariable;
+			auto school           = effect->GetMagickSkill();
 
 			rust::Box<SpellData> data =
 				fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
@@ -170,12 +170,12 @@ namespace equippable
 			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
 			if (effect)
 			{
-				auto skill_level    = effect->GetMinimumSkillLevel();
-				auto archetype      = effect->data.archetype;
-				auto primary_effect = effect->data.primaryAV;
+				auto skill_level      = effect->GetMinimumSkillLevel();
+				auto archetype        = effect->data.archetype;
+				auto primary_effect   = effect->data.primaryAV;
 				auto secondary_effect = effect->data.secondaryAV;
-				auto resist         = effect->data.resistVariable;
-				auto magic_school   = effect->GetMagickSkill();
+				auto resist           = effect->data.resistVariable;
+				auto magic_school     = effect->GetMagickSkill();
 				if (magic_school == RE::ActorValue::kNone) { magic_school = effect->data.primaryAV; }
 
 				rust::Box<SpellData> data =
@@ -196,14 +196,14 @@ namespace equippable
 		{
 			logger::info("making HudItem for scroll: '{}'"sv, item_form->GetName());
 
-			auto* scroll        = item_form->As<RE::ScrollItem>();
-			const auto effect   = scroll->GetCostliestEffectItem()->baseEffect;
-			auto skill_level    = effect->GetMinimumSkillLevel();
-			auto archetype      = effect->data.archetype;
-			auto primary_effect = effect->data.primaryAV;
+			auto* scroll          = item_form->As<RE::ScrollItem>();
+			const auto effect     = scroll->GetCostliestEffectItem()->baseEffect;
+			auto skill_level      = effect->GetMinimumSkillLevel();
+			auto archetype        = effect->data.archetype;
+			auto primary_effect   = effect->data.primaryAV;
 			auto secondary_effect = effect->data.secondaryAV;
-			auto resist         = effect->data.resistVariable;
-			auto magic_school   = scroll->GetAssociatedSkill();
+			auto resist           = effect->data.resistVariable;
+			auto magic_school     = scroll->GetAssociatedSkill();
 			if (magic_school == RE::ActorValue::kNone) { magic_school = effect->data.primaryAV; }
 
 			rust::Box<SpellData> data = fill_out_spell_data(static_cast<int32_t>(primary_effect),

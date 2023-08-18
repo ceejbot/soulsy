@@ -49,7 +49,8 @@ namespace player
 		else { return helpers::makeFormSpecString(item_form); }
 	}
 
-	rust::String specEquippedRight() {
+	rust::String specEquippedRight()
+	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 		if (!obj) return std::string("unarmed_proxy");
@@ -65,7 +66,8 @@ namespace player
 		else { return helpers::makeFormSpecString(item_form); }
 	}
 
-	rust::String specEquippedPower() {
+	rust::String specEquippedPower()
+	{
 		auto* player    = RE::PlayerCharacter::GetSingleton();
 		const auto* obj = player->GetActorRuntimeData().selectedPower;
 		if (!obj) return std::string("");
@@ -73,8 +75,9 @@ namespace player
 		if (!item_form) return std::string("");
 		return helpers::makeFormSpecString(item_form);
 	}
-	
-	rust::String specEquippedAmmo() {
+
+	rust::String specEquippedAmmo()
+	{
 		auto player        = RE::PlayerCharacter::GetSingleton();
 		auto* current_ammo = player->GetCurrentAmmo();
 		if (!current_ammo || !current_ammo->IsAmmo()) { return std::string(""); }

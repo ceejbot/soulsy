@@ -468,10 +468,10 @@ pub mod archive_v1 {
     impl From<&CycleData> for CycleSerialized {
         fn from(value: &CycleData) -> Self {
             Self {
-                left: value.left.iter().cloned().collect(),
-                right: value.right.iter().cloned().collect(),
-                power: value.power.iter().cloned().collect(),
-                utility: value.utility.iter().cloned().collect(),
+                left: value.left.to_vec(),
+                right: value.right.to_vec(),
+                power: value.power.to_vec(),
+                utility: value.utility.to_vec(),
                 hud_visible: value.hud_visible,
             }
         }
