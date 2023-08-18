@@ -448,11 +448,14 @@ namespace ui
 			// now draw the icon over the background...
 			if (slot_layout.icon_color.a > 0)
 			{
-				const auto icon_color = entry->color();
+				const auto icon_color               = entry->color();
 				auto icon_file                      = std::string(entry->icon_file());
 				const auto [texture, width, height] = icon_struct[icon_file];
 				const auto size =
 					ImVec2(slot_layout.icon_size.x * global_scale, slot_layout.icon_size.y * global_scale);
+				const auto icon_pos = ImVec2(slot_center.x + slot_layout.icon_offset.x * global_scale,
+					slot_center.y + slot_layout.icon_offset.y * global_scale);
+
 				drawElement(texture, slot_center, size, 0.f, icon_color);
 			}
 
@@ -461,12 +464,11 @@ namespace ui
 			{
 				const auto text_pos = ImVec2(slot_center.x + slot_layout.name_offset.x * global_scale,
 					slot_center.y + slot_layout.name_offset.y * global_scale);
+				auto font_size      = slot_layout.name_font_size;
+				if (font_size == 0.0) { font_size = top_layout.font_size; }
 
-				drawText(entry_name,
-					text_pos,
-					top_layout.font_size * global_scale,
-					slot_layout.name_color,
-					slot_layout.align_text);
+				drawText(
+					entry_name, text_pos, font_size * global_scale, slot_layout.name_color, slot_layout.align_text);
 			}
 
 			// next up: do we have extra text to show on this puppy?
@@ -697,9 +699,10 @@ namespace ui
 		// time to decide that the weapons are truly gone.
 		fade_out_timer = FADEOUT_HYSTERESIS;
 
-		auto settings    = user_settings();
-		float fade_time  = static_cast<float>(settings->fade_time()) / 1000.0f;
-		if (doing_brief_peek) {
+		auto settings   = user_settings();
+		float fade_time = static_cast<float>(settings->fade_time()) / 1000.0f;
+		if (doing_brief_peek)
+		{
 			fade_time += static_cast<float>(settings->equip_delay_ms()) / 500.0f;  // yes over 500-- we're adding double
 		}
 		transition_timer = fade_in ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out

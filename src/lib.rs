@@ -34,6 +34,24 @@ pub mod plugin {
         Center,
     }
 
+    /// An x,y coordinate used to indicate size or an offset.
+    #[derive(Deserialize, Serialize, Debug, Clone, Default)]
+    struct Point {
+        /// Width or side-to-side offset. Negative values move left.
+        x: f32,
+        /// Height or top-to-bottom offset. Negative values move up.
+        y: f32,
+    }
+
+    /// Color as rgba between 0 and 255. The default is white at full alpha.
+    #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
+    struct Color {
+        r: u8,
+        g: u8,
+        b: u8,
+        a: u8,
+    }
+
     /// Where to arrange the HUD elements and what color to draw them in.
     ///
     /// This data is serialized to the SoulsyHUD_HudLayout.toml file.
@@ -86,24 +104,6 @@ pub mod plugin {
         debug: bool,
     }
 
-    /// An x,y coordinate used to indicate size or an offset.
-    #[derive(Deserialize, Serialize, Debug, Clone, Default)]
-    struct Point {
-        /// Width or side-to-side offset. Negative values move left.
-        x: f32,
-        /// Height or top-to-bottom offset. Negative values move up.
-        y: f32,
-    }
-
-    /// Color as rgba between 0 and 255. The default is white at full alpha.
-    #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
-    struct Color {
-        r: u8,
-        g: u8,
-        b: u8,
-        a: u8,
-    }
-
     /// Layout variables for a single HUD slot, e.g, the power slot.
     ///
     /// This has all the same data as the previous slot settings struct, but rearranges
@@ -124,10 +124,14 @@ pub mod plugin {
         size: Point,
         /// The color of any background for this element. If its alpha is 0, the bg is not drawn.
         bg_color: Color,
+
         /// The color of any icon for this element. If its alpha is 0, the icon is not drawn.
         icon_color: Color,
         /// The size of the icon to draw in this slot.
         icon_size: Point,
+        /// Where to draw the icon; a center point relative to the center of this slot.
+        #[serde(default)]
+        icon_offset: Point,
 
         /// The color to use for this element's hotkey, if it has one. If alpha is zero, it's not drawn.
         hotkey_color: Color,
@@ -149,6 +153,9 @@ pub mod plugin {
         name_color: Color,
         /// Where to draw the item name.
         name_offset: Point,
+        /// The font size to use for this item's name.
+        #[serde(default)]
+        name_font_size: f32,
     }
 
     /// This enum maps key presses to the desired action. More like a C/java
