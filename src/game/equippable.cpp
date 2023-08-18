@@ -65,17 +65,17 @@ namespace equippable
 		return RE::ActorValue::kNone;
 	}
 
-	rust::Box<SpellData> fillOutSpellData(bool two_handed, int32_t skill_level, RE::ActiveEffect* effect)
+	rust::Box<SpellData> fillOutSpellData(bool two_handed, int32_t skill_level, const RE::EffectSetting* effect)
 	{
 		auto archetype        = effect->data.archetype;
 		auto primary_effect   = effect->data.primaryAV;
 		auto secondary_effect = effect->data.secondaryAV;
 		auto resist           = effect->data.resistVariable;
 		auto school           = effect->GetMagickSkill();
+		auto assoc            = effect->data.associatedForm;
 
-		auto assoc = effect->associatedForm();
 		std::string assoc_formspec;
-		if (assoc) { assoc_formspec = helpers::makeFormSpecString(assoc) }
+		if (assoc) { assoc_formspec = helpers::makeFormSpecString(assoc); }
 		else { assoc_formspec = std::string(""); }
 
 		rust::Box<SpellData> data =
@@ -181,7 +181,6 @@ namespace equippable
 			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
 			if (effect)
 			{
-				bool two_handed  = spell->IsTwoHanded();
 				auto skill_level = effect->GetMinimumSkillLevel();
 				auto data        = fillOutSpellData(two_handed, skill_level, effect);
 				rust::Box<HudItem> item =
@@ -198,14 +197,9 @@ namespace equippable
 			const auto effect = scroll->GetCostliestEffectItem()->baseEffect;
 			auto skill_level  = effect->GetMinimumSkillLevel();
 
-			auto assoc = effect->associatedForm();
-			std::string assoc_formspec;
-			if (assoc) { assoc_formspec = helpers::makeFormSpecString(assoc) }
-			else { assoc_formspec = std::string(""); }
-
 			auto data               = fillOutSpellData(two_handed, skill_level, effect);
 			rust::Box<HudItem> item = magic_from_spelldata(
-				ItemCategory::Scroll, std::move(data), std::move(chonker), form_string, 1, assoc_formspec);
+				ItemCategory::Scroll, std::move(data), std::move(chonker), form_string, 1);
 			return item;
 		}
 

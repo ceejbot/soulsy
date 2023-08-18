@@ -69,7 +69,7 @@ impl InvColor {
             InvColor::Copper => Color::rgb(184, 115, 51),
             InvColor::Daedric => Color::rgb(171, 35, 0),
             InvColor::Dwarven => Color::rgb(255, 175, 0),
-            InvColor::Eldritch => Color::rgb(230, 230, 255),
+            InvColor::Eldritch => Color::rgb(59, 176, 244),
             InvColor::Fire => Color::rgb(255, 76, 0), // orange
             InvColor::Frost => Color::rgb(0, 237, 255),
             InvColor::Gold => Color::rgb(218, 165, 32),

@@ -8,11 +8,12 @@
 // which is a side benefit.
 
 struct HudItem;
+struct SpellData;
 
 namespace equippable
 {
 	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form);
-	rust::Box<SpellData> fillOutSpellData(bool two_handed, int32_t skill_level, RE::ActiveEffect* effect);
+	rust::Box<SpellData> fillOutSpellData(bool two_handed, int32_t skill_level, const RE::EffectSetting* effect);
 	rust::Box<HudItem> subKindForConsumable(RE::TESForm*& form);
 
 	bool requiresTwoHands(RE::TESForm*& form);
