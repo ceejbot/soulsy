@@ -286,7 +286,7 @@ impl From<i32> for School {
         match value {
             18 => School::Alteration,
             19 => School::Conjuration,
-            20 => School::Conjuration,
+            20 => School::Destruction,
             21 => School::Illusion,
             22 => School::Restoration,
             _ => School::None,

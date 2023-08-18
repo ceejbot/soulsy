@@ -687,7 +687,6 @@ namespace ui
 		is_transitioning = true;
 		fade_in          = a_in;
 
-
 		// unused right now
 		if (a_value < 0) { goal_alpha = 0.0; }
 		else if (a_value > 1.0) { goal_alpha = 1.0; }
@@ -700,6 +699,9 @@ namespace ui
 
 		auto settings    = user_settings();
 		float fade_time  = static_cast<float>(settings->fade_time()) / 1000.0f;
+		if (doing_brief_peek) {
+			fade_time += static_cast<float>(settings->equip_delay_ms()) / 500.0f;  // yes over 500-- we're adding double
+		}
 		transition_timer = fade_in ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
 
 		// We must allow for the transition starting while the alpha is not pinned.
