@@ -32,79 +32,55 @@ namespace player
 
 	bool weaponsAreDrawn() { return RE::PlayerCharacter::GetSingleton()->AsActorState()->IsWeaponDrawn(); }
 
-	rust::Box<ItemData> equippedLeftHand()
+	rust::String specEquippedLeft()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return hand2hand_itemdata();
-		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand2hand_itemdata();
-		return equippable::makeItemDataFromForm(item_form);
-	}
+		if (!obj) return std::string("unarmed_proxy");
 
-	rust::Box<ItemData> equippedRightHand()
-	{
-		auto* player = RE::PlayerCharacter::GetSingleton();
-
-		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return hand2hand_itemdata();
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand2hand_itemdata();
-		return equippable::makeItemDataFromForm(item_form);
-	}
-
-	rust::Box<ItemData> boundObjectLeftHand()
-	{
-		auto* player   = RE::PlayerCharacter::GetSingleton();
-		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (!obj) return hand2hand_itemdata();
-		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand2hand_itemdata();
+		if (!item_form) return std::string("unarmed_proxy");
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		game::boundObjectForForm(item_form, player, bound_obj, extra);
 
-		if (!bound_obj) { return equippable::makeItemDataFromForm(item_form); }
-		return equippable::makeItemDataFromForm(bound_obj);
+		if (bound_obj) { return helpers::makeFormSpecString(bound_obj); }
+		else { return helpers::makeFormSpecString(item_form); }
 	}
 
-	rust::Box<ItemData> boundObjectRightHand()
-	{
+	rust::String specEquippedRight() {
 		auto* player   = RE::PlayerCharacter::GetSingleton();
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (!obj) return hand2hand_itemdata();
+		if (!obj) return std::string("unarmed_proxy");
+
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return hand2hand_itemdata();
+		if (!item_form) return std::string("unarmed_proxy");
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		game::boundObjectForForm(item_form, player, bound_obj, extra);
-		if (!bound_obj) { return equippable::makeItemDataFromForm(item_form); }
 
-		return equippable::makeItemDataFromForm(bound_obj);
+		if (bound_obj) { return helpers::makeFormSpecString(bound_obj); }
+		else { return helpers::makeFormSpecString(item_form); }
 	}
 
-	rust::Box<ItemData> equippedPower()
-	{
+	rust::String specEquippedPower() {
 		auto* player    = RE::PlayerCharacter::GetSingleton();
 		const auto* obj = player->GetActorRuntimeData().selectedPower;
-		if (!obj) return empty_itemdata();
+		if (!obj) return std::string("");
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return empty_itemdata();
-		return equippable::makeItemDataFromForm(item_form);
+		if (!item_form) return std::string("");
+		return helpers::makeFormSpecString(item_form);
 	}
-
-	rust::Box<ItemData> equippedAmmo()
-	{
+	
+	rust::String specEquippedAmmo() {
 		auto player        = RE::PlayerCharacter::GetSingleton();
 		auto* current_ammo = player->GetCurrentAmmo();
-		if (!current_ammo || !current_ammo->IsAmmo()) { return empty_itemdata(); }
+		if (!current_ammo || !current_ammo->IsAmmo()) { return std::string(""); }
 
 		const auto formspec = helpers::makeFormSpecString(current_ammo);
-		auto count          = inventoryCount(current_ammo, RE::FormType::Ammo, player);
-		auto chonker        = helpers::chars_to_vec(current_ammo->GetName());
-		return itemdata_from_formdata(ItemKind::Arrow, false, true, count, std::move(chonker), formspec);
+		return formspec;
 	}
 
 	void unequipSlot(Action which)
@@ -247,7 +223,7 @@ namespace player
 		game::boundObjectForForm(form, player, bound_obj, extra);
 		if (!bound_obj) { return; }
 
-		logger::info("re-equipping item in left hand; name='{}'; formID={}"sv,
+		logger::info("Re-equipping item in left hand; name='{}'; formID={}"sv,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
 		RE::BGSEquipSlot* slot;

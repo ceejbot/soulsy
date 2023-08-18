@@ -18,7 +18,7 @@ namespace game
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
 		std::vector<RE::ExtraDataList*> extra_vector;
-		
+
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(the_player, form->GetFormType());
 
@@ -36,13 +36,14 @@ namespace game
 				{
 					for (auto* extra_data : *simple_extra_data_list)
 					{
-						extra           = extra_data;
+						extra = extra_data;
 						extra_vector.push_back(extra_data);
 						auto is_favorited = extra_data->HasType(RE::ExtraDataType::kHotkey);
-						auto is_poisoned = extra_data->HasType(RE::ExtraDataType::kPoison);
-						auto worn_right = extra_data->HasType(RE::ExtraDataType::kWorn);
-						auto worn_left  = extra_data->HasType(RE::ExtraDataType::kWornLeft);
-						logger::debug("extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
+						auto is_poisoned  = extra_data->HasType(RE::ExtraDataType::kPoison);
+						auto worn_right   = extra_data->HasType(RE::ExtraDataType::kWorn);
+						auto worn_left    = extra_data->HasType(RE::ExtraDataType::kWornLeft);
+						logger::debug(
+							"extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
 							extra_data->GetCount(),
 							is_favorited,
 							is_poisoned,

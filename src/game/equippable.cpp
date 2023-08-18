@@ -1,44 +1,12 @@
 #include "equippable.h"
 
 #include "helpers.h"
-#include "lib.rs.h"
 #include "player.h"
+
+#include "lib.rs.h"
 
 namespace equippable
 {
-	rust::Box<ItemData> makeItemDataFromForm(RE::TESForm* item_form)
-	{
-		if (!item_form) {
-			logger::warn("Called makeItemDataFromForm() with null pointer.");
-			return empty_itemdata();
-		}
-		logger::info("making itemdata for '{}'"sv, item_form->GetName());
-		bool two_handed         = equippable::requiresTwoHands(item_form);
-		std::string form_string = helpers::makeFormSpecString(item_form);
-		auto kind               = equippable::itemKindFromForm(item_form);
-		auto count              = player::getInventoryCountByForm(item_form);
-		bool show_count         = kind_has_count(kind);
-		auto chonker            = helpers::chars_to_vec(item_form->GetName());
-
-		return itemdata_from_formdata(kind, two_handed, show_count, count, std::move(chonker), form_string);
-	}
-
-	bool canInstantCast(RE::TESForm* item_form, const ItemKind kind)
-	{
-		if (kind_is_magic(kind))
-		{
-			const auto* spell = item_form->As<RE::SpellItem>();
-			if (spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell ||
-				spell->GetSpellType() == RE::MagicSystem::SpellType::kLeveledSpell)
-			{
-				if (spell->GetCastingType() != RE::MagicSystem::CastingType::kConcentration) { return true; }
-			}
-			return false;
-		}
-
-		return (kind == ItemKind::Scroll);
-	}
-
 	bool requiresTwoHands(RE::TESForm*& item_form)
 	{
 		if (!item_form) { return false; }
@@ -48,7 +16,8 @@ namespace equippable
 		{
 			if (const auto* spell = item_form->As<RE::SpellItem>(); spell->IsTwoHanded()) { return true; }
 		}
-		else if (item_form->IsWeapon())
+
+		if (item_form->IsWeapon())
 		{
 			if (const auto* weapon = item_form->As<RE::TESObjectWEAP>();
 				weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow() || weapon->IsCrossbow())
@@ -56,11 +25,18 @@ namespace equippable
 				return true;
 			}
 		}
-		else if (item_form->Is(RE::FormType::Scroll)) { 
+		else if (item_form->Is(RE::FormType::Scroll))
+		{
 			auto* scroll = item_form->As<RE::ScrollItem>();
 			return scroll->IsTwoHanded();
-		 }
+		}
 
+
+		if (item_form->Is(RE::FormType::Scroll))
+		{
+			auto* scroll = item_form->As<RE::ScrollItem>();
+			return scroll->IsTwoHanded();
+		}
 
 		//logger::trace("form {}, two handed {}"sv, item_form->GetName(), two_handed);
 		return two_handed;
@@ -89,194 +65,199 @@ namespace equippable
 		return RE::ActorValue::kNone;
 	}
 
-	ItemKind itemKindFromForm(RE::TESForm*& item_form)
+	rust::Box<HudItem> hudItemFromForm(RE::TESForm* item_form)
 	{
-		if (!item_form) { return ItemKind::NotFound; }
+		if (!item_form) { return empty_huditem(); }
+
+		KeywordAccumulator::keywords = new std::vector<std::string>();
+		auto chonker                 = helpers::chars_to_vec(item_form->GetName());
+		std::string form_string      = helpers::makeFormSpecString(item_form);
+		bool two_handed              = requiresTwoHands(item_form);
+
+		if (item_form->Is(RE::FormType::Light))
+		{
+			logger::info("making HudItem for torch: '{}'"sv, item_form->GetName());
+			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Light, std::move(chonker), form_string);
+			return item;
+		}
+
+		if (item_form->Is(RE::FormType::Ammo))
+		{
+			logger::info("making HudItem for ammo: '{}'"sv, item_form->GetName());
+			const auto* ammo = item_form->As<RE::TESAmmo>()->AsKeywordForm();
+			ammo->ForEachKeyword(KeywordAccumulator::collect);
+			auto& keywords = KeywordAccumulator::keywords;
+			auto count     = player::getInventoryCountByForm(item_form);
+
+			rust::Box<HudItem> item =
+				hud_item_from_keywords(ItemCategory::Ammo, *keywords, std::move(chonker), form_string, count, false);
+			return item;
+		}
 
 		if (item_form->IsWeapon())
 		{
 			if (const auto* weapon = item_form->As<RE::TESObjectWEAP>(); !weapon->IsBound())
 			{
-				return subKindForWeapon(item_form);
+				logger::info("making HudItem for weapon: '{}'"sv, item_form->GetName());
+				weapon->ForEachKeyword(KeywordAccumulator::collect);
+				auto& keywords          = KeywordAccumulator::keywords;
+				auto count              = player::getInventoryCountByForm(item_form);
+				rust::Box<HudItem> item = hud_item_from_keywords(
+					ItemCategory::Weapon, *keywords, std::move(chonker), form_string, count, two_handed);
+
+				return item;
 			}
 		}
 
 		if (item_form->IsArmor())
 		{
+			logger::info("making HudItem for armor: '{}'"sv, item_form->GetName());
 			const auto* armor = item_form->As<RE::TESObjectARMO>();
-			//GetSlotMask 49
-			if (armor->IsShield()) { return ItemKind::Shield; }
-			else if (armor->IsClothing() &&
-					 (armor->HasKeywordString("_WL_Lantern") &&
-							 armor->HasPartOf(RE::BIPED_MODEL::BipedObjectSlot::kNone) &&
-							 !armor->HasPartOf(RE::BIPED_MODEL::BipedObjectSlot::kModFaceJewelry) ||
-						 armor->HasPartOf(RE::BIPED_MODEL::BipedObjectSlot::kModPelvisPrimary)))
-			{
-				//Wearable Lanterns got keyword _WL_Lantern
-				//Simple Wearable Lanterns do not have a keyword, but will be equipped on 49 (30+19)
-				return ItemKind::Lantern;
-			}
-			else if (armor->IsClothing() && armor->HasKeywordString("BOS_DisplayMaskKeyword"))
-			{
-				return ItemKind::Mask;
-			}
+			armor->ForEachKeyword(KeywordAccumulator::collect);
+			auto& keywords = KeywordAccumulator::keywords;
+			auto count     = player::getInventoryCountByForm(item_form);
+			rust::Box<HudItem> item =
+				hud_item_from_keywords(ItemCategory::Armor, *keywords, std::move(chonker), form_string, count, false);
 
-			return subKindForArmor(item_form);
+			return item;
+		}
+
+		if (item_form->Is(RE::FormType::Shout))
+		{
+			logger::info("making HudItem for shout: '{}'"sv, item_form->GetName());
+			auto* shout = item_form->As<RE::TESShout>();
+			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
+			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
+			if (!effect) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+
+			auto archetype      = effect->data.archetype;
+			auto primary_effect = effect->data.primaryAV;
+			auto resist         = effect->data.resistVariable;
+			auto school         = effect->GetMagickSkill();
+
+			rust::Box<SpellData> data =
+				fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
+					static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
+					false,  // two-handed-ness
+					static_cast<std::underlying_type_t<RE::ActorValue>>(school),
+					1,  // skill
+					static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype));
+			rust::Box<HudItem> item =
+				magic_from_spelldata(ItemCategory::Shout, std::move(data), std::move(chonker), form_string, 1);
+			return item;
 		}
 
 		if (item_form->Is(RE::FormType::Spell))
 		{
-			const auto spell_type = item_form->As<RE::SpellItem>()->GetSpellType();
-			if (spell_type == RE::MagicSystem::SpellType::kSpell ||
-				spell_type == RE::MagicSystem::SpellType::kLeveledSpell)
-			{
-				return subKindForMagic(item_form);
-				;
-			}
+			auto* spell           = item_form->As<RE::SpellItem>();
+			const auto spell_type = spell->GetSpellType();
+
 			if (spell_type == RE::MagicSystem::SpellType::kLesserPower ||
 				spell_type == RE::MagicSystem::SpellType::kPower)
 			{
-				return ItemKind::Power;
+				logger::info("making HudItem for power: '{}'"sv, item_form->GetName());
+				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Power, std::move(chonker), form_string);
+				return item;
+			}
+
+			// Regular spells.
+			logger::info("making HudItem for spell: '{}'"sv, item_form->GetName());
+			bool twohanded     = spell->IsTwoHanded();
+			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
+			if (effect)
+			{
+				auto skill_level    = effect->GetMinimumSkillLevel();
+				auto archetype      = effect->data.archetype;
+				auto primary_effect = effect->data.primaryAV;
+				auto resist         = effect->data.resistVariable;
+				auto magic_school   = effect->GetMagickSkill();
+				if (magic_school == RE::ActorValue::kNone) { magic_school = effect->data.primaryAV; }
+
+				rust::Box<SpellData> data =
+					fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
+						static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
+						twohanded,
+						static_cast<std::underlying_type_t<RE::ActorValue>>(magic_school),
+						skill_level,
+						static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype));
+				rust::Box<HudItem> item =
+					magic_from_spelldata(ItemCategory::Spell, std::move(data), std::move(chonker), form_string, 1);
+				return item;
 			}
 		}
 
-		if (item_form->Is(RE::FormType::Shout)) { return ItemKind::Shout; }
-
-		if (item_form->Is(RE::FormType::AlchemyItem)) { return subKindForConsumable(item_form); }
-
-		if (item_form->Is(RE::FormType::Scroll)) { return ItemKind::Scroll; }
-
-		if (item_form->Is(RE::FormType::Ammo)) { return ItemKind::Arrow; }
-
-		if (item_form->Is(RE::FormType::Light)) { return ItemKind::Torch; }
-
-		return ItemKind::IconDefault;
-	}
-
-	ItemKind subKindForWeapon(RE::TESForm*& item_form)
-	{
-		if (!item_form || !item_form->IsWeapon()) { return ItemKind::IconDefault; }
-		switch (const auto* weapon = item_form->As<RE::TESObjectWEAP>(); weapon->GetWeaponType())
+		if (item_form->Is(RE::FormType::Scroll))
 		{
-			case RE::WEAPON_TYPE::kHandToHandMelee: return ItemKind::HandToHand;
+			logger::info("making HudItem for scroll: '{}'"sv, item_form->GetName());
 
-			case RE::WEAPON_TYPE::kOneHandSword:
-				if (weapon->HasKeywordString("WeapTypeRapier")) { return ItemKind::Rapier; }
-				else if (weapon->HasKeywordString("WeapTypeKatana")) { return ItemKind::Katana; }
-				return ItemKind::SwordOneHanded;
+			auto* scroll        = item_form->As<RE::ScrollItem>();
+			const auto effect   = scroll->GetCostliestEffectItem()->baseEffect;
+			auto skill_level    = effect->GetMinimumSkillLevel();
+			auto archetype      = effect->data.archetype;
+			auto primary_effect = effect->data.primaryAV;
+			auto resist         = effect->data.resistVariable;
+			auto magic_school   = scroll->GetAssociatedSkill();
+			if (magic_school == RE::ActorValue::kNone) { magic_school = effect->data.primaryAV; }
 
-			case RE::WEAPON_TYPE::kOneHandDagger:
-				if (weapon->HasKeywordString("WeapTypeClaw")) { return ItemKind::Claw; }
-				return ItemKind::Dagger;
+			rust::Box<SpellData> data = fill_out_spell_data(static_cast<int32_t>(primary_effect),
+				static_cast<int32_t>(resist),
+				two_handed,
+				static_cast<int32_t>(magic_school),
+				skill_level,
+				static_cast<int32_t>(archetype));
 
-			case RE::WEAPON_TYPE::kOneHandAxe: return ItemKind::AxeOneHanded;
-
-			case RE::WEAPON_TYPE::kOneHandMace:
-				if (weapon->HasKeywordString("WeapTypeWhip")) { return ItemKind::Whip; }
-				return ItemKind::Mace;
-
-			case RE::WEAPON_TYPE::kTwoHandSword:
-				if (weapon->HasKeywordString("WeapTypePike")) { return ItemKind::Pike; }
-				return ItemKind::SwordTwoHanded;
-
-			case RE::WEAPON_TYPE::kTwoHandAxe:
-				if (weapon->HasKeywordString("WeapTypeHalberd")) { return ItemKind::Halberd; }
-				else if (weapon->HasKeywordString("WeapTypeQtrStaff")) { return ItemKind::QuarterStaff; }
-				return ItemKind::AxeTwoHanded;
-
-			case RE::WEAPON_TYPE::kBow: return ItemKind::Bow;
-
-			case RE::WEAPON_TYPE::kStaff: return ItemKind::Staff;
-
-			case RE::WEAPON_TYPE::kCrossbow: return ItemKind::Crossbow;
+			rust::Box<HudItem> item =
+				magic_from_spelldata(ItemCategory::Scroll, std::move(data), std::move(chonker), form_string, 1);
+			return item;
 		}
 
-		return ItemKind::IconDefault;
-	}
-
-	ItemKind subKindForMagic(RE::TESForm*& item_form)
-	{
-		if (!item_form || !item_form->Is(RE::FormType::Spell)) { return ItemKind::IconDefault; }
-
-		auto* spell        = item_form->As<RE::SpellItem>();
-		const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
-		auto actor_value   = effect->GetMagickSkill();
-		if (actor_value == RE::ActorValue::kNone) { actor_value = effect->data.primaryAV; }
-
-		switch (actor_value)
+		if (item_form->Is(RE::FormType::AlchemyItem))
 		{
-			case RE::ActorValue::kAlteration: return ItemKind::Alteration;
+			logger::info("making HudItem for alchemy item: '{}'"sv, item_form->GetName());
 
-			case RE::ActorValue::kConjuration: return ItemKind::Conjuration;
+			auto count           = player::getInventoryCountByForm(item_form);
+			auto* alchemy_potion = item_form->As<RE::AlchemyItem>();
+			const auto* effect   = alchemy_potion->GetCostliestEffectItem()->baseEffect;
+			auto actor_value     = effect->data.primaryAV;
 
-			case RE::ActorValue::kDestruction:
-				switch (effect->data.resistVariable)
-				{
-					case RE::ActorValue::kResistFire: return ItemKind::DestructionFire;
-					case RE::ActorValue::kResistFrost: return ItemKind::DestructionFrost;
-					case RE::ActorValue::kResistShock: return ItemKind::DestructionShock;
-					default: return ItemKind::Destruction;
-				}
-			case RE::ActorValue::kIllusion: return ItemKind::Illusion;
-
-			case RE::ActorValue::kRestoration:
-				//might not fit all spells
-				return ItemKind::Restoration;
-
-			default: return ItemKind::SpellDefault;
-		}
-	}
-
-	ItemKind subKindForConsumable(RE::TESForm*& item_form)
-	{
-		if (!item_form || !item_form->Is(RE::FormType::AlchemyItem)) { return ItemKind::IconDefault; }
-
-		auto* alchemy_potion = item_form->As<RE::AlchemyItem>();
-		if (alchemy_potion->IsFood()) { return ItemKind::Food; }
-		if (alchemy_potion->IsPoison()) { return ItemKind::PoisonDefault; }
-
-		auto actor_value = getPotionEffect(alchemy_potion, false);
-		return subKindForConsumableByEffect(actor_value);
-	}
-
-	ItemKind subKindForArmor(RE::TESForm*& item_form)
-	{
-		if (!item_form || !item_form->IsArmor()) { return ItemKind::IconDefault; }
-		switch (const auto* armor = item_form->As<RE::TESObjectARMO>(); armor->GetArmorType())
-		{
-			case RE::BIPED_MODEL::ArmorType::kLightArmor: return ItemKind::ArmorLight;
-			case RE::BIPED_MODEL::ArmorType::kHeavyArmor: return ItemKind::ArmorHeavy;
-			case RE::BIPED_MODEL::ArmorType::kClothing: return ItemKind::ArmorClothing;
+			if (alchemy_potion->IsFood())
+			{
+				// TODO soup, water, meat, veggies
+				// categorize drinks vs food
+				logger::info("making HudItem for food: '{}'"sv, item_form->GetName());
+				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Food, std::move(chonker), form_string);
+				return item;
+			}
+			else
+			{
+				// TODO xfer more data
+				rust::Box<HudItem> item = potion_from_formdata(alchemy_potion->IsPoison(),
+					static_cast<int32_t>(actor_value),
+					count,
+					std::move(chonker),
+					form_string);
+				return item;
+			}
 		}
 
-		return ItemKind::IconDefault;
+		return empty_huditem();
 	}
 
-	ItemKind subKindForConsumableByEffect(RE::ActorValue& actor_value)
+	RE::BSContainer::ForEachResult KeywordAccumulator::collect(RE::BGSKeyword& kwd)
 	{
-		switch (actor_value)
-		{
-			case RE::ActorValue::kHealth:
-			case RE::ActorValue::kHealRateMult:
-			case RE::ActorValue::kHealRate: return ItemKind::PotionHealth;
+		if (!keywords) { keywords = new std::vector<std::string>(); }
 
-			case RE::ActorValue::kStamina:
-			case RE::ActorValue::kStaminaRateMult:
-			case RE::ActorValue::kStaminaRate: return ItemKind::PotionStamina;
+		auto id  = kwd.GetFormEditorID();
+		auto str = std::string(id);
+		keywords->push_back(str);
+		return RE::BSContainer::ForEachResult::kContinue;
+	}
 
-			case RE::ActorValue::kMagicka:
-			case RE::ActorValue::kMagickaRateMult:
-			case RE::ActorValue::kMagickaRate: return ItemKind::PotionMagicka;
-
-			case RE::ActorValue::kResistFire: return ItemKind::PotionFireResist;
-
-			case RE::ActorValue::kResistShock: return ItemKind::PotionShockResist;
-
-			case RE::ActorValue::kResistFrost: return ItemKind::PotionFrostResist;
-
-			case RE::ActorValue::kResistMagic: return ItemKind::PotionMagicResist;
-
-			default: return ItemKind::PotionDefault;
-		}
+	void KeywordAccumulator::printKeywords()
+	{
+		if (!keywords) { logger::info("no keywords"); }
+		for (std::string kwd : *keywords) { logger::info("{}"sv, kwd); }
 	}
 }

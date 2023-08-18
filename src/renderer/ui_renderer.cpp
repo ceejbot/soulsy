@@ -26,11 +26,11 @@ namespace ui
 	static std::map<uint8_t, float> cycle_timers = {};
 
 	static std::map<uint32_t, image> image_struct;
-	static std::map<uint32_t, image> icon_struct;
 	static std::map<uint32_t, image> key_struct;
 	static std::map<uint32_t, image> default_key_struct;
 	static std::map<uint32_t, image> ps_key_struct;
 	static std::map<uint32_t, image> xbox_key_struct;
+	static std::map<std::string, image> icon_struct;
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 
@@ -65,7 +65,7 @@ namespace ui
 	{
 		func();
 
-		logger::info("D3DInit Hooked"sv);
+		logger::info("D3DInit hooked so we can give imgui something to render to."sv);
 		const auto render_manager = RE::BSRenderManager::GetSingleton();
 		if (!render_manager)
 		{
@@ -83,6 +83,7 @@ namespace ui
 			logger::error("Cannot find game render manager. Initialization failed."sv);
 			return;
 		}
+		logger::info("Reticulating splines...");
 
 		logger::info("Getting DXGI swapchain desc..."sv);
 		DXGI_SWAP_CHAIN_DESC sd{};
@@ -112,9 +113,9 @@ namespace ui
 			logger::error("ImGui initialization failed (DX11)"sv);
 			return;
 		}
-		logger::info("ImGui initialized.");
 
 		initialized.store(true);
+		logger::info("Ready to render.");
 
 		wnd_proc_hook::func = reinterpret_cast<WNDPROC>(
 			SetWindowLongPtrA(sd.OutputWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wnd_proc_hook::thunk)));
@@ -245,7 +246,7 @@ namespace ui
 		// It's left-aligned by default.
 		float adjustment = 0;
 		if (align == Align::Center) { adjustment = -0.25f * text_bounds.x; }
-		else if (align == Align::Right) { adjustment = -0.5f * text_bounds.x; }
+		else if (align == Align::Right) { adjustment = -1.25f * text_bounds.x; }
 
 		ImVec2 aligned_center = ImVec2(center.x + adjustment, center.y);
 
@@ -414,9 +415,9 @@ namespace ui
 
 		for (auto slot_layout : top_layout.layouts)
 		{
-			rust::Box<ItemData> entry = entry_to_show_in_slot(slot_layout.element);
-			const auto entry_kind     = entry->kind();
-			auto entry_name           = std::string("");
+			rust::Box<HudItem> entry = entry_to_show_in_slot(slot_layout.element);
+			// const auto entry_kind     = entry->kind();
+			auto entry_name = std::string("");
 
 			// We use the data cached in the entry if at all possible
 			if (entry->name_is_utf8()) { entry_name = std::string(entry->name()); }
@@ -447,29 +448,13 @@ namespace ui
 			// now draw the icon over the background...
 			if (slot_layout.icon_color.a > 0)
 			{
-				const auto [texture, width, height] = icon_struct[static_cast<uint8_t>(entry_kind)];
+				const auto icon_color = entry->color();
+				auto icon_file                      = std::string(entry->icon_file());
+				const auto [texture, width, height] = icon_struct[icon_file];
 				const auto size =
 					ImVec2(slot_layout.icon_size.x * global_scale, slot_layout.icon_size.y * global_scale);
-				drawElement(texture, slot_center, size, 0.f, slot_layout.icon_color);
+				drawElement(texture, slot_center, size, 0.f, icon_color);
 			}
-
-			// If this item is highlighted, we draw an animation for it.
-			/*
-			if (entry->highlighted())
-			{
-				init_animation(animation_type::highlight,
-					anchor.x,
-					anchor.y,
-					slot_layout.offset.x,
-					slot_layout.offset.y,
-					slot_layout.size.x,
-					slot_layout.size.y,
-					draw_full,
-					top_layout.animation_alpha,
-					top_layout.animation_duration);
-				// TODO turn highlight off on the entry; needs highlight feature
-			}
-			*/
 
 			// Now decide if we should draw the text showing the item's name.
 			if (slot_layout.name_color.a > 0 && (entry_name.size() > 0))
@@ -485,7 +470,7 @@ namespace ui
 			}
 
 			// next up: do we have extra text to show on this puppy?
-			if (entry->has_count())
+			if (entry->count_matters())
 			{
 				auto count          = entry->count();
 				auto slot_text      = std::to_string(count);
@@ -552,43 +537,36 @@ namespace ui
 		ImGui::End();
 	}
 
-	void ui_renderer::load_icon_images(std::map<uint32_t, image>& a_struct, std::string& file_path)
+	void ui_renderer::load_icon_images(std::map<std::string, image>& out_struct, std::string& icondir)
 	{
 		const auto res_width = 1.0f;
 		get_resolution_scale_width();
 		const auto res_height = 1.0f;
 		get_resolution_scale_height();
 
-		const auto start = static_cast<uint32_t>(ItemKind::Alteration);
-		const auto end   = static_cast<uint32_t>(ItemKind::Whip);
-
-		for (uint32_t idx = start; idx <= end; idx++)
+		const auto needed_icons = icon_files();
+		for (auto icon_file_str : needed_icons)
 		{
-			// This implementation is the inverse of the one it replaces.
-			// The one below walks the directory and tries to match located
-			// files with the requested icons in the map. This one walks
-			// all needed icons and tries to find matching files.
-			ItemKind icon        = static_cast<ItemKind>(idx);
-			const auto icon_file = get_icon_file(icon);
-			auto entrypath       = std::filesystem::path(file_path);
-			entrypath /= std::string(icon_file);
+			auto icon_file = std::string(icon_file_str);
+			auto entrypath = std::filesystem::path(icondir);
+			entrypath /= icon_file;
 
 			std::error_code ec;
 			if (std::filesystem::exists(entrypath, ec))
 			{
-				if (load_texture_from_file(
-						entrypath.string().c_str(), &a_struct[idx].texture, a_struct[idx].width, a_struct[idx].height))
+				if (load_texture_from_file(entrypath.string().c_str(),
+						&out_struct[icon_file].texture,
+						out_struct[icon_file].width,
+						out_struct[icon_file].height))
 				{
-					/*
-					logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
+					logger::debug("loading texture {}, type: {}, width: {}, height: {}"sv,
 						entrypath.filename().string().c_str(),
 						entrypath.filename().extension().string().c_str(),
-						a_struct[idx].width,
-						a_struct[idx].height);
-					*/
+						out_struct[icon_file].width,
+						out_struct[icon_file].height);
 
-					a_struct[idx].width  = static_cast<int32_t>(a_struct[idx].width * res_width);
-					a_struct[idx].height = static_cast<int32_t>(a_struct[idx].height * res_height);
+					out_struct[icon_file].width  = static_cast<int32_t>(out_struct[icon_file].width * res_width);
+					out_struct[icon_file].height = static_cast<int32_t>(out_struct[icon_file].height * res_height);
 				}
 			}
 			else { logger::error("failed to load {}"sv, entrypath.filename().string().c_str()); }
@@ -709,7 +687,6 @@ namespace ui
 		is_transitioning = true;
 		fade_in          = a_in;
 
-
 		// unused right now
 		if (a_value < 0) { goal_alpha = 0.0; }
 		else if (a_value > 1.0) { goal_alpha = 1.0; }
@@ -722,6 +699,9 @@ namespace ui
 
 		auto settings    = user_settings();
 		float fade_time  = static_cast<float>(settings->fade_time()) / 1000.0f;
+		if (doing_brief_peek) {
+			fade_time += static_cast<float>(settings->equip_delay_ms()) / 500.0f;  // yes over 500-- we're adding double
+		}
 		transition_timer = fade_in ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
 
 		// We must allow for the transition starting while the alpha is not pinned.
@@ -846,7 +826,6 @@ namespace ui
 		load_images(gamepad_ps_icon_name_map, ps_key_struct, key_directory);
 		load_images(gamepad_xbox_icon_name_map, xbox_key_struct, key_directory);
 
-		// The controlling enum is shared with rust, and different from those other enums
 		load_icon_images(icon_struct, icon_directory);
 
 		load_animation_frames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);

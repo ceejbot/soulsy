@@ -7,21 +7,23 @@
 // up being convenient for serialization to use the ItemData type,
 // which is a side benefit.
 
-struct ItemData;
-enum class ItemKind : ::std::uint8_t;
+struct HudItem;
 
 namespace equippable
 {
-	rust::Box<ItemData> makeItemDataFromForm(RE::TESForm* form);
-	ItemKind itemKindFromForm(RE::TESForm*& item_form);
+	// rust::Box<ItemData> makeItemDataFromForm(RE::TESForm* form);
+
+	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form);
+	rust::Box<HudItem> subKindForConsumable(RE::TESForm*& form);
 
 	bool requiresTwoHands(RE::TESForm*& form);
-	bool canInstantCast(RE::TESForm* form, ItemKind kind);
 	RE::ActorValue getPotionEffect(RE::TESForm* form, bool filter);
 
-	ItemKind subKindForWeapon(RE::TESForm*& form);
-	ItemKind subKindForMagic(RE::TESForm*& form);
-	ItemKind subKindForConsumable(RE::TESForm*& form);
-	ItemKind subKindForArmor(RE::TESForm*& form);
-	ItemKind subKindForConsumableByEffect(RE::ActorValue& actor_value);
+	struct KeywordAccumulator
+	{
+		static inline std::vector<std::string>* keywords = new std::vector<std::string>();
+
+		static RE::BSContainer::ForEachResult collect(RE::BGSKeyword& kwd);
+		static void printKeywords();
+	};
 }

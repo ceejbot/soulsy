@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-enum class ItemKind : ::std::uint8_t;
-
 // Food, potions, ammo, armor. Things that go in the utility slot.
 
 namespace game

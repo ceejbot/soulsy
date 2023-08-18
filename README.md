@@ -43,6 +43,10 @@ I could not have approached the rendering code without the work in [LamasTinyHud
 
 The icons for the built-in theme are the usual SkyUI icons, plus the `futura-book-bt` true-type font. The background assets were built from scratch but were inspired by the [Untarnished UI skin](https://www.nexusmods.com/skyrimspecialedition/mods/82545) for LamasTinyHUD by [MinhazMurks](https://www.nexusmods.com/skyrimspecialedition/users/26341279). The icons are the SkyUI icons by psychosteve, which are used in so many places I am not sure how to credit them.
 
+The icons for the Ceej remix layout are licensed to me from the Noun Project for use without attribution, but I am going to give attribution anyway because they're great icons. I am using the [Role Playing Game collection](https://thenounproject.com/browse/collection-icon/role-playing-game-70773/?p=1) by [Maxicons](https://thenounproject.com/maxicons/).
+
+The font in use for some layouts is [Inter](https://rsms.me/inter/).
+
 [cxx](https://cxx.rs/) made developing the C++/Rust bridge a snap. This crate unlocks Rust as a viable language for all of your modding needs. The only drawback is that async Rust is not yet supported, but there are workarounds described in the docs.
 
 ## TODO

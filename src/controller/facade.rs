@@ -12,8 +12,8 @@ use cxx::CxxVector;
 use simplelog::*;
 
 use super::cycles::*;
-use super::itemdata::*;
 use super::settings::{user_settings, UserSettings};
+use crate::data::*;
 use crate::plugin::*;
 use crate::{control, hud_layout};
 
@@ -69,10 +69,10 @@ pub fn show_ui() -> bool {
 
 /// Function for C++ to call to send a relevant menu button-event to us.
 ///
-/// We get a fully-filled out ItemData struct to use as we see fit.
+/// We get a fully-filled out HudItem struct to use as we see fit.
 // menu_item is boxed because it's arriving from C++.
 #[allow(clippy::boxed_local)]
-pub fn toggle_item(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<ItemData>) {
+pub fn toggle_item(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<HudItem>) {
     let action = Action::from(key);
     control::get().handle_toggle_item(action, *menu_item)
 }
@@ -82,7 +82,7 @@ pub fn handle_menu_event(key: u32, button: &ButtonEvent) -> bool {
 }
 
 /// Get information about the item equipped in a specific slot.
-pub fn entry_to_show_in_slot(element: HudElement) -> Box<ItemData> {
+pub fn entry_to_show_in_slot(element: HudElement) -> Box<HudItem> {
     control::get().entry_to_show_in_slot(element)
 }
 
@@ -97,19 +97,19 @@ pub fn update_hud() -> bool {
 }
 
 /// We know for sure the player just equipped this item.
-pub fn handle_item_equipped(equipped: bool, item: Box<ItemData>, right: bool, left: bool) -> bool {
-    control::get().handle_item_equipped(equipped, item, right, left)
+pub fn handle_item_equipped(equipped: bool, form_spec: &String, right: bool, left: bool) -> bool {
+    control::get().handle_item_equipped(equipped, form_spec, right, left)
 }
 
 /// A consumable's count changed. Record if relevant.
-pub fn handle_inventory_changed(item: Box<ItemData>, count: i32) {
-    control::get().handle_inventory_changed(item, count);
+pub fn handle_inventory_changed(form_spec: &String, count: i32) {
+    control::get().handle_inventory_changed(form_spec, count);
 }
 
 pub fn handle_favorite_event(
     button: &ButtonEvent,
     is_favorite: bool,
-    #[allow(clippy::boxed_local)] item: Box<ItemData>, // needed to bridge with C++
+    #[allow(clippy::boxed_local)] item: Box<HudItem>, // needed to bridge with C++
 ) {
     control::get().handle_favorite_event(button, is_favorite, *item);
 }

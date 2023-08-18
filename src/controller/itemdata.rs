@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::plugin::ItemKind;
+use crate::itemkind::ItemKind;
 
 /// ItemData, exposed to C++ as an opaque type.
 #[derive(Deserialize, Serialize, Debug, Clone, Default, Eq)]
@@ -233,8 +233,12 @@ impl ItemData {
     }
 
     /// Get the enum representing this entry's kind (1-handed sword, dagger, health potion, etc.)
+    pub fn boxed_kind(&self) -> Box<ItemKind> {
+        Box::new(self.kind.clone())
+    }
+
     pub fn kind(&self) -> ItemKind {
-        self.kind
+        self.kind.clone()
     }
 
     /// True if this entry should be drawn with a highlight.

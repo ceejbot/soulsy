@@ -3,6 +3,9 @@
 
 pub mod controller;
 use controller::*;
+mod data;
+use data::icons::icon_files;
+use data::{HudItem, SpellData, *};
 
 /// Rust defines the bridge between it and C++ in this mod, using the
 /// affordances of the `cxx` crate. At build time `cxx_build` generates the
@@ -93,7 +96,7 @@ pub mod plugin {
     }
 
     /// Color as rgba between 0 and 255. The default is white at full alpha.
-    #[derive(Deserialize, Serialize, Debug, Clone)]
+    #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
     struct Color {
         r: u8,
         g: u8,
@@ -148,65 +151,6 @@ pub mod plugin {
         name_offset: Point,
     }
 
-    /// The type of an item stored in a cycle.
-    ///
-    /// This lets us determine the icon as well as which cycle slot an item can
-    /// be added to.
-    #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
-    enum ItemKind {
-        Empty,
-        Alteration,
-        ArmorClothing,
-        ArmorHeavy,
-        ArmorLight,
-        Arrow,
-        AxeOneHanded,
-        AxeTwoHanded,
-        Bow,
-        Claw,
-        Conjuration,
-        Crossbow,
-        Dagger,
-        DestructionFire,
-        DestructionFrost,
-        DestructionShock,
-        Destruction,
-        Food,
-        Halberd,
-        HandToHand,
-        IconDefault,
-        Illusion,
-        Katana,
-        Lantern,
-        Mace,
-        Mask,
-        Pike,
-        PoisonDefault,
-        PotionDefault,
-        PotionFireResist,
-        PotionFrostResist,
-        PotionHealth,
-        PotionMagicka,
-        PotionMagicResist,
-        PotionShockResist,
-        PotionStamina,
-        Power,
-        QuarterStaff,
-        Rapier,
-        Restoration,
-        Scroll,
-        Shield,
-        Shout,
-        SpellDefault,
-        Staff,
-        SwordOneHanded,
-        SwordTwoHanded,
-        Torch,
-        WeaponDefault,
-        Whip,
-        NotFound,
-    }
-
     /// This enum maps key presses to the desired action. More like a C/java
     /// enum than a Rust sum type enum.
     #[derive(Debug, Clone, Hash)]
@@ -227,6 +171,22 @@ pub mod plugin {
         ShowHide,
         /// Refresh the layout by re-reading the toml file.
         RefreshLayout,
+    }
+
+    #[derive(Debug, Clone, Hash)]
+    enum ItemCategory {
+        Ammo,
+        Armor,
+        Food,
+        HandToHand,
+        Light,
+        Potion,
+        Power,
+        Scroll,
+        Shout,
+        Spell,
+        Weapon,
+        Empty,
     }
 
     /// What Rust did with a key event, so the C++ caller can present UI.
@@ -288,44 +248,69 @@ pub mod plugin {
         /// Fetch a read-only copy of our current layout.
         fn hud_layout() -> HudLayout;
 
-        /// This is an entry in the cycle. The UI will ask questions of it.
-        type ItemData;
-        /// Create a brand-new cycle entry, with a cache of game data we'll need
-        /// to draw and use this item quickly.
-        fn itemdata_from_formdata(
-            kind: ItemKind,
-            two_handed: bool,
-            has_count: bool,
-            count: u32,
-            name_bytes: &CxxVector<u8>,
-            form_string: &str,
-        ) -> Box<ItemData>;
-        /// Get the item category, fine-grained to help with icon choices.
-        fn kind(self: &ItemData) -> ItemKind;
-        /// Check if any UI for this item should be drawn highlighted. UNUSED.
-        fn highlighted(self: &ItemData) -> bool;
-        /// Get the underlying bytes of a possibly non-utf8 name for this item.
-        fn name(self: &ItemData) -> String;
-        /// Check if the item name is representable in utf8.
-        fn name_is_utf8(self: &ItemData) -> bool;
+        /// NEW cycle entry type. This is opaque.
+        type HudItem;
+        /// Which icon to use for diplaying this item.
+        fn icon_file(self: &HudItem) -> String;
+        fn icon_fallback(self: &HudItem) -> String;
+        fn color(self: &HudItem) -> Color;
         /// Get the item name as a possibly-lossy utf8 string.
-        fn name_bytes(self: &ItemData) -> Vec<u8>;
-        /// Check whether this item is stacked in inventory, like potions are.
-        fn has_count(self: &ItemData) -> bool;
+        fn name(self: &HudItem) -> String;
+        /// Check if the item name is representable in utf8.
+        fn name_is_utf8(self: &HudItem) -> bool;
+        /// Get the underlying bytes of a possibly non-utf8 name for this item.
+        fn name_bytes(self: &HudItem) -> Vec<u8>;
+        fn form_string(self: &HudItem) -> String;
         /// Get how many of this item the player has. Updated on inventory changes.
-        fn count(self: &ItemData) -> u32;
-        /// Make an item that represents an empty choice.
-        fn empty_itemdata() -> Box<ItemData>;
-        /// Make an item that represents hand-to-hand combat, aka an empty hand.
-        fn hand2hand_itemdata() -> Box<ItemData>;
-        fn form_string(self: &ItemData) -> String;
+        fn count(self: &HudItem) -> u32;
+        fn count_matters(self: &HudItem) -> bool;
+        fn is_magic(self: &HudItem) -> bool;
 
-        /// Check if this item category can be stacked in inventory.
-        fn kind_has_count(kind: ItemKind) -> bool;
-        /// Check if this item category counts as magic for the HUD.
-        fn kind_is_magic(kind: ItemKind) -> bool;
-        /// Get the filename of the svg icon matching this item. Not a full path.
-        fn get_icon_file(kind: &ItemKind) -> String;
+        type SpellData;
+        fn fill_out_spell_data(
+            effect: i32,
+            resist: i32,
+            twohanded: bool,
+            school: i32,
+            level: u32,
+            archetype: i32,
+        ) -> Box<SpellData>;
+        fn magic_from_spelldata(
+            which: ItemCategory,
+            spelldata: Box<SpellData>,
+            bytes_ffi: &CxxVector<u8>,
+            form_string: String,
+            count: u32,
+        ) -> Box<HudItem>;
+        fn hud_item_from_keywords(
+            category: ItemCategory,
+            keywords: &CxxVector<CxxString>,
+            bytes_ffi: &CxxVector<u8>,
+            form_string: String,
+            count: u32,
+            twohanded: bool,
+        ) -> Box<HudItem>;
+        fn potion_from_formdata(
+            is_poison: bool,
+            effect: i32,
+            count: u32,
+            bytes_ffi: &CxxVector<u8>,
+            form_string: String,
+        ) -> Box<HudItem>;
+        fn make_base_ammo(
+            count: u32,
+            bytes_ffi: &CxxVector<u8>,
+            form_string: String,
+        ) -> Box<HudItem>;
+        fn simple_from_formdata(
+            kind: ItemCategory,
+            bytes_ffi: &CxxVector<u8>,
+            form_string: String,
+        ) -> Box<HudItem>;
+        fn make_unarmed_proxy() -> Box<HudItem>;
+        fn empty_huditem() -> Box<HudItem>;
+
+        fn icon_files() -> Vec<String>;
 
         // These are called by plugin hooks and sinks.
 
@@ -334,9 +319,9 @@ pub mod plugin {
         /// Handle an in-menu event (which adds/removes items) from the game.
         fn handle_menu_event(key: u32, button: &ButtonEvent) -> bool;
         /// Toggle a menu item in the given cycle.
-        fn toggle_item(key: u32, item: Box<ItemData>);
+        fn toggle_item(key: u32, item: Box<HudItem>);
         /// Get the item readied in the given slot, if any.
-        fn entry_to_show_in_slot(slot: HudElement) -> Box<ItemData>;
+        fn entry_to_show_in_slot(slot: HudElement) -> Box<HudItem>;
         /// A cycle delay timer has expired. Time to equip!
         fn timer_expired(slot: Action);
         /// Update the entire HUD without any hints about what just changed.
@@ -344,14 +329,14 @@ pub mod plugin {
         /// Handle equipment-changed events from the game.
         fn handle_item_equipped(
             equipped: bool,
-            item: Box<ItemData>,
+            form_spec: &String,
             right: bool,
             left: bool,
         ) -> bool;
         /// Handle inventory-count changed events from the game.
-        fn handle_inventory_changed(item: Box<ItemData>, delta: i32);
+        fn handle_inventory_changed(form_spec: &String, delta: i32);
         /// Favoriting & unfavoriting.
-        fn handle_favorite_event(_button: &ButtonEvent, is_favorite: bool, _item: Box<ItemData>);
+        fn handle_favorite_event(_button: &ButtonEvent, is_favorite: bool, _item: Box<HudItem>);
     }
 
     #[namespace = "RE"]
@@ -396,7 +381,7 @@ pub mod plugin {
         /// Play an activation failed UI sound.
         fn honk();
         /// Make a full rust-side item from a form spec string.
-        fn formSpecToItemData(form_spec: &CxxString) -> Box<ItemData>;
+        fn formSpecToHudItem(form_spec: &CxxString) -> Box<HudItem>;
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
@@ -412,18 +397,14 @@ pub mod plugin {
         /// Are the player's weapons drawn?
         fn weaponsAreDrawn() -> bool;
 
-        /// Get the parent form item for the object equipped in the left hand.
-        fn equippedLeftHand() -> Box<ItemData>;
-        /// Get the bound object (not the parent!) for the object equipped in the left hand.
-        fn boundObjectLeftHand() -> Box<ItemData>;
-        /// Get the parent form item for the object equipped in the right hand.
-        fn equippedRightHand() -> Box<ItemData>;
-        /// Get the bound object (not the parent!) for the object equipped in the right hand.
-        fn boundObjectRightHand() -> Box<ItemData>;
-        /// Get the form for the equipped shout or power.
-        fn equippedPower() -> Box<ItemData>;
-        /// Get the form for the equipped ammo.
-        fn equippedAmmo() -> Box<ItemData>;
+        /// Get the form spec for the item readied in the left hand, bound form if possible.
+        fn specEquippedLeft() -> String;
+        /// Get the form spec for the item readied in the right hand, bound form if possible.
+        fn specEquippedRight() -> String;
+        /// Get the form id in spec format for the equipped power or shout.
+        fn specEquippedPower() -> String;
+        /// Get the form id in spec format for the equipped ammo.
+        fn specEquippedAmmo() -> String;
 
         /// Check if the player still has items from this form in their inventory.
         fn hasItemOrSpell(form_spec: &CxxString) -> bool;

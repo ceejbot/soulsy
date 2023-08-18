@@ -39,18 +39,17 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	bool worn_right = false;
 	bool worn_left  = false;
 
-	auto item = equippable::makeItemDataFromForm(form);
+	// auto item = equippable::hudItemFromForm(form);
 
-	if (form->IsWeapon() || kind_is_magic(item->kind())) {
-		auto* player   = RE::PlayerCharacter::GetSingleton();
-		const auto* left_eq = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		const auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+	auto* player   = RE::PlayerCharacter::GetSingleton();
+	const auto* left_eq = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+	const auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 
-		worn_left = left_eq ? left_eq->GetFormID() == form->GetFormID() : false;
-		worn_right = right_eq ? right_eq->GetFormID() == form->GetFormID() : false;
-	}
+	worn_left = left_eq ? left_eq->GetFormID() == form->GetFormID() : false;
+	worn_right = right_eq ? right_eq->GetFormID() == form->GetFormID() : false;
 
-	handle_item_equipped(event->equipped, std::move(item), worn_right, worn_left);
+	std::string form_string = helpers::makeFormSpecString(form);
+	handle_item_equipped(event->equipped, form_string, worn_right, worn_left);
 
 	return event_result::kContinue;
 }
@@ -64,7 +63,7 @@ KeyEventSink* KeyEventSink::get_singleton()
 void KeyEventSink::register_sink()
 {
 	RE::BSInputDeviceManager::GetSingleton()->AddEventSink(get_singleton());
-	logger::info("start listening for input events."sv);
+	logger::info("Now listening for input events."sv);
 }
 
 event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
@@ -96,13 +95,13 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 
 		if (response.stop_timer != Action::None)
 		{
-			logger::debug("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
+			logger::trace("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
 			ui::ui_renderer::stopTimer(response.stop_timer);
 		}
 
 		if (response.start_timer != Action::None)
 		{
-			logger::debug("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
+			logger::trace("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
 			ui::ui_renderer::startTimer(response.start_timer);
 		}
 

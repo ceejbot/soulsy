@@ -15,7 +15,7 @@ help:
     cargo install tomato-toml
     cargo install rust-script
 
-# Run initial cmake step.
+# Run initial cmake step. Cannot be run in WSL.
 setup:
     cmake --preset vs2022-windows
 
@@ -136,7 +136,9 @@ build-layouts:
         if [[ "$font" =~ "Inter" ]]; then
             mkdir -p "$dest/resources/fonts"
             cp -p "layouts/${font}" "$dest/resources/fonts"
+            cp -p "layouts/${font}" "$dest/resources/fonts"
         fi
+
         cd releases
         ${ar} -y -bsp0 -bso0 a "${name}.7z" "${name}"
         rm -rf "${name}"
@@ -172,7 +174,15 @@ build-layouts:
     cp -p layouts/curvy/left-bottom-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
     cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
 
-    layouts="SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD-hexagons-1 SoulsyHUD-hexagons-2"
+    # build the icon remix
+    dest="releases/SoulsyHUD_icon_remix/SKSE/plugins"
+    mkdir -p ${dest}/resources/fonts
+    cp -p layouts/ceej-remix/SoulsyHUD_ceejremix.toml "$dest/SoulsyHUD_Layout.toml"
+    cp -rp layouts/ceej-remix/icons "$dest/resources/"
+    font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
+    cp -p "layouts/$font" "$dest/resources/fonts/"
+
+    layouts="SoulsyHUD_icon_remix SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD-hexagons-1 SoulsyHUD-hexagons-2"
     cd releases
     for i in $layouts; do
          ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"

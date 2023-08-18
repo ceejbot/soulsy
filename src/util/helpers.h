@@ -6,12 +6,12 @@
 // decision-making that needs a single source of truth. It's
 // badly-named.
 
-struct ItemData;
+struct HudItem;
 
 namespace helpers
 {
 	RE::TESForm* formSpecToFormItem(const std::string& spec);
-	rust::Box<ItemData> formSpecToItemData(const std::string& spec);
+	rust::Box<HudItem> formSpecToHudItem(const std::string& spec);
 	std::string makeFormSpecString(RE::TESForm* form);
 	// uint32_t getSelectedFormFromMenu(RE::UI*& a_ui);
 
