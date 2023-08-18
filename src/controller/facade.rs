@@ -35,7 +35,7 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
 
     if let Ok(logfile) = File::create(path) {
         let _ = WriteLogger::init(log_level, Config::default(), logfile);
-        log::info!("rust side logging standing by");
+        log::info!("Rust side standing by.");
     } else {
         // Welp, we failed and I have nowhere to write the darn error. Ha ha.
     }
@@ -46,7 +46,7 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
 /// Let's get this party started.
 pub fn initialize_hud() {
     let settings = user_settings();
-    log::info!("initializing hud controller");
+    log::info!("Reading and applying settings.");
     let mut ctrl = control::get();
     log::info!("{settings:?}");
 
