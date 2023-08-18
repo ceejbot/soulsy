@@ -9,13 +9,13 @@ use crate::plugin::Color;
 pub enum ShoutVariant {
     AnimalAllegiance, // script, no AV, no resist / formids: 930c8, 9e0ca, 9e0cb
     AuraWhisper,      // script, no AV, 10e4fd
-    CallDragon,       // acript
-    CallOfValor,      // summon creature, assoc item is a summon 51963, 78B9d, 78b9f
-    ClearSkies,       // script 789d, 789f, or 78ba1
-    Disarm,           // 8bb26, cd088, cd089   archetype is disam
-    Dismay,           // archetype demoralize, actor value confidence
-    DragonRend,       // archetype is stagger
-    ElementalFury,    // av is weapon speed mult,  arch is enhance weapon
+    CallDragon,       // script
+    CallOfValor,
+    ClearSkies, // script 789d, 789f, or 78ba1
+    Disarm,
+    Dismay,
+    DragonRend, // archetype is stagger; need a way to distinguish from UnrelentingForce
+    ElementalFury,
     Ethereal,
     FireBall,    // destruction, resist is fire, av is health, archetype is value modifier
     FireBreath,  // resist is fire, value modifier, health
@@ -23,7 +23,7 @@ pub enum ShoutVariant {
     IceForm,     // hrmph
     IceStorm,    // dual value modifier, health/stam, resist is frost
     KynesPeace,
-    MarkedForDeath, // archetype is value modifier, damage resist OR peak value, health
+    MarkedForDeath,
     Slowtime,
     StormCall,        //  form pairs are a1a58, e3f0a / a1a5c, e3f09 / a1a5b, d5e81
     ThrowVoice,       // spawn scripted ref, 7430d is only effect
@@ -37,6 +37,8 @@ impl ShoutVariant {
     pub fn from_spell_data(data: SpellData, form_string: String) -> Self {
         if matches!(data.archetype, SpellArchetype::SummonCreature) {
             Self::CallOfValor
+        } else if form_string == "Skyrim.esm|0x000789d" {
+            Self::ClearSkies
         } else if matches!(data.archetype, SpellArchetype::Disarm) {
             Self::Disarm
         } else if matches!(data.archetype, SpellArchetype::Demoralize) {
@@ -66,6 +68,8 @@ impl ShoutVariant {
             Self::Slowtime
         } else if form_string == "Skyrim.esm|0x0007430d" {
             Self::ThrowVoice
+        } else if matches!(data.archetype, SpellArchetype::Stagger) {
+            Self::UnrelentingForce
         } else if form_string.as_str() == "Skyrim.esp|0x0002f789" {
             Self::WhirlwindSprint
         } else {
@@ -79,7 +83,7 @@ impl HasIcon for ShoutVariant {
     fn color(&self) -> Color {
         match &self {
             ShoutVariant::AnimalAllegiance => InvColor::Green.color(),
-            ShoutVariant::AuraWhisper => InvColor::White.color(),
+            ShoutVariant::AuraWhisper => InvColor::Eldritch.color(),
             ShoutVariant::CallDragon => InvColor::White.color(),
             ShoutVariant::CallOfValor => InvColor::White.color(),
             ShoutVariant::ClearSkies => InvColor::White.color(),

@@ -1,12 +1,15 @@
 #![allow(non_snake_case, non_camel_case_types)]
 
+use cxx::let_cxx_string;
 use strum::Display;
 
+use super::base::BaseType;
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
 use super::icons::Icon;
+use super::weapon::WeaponType;
 use super::HasIcon;
-use crate::plugin::Color;
+use crate::plugin::{formSpecToHudItem, Color};
 
 // Spells must be classified by querying game data about actor values, resist types,
 // and spell archetypes. SpellData holds Rust expressions of the C++ enum values.
@@ -17,8 +20,6 @@ use crate::plugin::Color;
 To get type of bound weapon:
 look at effect.data-> associated item
 bow vs sword vs axe vs battleaxe
-
-
 archetype spawn hazard
 look at asso item
 
@@ -35,6 +36,7 @@ pub struct SpellData {
     pub level: MagicSpellLevel,
     pub archetype: SpellArchetype,
     pub damage: MagicDamageType,
+    pub associated: String,
 }
 
 impl SpellData {
@@ -46,6 +48,7 @@ impl SpellData {
         school: i32,
         level: u32,
         archetype: i32,
+        associated: String,
     ) -> Self {
         let school = School::from(school);
         let effect = ActorValue::from(effect);
@@ -72,6 +75,7 @@ impl SpellData {
             archetype,
             level: level.into(),
             damage,
+            associated: associated.clone(),
         }
     }
 }
@@ -85,6 +89,7 @@ pub struct SpellType {
 impl SpellType {
     pub fn from_spell_data(data: SpellData) -> Self {
         // well, this will be fun™
+
         let variant = match data.archetype {
             SpellArchetype::ValueModifier => {
                 if matches!(data.effect, ActorValue::Health)
@@ -121,7 +126,50 @@ impl SpellType {
             //SpellArchetype::Absorb => todo!(),
             //SpellArchetype::Banish => todo!(),
             //SpellArchetype::Calm => SpellVariant::Calm, //do I have one?
-            SpellArchetype::BoundWeapon => Some(SpellVariant::BoundWeapon(BoundType::Unknown)),
+            SpellArchetype::BoundWeapon => {
+                if !data.associated.is_empty() {
+                    let_cxx_string!(form_spec = data.associated.clone());
+                    let assoc = formSpecToHudItem(&form_spec);
+                    match assoc.kind() {
+                        BaseType::Weapon(w) => match w {
+                            WeaponType::AxeOneHanded(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::WarAxe))
+                            }
+                            WeaponType::AxeTwoHanded(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::BattleAxe))
+                            }
+                            WeaponType::BowShort(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::Bow))
+                            }
+                            WeaponType::Bow(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::Bow))
+                            }
+                            WeaponType::Crossbow(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::Bow))
+                            }
+                            WeaponType::Dagger(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::Dagger))
+                            }
+                            WeaponType::Hammer(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::Hammer))
+                            }
+                            WeaponType::Mace(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::Mace))
+                            }
+                            WeaponType::SwordOneHanded(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::Sword))
+                            }
+                            WeaponType::SwordTwoHanded(_, _) => {
+                                Some(SpellVariant::BoundWeapon(BoundType::Greatsword))
+                            }
+                            _ => Some(SpellVariant::BoundWeapon(BoundType::Unknown)),
+                        },
+                        _ => Some(SpellVariant::BoundWeapon(BoundType::Unknown)),
+                    }
+                } else {
+                    Some(SpellVariant::BoundWeapon(BoundType::Unknown))
+                }
+            }
             SpellArchetype::CureDisease => Some(SpellVariant::Cure),
             SpellArchetype::CurePoison => Some(SpellVariant::Cure),
             SpellArchetype::CureParalysis => Some(SpellVariant::Cure),
