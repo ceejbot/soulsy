@@ -276,6 +276,7 @@ pub mod plugin {
         type SpellData;
         fn fill_out_spell_data(
             effect: i32,
+            effect2: i32,
             resist: i32,
             twohanded: bool,
             school: i32,

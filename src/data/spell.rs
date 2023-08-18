@@ -29,6 +29,7 @@ chain lightning -> chain lightning (resist shock, skill level 50)
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellData {
     pub effect: ActorValue,
+    pub secondary: ActorValue,
     pub twohanded: bool,
     pub school: School,
     pub level: MagicSpellLevel,
@@ -39,6 +40,7 @@ pub struct SpellData {
 impl SpellData {
     pub fn from_game_data(
         effect: i32,
+        effect2: i32,
         resist: i32,
         twohanded: bool,
         school: i32,
@@ -47,6 +49,7 @@ impl SpellData {
     ) -> Self {
         let school = School::from(school);
         let effect = ActorValue::from(effect);
+        let secondary = ActorValue::from(effect2);
         let resist = ActorValue::from(resist);
         let archetype = SpellArchetype::from(archetype);
 
@@ -63,6 +66,7 @@ impl SpellData {
 
         Self {
             effect,
+            secondary,
             twohanded,
             school,
             archetype,
@@ -93,7 +97,21 @@ impl SpellType {
                     Some(SpellVariant::Damage(data.damage.clone()))
                 } else {
                     log::info!(
-                        "classifying valuemodifier spell; AV={}; damage={};",
+                        "classifying DualValueModifier spell; AV={}; damage={};",
+                        data.effect,
+                        data.damage
+                    );
+                    None
+                }
+            }
+            SpellArchetype::DualValueModifier => {
+                if matches!(data.school, School::Destruction)
+                    && matches!(data.effect, ActorValue::Health)
+                {
+                    Some(SpellVariant::Damage(data.damage.clone()))
+                } else {
+                    log::info!(
+                        "classifying DualValueModifier spell; AV={}; damage={};",
                         data.effect,
                         data.damage
                     );
@@ -120,7 +138,6 @@ impl SpellType {
             //SpellArchetype::Disarm => todo!(),
             //SpellArchetype::Disguise => todo!(),
             //SpellArchetype::Dispel => todo!(),
-            //SpellArchetype::DualValueModifier => todo!(), // most frost spells are this
             SpellArchetype::EnhanceWeapon => Some(SpellVariant::EnhanceWeapon),
             //SpellArchetype::Etherealize => todo!(),
             //SpellArchetype::Frenzy => todo!(),
@@ -135,13 +152,13 @@ impl SpellType {
             //SpellArchetype::SpawnHazard => todo!(), // frostwall and firewall here?
             //SpellArchetype::Telekinesis => todo!(),
             //SpellArchetype::TurnUndead => todo!(),
-            _ => Some(SpellVariant::Unknown),
+            _ => None,
         };
 
         let variant = if let Some(v) = variant {
             v
         } else {
-            log::debug!("default spell variant");
+            log::debug!("default spell variant; data: {data:?}");
             SpellVariant::Unknown
         };
 

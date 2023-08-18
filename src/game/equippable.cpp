@@ -134,11 +134,13 @@ namespace equippable
 
 			auto archetype      = effect->data.archetype;
 			auto primary_effect = effect->data.primaryAV;
+			auto secondary_effect = effect->data.secondaryAV;
 			auto resist         = effect->data.resistVariable;
 			auto school         = effect->GetMagickSkill();
 
 			rust::Box<SpellData> data =
 				fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
+					static_cast<std::underlying_type_t<RE::ActorValue>>(secondary_effect),
 					static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
 					false,  // two-handed-ness
 					static_cast<std::underlying_type_t<RE::ActorValue>>(school),
@@ -171,12 +173,14 @@ namespace equippable
 				auto skill_level    = effect->GetMinimumSkillLevel();
 				auto archetype      = effect->data.archetype;
 				auto primary_effect = effect->data.primaryAV;
+				auto secondary_effect = effect->data.secondaryAV;
 				auto resist         = effect->data.resistVariable;
 				auto magic_school   = effect->GetMagickSkill();
 				if (magic_school == RE::ActorValue::kNone) { magic_school = effect->data.primaryAV; }
 
 				rust::Box<SpellData> data =
 					fill_out_spell_data(static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
+						static_cast<std::underlying_type_t<RE::ActorValue>>(secondary_effect),
 						static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
 						twohanded,
 						static_cast<std::underlying_type_t<RE::ActorValue>>(magic_school),
@@ -197,11 +201,13 @@ namespace equippable
 			auto skill_level    = effect->GetMinimumSkillLevel();
 			auto archetype      = effect->data.archetype;
 			auto primary_effect = effect->data.primaryAV;
+			auto secondary_effect = effect->data.secondaryAV;
 			auto resist         = effect->data.resistVariable;
 			auto magic_school   = scroll->GetAssociatedSkill();
 			if (magic_school == RE::ActorValue::kNone) { magic_school = effect->data.primaryAV; }
 
 			rust::Box<SpellData> data = fill_out_spell_data(static_cast<int32_t>(primary_effect),
+				static_cast<int32_t>(secondary_effect),
 				static_cast<int32_t>(resist),
 				two_handed,
 				static_cast<int32_t>(magic_school),

@@ -268,6 +268,9 @@ impl Controller {
         }
 
         let settings = user_settings();
+        if user_settings().autofade() {
+            show_briefly();
+        }
 
         match hotkey {
             HotkeyKind::Power => self.handle_cycle_power(),
@@ -604,10 +607,6 @@ impl Controller {
     fn update_and_record(&mut self, which: &CycleSlot, next: &HudItem) -> KeyEventResponse {
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
-
-        if user_settings().autofade() {
-            show_briefly();
-        }
 
         KeyEventResponse {
             handled: true,
