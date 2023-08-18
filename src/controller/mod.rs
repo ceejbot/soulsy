@@ -10,8 +10,6 @@
 pub mod control;
 pub mod cycles;
 pub mod facade;
-pub mod itemdata;
-pub mod itemkind;
 pub mod keys;
 pub mod layout;
 pub mod settings;

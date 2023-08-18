@@ -11,8 +11,6 @@ struct HudItem;
 
 namespace equippable
 {
-	// rust::Box<ItemData> makeItemDataFromForm(RE::TESForm* form);
-
 	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form);
 	rust::Box<HudItem> subKindForConsumable(RE::TESForm*& form);
 

@@ -1,6 +1,6 @@
 # Soulsy
 
-Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It is in fact a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD)! It is simpler than LamasTinyHud is, however.
+Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It started life as a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD), though it has since diverged significantly.
 
 ![Screenshot of the hud](./docs/SoulsyHUD_preview.jpeg)
 
@@ -48,21 +48,6 @@ The icons for the Ceej remix layout are licensed to me from the Noun Project for
 The font in use for some layouts is [Inter](https://rsms.me/inter/).
 
 [cxx](https://cxx.rs/) made developing the C++/Rust bridge a snap. This crate unlocks Rust as a viable language for all of your modding needs. The only drawback is that async Rust is not yet supported, but there are workarounds described in the docs.
-
-## TODO
-
-Current tasks:
-
-- [ ] Make a *good-looking* layout. Find a designer if necessary.
-- [ ] Fix filed issues.
-- [ ] Move image loading code to Rust. This will bring in the [windows](https://lib.rs/crates/windows) crate ecosystem.
-- [ ] Move `imgui` rendering to Rust. Bindings exist already, plus a DX11 rendering back end.
-- [ ] Make image loading on-demand, to save memory. (Maybe an unimportant optimization? Measure.)
-- [ ] Add support for debug builds to CMake, or at least remove the half-done option.
-- [ ] Decide what to do about highlight animations.
-- [ ] If I decide to highlight, track highlight status in the controller to support it.
-- [x] I18n: fonts. ??
-- [x] Hammer the hell out of it while playing. Fix whatever doesn't stand up to abuse.
 
 ## License
 

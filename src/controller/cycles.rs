@@ -515,7 +515,6 @@ pub mod archive_v0 {
     use cxx::CxxVector;
 
     use super::CycleData;
-    use crate::controller::itemdata::ItemData;
     use crate::data::base::BaseType;
     use crate::plugin::formSpecToHudItem;
 
@@ -590,19 +589,6 @@ pub mod archive_v0 {
                 hud_visible: value.hud_visible,
                 loaded: true,
             }
-        }
-    }
-
-    impl From<&ItemSerialized> for ItemData {
-        fn from(value: &ItemSerialized) -> ItemData {
-            ItemData::new(
-                value.kind.into(),
-                value.two_handed,
-                value.has_count,
-                value.count,
-                value.name_bytes.clone(),
-                &value.form_string,
-            )
         }
     }
 }
