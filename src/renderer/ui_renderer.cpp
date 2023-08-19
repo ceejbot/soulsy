@@ -383,6 +383,8 @@ namespace ui
 		auto top_layout         = hud_layout();
 		auto anchor             = top_layout.anchor;
 		auto hudsize            = top_layout.size;
+		const bool ammoSwap     = top_layout.ammo_swap;
+		bool rangedEquipped     = player::hasRangedEquipped();
 		const auto settings     = user_settings();
 		const auto screenWidth  = get_resolution_width();
 		const auto screenHeight = get_resolution_height();
@@ -403,6 +405,7 @@ namespace ui
 		anchor.y = std::max(hudsize.y / 2.0f, anchor.y);
 		anchor.y = std::min(screenHeight - hudsize.y / 2.0f, anchor.y);
 
+
 		// Draw the HUD background if requested.
 		if (top_layout.bg_color.a > 0)
 		{
@@ -415,10 +418,18 @@ namespace ui
 
 		for (auto slot_layout : top_layout.layouts)
 		{
-			rust::Box<HudItem> entry = entry_to_show_in_slot(slot_layout.element);
-			// const auto entry_kind     = entry->kind();
-			auto entry_name = std::string("");
+			if ((slot_layout.element == HudElement::Left) && top_layout.hide_left_when_irrelevant && rangedEquipped)
+			{
+				continue;
+			}
+			if ((slot_layout.element == HudElement::Ammo) && top_layout.hide_ammo_when_irrelevant && !rangedEquipped)
+			{
+				continue;
+			}
 
+			rust::Box<HudItem> entry = entry_to_show_in_slot(slot_layout.element);
+
+			auto entry_name = std::string("");
 			// We use the data cached in the entry if at all possible
 			if (entry->name_is_utf8()) { entry_name = std::string(entry->name()); }
 			else

@@ -86,6 +86,18 @@ namespace player
 		return formspec;
 	}
 
+	bool hasRangedEquipped()
+	{
+		auto player    = RE::PlayerCharacter::GetSingleton();
+		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		if (!obj) return false;
+		if (!obj->IsWeapon()) return false;
+		const auto* weapon = obj->As<RE::TESObjectWEAP>();
+		if (!weapon) return false;
+
+		return weapon->IsBow() || weapon->IsCrossbow();
+	}
+
 	void unequipSlot(Action which)
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();

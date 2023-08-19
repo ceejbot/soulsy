@@ -258,6 +258,8 @@ impl Default for HudLayout {
             size: Point { x: 300.0, y: 300.0 },
             bg_color: Color::default(),
             debug: false,
+            hide_ammo_when_irrelevant: false,
+            hide_left_when_irrelevant: false,
             layouts,
             animation_alpha: 51,
             animation_duration: 0.1,

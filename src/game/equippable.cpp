@@ -197,9 +197,9 @@ namespace equippable
 			const auto effect = scroll->GetCostliestEffectItem()->baseEffect;
 			auto skill_level  = effect->GetMinimumSkillLevel();
 
-			auto data               = fillOutSpellData(two_handed, skill_level, effect);
-			rust::Box<HudItem> item = magic_from_spelldata(
-				ItemCategory::Scroll, std::move(data), std::move(chonker), form_string, 1);
+			auto data = fillOutSpellData(two_handed, skill_level, effect);
+			rust::Box<HudItem> item =
+				magic_from_spelldata(ItemCategory::Scroll, std::move(data), std::move(chonker), form_string, 1);
 			return item;
 		}
 
@@ -247,7 +247,7 @@ namespace equippable
 
 	void KeywordAccumulator::printKeywords()
 	{
-		if (!keywords) { logger::info("no keywords"); }
+		if (!keywords) { logger::debug("no keywords to print"); }
 		for (std::string kwd : *keywords) { logger::info("{}"sv, kwd); }
 	}
 }

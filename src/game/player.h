@@ -28,6 +28,7 @@ namespace player
 
 	bool isInCombat();
 	bool weaponsAreDrawn();
+	bool hasRangedEquipped();
 
 	void unequipSlot(Action slot);
 	void unequipShout();

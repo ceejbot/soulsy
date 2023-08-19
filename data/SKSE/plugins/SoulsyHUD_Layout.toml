@@ -12,6 +12,11 @@ anchor = { x = 170.0, y = 1225.0 }
 size = { x = 300.0, y = 300.0 }
 # The color of the HUD background file. Set alpha to 0 to skip drawing a background.
 bg_color = { r = 0, g = 0, b = 0, a = 64 }
+# Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
+hide_ammo_when_irrelevant = true
+# Hide the left hand slot when a ranged weapon is equipped. This lets you
+# use the same location as the left hand to show ammo.
+hide_left_when_irrelevant = true;
 
 # Enable any of these you need text rendering for.
 # You will need to supply a font with the glyphs; futura doesn't have them.
@@ -132,18 +137,18 @@ name_offset = { x = -15.0, y = 75.0 }
 [[layouts]]
 name = "Ammo"
 element = { repr = 4 }
-offset = { x = 0.0, y = 0.0 }
-size = { x = 50.0 , y = 50.0 }
+offset = { x = -83.0, y = 0.0 }
+size = { x = 94.0 , y = 94.0 }
 align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 0 }
+bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 35.0, y = 35.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
-hotkey_offset = { x = 0.0, y = 0.0 }
+icon_size = { x = 40.0, y = 40.0 }
+hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
+hotkey_offset = { x = 41.0, y = 41.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 50.0, y = 100.0 }
-count_color = { r = 255, g = 255, b = 255, a = 255 }
+count_offset = { x = 0.0, y = 0.0 }
+count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 75.0, y = 100.0 }
+name_offset = { x = 175.0, y = 50.0 }
