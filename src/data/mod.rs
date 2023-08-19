@@ -125,7 +125,7 @@ pub fn potion_from_formdata(
 
 pub fn make_base_ammo(count: u32, bytes_ffi: &CxxVector<u8>, form_string: String) -> Box<HudItem> {
     let name_bytes: Vec<u8> = bytes_ffi.iter().map(|xs| *xs).collect();
-    let kind = AmmoType::OCF_AmmoTypeArrow(InvColor::default());
+    let kind = AmmoType::Arrow(InvColor::default());
     let result = HudItem::preclassified(name_bytes, form_string, count, BaseType::Ammo(kind));
     Box::new(result)
 }

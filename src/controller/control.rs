@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::num::NonZeroUsize;
 use std::sync::Mutex;
 
+use cxx::let_cxx_string;
 use once_cell::sync::Lazy;
 
 use super::cycles::*;
@@ -275,8 +276,8 @@ impl Controller {
         match hotkey {
             HotkeyKind::Power => self.handle_cycle_power(),
             HotkeyKind::Utility => self.handle_cycle_utility(),
-            HotkeyKind::Left => self.handle_cycle_hand(CycleSlot::Left, &hotkey),
-            HotkeyKind::Right => self.handle_cycle_hand(CycleSlot::Right, &hotkey),
+            HotkeyKind::Left => self.handle_cycle_left(&hotkey),
+            HotkeyKind::Right => self.handle_cycle_right(&hotkey),
             HotkeyKind::Activate => {
                 let activation_method = settings.how_to_activate();
                 if matches!(activation_method, ActivationMethod::Hotkey) {
@@ -418,12 +419,64 @@ impl Controller {
         }
     }
 
-    fn handle_cycle_hand(&mut self, cycleslot: CycleSlot, hotkey: &HotkeyKind) -> KeyEventResponse {
-        if !matches!(cycleslot, CycleSlot::Left | CycleSlot::Right) {
-            return KeyEventResponse::default();
-        }
+    fn handle_cycle_left(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
+        log::debug!("Left hand advance requested");
 
-        log::debug!("user requested to advance the {} hand", cycleslot);
+        // Left hand logic:
+        // Do we have a bow equipped, and if so, is the "handle ammo" boolean set?
+        // In that case, we switch ammo. Ammo is ordered least damaging -> most damaging.
+        // Otherwise, it's the same as the right hand.
+
+        let settings = user_settings();
+        let tracked = self.get_tracked_key(hotkey);
+        let cycle_ammo = settings.cycle_ammo();
+
+        let unequip_requested = match settings.unarmed_handling() {
+            UnarmedMethod::None => false,
+            UnarmedMethod::LongPress => tracked.is_long_press(),
+            UnarmedMethod::Modifier => {
+                let unequipmod = self.get_tracked_key(&HotkeyKind::UnequipModifier);
+                unequipmod.is_pressed()
+            }
+            UnarmedMethod::AddToCycles => false,
+        };
+
+        let cycle_requested = !unequip_requested
+            && match settings.how_to_cycle() {
+                ActivationMethod::Hotkey => true,
+                ActivationMethod::LongPress => tracked.is_long_press(),
+                ActivationMethod::Modifier => {
+                    let cyclemod = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                    cyclemod.is_pressed()
+                }
+            };
+
+        if unequip_requested {
+            log::info!("unequipping left hand by request");
+            let empty_item = HudItem::make_unarmed_proxy();
+            unequipSlot(Action::Left);
+            self.update_slot(HudElement::from(&CycleSlot::Left), &empty_item);
+            self.cycles
+                .set_top(&CycleSlot::Left, &empty_item.form_string());
+            KeyEventResponse {
+                handled: true,
+                start_timer: Action::None,
+                stop_timer: Action::Left,
+            }
+        } else if cycle_requested {
+            if hasRangedEquipped() && cycle_ammo {
+                self.advance_ammo()
+            } else {
+                self.advance_hand_cycle(&CycleSlot::Left)
+            }
+        } else {
+            log::trace!("you need a modifier key down to advance the left hand");
+            KeyEventResponse::default()
+        }
+    }
+
+    fn handle_cycle_right(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
+        log::debug!("Right hand advance requested");
 
         // We have two states to check
         let settings = user_settings();
@@ -454,20 +507,21 @@ impl Controller {
         let action = Action::from(hotkey);
 
         if unequip_requested {
-            log::info!("unequipping slot {cycleslot} by request");
+            log::info!("unequipping right hand by request");
             let empty_item = HudItem::make_unarmed_proxy();
             unequipSlot(action);
-            self.update_slot(HudElement::from(&cycleslot), &empty_item);
-            self.cycles.set_top(&cycleslot, &empty_item.form_string());
+            self.update_slot(HudElement::from(&CycleSlot::Right), &empty_item);
+            self.cycles
+                .set_top(&CycleSlot::Right, &empty_item.form_string());
             KeyEventResponse {
                 handled: true,
                 start_timer: Action::None,
                 stop_timer: action,
             }
         } else if cycle_requested {
-            self.advance_hand_cycle(&cycleslot)
+            self.advance_hand_cycle(&CycleSlot::Right)
         } else {
-            log::trace!("you need a modifier key down for {cycleslot}");
+            log::trace!("you need a modifier key down to advance the right hand");
             KeyEventResponse::default()
         }
     }
@@ -601,6 +655,33 @@ impl Controller {
         KeyEventResponse {
             handled: true,
             ..Default::default()
+        }
+    }
+
+    fn advance_ammo(&mut self) -> KeyEventResponse {
+        log::debug!("selecting next ammo");
+        let form_string = specEquippedAmmo();
+        let ammotypes = getAmmoInventory();
+        if ammotypes.len() < 2 {
+            // do nothing
+            return KeyEventResponse::default();
+        } else {
+            // this array is sorted by damage type. so we find ourselves then choose next
+            let next = if let Some(pos) = ammotypes.iter().position(|xs| *xs == form_string) {
+                if pos < ammotypes.len() - 2 {
+                    ammotypes[pos + 1].to_string()
+                } else {
+                    ammotypes[0].to_string()
+                }
+            } else {
+                ammotypes[ammotypes.len() - 1].to_string()
+            };
+            let_cxx_string!(form_spec = next);
+            equipAmmo(&form_spec);
+            return KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            };
         }
     }
 

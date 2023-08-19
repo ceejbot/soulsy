@@ -8,18 +8,18 @@ use super::{base, HasIcon, HasKeywords};
 
 #[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum AmmoType {
-    OCF_AmmoTypeArrow(InvColor),
-    OCF_AmmoTypeBolt(InvColor),
-    OCF_AmmoTypeBullet(InvColor),
-    OCF_AmmoTypeDart(InvColor),
-    OCF_AmmoTypeSlingshot(InvColor),
-    OCF_WeapTypeMelee(InvColor),
-    WAF_WeapTypeGrenade(InvColor),
+    Arrow(InvColor),
+    Bolt(InvColor),
+    Bullet(InvColor),
+    Dart(InvColor),
+    Slingshot(InvColor),
+    Melee(InvColor),
+    Grenade(InvColor),
 }
 
 impl Default for AmmoType {
     fn default() -> Self {
-        AmmoType::OCF_AmmoTypeArrow(InvColor::default())
+        AmmoType::Arrow(InvColor::default())
     }
 }
 
@@ -30,20 +30,20 @@ impl HasKeywords for AmmoType {
         let ammo_keywords: Vec<AmmoType> = keywords
             .iter()
             .filter_map(|xs| match xs.as_str() {
-                "OCF_AmmoTypeArrow" => Some(Self::OCF_AmmoTypeArrow(color.clone())),
-                "OCF_AmmoTypeBolt" => Some(Self::OCF_AmmoTypeBolt(color.clone())),
-                "OCF_AmmoTypeBullet" => Some(Self::OCF_AmmoTypeBullet(color.clone())),
-                "OCF_AmmoTypeDart" => Some(Self::OCF_AmmoTypeDart(color.clone())),
-                "OCF_AmmoTypeSlingshot" => Some(Self::OCF_AmmoTypeSlingshot(color.clone())),
-                "OCF_WeapTypeMelee" => Some(Self::OCF_WeapTypeMelee(color.clone())),
-                "WAF_WeapTypeGrenade" => Some(Self::WAF_WeapTypeGrenade(color.clone())),
+                "OCF_AmmoTypeArrow" => Some(Self::Arrow(color.clone())),
+                "OCF_AmmoTypeBolt" => Some(Self::Bolt(color.clone())),
+                "OCF_AmmoTypeBullet" => Some(Self::Bullet(color.clone())),
+                "OCF_AmmoTypeDart" => Some(Self::Dart(color.clone())),
+                "OCF_AmmoTypeSlingshot" => Some(Self::Slingshot(color.clone())),
+                "OCF_WeapTypeMelee" => Some(Self::Melee(color.clone())),
+                "WAF_WeapTypeGrenade" => Some(Self::Grenade(color.clone())),
                 _ => None,
             })
             .collect();
         if let Some(keyword) = ammo_keywords.first() {
             keyword.clone()
         } else {
-            Self::OCF_AmmoTypeArrow(color)
+            Self::Arrow(color)
         }
     }
 }
@@ -51,13 +51,13 @@ impl HasKeywords for AmmoType {
 impl HasIcon for AmmoType {
     fn color(&self) -> crate::plugin::Color {
         match self {
-            Self::OCF_AmmoTypeArrow(c) => c.color(),
-            Self::OCF_AmmoTypeBolt(c) => c.color(),
-            Self::OCF_AmmoTypeBullet(c) => c.color(),
-            Self::OCF_AmmoTypeDart(c) => c.color(),
-            Self::OCF_AmmoTypeSlingshot(c) => c.color(),
-            Self::OCF_WeapTypeMelee(c) => c.color(),
-            Self::WAF_WeapTypeGrenade(c) => c.color(),
+            Self::Arrow(c) => c.color(),
+            Self::Bolt(c) => c.color(),
+            Self::Bullet(c) => c.color(),
+            Self::Dart(c) => c.color(),
+            Self::Slingshot(c) => c.color(),
+            Self::Melee(c) => c.color(),
+            Self::Grenade(c) => c.color(),
         }
     }
 
@@ -84,6 +84,6 @@ mod tests {
         ];
 
         let result = AmmoType::classify(input, false);
-        assert_eq!(result, AmmoType::OCF_AmmoTypeBullet(InvColor::Fire));
+        assert_eq!(result, AmmoType::Bullet(InvColor::Fire));
     }
 }

@@ -23,6 +23,7 @@ namespace player
 	rust::String specEquippedRight();
 	rust::String specEquippedPower();
 	rust::String specEquippedAmmo();
+	rust::Vec<rust::String> getAmmoInventory();
 
 	rust::Vec<uint16_t> playerName();
 

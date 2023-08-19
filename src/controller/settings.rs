@@ -97,6 +97,8 @@ pub struct UserSettings {
     cycling_slows_time: bool,
     /// How much to slow down time.
     slow_time_factor: f32,
+    /// True if the player wants us to cycle through ammo.
+    cycle_ammo: bool,
 }
 
 impl Default for UserSettings {
@@ -127,6 +129,7 @@ impl Default for UserSettings {
             controller_kind: 0, // PS5
             cycling_slows_time: false,
             slow_time_factor: 0.25,
+            cycle_ammo: false,
         }
     }
 }
@@ -226,6 +229,8 @@ impl UserSettings {
             read_from_ini(self.cycling_slows_time, "bCyclingSlowsTime", options);
         let percentage = read_from_ini(25, "uSlowTimeFactor", options);
         self.slow_time_factor = percentage as f32 / 100.0;
+
+        self.cycle_ammo = read_from_ini(self.cycle_ammo, "bCycleAmmo", options);
 
         Ok(())
     }
@@ -337,6 +342,10 @@ impl UserSettings {
     }
     pub fn slow_time_factor(&self) -> f32 {
         self.slow_time_factor
+    }
+
+    pub fn cycle_ammo(&self) -> bool {
+        self.cycle_ammo
     }
 }
 

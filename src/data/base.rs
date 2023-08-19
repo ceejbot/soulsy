@@ -347,10 +347,7 @@ mod tests {
         ];
 
         let result = BaseType::classify(ItemCategory::Ammo, input, true);
-        assert_eq!(
-            result,
-            BaseType::Ammo(AmmoType::OCF_AmmoTypeBullet(InvColor::Water))
-        );
+        assert_eq!(result, BaseType::Ammo(AmmoType::Bullet(InvColor::Water)));
 
         let input = vec![
             "OCF_InvColorFire".to_string(),

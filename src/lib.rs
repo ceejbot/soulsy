@@ -425,6 +425,10 @@ pub mod plugin {
         /// Check if the player still has items from this form in their inventory.
         fn hasItemOrSpell(form_spec: &CxxString) -> bool;
 
+        /// Does the player have a bow or crossbow equipped?
+        fn hasRangedEquipped() -> bool;
+        fn getAmmoInventory() -> Vec<String>;
+
         /// Unequip the relevant slot.
         fn unequipSlot(which: Action);
 

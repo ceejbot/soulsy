@@ -86,6 +86,26 @@ namespace player
 		return formspec;
 	}
 
+	rust::Vec<rust::String> getNextAmmo()
+	{
+		auto player        = RE::PlayerCharacter::GetSingleton();
+		auto* current_ammo = player->GetCurrentAmmo();
+		auto damage        = 0;
+		if (current_ammo) { damage = current_ammo->damage; }
+		let isBolt = current_ammo->IsBolt();
+
+		bool compare(RE::TESAmmo * left, RE::TESAmmo * right) { return (left->damage < right->damage); }
+		auto ammos                        = getInventoryForType(RE::FormType::Ammo);
+		std::vector<RE::TESAmmo*> results = new std::vector();
+		for (const auto& [item, inv_data] : ammos)
+		{
+			const auto& [num_items, entry] = inv_data;
+			if (entry->IsBolt() == isBolt) { results.push_bash(entry); }
+		}
+		sort(results.begin(), results.end(), compare);
+		return std::move(results);
+	}
+
 	bool hasRangedEquipped()
 	{
 		auto player    = RE::PlayerCharacter::GetSingleton();
