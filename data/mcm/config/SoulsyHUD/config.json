@@ -338,6 +338,15 @@
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
+    },
+    {
+      "id": "bCycleAmmo:Options",
+      "text": "$SoulsyHUD_Options_CycleAmmo_Text",
+      "help": "$SoulsyHUD_Options_CycleAmmo_Help",
+      "type": "toggle",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
     }
   ]
 }
