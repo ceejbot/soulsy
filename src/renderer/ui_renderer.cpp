@@ -383,7 +383,6 @@ namespace ui
 		auto top_layout         = hud_layout();
 		auto anchor             = top_layout.anchor;
 		auto hudsize            = top_layout.size;
-		const bool ammoSwap     = top_layout.ammo_swap;
 		bool rangedEquipped     = player::hasRangedEquipped();
 		const auto settings     = user_settings();
 		const auto screenWidth  = get_resolution_width();
