@@ -233,6 +233,7 @@ impl IsHudItem for BaseType {
     }
 
     fn is_utility(&self) -> bool {
+        !matches!(self, BaseType::Armor(ArmorType::Shield(_, _))) && 
         matches!(
             self,
             BaseType::Potion(_) | BaseType::Armor(_) | BaseType::Food(_)
