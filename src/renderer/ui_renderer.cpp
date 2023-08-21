@@ -490,7 +490,7 @@ namespace ui
 				const auto textPos = ImVec2(slot_center.x + slot_layout.count_offset.x * globalScale,
 					slot_center.y + slot_layout.count_offset.y * globalScale);
 
-				if (!slot_text.empty())
+				if (!countText.empty())
 				{
 					drawText(countText,
 						textPos,
@@ -514,8 +514,8 @@ namespace ui
 				}
 
 				const auto [texture, width, height] = get_key_icon(hotkey);
-				const auto size = ImVec2(static_cast<float>(slot_layout.hotkey_size.x * global_scale - 2.0f),
-					static_cast<float>(slot_layout.hotkey_size.y * global_scale - 2.0f));
+				const auto size = ImVec2(static_cast<float>(slot_layout.hotkey_size.x * globalScale - 2.0f),
+					static_cast<float>(slot_layout.hotkey_size.y * globalScale - 2.0f));
 				drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_color);
 			}
 		}
