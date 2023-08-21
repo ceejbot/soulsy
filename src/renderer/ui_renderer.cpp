@@ -387,16 +387,17 @@ namespace ui
 		const auto settings     = user_settings();
 		const auto screenWidth  = get_resolution_width();
 		const auto screenHeight = get_resolution_height();
+		bool colorizeIcons      = settings->colorize_icons();
 
-		auto global_scale = top_layout.global_scale;
-		if (global_scale == 0.0f)
+		auto globalScale = top_layout.global_scale;
+		if (globalScale == 0.0f)
 		{
-			global_scale = 1.0f;  // serde's default for missing f32 fields is 0
+			globalScale = 1.0f;  // serde's default for missing f32 fields is 0
 		}
 
 		// If the layout is larger than the HUD, clamp it to screen size.
-		hudsize.x = std::min(screenWidth, global_scale * hudsize.x);
-		hudsize.y = std::min(screenHeight, global_scale * hudsize.y);
+		hudsize.x = std::min(screenWidth, globalScale * hudsize.x);
+		hudsize.y = std::min(screenHeight, globalScale * hudsize.y);
 
 		// If the layout is trying to draw the HUD offscreen, clamp it to an edge.
 		anchor.x = std::max(hudsize.x / 2.0f, anchor.x);  // anchor point is center
@@ -443,10 +444,10 @@ namespace ui
 
 			const auto hotkey = settings->hotkey_for(slot_layout.element);
 			const auto slot_center =
-				ImVec2(anchor.x + slot_layout.offset.x * global_scale, anchor.y + slot_layout.offset.y * global_scale);
+				ImVec2(anchor.x + slot_layout.offset.x * globalScale, anchor.y + slot_layout.offset.y * globalScale);
 
-			slot_layout.size.x *= global_scale;
-			slot_layout.size.y *= global_scale;
+			slot_layout.size.x *= globalScale;
+			slot_layout.size.y *= globalScale;
 
 			if (slot_layout.bg_color.a > 0)
 			{
@@ -458,43 +459,42 @@ namespace ui
 			// now draw the icon over the background...
 			if (slot_layout.icon_color.a > 0)
 			{
-				const auto icon_color               = entry->color();
-				auto icon_file                      = std::string(entry->icon_file());
-				const auto [texture, width, height] = icon_struct[icon_file];
-				const auto size =
-					ImVec2(slot_layout.icon_size.x * global_scale, slot_layout.icon_size.y * global_scale);
-				const auto icon_pos = ImVec2(slot_center.x + slot_layout.icon_offset.x * global_scale,
-					slot_center.y + slot_layout.icon_offset.y * global_scale);
+				const auto iconColor                = colorizeIcons ? entry->color() : slot_layout.icon_color;
+				auto iconFile                       = std::string(entry->icon_file());
+				const auto [texture, width, height] = icon_struct[iconFile];
+				const auto scale                    = width > height ? (slot_layout.icon_size.x * globalScale / width) :
+				                                                       (slot_layout.icon_size.y * globalScale / height);
+				const auto size                     = ImVec2(width * scale, height * scale);
+				const auto icon_pos                 = ImVec2(slot_center.x + slot_layout.icon_offset.x * globalScale,
+                    slot_center.y + slot_layout.icon_offset.y * globalScale);
 
-				drawElement(texture, slot_center, size, 0.f, icon_color);
+				drawElement(texture, slot_center, size, 0.f, iconColor);
 			}
 
 			// Now decide if we should draw the text showing the item's name.
 			if (slot_layout.name_color.a > 0 && (entry_name.size() > 0))
 			{
-				const auto text_pos = ImVec2(slot_center.x + slot_layout.name_offset.x * global_scale,
-					slot_center.y + slot_layout.name_offset.y * global_scale);
-				auto font_size      = slot_layout.name_font_size;
-				if (font_size == 0.0) { font_size = top_layout.font_size; }
+				const auto textPos = ImVec2(slot_center.x + slot_layout.name_offset.x * globalScale,
+					slot_center.y + slot_layout.name_offset.y * globalScale);
+				auto fontSize      = slot_layout.name_font_size;
+				if (fontSize == 0.0) { fontSize = top_layout.font_size; }
 
-				drawText(
-					entry_name, text_pos, font_size * global_scale, slot_layout.name_color, slot_layout.align_text);
+				drawText(entry_name, textPos, fontSize * globalScale, slot_layout.name_color, slot_layout.align_text);
 			}
 
-			// next up: do we have extra text to show on this puppy?
-			if (entry->count_matters())
+			// Do we need to draw a count?
+			if (slot_layout.count_color.a > 0 && entry->count_matters())
 			{
-				auto count          = entry->count();
-				auto slot_text      = std::to_string(count);
-				const auto text_pos = ImVec2(slot_center.x + slot_layout.count_offset.x * global_scale,
-					slot_center.y + slot_layout.count_offset.y * global_scale);
+				auto count         = entry->count();
+				auto countText     = std::to_string(count);
+				const auto textPos = ImVec2(slot_center.x + slot_layout.count_offset.x * globalScale,
+					slot_center.y + slot_layout.count_offset.y * globalScale);
 
-				// there might be other cases where we want more text, I dunno.
 				if (!slot_text.empty())
 				{
-					drawText(slot_text,
-						text_pos,
-						slot_layout.count_font_size * global_scale,
+					drawText(countText,
+						textPos,
+						slot_layout.count_font_size * globalScale,
 						slot_layout.count_color,
 						slot_layout.align_text);
 				}
@@ -502,14 +502,14 @@ namespace ui
 
 			if (slot_layout.hotkey_color.a > 0)
 			{
-				const auto hk_im_center = ImVec2(slot_center.x + slot_layout.hotkey_offset.x * global_scale,
-					slot_center.y + slot_layout.hotkey_offset.y * global_scale);
+				const auto hk_im_center = ImVec2(slot_center.x + slot_layout.hotkey_offset.x * globalScale,
+					slot_center.y + slot_layout.hotkey_offset.y * globalScale);
 
 				if (slot_layout.hotkey_bg_color.a > 0)
 				{
 					const auto [texture, width, height] = image_struct[static_cast<uint32_t>(image_type::key)];
 					const auto size =
-						ImVec2(slot_layout.hotkey_size.x * global_scale, slot_layout.hotkey_size.y * global_scale);
+						ImVec2(slot_layout.hotkey_size.x * globalScale, slot_layout.hotkey_size.y * globalScale);
 					drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_bg_color);
 				}
 

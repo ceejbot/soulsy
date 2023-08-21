@@ -347,6 +347,15 @@
       "valueOptions": {
         "sourceType": "ModSettingInt"
       }
+    },
+    {
+      "id": "bColorizeIcons:Options",
+      "text": "$SoulsyHUD_Options_Colorize_Text",
+      "help": "$SoulsyHUD_Options_Colorize_Help",
+      "type": "toggle",
+      "valueOptions": {
+        "sourceType": "ModSettingInt"
+      }
     }
   ]
 }

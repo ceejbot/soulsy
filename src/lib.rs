@@ -256,6 +256,8 @@ pub mod plugin {
         fn fade_time(self: &UserSettings) -> u32;
         /// If we care about favorites.
         fn link_to_favorites(self: &UserSettings) -> bool;
+        /// If icons should be colorful.
+        fn colorize_icons(self: &UserSettings) -> bool;
 
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();

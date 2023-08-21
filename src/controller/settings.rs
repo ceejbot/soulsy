@@ -99,6 +99,8 @@ pub struct UserSettings {
     slow_time_factor: f32,
     /// True if the player wants us to cycle through ammo.
     cycle_ammo: bool,
+    /// True if icons should be drawn in living color.
+    colorize_icons: bool,
 }
 
 impl Default for UserSettings {
@@ -130,6 +132,7 @@ impl Default for UserSettings {
             cycling_slows_time: false,
             slow_time_factor: 0.25,
             cycle_ammo: false,
+            colorize_icons: true,
         }
     }
 }
@@ -231,6 +234,7 @@ impl UserSettings {
         self.slow_time_factor = percentage as f32 / 100.0;
 
         self.cycle_ammo = read_from_ini(self.cycle_ammo, "bCycleAmmo", options);
+        self.colorize_icons = read_from_ini(self.colorize_icons, "bColorizeIcons", options);
 
         Ok(())
     }
@@ -346,6 +350,10 @@ impl UserSettings {
 
     pub fn cycle_ammo(&self) -> bool {
         self.cycle_ammo
+    }
+
+    pub fn colorize_icons(&self) -> bool {
+        self.colorize_icons
     }
 }
 
