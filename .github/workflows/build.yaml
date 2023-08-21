@@ -28,11 +28,13 @@ jobs:
                   ~/.cargo/registry
                   ~/.cargo/git
                   target
+                  build
+                  vcpkg-installed
               key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
               restore-keys: |
                   ${{ runner.os }}-cargo-
         - uses: ilammy/msvc-dev-cmd@v1.10.0
-        - uses: lukka/run-vcpkg@v10.0
+        - uses: lukka/run-vcpkg@v11.1
           with:
               vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
 
