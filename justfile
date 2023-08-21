@@ -73,6 +73,7 @@ archive:
     rm "releases/${release_name}/scripts/source/TESV_Papyrus_Flags.flg"
     cd releases
     7z a "$release_name".7z "$release_name"
+    rm -rf "$release_name"
     cd ..
     echo "Mod archive for v${version} ready at releases/${release_name}.7z"
 

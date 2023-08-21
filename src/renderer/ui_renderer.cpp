@@ -684,7 +684,7 @@ namespace ui
 
 	void ui_renderer::show_briefly()
 	{
-		if (doing_brief_peek || fade_in == true || hud_alpha == 1.0f) { return; }
+		if (doing_brief_peek || hud_alpha == 1.0f || (fade_in == true && hud_alpha > 0.0f)) { return; }
 
 		doing_brief_peek = true;
 		ui_renderer::startAlphaTransition(true, 1.0f);
@@ -713,7 +713,7 @@ namespace ui
 		float fade_time = static_cast<float>(settings->fade_time()) / 1000.0f;
 		if (doing_brief_peek)
 		{
-			fade_time += static_cast<float>(settings->equip_delay_ms()) / 500.0f;  // yes over 500-- we're adding double
+			fade_time += static_cast<float>(settings->equip_delay_ms()) / 250.0f;  // yes we're waiting longer
 		}
 		transition_timer = fade_in ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
 
