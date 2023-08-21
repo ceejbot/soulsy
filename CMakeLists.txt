@@ -96,7 +96,7 @@ set(Boost_USE_STATIC_LIBS ON)
 find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(spdlog REQUIRED CONFIG)
 find_package(imgui REQUIRED)
-find_package(unofficial-nanosvg CONFIG REQUIRED)
+find_package(nanosvg CONFIG REQUIRED)
 
 include(cmake/sourcelist.cmake)
 
@@ -228,7 +228,8 @@ target_link_libraries(
     CommonLibSSE::CommonLibSSE
     spdlog::spdlog
     imgui::imgui
-    unofficial::nanosvg::nanosvg
+    NanoSVG::nanosvg 
+    NanoSVG::nanosvgrast
     wsock32
     ws2_32
     bcrypt

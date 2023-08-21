@@ -345,7 +345,7 @@ the MCM setting will be left for overwrite handling
 
 	// ---------- perk visitor, used only by the actor value potion selection
 
-	RE::PerkEntryVisitor::ReturnType perk_visitor::Visit(RE::BGSPerkEntry* perk_entry)
+	RE::BSContainer::ForEachResult perk_visitor::Visit(RE::BGSPerkEntry* perk_entry)
 	{
 		const auto* entry_point = static_cast<RE::BGSEntryPointPerkEntry*>(perk_entry);
 		const auto* perk        = entry_point->perk;
@@ -381,7 +381,7 @@ the MCM setting will be left for overwrite handling
 			logger::trace("Got value {} for Perk, total now is {}"sv, value->data, result_);
 		}
 
-		return ReturnType::kContinue;
+		return RE::BSContainer::ForEachResult::kContinue;
 	}
 
 	float perk_visitor::get_result() const { return result_; }
