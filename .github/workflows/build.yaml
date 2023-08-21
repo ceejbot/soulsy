@@ -9,7 +9,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  VCPKG_COMMIT_ID: 93895b28ea7bc8cda10f156c5d336f3fc070f8b1
+  VCPKG_COMMIT_ID: 9edb1b8e590cc086563301d735cae4b6e732d2d2
   CMAKE_BUILD_TYPE: Release
 
 jobs:
