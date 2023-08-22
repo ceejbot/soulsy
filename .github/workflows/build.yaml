@@ -64,7 +64,7 @@ jobs:
           env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            name: SoulsyHUD ${{ github.ref }}
-            tag: ${{ github.ref }}
+            name: SoulsyHUD ${{ github.ref_name }}
+            tag: ${{ github.ref_name }}
             draft: true
             artifacts: "SoulsyHUD.7z"
