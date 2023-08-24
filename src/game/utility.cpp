@@ -279,8 +279,9 @@ the MCM setting will be left for overwrite handling
 		RE::TESBoundObject* obj = nullptr;
 		float prev_rating       = 0.0f;
 
-		for (auto candidates = player::getInventoryForType(the_player, RE::FormType::AlchemyItem);
-			 const auto& [item, inv_data] : candidates)
+		auto candidates = player::getInventoryForType(the_player, RE::FormType::AlchemyItem);
+		logger::debug("{} candidates for best {} potion"sv, candidates.size(), vital_stat);
+		for (const auto& [item, inv_data] : candidates)
 		{
 			const auto& [num_items, entry] = inv_data;
 
@@ -294,7 +295,7 @@ the MCM setting will be left for overwrite handling
 				if (alchemy_item->IsDynamicForm() && num_items == 1)
 				{
 					logger::warn(
-						"Somehow the game crashes on potions with dynamic id if the count is 0 (happens with or without the mod). So I am not consuming it. Form {}, Name {}"sv,
+						"The game crashes when the count of a dynamic potion goes to 0 (happens with or without the mod). Skipping. formid={}; name='{}';"sv,
 						util::string_util::int_to_hex(alchemy_item->formID),
 						alchemy_item->GetName());
 					continue;
@@ -334,7 +335,11 @@ the MCM setting will be left for overwrite handling
 		if (obj)
 		{
 			logger::debug("found a potion: rating={}; name='{}';"sv, prev_rating, obj->GetName());
-			consumePotion(obj, the_player);
+			auto* task = SKSE::GetTaskInterface();
+			if (task)
+			{
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(the_player, obj); });
+			}
 		}
 		else
 		{

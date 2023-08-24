@@ -52,23 +52,22 @@ namespace helpers
 
 	// See UserEvents.h -- this is kMovement | kActivate | kMenu
 	// Handles photo mode and possibly others.
-	static constexpr auto suppressWhenSansControlFlags = static_cast<RE::ControlMap::UEFlag>(1036);
+	static constexpr auto requiredControlFlags = static_cast<RE::ControlMap::UEFlag>(1036);
 
 	bool ignoreKeyEvents()
 	{
-		// Some checks here might be redundant. TODO tighten if possible.
+		// We pay attention to keypress events when:
+		// - we are in normal gameplace mode
+		// - the item, magic, or favorites menus are visible
+		// We ignore them when other menus are up or when controls are disabled for quest reasons.
+
 		// If we can't ask questions about the state of the UI, we respectfully decline to act.
 		auto* ui = RE::UI::GetSingleton();
 		if (!ui) { return true; }
 
-		if (ui->IsMenuOpen("LootMenu") && gamepadInUse())
-		{
-			logger::debug("the quickloot menu is up; gamepad in use; we would auto-suspend input");
-		}
-
 		// We only want to act on button presses when in gameplay, not menus of any kind.
-		if (ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
-			!ui->GetMenu<RE::HUDMenu>() || ui->IsMenuOpen("LootMenu"))
+		if (ui->GameIsPaused() || ui->IsMenuOpen("LootMenu")) return true;
+		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>())
 		{
 			return true;
 		}
@@ -76,7 +75,8 @@ namespace helpers
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
 		const auto* control_map = RE::ControlMap::GetSingleton();
 		if (!control_map || !control_map->IsMovementControlsEnabled() ||
-			!control_map->AreControlsEnabled(suppressWhenSansControlFlags) ||
+			!control_map->AreControlsEnabled(requiredControlFlags) ||
+			!control_map->IsActivateControlsEnabled() ||
 			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay)
 		{
 			return true;
