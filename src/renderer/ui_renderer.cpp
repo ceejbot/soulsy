@@ -97,11 +97,6 @@ namespace ui
 		device_  = forwarder;
 		context_ = context;
 
-		// Not the right solution, but noting here anyway: to get alpha blending, we need to
-		// enable it in the ID3D11Device. I think. But this is not the correct call for the
-		// version we get from the call? or something. TODO: learn more dx11 trivia.
-		// device_->OMSetBlendState(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_FUNC_ADD);
-
 		logger::info("Initializing ImGui..."sv);
 		ImGui::CreateContext();
 		if (!ImGui_ImplWin32_Init(sd.OutputWindow))
@@ -116,7 +111,7 @@ namespace ui
 		}
 
 		initialized.store(true);
-		logger::info("Ready to render.");
+		logger::info("Ready to draw the HUD.");
 
 		wnd_proc_hook::func = reinterpret_cast<WNDPROC>(
 			SetWindowLongPtrA(sd.OutputWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wnd_proc_hook::thunk)));
@@ -334,7 +329,7 @@ namespace ui
 	{
 		if (a_alpha == 0) { return; }
 
-		logger::trace("starting inited animation");
+		// logger::trace("starting inited animation");
 		constexpr auto angle = 0.0f;
 
 		const auto size = static_cast<uint32_t>(animation_frame_map[animation_type].size());

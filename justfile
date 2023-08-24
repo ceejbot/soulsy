@@ -2,8 +2,6 @@ set windows-shell := ["pwsh.exe", "-Command"]
 set shell := ["bash", "-uc"]
 set dotenv-load := true
 
-shbang := if os_family() == "windows" { "rust-script.exe" } else { "/usr/bin/env rust-script" }
-
 # List available recipes.
 help:
     just -l
@@ -100,7 +98,7 @@ check-translations:
     converted=$(iconv -f utf-16 -t utf-8 data/Interface/Translations/SoulsyHUD_english.txt > tmp.txt)
 
     # I am too lazy to figure out how to get jq to do all of it.
-    keys=$(cat data/mcm/config/SoulsyHUD/config.json | jq '.content[] | .[]' -r | grep "\\$" | tr -d '," $' | sort | uniq)
+    keys=$(cat data/mcm/config/SoulsyHUD/config.json | jq '.pages[] | .content[] | .[]' -r | grep "\\$" | tr -d '," $' | sort | uniq)
     for k in $keys; do
         cmd="grep $k tmp.txt"
         suppressed=$(sh -c "$cmd")

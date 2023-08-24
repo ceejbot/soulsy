@@ -58,7 +58,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 				ui::ui_renderer::load_all_images();
 				register_all_sinks();
 				hooks::install_hooks();
-				papyrus::register_papyrus_functions();
+				papyrus::registerPapyrusFunctions();
 			}
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:

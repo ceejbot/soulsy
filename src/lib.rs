@@ -263,6 +263,10 @@ pub mod plugin {
         fn refresh_user_settings();
         /// Fetch a read-only copy of our current layout.
         fn hud_layout() -> HudLayout;
+        /// Clear all cycles on player request.
+        fn clear_cycles();
+        /// Get the names of the entries in the given cycle as a string.
+        fn get_cycle_names(which: u32) -> Vec<String>;
 
         /// NEW cycle entry type. This is opaque.
         type HudItem;

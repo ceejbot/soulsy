@@ -122,6 +122,14 @@ pub fn refresh_user_settings() {
     control::get().apply_settings();
 }
 
+pub fn clear_cycles() {
+    control::get().clear_cycles();
+}
+
+pub fn get_cycle_names(which: u32) -> Vec<String> {
+    control::get().cycle_names(which)
+}
+
 pub fn serialize_version() -> u32 {
     CycleData::serialize_version()
 }

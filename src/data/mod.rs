@@ -79,7 +79,7 @@ pub fn magic_from_spelldata(
     form_string: String,
     count: u32,
 ) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().map(|xs| *xs).collect();
+    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let data = *spelldata; // unbox
 
     let kind = match which {
@@ -97,7 +97,7 @@ pub fn simple_from_formdata(
     bytes_ffi: &CxxVector<u8>,
     form_string: String,
 ) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().map(|xs| *xs).collect();
+    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let classification = match kind {
         ItemCategory::HandToHand => BaseType::HandToHand,
         ItemCategory::Light => BaseType::Light,
@@ -117,14 +117,14 @@ pub fn potion_from_formdata(
     bytes_ffi: &CxxVector<u8>,
     form_string: String,
 ) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().map(|xs| *xs).collect();
+    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let kind = PotionType::from_effect(is_poison, effect.into());
     let result = HudItem::preclassified(name_bytes, form_string, count, BaseType::Potion(kind));
     Box::new(result)
 }
 
 pub fn make_base_ammo(count: u32, bytes_ffi: &CxxVector<u8>, form_string: String) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().map(|xs| *xs).collect();
+    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let kind = AmmoType::Arrow(InvColor::default());
     let result = HudItem::preclassified(name_bytes, form_string, count, BaseType::Ammo(kind));
     Box::new(result)

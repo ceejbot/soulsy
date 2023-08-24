@@ -31,6 +31,25 @@ pub struct CycleData {
 }
 
 impl CycleData {
+    pub fn clear(&mut self) {
+        self.power.clear();
+        self.utility.clear();
+        self.left.clear();
+        self.right.clear();
+    }
+
+    pub fn names(&self, which: &CycleSlot, cache: &mut ItemCache) -> Vec<String> {
+        let cycle = match which {
+            CycleSlot::Power => &self.power,
+            CycleSlot::Left => &self.left,
+            CycleSlot::Right => &self.right,
+            CycleSlot::Utility => &self.utility,
+        };
+        cycle.iter().filter_map(|xs| {
+            cache.get_or_none(xs.as_str()).map(|xs| xs.name())
+        }).collect::<Vec<_>>()
+    }
+
     /// Advance the given cycle by one. Returns a copy of the newly-top item.
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.
@@ -81,7 +100,7 @@ impl CycleData {
         // This requires cache lookups.
         self.right.rotate_left(1);
         let candidate = self.right.iter().find(|xs| {
-            let item = cache.get_or_create(xs);
+            let item = cache.get(xs);
             !item.two_handed()
         });
         if let Some(v) = candidate {
@@ -277,7 +296,7 @@ impl CycleData {
             CycleSlot::Utility => &mut self.utility,
         };
         cycle.retain(|xs| {
-            let found = cache.get_or_create(xs);
+            let found = cache.get(xs);
             found.kind() != unwanted
         });
     }
@@ -326,7 +345,7 @@ impl CycleData {
                 .iter()
                 .filter_map(|incoming| {
                     let spec = incoming.clone();
-                    let item = cache.get_or_create(&spec);
+                    let item = cache.get(&spec);
 
                     cxx::let_cxx_string!(form_spec = spec.clone());
                     if hasItemOrSpell(&form_spec) {

@@ -5,10 +5,29 @@ bool property pEnableActivateHotkey = false auto
 bool property pCycleNeedsModifier = false auto
 bool property pMenuNeedsModifier = false auto
 bool property pEnableUnequipModifier = false auto
+int property pCycleToShow = 0 auto
 
 Event OnConfigClose() native
 string function GetResolutionWidth() native
 string function GetResolutionHeight() native
+string[] function getPowerCycleNames() native
+string[] function getUtilityCycleNames() native
+string[] function getLeftCycleNames() native
+string[] function getRightCycleNames() native
+function ClearCycles() native
+
+function ShowCycleEntries(int which)
+    pCycleToShow = which
+    if (which == 0)
+        SetMenuOptions("cycleDisplay", getPowerCycleNames())
+    elseif (which == 1)
+        SetMenuOptions("cycleDisplay", getUtilityCycleNames())
+    elseif (which == 2)
+        SetMenuOptions("cycleDisplay", getLeftCycleNames())
+    elseif (which == 3)
+        SetMenuOptions("cycleDisplay", getRightCycleNames())
+    endif
+endFunction
 
 Event OnSettingChange(String changedID)
     parent.OnSettingChange(changedID)
@@ -52,5 +71,8 @@ Event OnConfigOpen()
 
     int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
     pEnableUnequipModifier = (unequipEnum == 2)
+
+    ShowCycleEntries(pCycleToShow)
+
     ForcePageReset()
 EndEvent
