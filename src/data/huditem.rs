@@ -36,7 +36,7 @@ impl HudItem {
         let (name_is_utf8, name) = name_from_bytes(&name_bytes);
 
         log::debug!("calling BaseType::classify() with keywords={keywords:?};");
-        let kind: BaseType = BaseType::classify(category, keywords, twohanded);
+        let kind: BaseType = BaseType::classify(name.as_str(), category, keywords, twohanded);
         let icon_file = kind.icon_file();
         Self {
             name_bytes,

@@ -206,7 +206,7 @@ impl SpellType {
         let variant = if let Some(v) = variant {
             v
         } else {
-            log::debug!("default spell variant; data: {data:?}");
+            log::debug!("Falling back to default spell variant; data: {data:?}");
             SpellVariant::Unknown
         };
 

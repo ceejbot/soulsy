@@ -24,7 +24,7 @@ impl Default for AmmoType {
 }
 
 impl HasKeywords for AmmoType {
-    fn classify(keywords: Vec<String>, _ignored: bool) -> Self {
+    fn classify(_name: &str, keywords: Vec<String>, _ignored: bool) -> Self {
         let color = base::color_from_keywords(&keywords);
 
         let ammo_keywords: Vec<AmmoType> = keywords
@@ -83,7 +83,7 @@ mod tests {
             "OCF_AmmoTypeBullet1H_Basic".to_string(),
         ];
 
-        let result = AmmoType::classify(input, false);
+        let result = AmmoType::classify("TestAmmo", input, false);
         assert_eq!(result, AmmoType::Bullet(InvColor::Fire));
     }
 }

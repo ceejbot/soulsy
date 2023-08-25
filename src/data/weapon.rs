@@ -48,7 +48,7 @@ pub enum WeaponType {
 }
 
 impl HasKeywords for WeaponType {
-    fn classify(keywords: Vec<String>, twohanded: bool) -> Self {
+    fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self {
         let color = super::base::color_from_keywords(&keywords);
 
         let equiptype = if twohanded {
@@ -178,7 +178,7 @@ impl HasKeywords for WeaponType {
             if let Some(kind) = maybe_kind {
                 kind
             } else {
-                log::info!("default weapon type; keywords: {keywords:?}");
+                log::warn!("We couldn't classify this weapon! name='{name}'; keywords: {keywords:?}");
                 WeaponType::default()
             }
         }
@@ -589,7 +589,7 @@ mod tests {
             "OCF_WeapTypeHalberd2H".to_string(),
         ];
 
-        let result = WeaponType::classify(input, true);
+        let result = WeaponType::classify("TestName", input, true);
         assert_eq!(
             result,
             WeaponType::Halberd(WeaponEquipType::TwoHanded, InvColor::Blood)
@@ -603,7 +603,7 @@ mod tests {
             "OCF_WeapTypeWarscythe2H".to_string(),
             "OCF_WeapTypeHalberd2H".to_string(),
         ];
-        let result = WeaponType::classify(input, true);
+        let result = WeaponType::classify("TestName", input, true);
         assert_eq!(
             result,
             WeaponType::Halberd(WeaponEquipType::TwoHanded, InvColor::Blood)
@@ -614,7 +614,7 @@ mod tests {
             "Weapon".to_string(),
             "OCF_ArtifactDaedric".to_string(),
         ];
-        let result = WeaponType::classify(input, false);
+        let result = WeaponType::classify("TestName", input, false);
         assert_eq!(
             result,
             WeaponType::WeaponDefault(WeaponEquipType::OneHanded, InvColor::White)
@@ -626,7 +626,7 @@ mod tests {
             "Weapon".to_string(),
             "TwoHandSword".to_string(),
         ];
-        let result = WeaponType::classify(input, true);
+        let result = WeaponType::classify("TestName", input, true);
         assert_eq!(
             result,
             WeaponType::SwordTwoHanded(WeaponEquipType::TwoHanded, InvColor::Fire)

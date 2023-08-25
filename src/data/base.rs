@@ -103,10 +103,10 @@ impl BaseType {
         BaseType::Shout(variant)
     }
 
-    pub fn classify(category: ItemCategory, keywords: Vec<String>, twohanded: bool) -> Self {
+    pub fn classify(name: &str, category: ItemCategory, keywords: Vec<String>, twohanded: bool) -> Self {
         match category {
-            ItemCategory::Ammo => Self::Ammo(AmmoType::classify(keywords.clone(), twohanded)),
-            ItemCategory::Armor => Self::Armor(ArmorType::classify(keywords.clone(), twohanded)),
+            ItemCategory::Ammo => Self::Ammo(AmmoType::classify(name, keywords.clone(), twohanded)),
+            ItemCategory::Armor => Self::Armor(ArmorType::classify(name, keywords.clone(), twohanded)),
             ItemCategory::Food => Self::Food(FoodType::Fruit), // for now
             ItemCategory::HandToHand => Self::HandToHand,
             ItemCategory::Light => Self::Light, // TODO
@@ -115,7 +115,7 @@ impl BaseType {
             ItemCategory::Scroll => Self::Scroll(SpellType::default()),
             ItemCategory::Shout => Self::Shout(ShoutVariant::default()),
             ItemCategory::Spell => Self::Spell(SpellType::default()),
-            ItemCategory::Weapon => Self::Weapon(WeaponType::classify(keywords.clone(), twohanded)),
+            ItemCategory::Weapon => Self::Weapon(WeaponType::classify(name, keywords.clone(), twohanded)),
             _ => BaseType::Empty,
         }
     }
@@ -347,7 +347,7 @@ mod tests {
             "OCF_AmmoTypeBullet1H_Basic".to_string(),
         ];
 
-        let result = BaseType::classify(ItemCategory::Ammo, input, true);
+        let result = BaseType::classify("TestName", ItemCategory::Ammo, input, true);
         assert_eq!(result, BaseType::Ammo(AmmoType::Bullet(InvColor::Water)));
 
         let input = vec![
@@ -355,7 +355,7 @@ mod tests {
             "OCF_AccessoryBelt".to_string(),
             "Armor".to_string(),
         ];
-        let result = BaseType::classify(ItemCategory::Armor, input, false);
+        let result = BaseType::classify("TestName", ItemCategory::Armor, input, false);
         assert_eq!(result, BaseType::Armor(ArmorType::Belt));
 
         let input = vec![
@@ -366,7 +366,7 @@ mod tests {
             "-varWeapNotLongsword".to_string(),
             "TwoHandSword".to_string(),
         ];
-        let result = BaseType::classify(ItemCategory::Weapon, input, true);
+        let result = BaseType::classify("TestName", ItemCategory::Weapon, input, true);
         assert_eq!(
             result,
             BaseType::Weapon(WeaponType::SwordTwoHanded(

@@ -173,7 +173,7 @@ pub trait HasIcon {
 }
 
 pub trait HasKeywords {
-    fn classify(keywords: Vec<String>, twohanded: bool) -> Self;
+    fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self;
 }
 
 // ---------- Unclear this needs to be a trait.
