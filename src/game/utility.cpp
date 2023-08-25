@@ -292,21 +292,12 @@ the MCM setting will be left for overwrite handling
 
 			if (actor_value == vital_stat)
 			{
-				// if (alchemy_item->IsDynamicForm() && num_items == 1)
-				// {
-				// 	logger::warn(
-				// 		"The game crashes when the count of a dynamic potion goes to 0 (happens with or without the mod). Skipping. formid={}; name='{}';"sv,
-				// 		util::string_util::int_to_hex(alchemy_item->formID),
-				// 		alchemy_item->GetName());
-				// 	continue;
-				// }
-
 				auto magnitude = alchemy_item->GetCostliestEffectItem()->GetMagnitude();
 				auto duration  = alchemy_item->GetCostliestEffectItem()->GetDuration();
 				if (duration == 0) { duration = 1; }
 				auto max_restored = magnitude * duration;
-				auto rating       = max_restored - deficit;
-
+				auto diff         = std::fabs(max_restored - deficit);
+				auto rating       = max_restored > deficit ? diff : -diff;
 				// any match is better than no match
 				if (!obj)
 				{
@@ -317,7 +308,7 @@ the MCM setting will be left for overwrite handling
 				}
 
 				// We have at least a second candidate. Is it better than our current choice?
-				if (std::fabs(prev_rating) < std::fabs(prev_rating))
+				if (std::fabs(prev_rating) < std::fabs(rating))
 				{
 					logger::debug("improved selection: rating={}; max_restored={}; deficit={};"sv,
 						prev_rating,
