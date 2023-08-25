@@ -45,9 +45,10 @@ impl CycleData {
             CycleSlot::Right => &self.right,
             CycleSlot::Utility => &self.utility,
         };
-        cycle.iter().filter_map(|xs| {
-            cache.get_or_none(xs.as_str()).map(|xs| xs.name())
-        }).collect::<Vec<_>>()
+        cycle
+            .iter()
+            .filter_map(|xs| cache.get_or_none(xs.as_str()).map(|xs| xs.name()))
+            .collect::<Vec<_>>()
     }
 
     /// Advance the given cycle by one. Returns a copy of the newly-top item.

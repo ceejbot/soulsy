@@ -24,7 +24,7 @@ namespace player
 	rust::String specEquippedPower();
 	rust::String specEquippedAmmo();
 	rust::Vec<rust::String> getAmmoInventory();
-	bool compare(RE::TESAmmo * left, RE::TESAmmo * right);
+	bool compare(RE::TESAmmo* left, RE::TESAmmo* right);
 
 
 	rust::Vec<uint16_t> playerName();

@@ -55,10 +55,7 @@ namespace game
 			}
 		}
 
-		if (!bound_obj)
-		{
-			return 0;
-		}
+		if (!bound_obj) { return 0; }
 
 		logger::debug("found {} instance for bound object; name='{}'; formID={};"sv,
 			item_count,

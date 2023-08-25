@@ -67,16 +67,12 @@ namespace helpers
 
 		// We only want to act on button presses when in gameplay, not menus of any kind.
 		if (ui->GameIsPaused() || ui->IsMenuOpen("LootMenu")) return true;
-		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>())
-		{
-			return true;
-		}
+		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>()) { return true; }
 
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
 		const auto* control_map = RE::ControlMap::GetSingleton();
 		if (!control_map || !control_map->IsMovementControlsEnabled() ||
-			!control_map->AreControlsEnabled(requiredControlFlags) ||
-			!control_map->IsActivateControlsEnabled() ||
+			!control_map->AreControlsEnabled(requiredControlFlags) || !control_map->IsActivateControlsEnabled() ||
 			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay)
 		{
 			return true;

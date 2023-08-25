@@ -86,13 +86,13 @@ namespace player
 		return formspec;
 	}
 
-	bool compare(RE::TESAmmo * left, RE::TESAmmo * right) { return (left->data.damage < right->data.damage); }
+	bool compare(RE::TESAmmo* left, RE::TESAmmo* right) { return (left->data.damage < right->data.damage); }
 
 	rust::Vec<rust::String> getAmmoInventory()
 	{
-		auto player        = RE::PlayerCharacter::GetSingleton();
+		auto player       = RE::PlayerCharacter::GetSingleton();
 		auto* currentAmmo = player->GetCurrentAmmo();
-		auto damage        = 0.0f;
+		auto damage       = 0.0f;
 		if (currentAmmo) { damage = currentAmmo->data.damage; }
 		bool isBolt = currentAmmo->IsBolt();
 
@@ -102,7 +102,7 @@ namespace player
 		for (const auto& [item, inv_data] : ammoTypes)
 		{
 			const auto& [num_items, entry] = inv_data;
-			auto* new_ammo = item->As<RE::TESAmmo>();
+			auto* new_ammo                 = item->As<RE::TESAmmo>();
 			if (new_ammo->IsBolt() == isBolt) { sorted->push_back(new_ammo); }
 		}
 
@@ -110,7 +110,8 @@ namespace player
 
 		auto specs = new rust::Vec<rust::String>();
 
-		for (auto* ammo : *sorted) {
+		for (auto* ammo : *sorted)
+		{
 			auto spec = helpers::makeFormSpecString(ammo->As<RE::TESForm>());
 			specs->push_back(rust::String(spec));
 		}

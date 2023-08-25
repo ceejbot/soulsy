@@ -95,9 +95,9 @@ namespace equippable
 		if (!item_form) { return empty_huditem(); }
 
 		KeywordAccumulator::clear();
-		auto chonker                 = helpers::chars_to_vec(item_form->GetName());
-		std::string form_string      = helpers::makeFormSpecString(item_form);
-		bool two_handed              = requiresTwoHands(item_form);
+		auto chonker            = helpers::chars_to_vec(item_form->GetName());
+		std::string form_string = helpers::makeFormSpecString(item_form);
+		bool two_handed         = requiresTwoHands(item_form);
 
 		if (item_form->Is(RE::FormType::Light))
 		{

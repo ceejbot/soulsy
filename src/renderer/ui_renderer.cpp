@@ -73,7 +73,7 @@ namespace ui
 			return;
 		}
 
-		const auto context = renderer->data.context;
+		const auto context   = renderer->data.context;
 		const auto swapChain = renderer->data.renderWindows->swapChain;
 		const auto forwarder = renderer->data.forwarder;
 
