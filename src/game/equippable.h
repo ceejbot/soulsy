@@ -21,8 +21,9 @@ namespace equippable
 
 	struct KeywordAccumulator
 	{
-		static inline std::vector<std::string>* keywords = new std::vector<std::string>();
-
+		static inline std::vector<std::string>* mKeywords = new std::vector<std::string>();
+		static inline void clear() { mKeywords->clear(); }
+		
 		static RE::BSContainer::ForEachResult collect(RE::BGSKeyword& kwd);
 		static void printKeywords();
 	};

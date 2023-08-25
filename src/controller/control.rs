@@ -153,7 +153,7 @@ impl Controller {
 
         let kind = item.kind().clone();
         let new_count = item.count();
-        log::debug!("inventory count update: name='{}'; count={new_count}", item.name());
+        log::debug!("inventory count update: name='{}'; delta={delta}; count={new_count}", item.name());
 
         if kind.is_ammo() {
             if let Some(candidate) = self.visible.get_mut(&HudElement::Ammo) {

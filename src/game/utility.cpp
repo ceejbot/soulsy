@@ -138,14 +138,14 @@ namespace game
 			return;
 		}
 
-		if (obj->IsDynamicForm() && remaining == 1)
-		{
-			logger::warn(
-				"The game crashes on potions with dynamic id if the count is 0 (happens with or without the mod). Skipping. formID={};, name='{}';"sv,
-				string_util::int_to_hex(obj->formID),
-				obj->GetName());
-			return;
-		}
+		// if (obj->IsDynamicForm() && remaining == 1)
+		// {
+		// 	logger::warn(
+		// 		"The game crashes on potions with dynamic id if the count is 0 (happens with or without the mod). Skipping. formID={};, name='{}';"sv,
+		// 		string_util::int_to_hex(obj->formID),
+		// 		obj->GetName());
+		// 	return;
+		// }
 
 		if (!obj->Is(RE::FormType::AlchemyItem))
 		{
@@ -292,14 +292,14 @@ the MCM setting will be left for overwrite handling
 
 			if (actor_value == vital_stat)
 			{
-				if (alchemy_item->IsDynamicForm() && num_items == 1)
-				{
-					logger::warn(
-						"The game crashes when the count of a dynamic potion goes to 0 (happens with or without the mod). Skipping. formid={}; name='{}';"sv,
-						util::string_util::int_to_hex(alchemy_item->formID),
-						alchemy_item->GetName());
-					continue;
-				}
+				// if (alchemy_item->IsDynamicForm() && num_items == 1)
+				// {
+				// 	logger::warn(
+				// 		"The game crashes when the count of a dynamic potion goes to 0 (happens with or without the mod). Skipping. formid={}; name='{}';"sv,
+				// 		util::string_util::int_to_hex(alchemy_item->formID),
+				// 		alchemy_item->GetName());
+				// 	continue;
+				// }
 
 				auto magnitude = alchemy_item->GetCostliestEffectItem()->GetMagnitude();
 				auto duration  = alchemy_item->GetCostliestEffectItem()->GetDuration();

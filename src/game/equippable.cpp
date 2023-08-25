@@ -94,7 +94,7 @@ namespace equippable
 	{
 		if (!item_form) { return empty_huditem(); }
 
-		KeywordAccumulator::keywords = new std::vector<std::string>();
+		KeywordAccumulator::clear();
 		auto chonker                 = helpers::chars_to_vec(item_form->GetName());
 		std::string form_string      = helpers::makeFormSpecString(item_form);
 		bool two_handed              = requiresTwoHands(item_form);
@@ -111,7 +111,7 @@ namespace equippable
 			logger::info("making HudItem for ammo: '{}'"sv, item_form->GetName());
 			const auto* ammo = item_form->As<RE::TESAmmo>()->AsKeywordForm();
 			ammo->ForEachKeyword(KeywordAccumulator::collect);
-			auto& keywords = KeywordAccumulator::keywords;
+			auto& keywords = KeywordAccumulator::mKeywords;
 			auto count     = player::getInventoryCountByForm(item_form);
 
 			rust::Box<HudItem> item =
@@ -125,7 +125,7 @@ namespace equippable
 			{
 				logger::info("making HudItem for weapon: '{}'"sv, item_form->GetName());
 				weapon->ForEachKeyword(KeywordAccumulator::collect);
-				auto& keywords          = KeywordAccumulator::keywords;
+				auto& keywords          = KeywordAccumulator::mKeywords;
 				auto count              = player::getInventoryCountByForm(item_form);
 				rust::Box<HudItem> item = hud_item_from_keywords(
 					ItemCategory::Weapon, *keywords, std::move(chonker), form_string, count, two_handed);
@@ -139,7 +139,7 @@ namespace equippable
 			logger::info("making HudItem for armor: '{}'"sv, item_form->GetName());
 			const auto* armor = item_form->As<RE::TESObjectARMO>();
 			armor->ForEachKeyword(KeywordAccumulator::collect);
-			auto& keywords = KeywordAccumulator::keywords;
+			auto& keywords = KeywordAccumulator::mKeywords;
 			auto count     = player::getInventoryCountByForm(item_form);
 			rust::Box<HudItem> item =
 				hud_item_from_keywords(ItemCategory::Armor, *keywords, std::move(chonker), form_string, count, false);
@@ -237,17 +237,17 @@ namespace equippable
 
 	RE::BSContainer::ForEachResult KeywordAccumulator::collect(RE::BGSKeyword& kwd)
 	{
-		if (!keywords) { keywords = new std::vector<std::string>(); }
+		if (!mKeywords) { mKeywords = new std::vector<std::string>(); }
 
 		auto id  = kwd.GetFormEditorID();
 		auto str = std::string(id);
-		keywords->push_back(str);
+		mKeywords->push_back(str);
 		return RE::BSContainer::ForEachResult::kContinue;
 	}
 
 	void KeywordAccumulator::printKeywords()
 	{
-		if (!keywords) { logger::debug("no keywords to print"); }
-		for (std::string kwd : *keywords) { logger::info("{}"sv, kwd); }
+		if (!mKeywords) { logger::debug("no keywords to print"); }
+		for (std::string kwd : *mKeywords) { logger::info("{}"sv, kwd); }
 	}
 }

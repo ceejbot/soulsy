@@ -139,10 +139,11 @@ impl Display for HudItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "name='{}'; form_string='{}'; kind='{:?}'",
+            "name='{}'; form_string='{}'; kind='{:?}'; count={};",
             self.name(),
             self.form_string(),
-            self.kind()
+            self.kind(),
+            self.count()
         )
     }
 }
@@ -156,7 +157,7 @@ fn name_from_bytes(name_bytes: &[u8]) -> (bool, String) {
             if let Ok(cstring) = CString::new(name_bytes.to_owned()) {
                 cstring
             } else {
-                log::info!("Surprising: item name bytes were an invalid c string; error: {e:#}");
+                log::info!("Surprising: item name bytes were an invalid C string; error: {e:#}");
                 CString::default()
             }
         }
