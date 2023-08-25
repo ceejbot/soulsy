@@ -326,7 +326,10 @@
           "type": "enum",
           "help": "$SoulsyHUD_Options_Controller_Help",
           "valueOptions": {
-            "options": ["$SoulsyHUD_Controls_PS", "$SoulsyHUD_Controls_Xbox"],
+            "options": [
+              "$SoulsyHUD_Controls_PS",
+              "$SoulsyHUD_Controls_Xbox"
+            ],
             "sourceType": "ModSettingInt",
             "defaultValue": 0
           }
@@ -394,8 +397,8 @@
             "options": [
               "$SoulsyHUD_CycleEnum_Powers",
               "$SoulsyHUD_CycleEnum_Utilities",
-              "$SoulsyHUD_CycleEnum_RightHand",
-              "$SoulsyHUD_CycleEnum_LeftHand"
+              "$SoulsyHUD_CycleEnum_LeftHand",
+              "$SoulsyHUD_CycleEnum_RightHand"
             ],
             "sourceType": "PropertyValueInt",
             "propertyName": "pCycleToShow",
@@ -404,7 +407,9 @@
           "action": {
             "type": "CallFunction",
             "function": "ShowCycleEntries",
-            "params": ["{value}"]
+            "params": [
+              "{value}"
+            ]
           }
         },
         {
