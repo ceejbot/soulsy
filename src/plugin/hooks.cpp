@@ -32,17 +32,24 @@ namespace hooks
 		auto* ui = RE::UI::GetSingleton();
 		if (!ui) return process_event_(this, eventPtr, eventSource);
 
-		rust::Box<UserSettings> settings = user_settings();
-		bool check_favorites             = settings->link_to_favorites();
-		auto relevantMenuOpen            = helpers::relevantMenuOpen();
+		auto inInventoryMenu = ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME);
+		auto inMagicMenu     = ui->IsMenuOpen(RE::MagicMenu::MENU_NAME);
+		auto inFavoritesMenu = ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
+		if (ui->IsMenuOpen("LootMenu") || !(inInventoryMenu || inMagicMenu || inFavoritesMenu))
+		{
+			return process_event_(this, eventPtr, eventSource);
+		}
 
 		auto* controlMap = RE::ControlMap::GetSingleton();
 		auto* userEvents = RE::UserEvents::GetSingleton();
 		if (!controlMap || !userEvents) return process_event_(this, eventPtr, eventSource);
-		auto favconst  = userEvents->togglePOV;  // m&k shortcut
-		auto favtoggle = userEvents->jump;       // controller shortcut
 
-		if (ui->IsMenuOpen("LootMenu") || !relevantMenuOpen) { return process_event_(this, eventPtr, eventSource); }
+		rust::Box<UserSettings> settings = user_settings();
+		bool check_favorites             = settings->link_to_favorites();
+		auto favconst                    = userEvents->togglePOV;  // m&k shortcut
+		auto favtoggle                   = userEvents->jump;       // controller shortcut
+
+		// TODO consider treating the favorites menu completely differently.
 
 		if (eventPtr && *eventPtr)
 		{
@@ -85,7 +92,6 @@ namespace hooks
 
 				// we send all key events to this handler because it needs to track modifiers
 				auto do_toggle = handle_menu_event(key, *button);
-
 				if (do_toggle)
 				{
 					helpers::MenuSelection* selection = nullptr;
