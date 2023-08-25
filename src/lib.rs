@@ -233,6 +233,8 @@ pub mod plugin {
         /// Serialization format version.
         fn serialize_version() -> u32;
         fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32);
+        /// On save load or death restore, wipe the hud item cache.
+        fn clear_cache();
 
         /// Give access to the settings to the C++ side.
         type UserSettings;

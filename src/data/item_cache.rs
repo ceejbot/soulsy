@@ -28,6 +28,13 @@ impl ItemCache {
         log::debug!("    least recently-used item is: {:?}", self.lru.peek_lru());
     }
 
+    /// On load from save, we do not bother attempting to reconcile what
+    /// we have cached with what the save state is. We merely enjoy the
+    /// eternal sunshine of the spotless mind.
+    pub fn clear(&mut self) {
+        self.lru.clear();
+    }
+
     /// Retrieve the named item from the cache. As a side effect, will create a
     /// HudItem for this form id if none was in the cache.
     pub fn get(&mut self, form_string: &String) -> HudItem {

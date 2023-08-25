@@ -13,7 +13,7 @@ namespace cosave
 		auto* cosave = SKSE::GetSerializationInterface();
 		cosave->SetUniqueID(_byteswap_ulong('SOLS'));
 		cosave->SetSaveCallback(cosave::gameSavedHandler);
-		// cosave->SetRevertCallback(cosave::revertHandler);
+		cosave->SetRevertCallback(cosave::revertHandler);
 		cosave->SetLoadCallback(cosave::gameLoadedHandler);
 	}
 
@@ -61,10 +61,5 @@ namespace cosave
 		}
 	}
 
-	/*
-	void revertHandler(SKSE::SerializationInterface* cosave)
-	{
-		// TODO reset if anything to do ?
-	}
-	*/
+	void revertHandler(SKSE::SerializationInterface*) { clear_cache(); }
 }

@@ -151,3 +151,7 @@ pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32) {
         ctrl.cycles = CycleData::default();
     }
 }
+
+pub fn clear_cache() {
+    control::get().cache.clear();
+}
