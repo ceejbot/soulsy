@@ -18,14 +18,15 @@ function ClearCycles() native
 
 function ShowCycleEntries(int which)
     pCycleToShow = which
+    string[] empty = new string[1]
     if (which == 0)
-        SetMenuOptions("cycleDisplay", getPowerCycleNames())
+        SetMenuOptions("cycleDisplay", getPowerCycleNames(), empty)
     elseif (which == 1)
-        SetMenuOptions("cycleDisplay", getUtilityCycleNames())
+        SetMenuOptions("cycleDisplay", getUtilityCycleNames(), empty)
     elseif (which == 2)
-        SetMenuOptions("cycleDisplay", getLeftCycleNames())
+        SetMenuOptions("cycleDisplay", getLeftCycleNames(), empty)
     elseif (which == 3)
-        SetMenuOptions("cycleDisplay", getRightCycleNames())
+        SetMenuOptions("cycleDisplay", getRightCycleNames(), empty)
     endif
 endFunction
 
