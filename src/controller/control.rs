@@ -226,7 +226,7 @@ impl Controller {
             if let Some(vis) = self.visible.get(&HudElement::Utility) {
                 if vis.form_string() == *form_spec {
                     if let Some(formspec) = self.cycles.get_top(&CycleSlot::Utility) {
-                        let item = self.cache.get(&formspec);
+                        let item = self.cache.get_with_refresh(&formspec);
                         self.update_slot(HudElement::Utility, &item);
                     }
                 }
@@ -416,7 +416,7 @@ impl Controller {
         };
 
         if let Some(next) = candidate {
-            let item = self.cache.get(&next);
+            let item = self.cache.get_with_refresh(&next);
             self.update_slot(hud, &item);
             KeyEventResponse {
                 handled: true,
@@ -701,6 +701,7 @@ impl Controller {
         }
     }
 
+    /// Update a HUD slot for one of the two hands, and return that we handled it.
     fn update_and_record(&mut self, which: &CycleSlot, next: &HudItem) -> KeyEventResponse {
         let hud = HudElement::from(which);
         self.update_slot(hud, next);
