@@ -452,8 +452,6 @@ pub mod plugin {
         fn equipArmor(form_spec: &CxxString);
         /// Equip the amoo matching the form spec.
         fn equipAmmo(form_spec: &CxxString);
-        /// Consume a potion matching the form spec. Skips dynamic items (for now).
-
         /// Potions great and small.
         fn consumePotion(form_spec: &CxxString);
         /// Choose and then consume the best potion for the given stat.
@@ -466,6 +464,7 @@ pub mod plugin {
         fn staminaPotionCount() -> u32;
         fn healthPotionCount() -> u32;
         fn magickaPotionCount() -> u32;
+        /// Get a count for items with this form spec.
         fn itemCount(form_spec: &CxxString) -> u32;
 
     }
