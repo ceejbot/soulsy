@@ -162,7 +162,12 @@ impl CycleData {
             CycleSlot::Right => &self.right,
             CycleSlot::Utility => &self.utility,
         };
-        cycle.get(1).cloned()
+
+        if cycle.len() == 1 {
+            cycle.first().cloned()
+        } else {
+            cycle.get(1).cloned()
+        }
     }
 
     /// Toggle the presence of the given item in the given cycle.

@@ -286,8 +286,8 @@ impl UserSettings {
             HudElement::Utility => self.utility,
             HudElement::Left => self.left,
             HudElement::Right => self.right,
-            HudElement::Ammo => self.activate, // objectively wrong, but ignored
-            _ => self.refresh_layout,          // required because this is a C-style enum
+            HudElement::Ammo => self.left, // This is objectively correct.
+            _ => self.refresh_layout,      // Required because this is a C-style enum.
         }
     }
 

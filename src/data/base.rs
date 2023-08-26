@@ -103,10 +103,17 @@ impl BaseType {
         BaseType::Shout(variant)
     }
 
-    pub fn classify(name: &str, category: ItemCategory, keywords: Vec<String>, twohanded: bool) -> Self {
+    pub fn classify(
+        name: &str,
+        category: ItemCategory,
+        keywords: Vec<String>,
+        twohanded: bool,
+    ) -> Self {
         match category {
             ItemCategory::Ammo => Self::Ammo(AmmoType::classify(name, keywords.clone(), twohanded)),
-            ItemCategory::Armor => Self::Armor(ArmorType::classify(name, keywords.clone(), twohanded)),
+            ItemCategory::Armor => {
+                Self::Armor(ArmorType::classify(name, keywords.clone(), twohanded))
+            }
             ItemCategory::Food => Self::Food(FoodType::Fruit), // for now
             ItemCategory::HandToHand => Self::HandToHand,
             ItemCategory::Light => Self::Light, // TODO
@@ -115,7 +122,9 @@ impl BaseType {
             ItemCategory::Scroll => Self::Scroll(SpellType::default()),
             ItemCategory::Shout => Self::Shout(ShoutVariant::default()),
             ItemCategory::Spell => Self::Spell(SpellType::default()),
-            ItemCategory::Weapon => Self::Weapon(WeaponType::classify(name, keywords.clone(), twohanded)),
+            ItemCategory::Weapon => {
+                Self::Weapon(WeaponType::classify(name, keywords.clone(), twohanded))
+            }
             _ => BaseType::Empty,
         }
     }

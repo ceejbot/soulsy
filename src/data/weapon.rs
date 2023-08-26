@@ -178,7 +178,9 @@ impl HasKeywords for WeaponType {
             if let Some(kind) = maybe_kind {
                 kind
             } else {
-                log::warn!("We couldn't classify this weapon! name='{name}'; keywords: {keywords:?}");
+                log::warn!(
+                    "We couldn't classify this weapon! name='{name}'; keywords: {keywords:?}"
+                );
                 WeaponType::default()
             }
         }

@@ -675,28 +675,35 @@ impl Controller {
     }
 
     fn advance_ammo(&mut self) -> KeyEventResponse {
-        log::debug!("selecting next ammo");
+        log::debug!("advance_ammo() called. Plink plink.");
         let form_string = specEquippedAmmo();
-        let ammotypes = getAmmoInventory();
+        let mut ammotypes = getAmmoInventory();
         if ammotypes.len() < 2 {
             // do nothing
+            log::info!("You don't have any ammo options to advance to. Doing nothing.");
             KeyEventResponse::default()
         } else {
-            // this array is sorted by damage type. so we find ourselves then choose next
-            let next = if let Some(pos) = ammotypes.iter().position(|xs| *xs == form_string) {
-                if pos < ammotypes.len() - 2 {
-                    ammotypes[pos + 1].to_string()
-                } else {
-                    ammotypes[0].to_string()
+            // This array is sorted by damage type. so we find ourselves then choose next
+            let maybe_next = if let Some(idx) = ammotypes.iter().position(|xs| *xs == form_string) {
+                ammotypes.rotate_left(idx + 1);
+                ammotypes.first()
+            } else {
+                ammotypes.last()
+            };
+            if let Some(next) = maybe_next {
+                let_cxx_string!(form_spec = next);
+                equipAmmo(&form_spec);
+                KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
                 }
             } else {
-                ammotypes[ammotypes.len() - 1].to_string()
-            };
-            let_cxx_string!(form_spec = next);
-            equipAmmo(&form_spec);
-            KeyEventResponse {
-                handled: true,
-                ..Default::default()
+                log::warn!("Something very strange just happened. Ammo types: {ammotypes:?}");
+                honk();
+                KeyEventResponse {
+                    handled: true,
+                    ..Default::default()
+                }
             }
         }
     }
