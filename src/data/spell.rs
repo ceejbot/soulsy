@@ -7,7 +7,7 @@ use super::base::{self, BaseType};
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
 use super::icons::Icon;
-use super::magic::{MagicDamageType, SpellData, School};
+use super::magic::{MagicDamageType, SpellData};
 use super::weapon::WeaponType;
 use super::HasIcon;
 use crate::plugin::{formSpecToHudItem, Color};
@@ -43,20 +43,24 @@ impl SpellType {
             .collect();
 
         data.damage = if matches!(data.damage, MagicDamageType::None) {
-            if tags.contains(&SpellKeyword::IconMagicEarth) {
-                MagicDamageType::Earth
-            } else if tags.contains(&SpellKeyword::IconMagicWind) {
-                MagicDamageType::Wind
-            } else if tags.contains(&SpellKeyword::IconMagicWater) {
-                MagicDamageType::Water
-            } else if tags.contains(&SpellKeyword::MAG_MagicDamageBleed) {
+            if tags.contains(&SpellKeyword::MAG_MagicDamageBleed) {
                 MagicDamageType::Bleed
-            } else if tags.contains(&SpellKeyword::MAG_MagicDamageSun) {
-                MagicDamageType::Sun
-            } else if tags.contains(&SpellKeyword::MAG_MagicDamagePoison) {
-                MagicDamageType::Poison
+            } else if tags.contains(&SpellKeyword::IconMagicEarth) {
+                MagicDamageType::Earth
             } else if tags.contains(&SpellKeyword::MagicDamageLunar) {
                 MagicDamageType::Lunar
+            } else if tags.contains(&SpellKeyword::MAG_MagicDamagePoison) {
+                MagicDamageType::Poison
+            } else if tags.contains(&SpellKeyword::MAG_MagicDamageStamina) {
+                MagicDamageType::Stamina
+            } else if tags.contains(&SpellKeyword::MAG_MagicDamageSun) {
+                MagicDamageType::Sun
+            } else if tags.contains(&SpellKeyword::IconMagicWater) {
+                MagicDamageType::Water
+            } else if tags.contains(&SpellKeyword::IconMagicWind) {
+                MagicDamageType::Wind
+            } else if tags.contains(&SpellKeyword::DAR_UnspecificMagicDamage) {
+                MagicDamageType::Other
             } else {
                 MagicDamageType::None
             }
@@ -72,6 +76,8 @@ impl SpellType {
             Some(SpellVariant::Paralyze)
         } else if tags.contains(&SpellKeyword::MAG_MagicInfluenceSilence) {
             Some(SpellVariant::Silence)
+        } else if tags.contains(&SpellKeyword::NAT_MagicRoot) {
+            Some(SpellVariant::Root)
         } else if tags.contains(&SpellKeyword::MAG_MagicSoulTrap) {
             Some(SpellVariant::SoulTrap)
         } else if tags.contains(&SpellKeyword::MAG_MagicSummonReanimate) {
@@ -124,12 +130,23 @@ impl SpellType {
                 //SpellArchetype::GrabActor => todo!(),
                 //SpellArchetype::Invisibility => todo!(),
                 //SpellArchetype::Lock => todo!(),
-                //SpellArchetype::NightEye => todo!(),
+                SpellArchetype::NightEye => Some(SpellVariant::Detect),
                 //SpellArchetype::Open => todo!(),
                 //SpellArchetype::Paralysis => todo!(),
                 //SpellArchetype::Rally => todo!(),
                 SpellArchetype::SlowTime => Some(SpellVariant::SlowTime),
-                //SpellArchetype::SpawnHazard => todo!(), // frostwall and firewall here?
+                SpellArchetype::SpawnHazard => {
+                    // frostwall and firewall here?
+                    log::debug!("spawn hazard here");
+                    match data.damage {
+                        MagicDamageType::Earth => todo!(),
+                        MagicDamageType::Fire => Some(SpellVariant::FireWall),
+                        MagicDamageType::Frost => Some(SpellVariant::FrostWall),
+                        MagicDamageType::Shock => Some(SpellVariant::StormWall),
+                        MagicDamageType::Wind => Some(SpellVariant::Tornado),
+                        _ => None,
+                    }
+                }
                 //SpellArchetype::Telekinesis => todo!(),
                 //SpellArchetype::TurnUndead => todo!(),
                 _ => None,
@@ -144,6 +161,19 @@ impl SpellType {
         };
 
         Self { data, variant }
+    }
+}
+
+fn classify_value_mod_archetype(data: &SpellData) -> Option<SpellVariant> {
+    match data.effect {
+        ActorValue::Health => {
+            if data.hostile {
+                Some(SpellVariant::Damage(data.damage.clone()))
+            } else {
+                Some(SpellVariant::Heal)
+            }
+        }
+        _ => None,
     }
 }
 
@@ -205,7 +235,7 @@ impl HasIcon for SpellType {
             SpellVariant::FireboltStorm => Icon::SpellMeteor.icon_file(),
             SpellVariant::FireWall => Icon::SpellFireWall.icon_file(),
             SpellVariant::Frost => Icon::SpellFrost.icon_file(),
-            SpellVariant::FrostWall => Icon::SpellFrostWall.icon_file(), // TODO frostwall
+            SpellVariant::FrostWall => Icon::SpellFrostWall.icon_file(),
             SpellVariant::Guide => Icon::SpellWisp.icon_file(),
             SpellVariant::Heal => Icon::SpellHeal.icon_file(),
             SpellVariant::IceSpike => Icon::SpellIceShard.icon_file(),
@@ -232,6 +262,7 @@ impl HasIcon for SpellType {
             SpellVariant::StormWall => self.icon_fallback(),
             SpellVariant::Summon => Icon::SpellSummon.icon_file(),
             SpellVariant::Teleport => Icon::SpellTeleport.icon_file(),
+            SpellVariant::Tornado => Icon::SpellTornado.icon_file(),
             SpellVariant::Thorns => self.icon_fallback(),
             SpellVariant::Thunderbolt => Icon::SpellLightningBlast.icon_file(),
             SpellVariant::TurnUndead => Icon::SpellHoly.icon_file(),
@@ -241,21 +272,6 @@ impl HasIcon for SpellType {
 
     fn icon_fallback(&self) -> String {
         self.data.school.icon_file()
-    }
-}
-
-fn classify_value_mod_archetype(data: &SpellData) -> Option<SpellVariant> {
-    match data.effect {
-        ActorValue::Health => {
-            if matches!(data.school, School::Restoration) {
-                Some(SpellVariant::Heal)
-            } else if !matches!(data.damage, MagicDamageType::None) {
-                Some(SpellVariant::Damage(data.damage.clone()))
-            } else {
-                None
-            }
-        }
-        _ => None,
     }
 }
 
@@ -358,6 +374,7 @@ pub enum SpellVariant {
     Teleport,
     Thorns,
     Thunderbolt,
+    Tornado,
     // Transmute,
     TurnUndead,
     Ward,

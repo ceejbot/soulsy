@@ -8,6 +8,7 @@ use crate::plugin::Color;
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellData {
+    pub hostile: bool,
     pub effect: ActorValue,
     pub secondary: ActorValue,
     pub twohanded: bool,
@@ -20,6 +21,7 @@ pub struct SpellData {
 
 impl SpellData {
     pub fn new(
+        hostile: bool,
         effect: i32,
         effect2: i32,
         resist: i32,
@@ -47,6 +49,7 @@ impl SpellData {
         };
 
         Self {
+            hostile,
             effect,
             secondary,
             twohanded,
@@ -70,8 +73,10 @@ pub enum MagicDamageType {
     Frost,
     Lunar,
     Magic,
+    Other,
     Poison,
     Shock,
+    Stamina,
     Sun,
     Water,
     Wind,
@@ -88,8 +93,10 @@ impl HasIcon for MagicDamageType {
             MagicDamageType::Frost => InvColor::Frost.color(),
             MagicDamageType::Lunar => InvColor::Silver.color(),
             MagicDamageType::Magic => InvColor::Blue.color(),
+            MagicDamageType::Other => InvColor::Eldritch.color(),
             MagicDamageType::Poison => InvColor::Poison.color(),
             MagicDamageType::Shock => InvColor::Shock.color(),
+            MagicDamageType::Stamina => InvColor::Green.color(),
             MagicDamageType::Sun => InvColor::Sun.color(),
             MagicDamageType::Water => InvColor::Water.color(),
             MagicDamageType::Wind => InvColor::Gray.color(),
@@ -107,8 +114,10 @@ impl HasIcon for MagicDamageType {
             MagicDamageType::Frost => Icon::SpellFrost.icon_file(),
             MagicDamageType::Lunar => self.icon_fallback(), // Icon::SpellMoon.icon_file(),
             MagicDamageType::Magic => self.icon_fallback(),
+            MagicDamageType::Other => Icon::SpellBolt.icon_file(),
             MagicDamageType::Poison => Icon::SpellPoison.icon_file(),
             MagicDamageType::Shock => Icon::SpellShock.icon_file(),
+            MagicDamageType::Stamina => todo!(),
             MagicDamageType::Sun => Icon::SpellSun.icon_file(),
             MagicDamageType::Water => Icon::SpellWater.icon_file(),
             MagicDamageType::Wind => Icon::SpellWind.icon_file(),
@@ -189,6 +198,46 @@ impl From<u32> for MagicSpellLevel {
             MagicSpellLevel::Apprentice
         } else {
             MagicSpellLevel::Novice
+        }
+    }
+}
+
+#[derive(Debug, Clone, Hash, Display, PartialEq, Eq)]
+pub enum CastingType {
+    ConstantEffect,
+    FireAndForget,
+    Concentration,
+    Scroll,
+}
+
+impl From<u32> for CastingType {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => Self::ConstantEffect,
+            1 => Self::FireAndForget,
+            2 => Self::Concentration,
+            _ => Self::Scroll,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Hash, Display, PartialEq, Eq)]
+pub enum Delivery {
+    Player,
+    Touch,
+    Aimed,
+    TargetActor,
+    TargetLocation,
+}
+
+impl From<u32> for Delivery {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => Self::Player,
+            1 => Self::Touch,
+            2 => Self::Aimed,
+            3 => Self::TargetActor,
+            _ => Self::TargetLocation, // surely this won't burn me. surely!
         }
     }
 }

@@ -290,6 +290,7 @@ pub mod plugin {
 
         type SpellData;
         fn fill_out_spell_data(
+            hostile: bool,
             effect: i32,
             effect2: i32,
             resist: i32,

@@ -58,6 +58,7 @@ pub fn hud_item_from_keywords(
 }
 
 pub fn fill_out_spell_data(
+    hostile: bool,
     effect: i32,
     effect2: i32,
     resist: i32,
@@ -68,7 +69,7 @@ pub fn fill_out_spell_data(
     associated: String,
 ) -> Box<SpellData> {
     let result = SpellData::new(
-        effect, effect2, resist, twohanded, school, level, archetype, associated,
+        hostile, effect, effect2, resist, twohanded, school, level, archetype, associated,
     );
     Box::new(result)
 }
