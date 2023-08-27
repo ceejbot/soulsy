@@ -117,7 +117,7 @@ impl HasIcon for MagicDamageType {
             MagicDamageType::Other => Icon::SpellBolt.icon_file(),
             MagicDamageType::Poison => Icon::SpellPoison.icon_file(),
             MagicDamageType::Shock => Icon::SpellShock.icon_file(),
-            MagicDamageType::Stamina => todo!(),
+            MagicDamageType::Stamina => self.icon_fallback(),
             MagicDamageType::Sun => Icon::SpellSun.icon_file(),
             MagicDamageType::Water => Icon::SpellWater.icon_file(),
             MagicDamageType::Wind => Icon::SpellWind.icon_file(),
