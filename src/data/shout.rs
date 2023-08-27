@@ -1,80 +1,100 @@
 use super::color::InvColor;
-use super::game_enums::{ActorValue, SpellArchetype};
 use super::icons::Icon;
-use super::magic::{MagicDamageType, School, SpellData};
+use super::keywords::*;
 use super::HasIcon;
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub enum ShoutVariant {
-    AnimalAllegiance, // script, no AV, no resist / formids: 930c8, 9e0ca, 9e0cb
-    AuraWhisper,      // script, no AV, 10e4fd
-    CallDragon,       // script
+    AnimalAllegiance,
+    AuraWhisper,
+    BattleFury,
+    BecomeEthereal,
+    BendWill,
+    CallDragon,
     CallOfValor,
-    ClearSkies, // script 789d, 789f, or 78ba1
+    ClearSkies,
+    Cyclone,
     Disarm,
     Dismay,
-    DragonRend, // archetype is stagger; need a way to distinguish from UnrelentingForce
+    DragonAspect,
+    Dragonrend,
+    DrainVitality,
     ElementalFury,
-    Ethereal,
-    FireBall,    // destruction, resist is fire, av is health, archetype is value modifier
-    FireBreath,  // resist is fire, value modifier, health
-    FrostBreath, // arch dual value modifier, av health, resist is frost
-    IceForm,     // hrmph
-    IceStorm,    // dual value modifier, health/stam, resist is frost
+    FireBreath,
+    FrostBreath,
+    IceForm,
     KynesPeace,
     MarkedForDeath,
     Slowtime,
-    StormCall,        //  form pairs are a1a58, e3f0a / a1a5c, e3f09 / a1a5b, d5e81
-    ThrowVoice,       // spawn scripted ref, 7430d is only effect
-    UnrelentingForce, // arch is stagger, forms are 13e08, 7f82e, 7f82f
-    WhirlwindSprint,  // arch is script / 2f789, 4372f, 43730
+    SoulTear,
+    StormCall,
+    SummonDurnehviir,
+    ThrowVoice,
+    UnrelentingForce,
+    WhirlwindSprint,
     #[default]
     Unclassified,
 }
 
 impl ShoutVariant {
-    pub fn from_spell_data(data: SpellData, form_string: String) -> Self {
-        if matches!(data.archetype, SpellArchetype::SummonCreature) {
-            Self::CallOfValor
-        } else if form_string == "Skyrim.esm|0x000789d" {
-            Self::ClearSkies
-        } else if matches!(data.archetype, SpellArchetype::Disarm) {
-            Self::Disarm
-        } else if matches!(data.archetype, SpellArchetype::Demoralize) {
-            Self::Dismay
-        } else if matches!(data.effect, ActorValue::DragonRend) {
-            // is this even true? archetype is stagger?
-            Self::DragonRend
-        } else if matches!(data.archetype, SpellArchetype::EnhanceWeapon) {
-            Self::ElementalFury
-        } else if matches!(data.school, School::Destruction)
-            && matches!(data.damage, MagicDamageType::Fire)
-        {
-            Self::FireBall
-        } else if matches!(data.damage, MagicDamageType::Fire) {
-            Self::FireBreath
-        } else if matches!(data.damage, MagicDamageType::Frost) {
-            Self::FrostBreath
-        } else if matches!(data.archetype, SpellArchetype::Calm) {
-            Self::KynesPeace
-        } else if (matches!(data.archetype, SpellArchetype::PeakValueModifier)
-            && matches!(data.effect, ActorValue::Health))
-            || (matches!(data.archetype, SpellArchetype::ValueModifier)
-                && matches!(data.effect, ActorValue::DamageResist))
-        {
-            Self::MarkedForDeath
-        } else if matches!(data.archetype, SpellArchetype::SlowTime) {
-            Self::Slowtime
-        } else if form_string == "Skyrim.esm|0x0007430d" {
-            Self::ThrowVoice
-        } else if matches!(data.archetype, SpellArchetype::Stagger) {
-            Self::UnrelentingForce
-        } else if form_string.as_str() == "Skyrim.esp|0x0002f789" {
-            Self::WhirlwindSprint
+    pub fn new(tags: Vec<String>) -> Self {
+        let keywords = strings_to_keywords(tags);
+
+        if keywords.contains(&SoulsyKeywords::Shout_AnimalAllegiance) {
+            ShoutVariant::AnimalAllegiance
+        } else if keywords.contains(&SoulsyKeywords::Shout_AuraWhisper) {
+            ShoutVariant::AuraWhisper
+        } else if keywords.contains(&SoulsyKeywords::Shout_BattleFury) {
+            ShoutVariant::BattleFury
+        } else if keywords.contains(&SoulsyKeywords::Shout_BecomeEthereal) {
+            ShoutVariant::BecomeEthereal
+        } else if keywords.contains(&SoulsyKeywords::Shout_BendWill) {
+            ShoutVariant::BendWill
+        } else if keywords.contains(&SoulsyKeywords::Shout_CallDragon) {
+            ShoutVariant::CallDragon
+        } else if keywords.contains(&SoulsyKeywords::Shout_CallOfValor) {
+            ShoutVariant::CallOfValor
+        } else if keywords.contains(&SoulsyKeywords::Shout_ClearSkies) {
+            ShoutVariant::ClearSkies
+        } else if keywords.contains(&SoulsyKeywords::Shout_Disarm) {
+            ShoutVariant::Disarm
+        } else if keywords.contains(&SoulsyKeywords::Shout_Dismay) {
+            ShoutVariant::Dismay
+        } else if keywords.contains(&SoulsyKeywords::Shout_DragonAspect) {
+            ShoutVariant::DragonAspect
+        } else if keywords.contains(&SoulsyKeywords::Shout_Dragonrend) {
+            ShoutVariant::Dragonrend
+        } else if keywords.contains(&SoulsyKeywords::Shout_DrainVitality) {
+            ShoutVariant::DrainVitality
+        } else if keywords.contains(&SoulsyKeywords::Shout_ElementalFury) {
+            ShoutVariant::ElementalFury
+        } else if keywords.contains(&SoulsyKeywords::Shout_FireBreath) {
+            ShoutVariant::FireBreath
+        } else if keywords.contains(&SoulsyKeywords::Shout_FrostBreath) {
+            ShoutVariant::FrostBreath
+        } else if keywords.contains(&SoulsyKeywords::Shout_IceForm) {
+            ShoutVariant::IceForm
+        } else if keywords.contains(&SoulsyKeywords::Shout_KynesPeace) {
+            ShoutVariant::KynesPeace
+        } else if keywords.contains(&SoulsyKeywords::Shout_MarkedForDeath) {
+            ShoutVariant::MarkedForDeath
+        } else if keywords.contains(&SoulsyKeywords::Shout_Slowtime) {
+            ShoutVariant::Slowtime
+        } else if keywords.contains(&SoulsyKeywords::Shout_SoulTear) {
+            ShoutVariant::SoulTear
+        } else if keywords.contains(&SoulsyKeywords::Shout_StormCall) {
+            ShoutVariant::StormCall
+        } else if keywords.contains(&SoulsyKeywords::Shout_SummonDurnehviir) {
+            ShoutVariant::SummonDurnehviir
+        } else if keywords.contains(&SoulsyKeywords::Shout_ThrowVoice) {
+            ShoutVariant::ThrowVoice
+        } else if keywords.contains(&SoulsyKeywords::Shout_UnrelentingForce) {
+            ShoutVariant::UnrelentingForce
+        } else if keywords.contains(&SoulsyKeywords::Shout_WhirlwindSprint) {
+            ShoutVariant::WhirlwindSprint
         } else {
-            log::debug!("default shout; form_string={form_string}; spelldata={data:?}");
-            Self::Unclassified
+            ShoutVariant::Unclassified
         }
     }
 }
@@ -84,27 +104,32 @@ impl HasIcon for ShoutVariant {
         match &self {
             ShoutVariant::AnimalAllegiance => InvColor::Green.color(),
             ShoutVariant::AuraWhisper => InvColor::Eldritch.color(),
+            ShoutVariant::BattleFury => InvColor::White.color(),
+            ShoutVariant::BecomeEthereal => InvColor::Eldritch.color(),
+            ShoutVariant::BendWill => InvColor::White.color(),
             ShoutVariant::CallDragon => InvColor::White.color(),
             ShoutVariant::CallOfValor => InvColor::White.color(),
-            ShoutVariant::ClearSkies => InvColor::White.color(),
+            ShoutVariant::ClearSkies => InvColor::Blue.color(),
+            ShoutVariant::Cyclone => InvColor::Gray.color(),
             ShoutVariant::Disarm => InvColor::White.color(),
             ShoutVariant::Dismay => InvColor::White.color(),
-            ShoutVariant::DragonRend => InvColor::White.color(),
+            ShoutVariant::DragonAspect => InvColor::White.color(),
+            ShoutVariant::Dragonrend => InvColor::White.color(),
+            ShoutVariant::DrainVitality => InvColor::White.color(),
             ShoutVariant::ElementalFury => InvColor::White.color(),
-            ShoutVariant::Ethereal => InvColor::Eldritch.color(),
-            ShoutVariant::FireBall => InvColor::Fire.color(),
             ShoutVariant::FireBreath => InvColor::Fire.color(),
             ShoutVariant::FrostBreath => InvColor::Frost.color(),
             ShoutVariant::IceForm => InvColor::Frost.color(),
-            ShoutVariant::IceStorm => InvColor::Frost.color(),
             ShoutVariant::KynesPeace => InvColor::Green.color(),
             ShoutVariant::MarkedForDeath => InvColor::Poison.color(),
             ShoutVariant::Slowtime => InvColor::White.color(),
+            ShoutVariant::SoulTear => InvColor::White.color(),
             ShoutVariant::StormCall => InvColor::Shock.color(),
             ShoutVariant::ThrowVoice => InvColor::White.color(),
+            ShoutVariant::Unclassified => InvColor::White.color(),
             ShoutVariant::UnrelentingForce => InvColor::White.color(),
             ShoutVariant::WhirlwindSprint => InvColor::White.color(),
-            ShoutVariant::Unclassified => InvColor::White.color(),
+            ShoutVariant::SummonDurnehviir => InvColor::White.color(),
         }
     }
 
@@ -112,27 +137,32 @@ impl HasIcon for ShoutVariant {
         match self {
             ShoutVariant::AnimalAllegiance => Icon::Shout.icon_file(),
             ShoutVariant::AuraWhisper => Icon::Shout.icon_file(),
+            ShoutVariant::BattleFury => Icon::Shout.icon_file(),
+            ShoutVariant::BecomeEthereal => Icon::Shout.icon_file(),
+            ShoutVariant::BendWill => Icon::Shout.icon_file(),
             ShoutVariant::CallDragon => Icon::Shout.icon_file(),
             ShoutVariant::CallOfValor => Icon::Shout.icon_file(),
             ShoutVariant::ClearSkies => Icon::Shout.icon_file(),
+            ShoutVariant::Cyclone => Icon::SpellTornado.icon_file(),
             ShoutVariant::Disarm => Icon::Shout.icon_file(),
             ShoutVariant::Dismay => Icon::Shout.icon_file(),
-            ShoutVariant::DragonRend => Icon::Shout.icon_file(),
+            ShoutVariant::DragonAspect => Icon::Shout.icon_file(),
+            ShoutVariant::Dragonrend => Icon::Shout.icon_file(),
+            ShoutVariant::DrainVitality => Icon::Shout.icon_file(),
             ShoutVariant::ElementalFury => Icon::Shout.icon_file(),
-            ShoutVariant::Ethereal => Icon::Shout.icon_file(),
-            ShoutVariant::FireBall => Icon::SpellFireball.icon_file(),
             ShoutVariant::FireBreath => Icon::SpellBreathAttack.icon_file(),
             ShoutVariant::FrostBreath => Icon::SpellBreathAttack.icon_file(),
             ShoutVariant::IceForm => Icon::Shout.icon_file(),
-            ShoutVariant::IceStorm => Icon::Shout.icon_file(),
             ShoutVariant::KynesPeace => Icon::Shout.icon_file(),
             ShoutVariant::MarkedForDeath => Icon::SpellDeath.icon_file(),
             ShoutVariant::Slowtime => Icon::SpellTime.icon_file(),
+            ShoutVariant::SoulTear => Icon::Shout.icon_file(),
             ShoutVariant::StormCall => Icon::Shout.icon_file(),
+            ShoutVariant::SummonDurnehviir => Icon::Shout.icon_file(),
             ShoutVariant::ThrowVoice => Icon::Shout.icon_file(),
-            ShoutVariant::UnrelentingForce => Icon::Shout.icon_file(),
-            ShoutVariant::WhirlwindSprint => Icon::Shout.icon_file(),
             ShoutVariant::Unclassified => Icon::Shout.icon_file(),
+            ShoutVariant::UnrelentingForce => Icon::Shout.icon_file(),
+            ShoutVariant::WhirlwindSprint => Icon::SpellWind.icon_file(),
         }
     }
 

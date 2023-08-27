@@ -10,6 +10,7 @@ pub mod game_enums;
 pub mod huditem;
 pub mod icons;
 pub mod item_cache;
+pub mod keywords;
 pub mod magic;
 pub mod potion;
 pub mod shout;
@@ -24,6 +25,7 @@ use self::color::*;
 pub use self::huditem::HudItem;
 use self::potion::PotionType;
 use self::shout::ShoutVariant;
+use self::spell::SpellType;
 pub use super::magic::SpellData;
 use crate::plugin::{
     healthPotionCount, magickaPotionCount, staminaPotionCount, Color, ItemCategory,
@@ -87,10 +89,10 @@ pub fn magic_from_spelldata(
     let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
 
     let kind = match which {
-        ItemCategory::Scroll => BaseType::create_scroll(data),
-        ItemCategory::Spell => BaseType::create_spell(data, keywords),
-        ItemCategory::Shout => BaseType::create_shout(data, form_string.clone()),
-        _ => BaseType::create_spell(data, keywords),
+        ItemCategory::Scroll => BaseType::Scroll(SpellType::new(data, keywords)),
+        ItemCategory::Spell => BaseType::Spell(SpellType::new(data, keywords)),
+        ItemCategory::Shout => BaseType::Shout(ShoutVariant::new(keywords)),
+        _ => BaseType::Spell(SpellType::new(data, keywords)),
     };
     let result = HudItem::preclassified(name_bytes, form_string, count, kind);
     Box::new(result)

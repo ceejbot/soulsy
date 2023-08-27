@@ -86,24 +86,6 @@ impl HasIcon for FoodType {
 }
 
 impl BaseType {
-    pub fn create_spell(data: SpellData, keywords: Vec<String>) -> Self {
-        BaseType::Spell(SpellType::new(data, keywords))
-    }
-
-    pub fn create_scroll(data: SpellData) -> Self {
-        BaseType::Scroll(SpellType::new(data, Vec::new()))
-    }
-
-    pub fn create_power(_spell: SpellData) -> Self {
-        // todo
-        BaseType::Power
-    }
-
-    pub fn create_shout(data: SpellData, form_string: String) -> Self {
-        let variant = ShoutVariant::from_spell_data(data, form_string);
-        BaseType::Shout(variant)
-    }
-
     pub fn classify(
         name: &str,
         category: ItemCategory,

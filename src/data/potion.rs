@@ -86,3 +86,13 @@ impl HasIcon for PotionType {
         Icon::PotionDefault.icon_file()
     }
 }
+
+/*
+
+// alchemy keywords
+MagicAlchBeneficial,
+MagicAlchDamageHealth,
+// lots of these; TODO
+
+
+*/

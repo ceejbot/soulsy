@@ -1060,7 +1060,7 @@ impl Controller {
             return Box::<HudItem>::default();
         };
 
-        Box::new(candidate.clone()) // this clone is in a hot path
+        Box::new(candidate.clone()) // TODO this clone is in a hot path
     }
 
     /// Call when loading or otherwise needing to reinitialize the HUD.

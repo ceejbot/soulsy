@@ -1,4 +1,5 @@
-use strum::Display;
+use enumset::{enum_set, EnumSet, EnumSetType};
+use strum::{Display, EnumString};
 
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
@@ -67,14 +68,16 @@ pub enum MagicDamageType {
     #[default]
     None,
     Bleed,
+    ColdFire,
     Disease,
     Earth,
     Fire,
     Frost,
     Lunar,
     Magic,
-    Other,
+    Necrotic,
     Poison,
+    Shadow,
     Shock,
     Stamina,
     Sun,
@@ -87,14 +90,16 @@ impl HasIcon for MagicDamageType {
         match self {
             MagicDamageType::None => Color::default(),
             MagicDamageType::Bleed => InvColor::Blood.color(),
+            MagicDamageType::ColdFire => InvColor::Frost.color(),
             MagicDamageType::Disease => InvColor::Green.color(),
             MagicDamageType::Earth => InvColor::Brown.color(),
             MagicDamageType::Fire => InvColor::Fire.color(),
             MagicDamageType::Frost => InvColor::Frost.color(),
             MagicDamageType::Lunar => InvColor::Silver.color(),
             MagicDamageType::Magic => InvColor::Blue.color(),
-            MagicDamageType::Other => InvColor::Eldritch.color(),
+            MagicDamageType::Necrotic => InvColor::Eldritch.color(),
             MagicDamageType::Poison => InvColor::Poison.color(),
+            MagicDamageType::Shadow => InvColor::Purple.color(),
             MagicDamageType::Shock => InvColor::Shock.color(),
             MagicDamageType::Stamina => InvColor::Green.color(),
             MagicDamageType::Sun => InvColor::Sun.color(),
@@ -108,14 +113,16 @@ impl HasIcon for MagicDamageType {
             // These spells have ONLY damage type as their distinguisher.
             MagicDamageType::None => self.icon_fallback(),
             MagicDamageType::Bleed => Icon::SpellBleed.icon_file(),
+            MagicDamageType::ColdFire => Icon::SpellFire.icon_file(),
             MagicDamageType::Disease => self.icon_fallback(),
             MagicDamageType::Earth => Icon::SpellEarth.icon_file(),
             MagicDamageType::Fire => Icon::SpellFire.icon_file(),
             MagicDamageType::Frost => Icon::SpellFrost.icon_file(),
-            MagicDamageType::Lunar => self.icon_fallback(), // Icon::SpellMoon.icon_file(),
+            MagicDamageType::Lunar => Icon::SpellMoon.icon_file(),
             MagicDamageType::Magic => self.icon_fallback(),
-            MagicDamageType::Other => Icon::SpellBolt.icon_file(),
+            MagicDamageType::Necrotic => self.icon_fallback(),
             MagicDamageType::Poison => Icon::SpellPoison.icon_file(),
+            MagicDamageType::Shadow => self.icon_fallback(),
             MagicDamageType::Shock => Icon::SpellShock.icon_file(),
             MagicDamageType::Stamina => self.icon_fallback(),
             MagicDamageType::Sun => Icon::SpellSun.icon_file(),
@@ -240,4 +247,159 @@ impl From<u32> for Delivery {
             _ => Self::TargetLocation, // surely this won't burn me. surely!
         }
     }
+}
+
+// ---------- keywords
+
+pub const DAR_ABYSS: EnumSet<SpellKeyword> = enum_set!(
+    SpellKeyword::ABY_ShadowDamageResist
+        | SpellKeyword::ABY_ShadowInvisAddonSpell
+        | SpellKeyword::ABY_ShadowMantleSpell
+        | SpellKeyword::ABY_ShadowWeaponSpell
+);
+
+pub const DAR_ASTRAL: EnumSet<SpellKeyword> = enum_set!(
+    SpellKeyword::DAR_AstralBodySpell
+        | SpellKeyword::DAR_AstralRestoreSpell
+        | SpellKeyword::DAR_AstralStarSpell
+);
+
+pub const DAR_BLOOD: EnumSet<SpellKeyword> = enum_set!(
+    SpellKeyword::BLO_BloodFFSpell
+        | SpellKeyword::BLO_BloodLustSpell
+        | SpellKeyword::BLO_BloodSiphonSpell
+        | SpellKeyword::BLO_BloodStanceSpell
+        | SpellKeyword::BLO_BloodStealHealthSpell
+);
+
+pub const DAR_ELDRITCH: EnumSet<SpellKeyword> = enum_set!(
+    SpellKeyword::DAR_EldritchFrenzySpell
+        | SpellKeyword::DAR_EldritchHardnessSpell
+        | SpellKeyword::DAR_EldritchInfectionSpell
+        | SpellKeyword::DAR_EldritchWeaveSpell
+);
+
+pub const BOUND_WEAPON: EnumSet<SpellKeyword> =
+    enum_set!(SpellKeyword::MAG_MagicSummonWeapon | SpellKeyword::MAG_WeapTypeBound);
+
+pub fn enumset_contains_any(set: &EnumSet<SpellKeyword>, keywords: &Vec<SpellKeyword>) -> bool {
+    keywords.iter().any(|xs| set.contains(*xs))
+}
+
+// I collected all of the SimonMagus and most of the Darenii keywords here.
+// I can't use all of them, but what the heck.
+#[derive(Debug, EnumSetType, EnumString, Hash)]
+pub enum SpellKeyword {
+    // vanilla keywords
+    MagicArmorSpell,
+    MagicCloak,
+    MagicDamageFire,
+    MagicDamageFrost,
+    MagicDamageResist,
+    MagicDamageShock,
+    MagicInfluence,
+    MagicInfluenceCharm,
+    MagicInfluenceFear,
+    MagicInfluenceFrenzy,
+    MagicInvisibility,
+    MagicNightEye,
+    MagicParalysis,
+    MagicRestoreHealth,
+    MagicRune,
+    MagicSlow,
+    MagicSummonFamiliar,
+    MagicSummonFire,
+    MagicSummonFrost,
+    MagicSummonShock,
+    MagicSummonUndead,
+    MagicTelekinesis,
+    MagicTurnUndead,
+    MagicWard,
+    MagicWeaponSpeed,
+    MQClearSkiesFogTrigger,
+    RitualSpellEffect,
+
+    // shouts
+    MagicShout,
+    MagicVoiceChangeWeather,
+    ShoutFireBreath,
+
+    // SimonMagus keywords
+    MAG_AnimalAllyKeyword,
+    MAG_IsEthereal,
+    MAG_MagicDamageBleed,
+    MAG_MagicDamageMagicka,
+    MAG_MagicDamagePoison,
+    MAG_MagicDamageStamina,
+    MAG_MagicDamageSun,
+    MAG_MagicEffectLight,
+    MAG_MagicFortifySpeed,
+    MAG_MagicInfluenceCommand,
+    MAG_MagicInfluenceCourage,
+    MAG_MagicInfluenceParalysis,
+    MAG_MagicInfluenceSilence,
+    MAG_MagicJumpSpell,
+    MAG_MagicShieldFire,
+    MAG_MagicShieldFrost,
+    MAG_MagicShieldPoison,
+    MAG_MagicShieldSpell,
+    MAG_MagicShoutAuraWhisper,
+    MAG_MagicShoutBecomeEthereal,
+    MAG_MagicSlowfallSpell,
+    MAG_MagicSoulTrap,
+    MAG_MagicStaffEnchantment,
+    MAG_MagicStealthSpell,
+    MAG_MagicSummonReanimate,
+    MAG_MagicSummonWeapon,
+    MAG_MagicUnarmedSpell,
+    MAG_MagicWeaponEnchantment,
+    MAG_MagicWeightSpell,
+    MAG_PoisonCloakSpell,
+    MAG_WeapTypeBound,
+
+    // Darenii keywords
+    ABY_ShadowDamageResist,
+    ABY_ShadowInvisAddonSpell,
+    ABY_ShadowMantleSpell,
+    ABY_ShadowWeaponSpell,
+    BLO_BloodFFSpell,
+    BLO_BloodLustSpell,
+    BLO_BloodSiphonSpell,
+    BLO_BloodStanceSpell,
+    BLO_BloodStealHealthSpell,
+    DAR_ArcaneDamageMagickaRegen,
+    DAR_ArcaneDamageRelease,
+    DAR_ArcanePullSpell,
+    DAR_ArcaneWeaponSpell,
+    DAR_ArclightBodySpell,
+    DAR_AstralBodySpell,
+    DAR_AstralRestoreSpell,
+    DAR_AstralStarSpell,
+    DAR_EldritchFrenzySpell,
+    DAR_EldritchHardnessSpell,
+    DAR_EldritchInfectionSpell,
+    DAR_EldritchWeaveSpell,
+    DAR_MagicAspectSpell,
+    DAR_MagicMeleeProcSpell,
+    DAR_MagicSkoriaSlow,
+    DAR_MagicWeaponSlow,
+    DAR_MoltenBodySpell,
+    DAR_NecroticDamageBlocker,
+    DAR_UnspecificMagicDamage,
+    DAR_WeakenWeapons,
+    IconMagicEarth,
+    IconMagicWater,
+    IconMagicWind,
+    LUN_LunarBodySpell,
+    MagicDamageLunar,
+    MagicFlameCloak,
+    NAT_MagicAttunementSpell,    // fortify stamina & stam regen
+    NAT_MagicNatureHealingSpell, // all healing
+    NAT_MagicReflectSpell,       // used by all the reflect spells
+    NAT_MagicRejuvenateSpell,
+    NAT_MagicRevitalizingGrowthSpell,
+    NAT_MagicRoot,
+    NAT_MagicSpikeSpell,
+    NAT_MagicStrengthSpell,
+    NAT_MagicTreeBarkSpell,
 }
