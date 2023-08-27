@@ -151,15 +151,18 @@ namespace equippable
 		{
 			logger::info("making HudItem for shout: '{}'"sv, item_form->GetName());
 			auto* shout = item_form->As<RE::TESShout>();
+			shout->ForEachKeyword(KeywordAccumulator::collect);
+			auto& keywords = KeywordAccumulator::mKeywords;
+
 			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
 			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
 			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
 			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
 			if (!effect) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
 
-			auto data = fillOutSpellData(false, 1, effect);
-			rust::Box<HudItem> item =
-				magic_from_spelldata(ItemCategory::Shout, std::move(data), std::move(chonker), form_string, 1);
+			auto data               = fillOutSpellData(false, 1, effect);
+			rust::Box<HudItem> item = magic_from_spelldata(
+				ItemCategory::Shout, std::move(data), *keywords, std::move(chonker), form_string, 1);
 			return item;
 		}
 
@@ -178,13 +181,16 @@ namespace equippable
 
 			// Regular spells.
 			logger::info("making HudItem for spell: '{}'"sv, item_form->GetName());
+			spell->ForEachKeyword(KeywordAccumulator::collect);
+			auto& keywords = KeywordAccumulator::mKeywords;
+
 			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
 			if (effect)
 			{
-				auto skill_level = effect->GetMinimumSkillLevel();
-				auto data        = fillOutSpellData(two_handed, skill_level, effect);
-				rust::Box<HudItem> item =
-					magic_from_spelldata(ItemCategory::Spell, std::move(data), std::move(chonker), form_string, 1);
+				auto skill_level        = effect->GetMinimumSkillLevel();
+				auto data               = fillOutSpellData(two_handed, skill_level, effect);
+				rust::Box<HudItem> item = magic_from_spelldata(
+					ItemCategory::Spell, std::move(data), *keywords, std::move(chonker), form_string, 1);
 				return item;
 			}
 		}
@@ -193,13 +199,16 @@ namespace equippable
 		{
 			logger::info("making HudItem for scroll: '{}'"sv, item_form->GetName());
 
-			auto* scroll      = item_form->As<RE::ScrollItem>();
+			auto* scroll = item_form->As<RE::ScrollItem>();
+			scroll->ForEachKeyword(KeywordAccumulator::collect);
+			auto& keywords = KeywordAccumulator::mKeywords;
+
 			const auto effect = scroll->GetCostliestEffectItem()->baseEffect;
 			auto skill_level  = effect->GetMinimumSkillLevel();
 
-			auto data = fillOutSpellData(two_handed, skill_level, effect);
-			rust::Box<HudItem> item =
-				magic_from_spelldata(ItemCategory::Scroll, std::move(data), std::move(chonker), form_string, 1);
+			auto data               = fillOutSpellData(two_handed, skill_level, effect);
+			rust::Box<HudItem> item = magic_from_spelldata(
+				ItemCategory::Scroll, std::move(data), *keywords, std::move(chonker), form_string, 1);
 			return item;
 		}
 

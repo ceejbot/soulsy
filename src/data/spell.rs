@@ -1,84 +1,21 @@
 #![allow(non_snake_case, non_camel_case_types)]
 
 use cxx::let_cxx_string;
-use strum::Display;
+use strum::EnumString;
 
-use super::base::BaseType;
+use super::base::{self, BaseType};
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
 use super::icons::Icon;
+use super::magic::{MagicDamageType, SpellData};
 use super::weapon::WeaponType;
 use super::HasIcon;
 use crate::plugin::{formSpecToHudItem, Color};
 
 // Spells must be classified by querying game data about actor values, resist types,
 // and spell archetypes. SpellData holds Rust expressions of the C++ enum values.
-// In all cases, we choose the primary actor value from the most expensive effect
-// of a spell or potion.
-
-/*
-To get type of bound weapon:
-look at effect.data-> associated item
-bow vs sword vs axe vs battleaxe
-archetype spawn hazard
-look at asso item
-
-chain lightning -> chain lightning (resist shock, skill level 50)
-
-*/
-
-#[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
-pub struct SpellData {
-    pub effect: ActorValue,
-    pub secondary: ActorValue,
-    pub twohanded: bool,
-    pub school: School,
-    pub level: MagicSpellLevel,
-    pub archetype: SpellArchetype,
-    pub damage: MagicDamageType,
-    pub associated: String,
-}
-
-impl SpellData {
-    pub fn from_game_data(
-        effect: i32,
-        effect2: i32,
-        resist: i32,
-        twohanded: bool,
-        school: i32,
-        level: u32,
-        archetype: i32,
-        associated: String,
-    ) -> Self {
-        let school = School::from(school);
-        let effect = ActorValue::from(effect);
-        let secondary = ActorValue::from(effect2);
-        let resist = ActorValue::from(resist);
-        let archetype = SpellArchetype::from(archetype);
-
-        let damage = match resist {
-            ActorValue::ResistFire => MagicDamageType::Fire,
-            ActorValue::ResistFrost => MagicDamageType::Frost,
-            ActorValue::ResistShock => MagicDamageType::Shock,
-            ActorValue::ResistMagic => MagicDamageType::Magic,
-            ActorValue::ResistDisease => MagicDamageType::Disease,
-            ActorValue::PoisonResist => MagicDamageType::Poison,
-            // ActorValue::SOMETHING => MagicDamageType::Sun, // TODO SSEdit inspection
-            _ => MagicDamageType::None,
-        };
-
-        Self {
-            effect,
-            secondary,
-            twohanded,
-            school,
-            archetype,
-            level: level.into(),
-            damage,
-            associated: associated.clone(),
-        }
-    }
-}
+// In most cases, we choose the primary actor value from the most expensive effect
+// of a spell or potion. For some we have to consider the secondary effect.
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellType {
@@ -87,120 +24,154 @@ pub struct SpellType {
 }
 
 impl SpellType {
-    pub fn from_spell_data(data: SpellData) -> Self {
+    pub fn new(mut data: SpellData, keywords: Vec<String>) -> Self {
         // well, this will be fun™
 
-        let variant = match data.archetype {
-            SpellArchetype::ValueModifier => {
-                if matches!(data.effect, ActorValue::Health)
-                    && matches!(data.school, School::Restoration)
-                {
-                    Some(SpellVariant::Heal)
-                } else if matches!(data.school, School::Destruction)
-                    && matches!(data.effect, ActorValue::Health)
-                {
-                    Some(SpellVariant::Damage(data.damage.clone()))
+        let _color = base::color_from_keywords(&keywords);
+
+        let tags: Vec<SpellKeyword> = keywords
+            .iter()
+            .filter_map(|xs| {
+                if let Ok(subtype) = SpellKeyword::try_from(xs.as_str()) {
+                    Some(subtype)
                 } else {
-                    log::info!(
-                        "classifying DualValueModifier spell; AV={}; damage={};",
-                        data.effect,
-                        data.damage
-                    );
                     None
                 }
+            })
+            .collect();
+
+        data.damage = if matches!(data.damage, MagicDamageType::None) {
+            if tags.contains(&SpellKeyword::IconMagicEarth) {
+                MagicDamageType::Earth
+            } else if tags.contains(&SpellKeyword::IconMagicWind) {
+                MagicDamageType::Wind
+            } else if tags.contains(&SpellKeyword::IconMagicWater) {
+                MagicDamageType::Water
+            } else if tags.contains(&SpellKeyword::MAG_MagicDamageBleed) {
+                MagicDamageType::Bleed
+            } else if tags.contains(&SpellKeyword::MAG_MagicDamageSun) {
+                MagicDamageType::Sun
+            } else if tags.contains(&SpellKeyword::MAG_MagicDamagePoison) {
+                MagicDamageType::Poison
+            } else if tags.contains(&SpellKeyword::MagicDamageLunar) {
+                MagicDamageType::Lunar
+            } else {
+                MagicDamageType::None
             }
-            SpellArchetype::DualValueModifier => {
-                if matches!(data.school, School::Destruction)
-                    && matches!(data.effect, ActorValue::Health)
-                {
-                    Some(SpellVariant::Damage(data.damage.clone()))
-                } else {
-                    log::info!(
-                        "classifying DualValueModifier spell; AV={}; damage={};",
-                        data.effect,
-                        data.damage
-                    );
-                    None
-                }
-            }
-            //SpellArchetype::Absorb => todo!(),
-            //SpellArchetype::Banish => todo!(),
-            //SpellArchetype::Calm => SpellVariant::Calm, //do I have one?
-            SpellArchetype::BoundWeapon => {
-                if !data.associated.is_empty() {
-                    let_cxx_string!(form_spec = data.associated.clone());
-                    let assoc = formSpecToHudItem(&form_spec);
-                    match assoc.kind() {
-                        BaseType::Weapon(w) => match w {
-                            WeaponType::AxeOneHanded(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::WarAxe))
-                            }
-                            WeaponType::AxeTwoHanded(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::BattleAxe))
-                            }
-                            WeaponType::BowShort(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::Bow))
-                            }
-                            WeaponType::Bow(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::Bow))
-                            }
-                            WeaponType::Crossbow(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::Bow))
-                            }
-                            WeaponType::Dagger(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::Dagger))
-                            }
-                            WeaponType::Hammer(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::Hammer))
-                            }
-                            WeaponType::Mace(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::Mace))
-                            }
-                            WeaponType::SwordOneHanded(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::Sword))
-                            }
-                            WeaponType::SwordTwoHanded(_, _) => {
-                                Some(SpellVariant::BoundWeapon(BoundType::Greatsword))
-                            }
-                            _ => Some(SpellVariant::BoundWeapon(BoundType::Unknown)),
-                        },
-                        _ => Some(SpellVariant::BoundWeapon(BoundType::Unknown)),
+        } else {
+            data.damage
+        };
+
+        // Use keywords to classify if we have them. If we fail to classify,
+        // we dig into the spell data struct.
+        let variant = if tags.contains(&SpellKeyword::MAG_MagicEffectLight) {
+            Some(SpellVariant::Light)
+        } else if tags.contains(&SpellKeyword::MAG_MagicInfluenceParalysis) {
+            Some(SpellVariant::Paralyze)
+        } else if tags.contains(&SpellKeyword::MAG_MagicInfluenceSilence) {
+            Some(SpellVariant::Silence)
+        } else if tags.contains(&SpellKeyword::MAG_MagicSoulTrap) {
+            Some(SpellVariant::SoulTrap)
+        } else if tags.contains(&SpellKeyword::MAG_MagicSummonReanimate) {
+            Some(SpellVariant::Reanimate)
+        } else if tags.contains(&SpellKeyword::MAG_MagicSummonWeapon) {
+            let weaptype = bound_weapon_type(data.associated.clone());
+            Some(SpellVariant::BoundWeapon(weaptype))
+        } else if tags.contains(&SpellKeyword::MAG_MagicWeaponEnchantment) {
+            Some(SpellVariant::EnhanceWeapon)
+        } else if tags.contains(&SpellKeyword::MAG_MagicWeightSpell) {
+            Some(SpellVariant::CarryWeight)
+        } else if tags.contains(&SpellKeyword::MAG_PoisonCloakSpell) {
+            Some(SpellVariant::Cloak(MagicDamageType::Poison))
+        } else if tags.contains(&SpellKeyword::MAG_WeapTypeBound) {
+            let weaptype = bound_weapon_type(data.associated.clone());
+            Some(SpellVariant::BoundWeapon(weaptype))
+        } else if tags.contains(&SpellKeyword::MagicFlameCloak) {
+            Some(SpellVariant::Cloak(MagicDamageType::Fire))
+        } else {
+            match data.archetype {
+                SpellArchetype::ValueModifier => match data.effect {
+                    ActorValue::Health => {
+                        if matches!(data.damage, MagicDamageType::None) {
+                            Some(SpellVariant::Heal)
+                        } else {
+                            Some(SpellVariant::Damage(data.damage.clone()))
+                        }
                     }
-                } else {
-                    Some(SpellVariant::BoundWeapon(BoundType::Unknown))
+                    _ => None,
+                },
+                SpellArchetype::DualValueModifier => match data.effect {
+                    ActorValue::Health => {
+                        if matches!(data.damage, MagicDamageType::None) {
+                            Some(SpellVariant::Heal)
+                        } else {
+                            Some(SpellVariant::Damage(data.damage.clone()))
+                        }
+                    }
+                    ActorValue::HealRate => {
+                        if matches!(data.damage, MagicDamageType::None) {
+                            Some(SpellVariant::Heal)
+                        } else {
+                            Some(SpellVariant::Damage(data.damage.clone()))
+                        }
+                    }
+                    // ActorValue::Magicka => todo!(),
+                    // ActorValue::Stamina => todo!(),
+                    // ActorValue::MagickaRate => todo!(),
+                    // ActorValue::StaminaRate => todo!(),
+                    _ => None,
+                },
+                SpellArchetype::PeakValueModifier => match data.effect {
+                    ActorValue::Health => {
+                        if matches!(data.damage, MagicDamageType::None) {
+                            Some(SpellVariant::Heal)
+                        } else {
+                            Some(SpellVariant::Damage(data.damage.clone()))
+                        }
+                    }
+                    // ActorValue::Stamina => Some(SpellVariant::Heal),
+                    // ActorValue::Magicka => Some(SpellVariant::Heal),
+                    _ => None,
+                },
+                //SpellArchetype::Absorb => todo!(),
+                //SpellArchetype::Banish => todo!(),
+                //SpellArchetype::Calm => SpellVariant::Calm, //do I have one?
+                SpellArchetype::BoundWeapon => {
+                    let weaptype = bound_weapon_type(data.associated.clone());
+                    Some(SpellVariant::BoundWeapon(weaptype))
                 }
+                SpellArchetype::CureDisease => Some(SpellVariant::Cure),
+                SpellArchetype::CurePoison => Some(SpellVariant::Cure),
+                SpellArchetype::CureParalysis => Some(SpellVariant::Cure),
+                SpellArchetype::Demoralize => Some(SpellVariant::Demoralize),
+                SpellArchetype::DetectLife => Some(SpellVariant::Detect),
+                SpellArchetype::Guide => Some(SpellVariant::Guide),
+                SpellArchetype::Light => Some(SpellVariant::Light),
+                SpellArchetype::Reanimate => Some(SpellVariant::Reanimate),
+                SpellArchetype::SoulTrap => Some(SpellVariant::SoulTrap),
+                SpellArchetype::SummonCreature => Some(SpellVariant::Summon),
+                SpellArchetype::Cloak => Some(SpellVariant::Cloak(data.damage.clone())),
+                //SpellArchetype::CommandSummoned => todo!(),
+                //SpellArchetype::Darkness => todo!(),
+                //SpellArchetype::Disarm => todo!(),
+                //SpellArchetype::Disguise => todo!(),
+                //SpellArchetype::Dispel => todo!(),
+                SpellArchetype::EnhanceWeapon => Some(SpellVariant::EnhanceWeapon),
+                //SpellArchetype::Etherealize => todo!(),
+                //SpellArchetype::Frenzy => todo!(),
+                //SpellArchetype::GrabActor => todo!(),
+                //SpellArchetype::Invisibility => todo!(),
+                //SpellArchetype::Lock => todo!(),
+                //SpellArchetype::NightEye => todo!(),
+                //SpellArchetype::Open => todo!(),
+                //SpellArchetype::Paralysis => todo!(),
+                //SpellArchetype::Rally => todo!(),
+                SpellArchetype::SlowTime => Some(SpellVariant::SlowTime),
+                //SpellArchetype::SpawnHazard => todo!(), // frostwall and firewall here?
+                //SpellArchetype::Telekinesis => todo!(),
+                //SpellArchetype::TurnUndead => todo!(),
+                _ => None,
             }
-            SpellArchetype::CureDisease => Some(SpellVariant::Cure),
-            SpellArchetype::CurePoison => Some(SpellVariant::Cure),
-            SpellArchetype::CureParalysis => Some(SpellVariant::Cure),
-            SpellArchetype::Demoralize => Some(SpellVariant::Demoralize),
-            SpellArchetype::DetectLife => Some(SpellVariant::Detect),
-            SpellArchetype::Guide => Some(SpellVariant::Guide),
-            SpellArchetype::Light => Some(SpellVariant::Light),
-            SpellArchetype::Reanimate => Some(SpellVariant::Reanimate),
-            SpellArchetype::SoulTrap => Some(SpellVariant::SoulTrap),
-            SpellArchetype::SummonCreature => Some(SpellVariant::Summon),
-            SpellArchetype::Cloak => Some(SpellVariant::Cloak(data.damage.clone())),
-            //SpellArchetype::CommandSummoned => todo!(),
-            //SpellArchetype::Darkness => todo!(),
-            //SpellArchetype::Disarm => todo!(),
-            //SpellArchetype::Disguise => todo!(),
-            //SpellArchetype::Dispel => todo!(),
-            SpellArchetype::EnhanceWeapon => Some(SpellVariant::EnhanceWeapon),
-            //SpellArchetype::Etherealize => todo!(),
-            //SpellArchetype::Frenzy => todo!(),
-            //SpellArchetype::GrabActor => todo!(),
-            //SpellArchetype::Invisibility => todo!(),
-            //SpellArchetype::Lock => todo!(),
-            //SpellArchetype::NightEye => todo!(),
-            //SpellArchetype::Open => todo!(),
-            //SpellArchetype::Paralysis => todo!(),
-            //SpellArchetype::Rally => todo!(),
-            SpellArchetype::SlowTime => Some(SpellVariant::SlowTime),
-            //SpellArchetype::SpawnHazard => todo!(), // frostwall and firewall here?
-            //SpellArchetype::Telekinesis => todo!(),
-            //SpellArchetype::TurnUndead => todo!(),
-            _ => None,
         };
 
         let variant = if let Some(v) = variant {
@@ -221,16 +192,7 @@ impl HasIcon for SpellType {
             SpellVariant::BoundWeapon(_) => InvColor::Eldritch.color(),
             SpellVariant::Burden => Color::default(),
             SpellVariant::Cure => InvColor::Green.color(),
-            SpellVariant::Damage(t) => match t {
-                MagicDamageType::None => Color::default(),
-                MagicDamageType::Disease => InvColor::Green.color(),
-                MagicDamageType::Fire => InvColor::Fire.color(),
-                MagicDamageType::Frost => InvColor::Frost.color(),
-                MagicDamageType::Magic => InvColor::Blue.color(),
-                MagicDamageType::Poison => InvColor::Poison.color(),
-                MagicDamageType::Shock => InvColor::Shock.color(),
-                MagicDamageType::Sun => InvColor::Sun.color(),
-            },
+            SpellVariant::Damage(t) => t.color(),
             SpellVariant::Demoralize => Color::default(),
             SpellVariant::Detect => Color::default(),
             SpellVariant::CarryWeight => Color::default(),
@@ -266,17 +228,7 @@ impl HasIcon for SpellType {
             },
             SpellVariant::Burden => self.icon_fallback(),
             SpellVariant::Cure => Icon::SpellCure.icon_file(),
-            SpellVariant::Damage(t) => match t {
-                // These spells have ONLY damage type as their distinguisher.
-                MagicDamageType::None => self.icon_fallback(),
-                MagicDamageType::Disease => self.icon_fallback(),
-                MagicDamageType::Fire => Icon::SpellFire.icon_file(),
-                MagicDamageType::Frost => Icon::SpellFrost.icon_file(),
-                MagicDamageType::Magic => self.icon_fallback(),
-                MagicDamageType::Poison => Icon::SpellPoison.icon_file(),
-                MagicDamageType::Shock => Icon::SpellShock.icon_file(),
-                MagicDamageType::Sun => Icon::SpellHoly.icon_file(),
-            },
+            SpellVariant::Damage(t) => t.icon_file(),
             SpellVariant::Banish => self.icon_fallback(),
             SpellVariant::Blizzard => self.icon_fallback(),
             SpellVariant::Calm => self.icon_fallback(),
@@ -307,15 +259,18 @@ impl HasIcon for SpellType {
             SpellVariant::Rally => self.icon_fallback(),
             SpellVariant::Reanimate => Icon::SpellReanimate.icon_file(),
             SpellVariant::Reflect => Icon::SpellReflect.icon_file(),
+            SpellVariant::Root => Icon::SpellRoot.icon_file(),
             SpellVariant::Rout => Icon::SpellFear.icon_file(),
             SpellVariant::Rune => Icon::SpellRune.icon_file(),
             SpellVariant::Shock => Icon::SpellShockStrong.icon_file(),
+            SpellVariant::Silence => Icon::SpellSilence.icon_file(),
             SpellVariant::SlowTime => Icon::SpellTime.icon_file(),
             SpellVariant::SoulTrap => Icon::SpellSoultrap.icon_file(),
             SpellVariant::Sparks => Icon::SpellShock.icon_file(),
             SpellVariant::StormWall => self.icon_fallback(),
             SpellVariant::Summon => Icon::SpellSummon.icon_file(),
             SpellVariant::Teleport => Icon::SpellTeleport.icon_file(),
+            SpellVariant::Thorns => self.icon_fallback(),
             SpellVariant::Thunderbolt => Icon::SpellLightningBlast.icon_file(),
             SpellVariant::TurnUndead => Icon::SpellHoly.icon_file(),
             SpellVariant::Ward => Icon::SpellWard.icon_file(),
@@ -323,79 +278,32 @@ impl HasIcon for SpellType {
     }
 
     fn icon_fallback(&self) -> String {
-        match &self.data.school {
-            School::Alteration => Icon::Alteration.icon_file(),
-            School::Conjuration => Icon::Conjuration.icon_file(),
-            School::Destruction => Icon::Destruction.icon_file(),
-            School::Illusion => Icon::Illusion.icon_file(),
-            School::Restoration => Icon::Restoration.icon_file(),
-            School::None => Icon::IconDefault.icon_file(),
-        }
+        self.data.school.icon_file()
     }
 }
 
-#[derive(Debug, Default, Clone, Hash, Display, PartialEq, Eq)]
-#[strum(serialize_all = "lowercase")]
-pub enum School {
-    Alteration = 18,
-    Conjuration,
-    Destruction,
-    Illusion,
-    Restoration,
-    #[default]
-    None,
-}
-
-impl From<i32> for School {
-    fn from(value: i32) -> Self {
-        match value {
-            18 => School::Alteration,
-            19 => School::Conjuration,
-            20 => School::Destruction,
-            21 => School::Illusion,
-            22 => School::Restoration,
-            _ => School::None,
-        }
+fn bound_weapon_type(assoc: String) -> BoundType {
+    if assoc.is_empty() {
+        return BoundType::Unknown;
     }
-}
 
-#[derive(Debug, Default, Clone, Hash, Display, PartialEq, Eq)]
-#[strum(serialize_all = "lowercase")]
-pub enum MagicSpellLevel {
-    #[default]
-    Novice,
-    Apprentice,
-    Adept,
-    Master,
-    Expert,
-}
-
-#[derive(Clone, Debug, Default, Display, Hash, Eq, PartialEq)]
-pub enum MagicDamageType {
-    #[default]
-    None,
-    Disease,
-    Fire,
-    Frost,
-    Magic,
-    Poison,
-    Shock,
-    Sun,
-}
-
-impl From<u32> for MagicSpellLevel {
-    fn from(skill_level: u32) -> Self {
-        if skill_level >= 100 {
-            MagicSpellLevel::Master
-        } else if skill_level >= 75 {
-            MagicSpellLevel::Expert
-        } else if skill_level >= 50 {
-            MagicSpellLevel::Adept
-        } else if skill_level >= 25 {
-            MagicSpellLevel::Apprentice
-        } else {
-            MagicSpellLevel::Novice
-        }
+    let_cxx_string!(form_spec = assoc);
+    let assoc = formSpecToHudItem(&form_spec);
+    match assoc.kind() {
+        BaseType::Weapon(w) => match w {
+            WeaponType::AxeOneHanded(_, _) => BoundType::WarAxe,
+            WeaponType::AxeTwoHanded(_, _) => BoundType::BattleAxe,
+            WeaponType::BowShort(_, _) => BoundType::Bow,
+            WeaponType::Bow(_, _) => BoundType::Bow,
+            WeaponType::Crossbow(_, _) => BoundType::Bow,
+            WeaponType::Dagger(_, _) => BoundType::Dagger,
+            WeaponType::Hammer(_, _) => BoundType::Hammer,
+            WeaponType::Mace(_, _) => BoundType::Mace,
+            WeaponType::SwordOneHanded(_, _) => BoundType::Sword,
+            WeaponType::SwordTwoHanded(_, _) => BoundType::Greatsword,
+            _ => BoundType::Unknown,
+        },
+        _ => BoundType::Unknown,
     }
 }
 
@@ -460,19 +368,102 @@ pub enum SpellVariant {
     Rally, // CallToArms
     Reanimate,
     Reflect,
+    Root,
     Rout,
     Rune,
     Shock,
+    Silence,
     SlowTime,
     Sparks,
     SoulTrap,
     StormWall,
     Summon,
     Teleport,
+    Thorns,
     Thunderbolt,
     // Transmute,
     TurnUndead,
     Ward,
     // Waterbreathing,
     // Waterwalking,
+}
+
+// I collected all of the SimonMagus and most of the Darenii keywords here.
+// I can't use all of them, but what the heck.
+#[derive(Clone, Debug, EnumString, Eq, Hash, PartialEq)]
+enum SpellKeyword {
+    IconMagicWater,
+    IconMagicEarth,
+    IconMagicWind,
+    DAR_MagicAspectSpell,
+    DAR_MagicMeleeProcSpell,
+    DAR_UnspecificMagicDamage,
+    MAG_MagicDamageBleed,
+    MAG_MagicDamageMagicka,
+    MAG_MagicDamagePoison,
+    MAG_MagicDamageStamina,
+    MAG_MagicDamageSun,
+    MAG_MagicEffectLight,
+    MAG_MagicFortifySpeed,
+    MAG_MagicInfluenceCommand,
+    MAG_MagicInfluenceCourage,
+    MAG_MagicInfluenceParalysis,
+    MAG_MagicInfluenceSilence,
+    MAG_MagicJumpSpell,
+    MAG_MagicShieldFire,
+    MAG_MagicShieldFrost,
+    MAG_MagicShieldPoison,
+    MAG_MagicShieldSpell,
+    MAG_MagicSlowfallSpell,
+    MAG_MagicSoulTrap,
+    MAG_MagicStaffEnchantment,
+    MAG_MagicStealthSpell,
+    MAG_MagicSummonReanimate,
+    MAG_MagicSummonWeapon,
+    MAG_MagicUnarmedSpell,
+    MAG_MagicWeaponEnchantment,
+    MAG_MagicWeightSpell,
+    MAG_PoisonCloakSpell,
+    MAG_WeapTypeBound,
+    MagicDamageLunar,
+    MagicFlameCloak,
+
+    ABY_ShadowDamageResist,
+    ABY_ShadowInvisAddonSpell,
+    ABY_ShadowMantleSpell,
+    ABY_ShadowWeaponSpell,
+    BLO_BloodFFSpell,
+    BLO_BloodLustSpell,
+    BLO_BloodSiphonSpell,
+    BLO_BloodStanceSpell,
+    BLO_BloodStealHealthSpell,
+    DAR_ArcaneDamageMagickaRegen,
+    DAR_ArcaneDamageRelease,
+    DAR_ArcanePullSpell,
+    DAR_ArcaneWeaponSpell,
+    DAR_ArclightBodySpell,
+    DAR_AstralBodySpell,
+    DAR_AstralRestoreSpell,
+    DAR_AstralStarSpell,
+    DAR_EldritchFrenzySpell,
+    DAR_EldritchHardnessSpell,
+    DAR_EldritchInfectionSpell,
+    DAR_EldritchWeaveSpell,
+    DAR_MagicSkoriaSlow,
+    DAR_MagicWeaponSlow,
+    DAR_MoltenBodySpell,
+    DAR_NecroticDamageBlocker,
+    DAR_WeakenWeapons,
+    LUN_LunarBodySpell,
+    NAT_MagicAspectofFurySpell,
+    NAT_MagicAttunementSpell,
+    NAT_MagicNatureHealingSpell,
+    NAT_MagicReflectSpell,
+    NAT_MagicRejuvenateSpell,
+    NAT_MagicRevitalizingGrowthSpell,
+    NAT_MagicRoot,
+    NAT_MagicSpikeSpell,
+    NAT_MagicStrengthSpell,
+    NAT_MagicThornsSpell,
+    NAT_MagicTreeBarkSpell,
 }

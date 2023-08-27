@@ -1,7 +1,7 @@
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
 use super::icons::Icon;
-use super::spell::{MagicDamageType, School, SpellData};
+use super::magic::{MagicDamageType, School, SpellData};
 use super::HasIcon;
 use crate::plugin::Color;
 

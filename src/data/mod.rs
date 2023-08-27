@@ -10,6 +10,7 @@ pub mod game_enums;
 pub mod huditem;
 pub mod icons;
 pub mod item_cache;
+pub mod magic;
 pub mod potion;
 pub mod shout;
 pub mod spell;
@@ -23,7 +24,7 @@ use self::color::*;
 pub use self::huditem::HudItem;
 use self::potion::PotionType;
 use self::shout::ShoutVariant;
-pub use self::spell::SpellData;
+pub use super::magic::SpellData;
 use crate::plugin::{
     healthPotionCount, magickaPotionCount, staminaPotionCount, Color, ItemCategory,
 };
@@ -66,7 +67,7 @@ pub fn fill_out_spell_data(
     archetype: i32,
     associated: String,
 ) -> Box<SpellData> {
-    let result = SpellData::from_game_data(
+    let result = SpellData::new(
         effect, effect2, resist, twohanded, school, level, archetype, associated,
     );
     Box::new(result)
@@ -75,18 +76,20 @@ pub fn fill_out_spell_data(
 pub fn magic_from_spelldata(
     which: ItemCategory,
     #[allow(clippy::boxed_local)] spelldata: Box<SpellData>, // this is coming from C++
+    keywords_ffi: &CxxVector<CxxString>,
     bytes_ffi: &CxxVector<u8>,
     form_string: String,
     count: u32,
 ) -> Box<HudItem> {
     let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let data = *spelldata; // unbox
+    let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
 
     let kind = match which {
         ItemCategory::Scroll => BaseType::create_scroll(data),
-        ItemCategory::Spell => BaseType::create_spell(data),
+        ItemCategory::Spell => BaseType::create_spell(data, keywords),
         ItemCategory::Shout => BaseType::create_shout(data, form_string.clone()),
-        _ => BaseType::create_spell(data),
+        _ => BaseType::create_spell(data, keywords),
     };
     let result = HudItem::preclassified(name_bytes, form_string, count, kind);
     Box::new(result)

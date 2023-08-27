@@ -6,9 +6,10 @@ use super::ammo::AmmoType;
 use super::armor::ArmorType;
 use super::color::InvColor;
 use super::icons::Icon;
+use super::magic::SpellData;
 use super::potion::PotionType;
 use super::shout::ShoutVariant;
-use super::spell::{SpellData, SpellType};
+use super::spell::SpellType;
 use super::weapon::{WeaponEquipType, WeaponType};
 use super::{HasIcon, HasKeywords, IsHudItem};
 use crate::plugin::{Color, ItemCategory};
@@ -85,12 +86,12 @@ impl HasIcon for FoodType {
 }
 
 impl BaseType {
-    pub fn create_spell(data: SpellData) -> Self {
-        BaseType::Spell(SpellType::from_spell_data(data))
+    pub fn create_spell(data: SpellData, keywords: Vec<String>) -> Self {
+        BaseType::Spell(SpellType::new(data, keywords))
     }
 
     pub fn create_scroll(data: SpellData) -> Self {
-        BaseType::Scroll(SpellType::from_spell_data(data))
+        BaseType::Scroll(SpellType::new(data, Vec::new()))
     }
 
     pub fn create_power(_spell: SpellData) -> Self {

@@ -4,7 +4,7 @@ use strum::Display;
 
 use super::game_enums::ActorValue;
 use super::icons::Icon;
-use super::spell::MagicDamageType;
+use super::magic::MagicDamageType;
 use super::{HasIcon, InvColor};
 use crate::plugin::Color;
 
@@ -54,16 +54,7 @@ impl HasIcon for PotionType {
     fn color(&self) -> Color {
         match self {
             PotionType::Poison => InvColor::Poison.color(),
-            PotionType::Resist(t) => match t {
-                MagicDamageType::Disease => Color::default(), // TODO
-                MagicDamageType::Fire => InvColor::Fire.color(),
-                MagicDamageType::Frost => InvColor::Frost.color(),
-                MagicDamageType::Magic => InvColor::Blue.color(),
-                MagicDamageType::Poison => InvColor::Poison.color(),
-                MagicDamageType::Shock => InvColor::Shock.color(),
-                MagicDamageType::Sun => InvColor::Sun.color(),
-                MagicDamageType::None => Color::default(),
-            },
+            PotionType::Resist(t) => t.color(),
             PotionType::Health => InvColor::Red.color(),
             PotionType::Magicka => InvColor::Blue.color(),
             PotionType::Stamina => InvColor::Green.color(),
@@ -82,7 +73,7 @@ impl HasIcon for PotionType {
                 MagicDamageType::Poison => Icon::PotionResist.icon_file(),
                 MagicDamageType::Shock => Icon::PotionResistShock.icon_file(),
                 MagicDamageType::Sun => Icon::PotionResistFire.icon_file(),
-                MagicDamageType::None => Icon::PotionResist.icon_file(),
+                _ => Icon::PotionResist.icon_file(),
             },
             PotionType::Health => Icon::PotionHealth.icon_file(),
             PotionType::Magicka => Icon::PotionMagicka.icon_file(),

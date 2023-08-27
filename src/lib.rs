@@ -302,6 +302,7 @@ pub mod plugin {
         fn magic_from_spelldata(
             which: ItemCategory,
             spelldata: Box<SpellData>,
+            keywords: &CxxVector<CxxString>,
             bytes_ffi: &CxxVector<u8>,
             form_string: String,
             count: u32,
