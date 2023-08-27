@@ -985,8 +985,10 @@ impl Controller {
         let left_unexpected = leftvis != leftie;
 
         if right && right_unexpected {
+            self.right_hand_cached = item.form_string().clone();
             self.update_slot(HudElement::Right, &item);
         } else if left && left_unexpected {
+            self.left_hand_cached = item.form_string().clone();
             self.update_slot(HudElement::Left, &item);
         }
 
@@ -1052,10 +1054,11 @@ impl Controller {
     /// Called by the HUD rendering loop in the ImGui code.
     pub fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<HudItem> {
         let Some(candidate) = self.visible.get(&slot) else {
+            log::debug!("surprising: nothing in slot {slot:?}");
             return Box::<HudItem>::default();
         };
 
-        Box::new(candidate.clone())
+        Box::new(candidate.clone()) // this clone is in a hot path
     }
 
     /// Call when loading or otherwise needing to reinitialize the HUD.

@@ -16,6 +16,7 @@ use crate::plugin::{formSpecToHudItem, Color};
 // and spell archetypes. SpellData holds Rust expressions of the C++ enum values.
 // In most cases, we choose the primary actor value from the most expensive effect
 // of a spell or potion. For some we have to consider the secondary effect.
+// If we have useful keywords, that's great, but we can't count on them.
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellType {
