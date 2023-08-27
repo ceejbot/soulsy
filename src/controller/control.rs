@@ -855,15 +855,17 @@ impl Controller {
         if right {
             if let Some(visible) = right_vis {
                 if visible.form_string() == *form_spec {
-                    let empty = HudItem::default();
-                    return self.update_slot(HudElement::Right, &empty);
+                    return true;
+                    // let empty = HudItem::default();
+                    // return self.update_slot(HudElement::Right, &empty);
                 }
             }
         } else if left {
             if let Some(visible) = left_vis {
                 if visible.form_string() == *form_spec {
-                    let empty = HudItem::default();
-                    return self.update_slot(HudElement::Left, &empty);
+                    return true;
+                    // let empty = HudItem::default();
+                    // return self.update_slot(HudElement::Left, &empty);
                 }
             }
         }
