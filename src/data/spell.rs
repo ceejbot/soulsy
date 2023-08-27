@@ -7,7 +7,7 @@ use super::base::{self, BaseType};
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
 use super::icons::Icon;
-use super::magic::{MagicDamageType, SpellData};
+use super::magic::{MagicDamageType, SpellData, School};
 use super::weapon::WeaponType;
 use super::HasIcon;
 use crate::plugin::{formSpecToHudItem, Color};
@@ -28,6 +28,8 @@ impl SpellType {
         // well, this will be fun™
 
         let _color = base::color_from_keywords(&keywords);
+
+        log::info!("{keywords:?}");
 
         let tags: Vec<SpellKeyword> = keywords
             .iter()
@@ -90,49 +92,9 @@ impl SpellType {
             Some(SpellVariant::Cloak(MagicDamageType::Fire))
         } else {
             match data.archetype {
-                SpellArchetype::ValueModifier => match data.effect {
-                    ActorValue::Health => {
-                        if matches!(data.damage, MagicDamageType::None) {
-                            Some(SpellVariant::Heal)
-                        } else {
-                            Some(SpellVariant::Damage(data.damage.clone()))
-                        }
-                    }
-                    _ => None,
-                },
-                SpellArchetype::DualValueModifier => match data.effect {
-                    ActorValue::Health => {
-                        if matches!(data.damage, MagicDamageType::None) {
-                            Some(SpellVariant::Heal)
-                        } else {
-                            Some(SpellVariant::Damage(data.damage.clone()))
-                        }
-                    }
-                    ActorValue::HealRate => {
-                        if matches!(data.damage, MagicDamageType::None) {
-                            Some(SpellVariant::Heal)
-                        } else {
-                            Some(SpellVariant::Damage(data.damage.clone()))
-                        }
-                    }
-                    // ActorValue::Magicka => todo!(),
-                    // ActorValue::Stamina => todo!(),
-                    // ActorValue::MagickaRate => todo!(),
-                    // ActorValue::StaminaRate => todo!(),
-                    _ => None,
-                },
-                SpellArchetype::PeakValueModifier => match data.effect {
-                    ActorValue::Health => {
-                        if matches!(data.damage, MagicDamageType::None) {
-                            Some(SpellVariant::Heal)
-                        } else {
-                            Some(SpellVariant::Damage(data.damage.clone()))
-                        }
-                    }
-                    // ActorValue::Stamina => Some(SpellVariant::Heal),
-                    // ActorValue::Magicka => Some(SpellVariant::Heal),
-                    _ => None,
-                },
+                SpellArchetype::ValueModifier => classify_value_mod_archetype(&data),
+                SpellArchetype::PeakValueModifier => classify_value_mod_archetype(&data),
+                SpellArchetype::DualValueModifier => classify_value_mod_archetype(&data),
                 //SpellArchetype::Absorb => todo!(),
                 //SpellArchetype::Banish => todo!(),
                 //SpellArchetype::Calm => SpellVariant::Calm, //do I have one?
@@ -279,6 +241,21 @@ impl HasIcon for SpellType {
 
     fn icon_fallback(&self) -> String {
         self.data.school.icon_file()
+    }
+}
+
+fn classify_value_mod_archetype(data: &SpellData) -> Option<SpellVariant> {
+    match data.effect {
+        ActorValue::Health => {
+            if matches!(data.school, School::Restoration) {
+                Some(SpellVariant::Heal)
+            } else if !matches!(data.damage, MagicDamageType::None) {
+                Some(SpellVariant::Damage(data.damage.clone()))
+            } else {
+                None
+            }
+        }
+        _ => None,
     }
 }
 

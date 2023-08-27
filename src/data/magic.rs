@@ -116,7 +116,7 @@ impl HasIcon for MagicDamageType {
     }
 
     fn icon_fallback(&self) -> String {
-        todo!()
+        Icon::Destruction.icon_file()
     }
 }
 
@@ -134,7 +134,7 @@ pub enum School {
 
 impl HasIcon for School {
     fn color(&self) -> Color {
-        todo!()
+        Color::default()
     }
 
     fn icon_file(&self) -> String {
