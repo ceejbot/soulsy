@@ -8,7 +8,8 @@ pub fn strings_to_keywords(tags: Vec<String>) -> Vec<SoulsyKeywords> {
     let keywords: Vec<SoulsyKeywords> = tags
         .iter()
         .filter_map(|xs| {
-            if let Ok(subtype) = SoulsyKeywords::try_from(xs.as_str()) {
+            let sliced = xs.replace("Soulsy_", "");
+            if let Ok(subtype) = SoulsyKeywords::try_from(sliced.as_str()) {
                 Some(subtype)
             } else {
                 None
@@ -18,7 +19,24 @@ pub fn strings_to_keywords(tags: Vec<String>) -> Vec<SoulsyKeywords> {
     keywords
 }
 
+
+impl TryFrom<&str> for SoulsyKeywords {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let keystr = value.replace("Soulsy_", "").to_lowercase();
+        let keywd = SoulsyKeywords::iter().find(|xs| keystr == xs.to_string());
+        if let Some(k) = keywd {
+            Ok(k)
+        } else {
+            Err(anyhow::anyhow!("not a valid soulsy keyword"))
+        }
+    }
+}
+
+
 #[derive(Debug, Clone, Hash, Display, EnumIter, Eq, PartialEq)]
+#[strum(serialize_all = "lowercase")]
 pub enum SoulsyKeywords {
     // Some vanilla and mod spell archetypes to mark with keywords
     Archetype_Buff,
@@ -103,18 +121,4 @@ pub enum SoulsyKeywords {
     Shout_ThrowVoice,
     Shout_UnrelentingForce,
     Shout_WhirlwindSprint,
-}
-
-impl TryFrom<&str> for SoulsyKeywords {
-    type Error = anyhow::Error;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let keystr = value.replace("Soulsy_", "").to_lowercase();
-        let keywd = SoulsyKeywords::iter().find(|xs| keystr == xs.to_string());
-        if let Some(k) = keywd {
-            Ok(k)
-        } else {
-            Err(anyhow::anyhow!("not a valid soulsy keyword"))
-        }
-    }
 }
