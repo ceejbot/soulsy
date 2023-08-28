@@ -290,7 +290,7 @@ impl CycleData {
 
         let form = item.form_string();
         let orig_len = cycle.len();
-        cycle.retain(|xs| xs != &form);
+        cycle.retain(|xs| *xs != form);
         orig_len != cycle.len()
     }
 

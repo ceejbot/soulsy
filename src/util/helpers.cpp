@@ -218,7 +218,7 @@ namespace helpers
 
 		RE::FormID form_id = 0;
 		RE::GFxValue result;
-		menu->uiMovie->GetVariable(&result, "_root.MenuHolder.Menu_mc.itemList.selectedEntry.form_id");
+		menu->uiMovie->GetVariable(&result, "_root.MenuHolder.Menu_mc.itemList.selectedEntry.formId");
 		if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 		{
 			form_id = static_cast<std::uint32_t>(result.GetNumber());
@@ -258,7 +258,7 @@ namespace helpers
 			auto* selection      = new MenuSelection(obj->GetFormID());
 			selection->count     = selected->data.GetCount();
 			selection->poisoned  = selected->data.objDesc->IsPoisoned();
-			selection->favorite  = selected->data.objDesc->IsFavorited();
+			selection->favorite  = !selected->data.objDesc->IsFavorited(); // We are handling button DOWN and it is toggled on button UP.
 			selection->equipped  = selected->data.objDesc->IsWorn();
 			selection->bound_obj = obj->IsBoundObject() ? obj : nullptr;
 			selection->form      = RE::TESForm::LookupByID(form_id);
@@ -285,7 +285,7 @@ namespace helpers
 			auto* selection     = new MenuSelection(form_id);
 			selection->count    = 0;
 			selection->poisoned = extra ? extra->HasType(RE::ExtraDataType::kPoison) : false;
-			selection->favorite = extra ? extra->HasType(RE::ExtraDataType::kHotkey) : false;
+			selection->favorite = !(extra ? extra->HasType(RE::ExtraDataType::kHotkey) : false);
 			selection->equipped =
 				extra ? extra->HasType(RE::ExtraDataType::kWorn) || extra->HasType(RE::ExtraDataType::kWornLeft) :
 						false;

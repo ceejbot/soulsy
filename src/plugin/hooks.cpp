@@ -45,12 +45,11 @@ namespace hooks
 		if (!controlMap || !userEvents) return process_event_(this, eventPtr, eventSource);
 
 		rust::Box<UserSettings> settings = user_settings();
-		bool check_favorites             = settings->link_to_favorites();
+		bool link_favorites              = settings->link_to_favorites();
 		auto favconst                    = userEvents->togglePOV;  // m&k shortcut
 		auto favtoggle                   = userEvents->jump;       // controller shortcut
 
 		// TODO consider treating the favorites menu completely differently.
-
 		if (eventPtr && *eventPtr)
 		{
 			for (auto* event = *eventPtr; event; event = event->next)
@@ -60,8 +59,11 @@ namespace hooks
 				auto* button = static_cast<RE::ButtonEvent*>(event);
 				if (button->idCode == keycodes::k_invalid) { continue; }
 				auto key = keycodes::get_key_id(button);
+				// I'm not getting button UP events for the inventory menu. Why? IDK.
+				// I used to get those events.
+				auto check_favorites = link_favorites && (inMagicMenu ? button->IsUp() : button->IsDown());
 
-				if (button->IsUp() && check_favorites)
+				if (check_favorites)
 				{
 					if (buttonMatchesEvent(controlMap, favconst, button) ||
 						buttonMatchesEvent(controlMap, favtoggle, button))
@@ -116,6 +118,7 @@ namespace hooks
 	{
 		auto the_device = button->GetDevice();
 		auto key        = controlMap->GetMappedKey(eventID, the_device, static_cast<RE::ControlMap::InputContextID>(0));
+		// logger::debug("favorites detection: looking for {} ? = {}"sv, key, button->GetIDCode());
 		return key == button->GetIDCode();
 	}
 
