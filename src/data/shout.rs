@@ -39,7 +39,7 @@ pub enum ShoutVariant {
 
 impl ShoutVariant {
     pub fn new(tags: Vec<String>) -> Self {
-        let keywords = strings_to_keywords(tags);
+        let keywords = strings_to_keywords(&tags);
 
         if keywords.contains(&SoulsyKeywords::Shout_AnimalAllegiance) {
             ShoutVariant::AnimalAllegiance

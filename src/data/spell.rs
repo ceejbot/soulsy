@@ -4,12 +4,12 @@ use cxx::let_cxx_string;
 
 use super::base::{self, BaseType};
 use super::color::InvColor;
-use super::game_enums::{ActorValue, SpellArchetype};
+use super::game_enums::{ActorValue};
 use super::icons::Icon;
-use super::magic::{enumset_contains_any, MagicDamageType, SpellData, SpellKeyword};
+use super::keywords::*;
+use super::magic::{MagicDamageType, SpellData};
 use super::weapon::WeaponType;
 use super::HasIcon;
-use crate::data::magic;
 use crate::plugin::{formSpecToHudItem, Color};
 
 // Spells must be classified by querying game data about actor values, resist types,
@@ -26,183 +26,105 @@ pub struct SpellType {
 }
 
 impl SpellType {
-    pub fn new(mut data: SpellData, keywords: Vec<String>) -> Self {
+    pub fn new(mut data: SpellData, tags: Vec<String>) -> Self {
         // well, this will be fun™
 
-        let _color = base::color_from_keywords(&keywords);
-
+        let _color = base::color_from_keywords(&tags);
+        let keywords = strings_to_keywords(&tags);
         log::info!("{keywords:?}");
 
-        let tags: Vec<SpellKeyword> = keywords
-            .iter()
-            .filter_map(|xs| {
-                if let Ok(subtype) = SpellKeyword::try_from(xs.as_str()) {
-                    Some(subtype)
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        // Override the damage field if we have better info.
-        data.damage = if tags.contains(&SpellKeyword::MAG_MagicDamageBleed) {
+        let damage = if keywords.contains(&SoulsyKeywords::MagicDamageFire) {
+            MagicDamageType::Fire
+        } else if keywords.contains(&SoulsyKeywords::MagicDamageFrost) {
+            MagicDamageType::Frost
+        } else if keywords.contains(&SoulsyKeywords::MagicDamageShock) {
+            MagicDamageType::Shock
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Arcane) {
+            MagicDamageType::Arcane
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Arclight) {
+            MagicDamageType::Arclight
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Astral) {
+            MagicDamageType::Astral
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Bleed) {
             MagicDamageType::Bleed
-        } else if tags.contains(&SpellKeyword::IconMagicEarth) {
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_ColdFire) {
+            MagicDamageType::ColdFire
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Disease) {
+            MagicDamageType::Disease
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Earth) {
             MagicDamageType::Earth
-        } else if tags.contains(&SpellKeyword::MagicDamageLunar) {
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Lunar) {
             MagicDamageType::Lunar
-        } else if tags.contains(&SpellKeyword::MAG_MagicDamagePoison) {
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Necrotic) {
+            MagicDamageType::Necrotic
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Poison) {
             MagicDamageType::Poison
-        } else if tags.contains(&SpellKeyword::MAG_MagicDamageStamina) {
-            MagicDamageType::Stamina
-        } else if tags.contains(&SpellKeyword::MAG_MagicDamageSun) {
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Shadow) {
+            MagicDamageType::Shadow
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Sun) {
             MagicDamageType::Sun
-        } else if tags.contains(&SpellKeyword::IconMagicWater) {
-            MagicDamageType::Water // natura spell pack
-        } else if tags.contains(&SpellKeyword::IconMagicWind) {
-            MagicDamageType::Wind // natura
-        } else if enumset_contains_any(&magic::DAR_ELDRITCH, &tags) {
-            MagicDamageType::Necrotic // necrom spell pack
-        } else if enumset_contains_any(&magic::DAR_ABYSS, &tags) {
-            MagicDamageType::Shadow // abyss spell pack
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Water) {
+            MagicDamageType::Water
+        } else if keywords.contains(&SoulsyKeywords::IconWater) {
+            MagicDamageType::Water
+        } else if keywords.contains(&SoulsyKeywords::MagicDamage_Wind) {
+            MagicDamageType::Wind
+        } else if keywords.contains(&SoulsyKeywords::IconWind) {
+            MagicDamageType::Wind
         } else {
             data.damage
         };
+        data.damage = damage;
 
-        // Use keywords to classify if we have them. If we fail to classify,
-        // we dig into the spell data struct.
-        let variant = if tags.contains(&SpellKeyword::MAG_MagicEffectLight) {
-            Some(SpellVariant::Light)
-        } else if tags.contains(&SpellKeyword::MAG_MagicInfluenceParalysis) {
-            Some(SpellVariant::Paralyze)
-        } else if tags.contains(&SpellKeyword::MAG_MagicInfluenceSilence) {
-            Some(SpellVariant::Silence)
-        } else if tags.contains(&SpellKeyword::MAG_MagicSoulTrap) {
-            Some(SpellVariant::SoulTrap)
-        } else if tags.contains(&SpellKeyword::MAG_MagicSummonReanimate) {
-            Some(SpellVariant::Reanimate)
-        } else if enumset_contains_any(&magic::BOUND_WEAPON, &tags) {
-            let weaptype = bound_weapon_type(data.associated.clone());
-            Some(SpellVariant::BoundWeapon(weaptype))
-        } else if tags.contains(&SpellKeyword::MagicWeaponSpeed) {
-            Some(SpellVariant::EnhanceWeapon)
-        } else if tags.contains(&SpellKeyword::MAG_MagicWeaponEnchantment) {
-            Some(SpellVariant::EnhanceWeapon)
-        } else if tags.contains(&SpellKeyword::MAG_MagicWeightSpell) {
-            Some(SpellVariant::CarryWeight)
-        } else if tags.contains(&SpellKeyword::MagicInfluence) {
-            Some(SpellVariant::Calm)
-        } else if tags.contains(&SpellKeyword::MagicInfluenceFear) {
-            Some(SpellVariant::Fear)
-        } else if tags.contains(&SpellKeyword::MagicInfluenceCharm) {
-            Some(SpellVariant::Calm)
-        } else if tags.contains(&SpellKeyword::MagicInfluenceFear) {
-            Some(SpellVariant::Fear)
-        // } else if tags.contains(&SpellKeyword::MagicInfluenceFrenzy) {
-        //  Some(SpellVariant::Frenzy)
-        } else if tags.contains(&SpellKeyword::MagicInvisibility) {
-            Some(SpellVariant::Invisibility)
-        } else if tags.contains(&SpellKeyword::MagicNightEye) {
-            Some(SpellVariant::Detect)
-        } else if tags.contains(&SpellKeyword::MagicParalysis) {
-            Some(SpellVariant::Paralyze)
-        } else if tags.contains(&SpellKeyword::MagicRune) {
-            Some(SpellVariant::Rune)
-        } else if tags.contains(&SpellKeyword::MagicWard) {
-            Some(SpellVariant::Ward)
-        } else if tags.contains(&SpellKeyword::MAG_PoisonCloakSpell) {
-            Some(SpellVariant::Cloak(MagicDamageType::Poison))
-        } else if tags.contains(&SpellKeyword::MagicFlameCloak) {
-            Some(SpellVariant::Cloak(MagicDamageType::Fire))
-        } else if tags.contains(&SpellKeyword::NAT_MagicRoot) {
-            Some(SpellVariant::Root)
+        let variant = if keywords.contains(&SoulsyKeywords::Archetype_Buff) {
+            SpellVariant::Buff
+        } else if keywords.contains(&SoulsyKeywords::Archetype_CarryWeight) {
+            SpellVariant::CarryWeight
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Cure) {
+            SpellVariant::Cure
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Damage) {
+            SpellVariant::Damage(data.damage.clone())
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Guide) {
+            SpellVariant::Guide
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Heal) {
+            SpellVariant::Heal
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Light) {
+            SpellVariant::Light
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Protect) {
+            SpellVariant::Unknown
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Reanimate) {
+            SpellVariant::Reanimate
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Reflect) {
+            SpellVariant::Reflect
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Resist) {
+            SpellVariant::Unknown
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Root) {
+            SpellVariant::Root
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Silence) {
+            SpellVariant::Silence
+        } else if keywords.contains(&SoulsyKeywords::Archetype_SoulTrap) {
+            SpellVariant::SoulTrap
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Time) {
+            SpellVariant::SlowTime
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Vision) {
+            SpellVariant::Detect
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Waterbreathing) {
+            SpellVariant::Waterbreathing
+        } else if keywords.contains(&SoulsyKeywords::Archetype_Waterwalking) {
+            SpellVariant::Waterwalking
+        } else if keywords.contains(&SoulsyKeywords::Archetype_WeaponBuff) {
+            SpellVariant::EnhanceWeapon
         } else {
-            match data.archetype {
-                SpellArchetype::ValueModifier => classify_value_mod_archetype(&data),
-                SpellArchetype::PeakValueModifier => classify_value_mod_archetype(&data),
-                SpellArchetype::DualValueModifier => classify_value_mod_archetype(&data),
-                //SpellArchetype::Absorb => todo!(),
-                //SpellArchetype::Banish => todo!(),
-                SpellArchetype::Calm => Some(SpellVariant::Calm), //do I have one?
-                SpellArchetype::BoundWeapon => {
-                    let weaptype = bound_weapon_type(data.associated.clone());
-                    Some(SpellVariant::BoundWeapon(weaptype))
-                }
-                SpellArchetype::CureDisease => Some(SpellVariant::Cure),
-                SpellArchetype::CurePoison => Some(SpellVariant::Cure),
-                SpellArchetype::CureParalysis => Some(SpellVariant::Cure),
-                SpellArchetype::Demoralize => Some(SpellVariant::Demoralize),
-                SpellArchetype::DetectLife => Some(SpellVariant::Detect),
-                SpellArchetype::Guide => Some(SpellVariant::Guide),
-                SpellArchetype::Light => Some(SpellVariant::Light),
-                SpellArchetype::Reanimate => Some(SpellVariant::Reanimate),
-                SpellArchetype::SoulTrap => Some(SpellVariant::SoulTrap),
-                SpellArchetype::SummonCreature => Some(SpellVariant::Summon),
-                SpellArchetype::Cloak => Some(SpellVariant::Cloak(data.damage.clone())),
-                //SpellArchetype::CommandSummoned => todo!(),
-                //SpellArchetype::Darkness => todo!(),
-                // SpellArchetype::Disarm => Some(SpellVariant::Disarm),
-                //SpellArchetype::Disguise => todo!(),
-                //SpellArchetype::Dispel => todo!(),
-                SpellArchetype::EnhanceWeapon => Some(SpellVariant::EnhanceWeapon),
-                //SpellArchetype::Etherealize => todo!(),
-                //SpellArchetype::Frenzy => todo!(),
-                //SpellArchetype::GrabActor => todo!(),
-                //SpellArchetype::Invisibility => todo!(),
-                //SpellArchetype::Lock => todo!(),
-                SpellArchetype::NightEye => Some(SpellVariant::Detect),
-                //SpellArchetype::Open => todo!(),
-                //SpellArchetype::Paralysis => todo!(),
-                //SpellArchetype::Rally => todo!(),
-                SpellArchetype::SlowTime => Some(SpellVariant::SlowTime),
-                SpellArchetype::SpawnHazard => {
-                    // frostwall and firewall here?
-                    log::debug!("spawn hazard here");
-                    match data.damage {
-                        MagicDamageType::Earth => todo!(),
-                        MagicDamageType::Fire => Some(SpellVariant::FireWall),
-                        MagicDamageType::Frost => Some(SpellVariant::FrostWall),
-                        MagicDamageType::Shock => Some(SpellVariant::StormWall),
-                        MagicDamageType::Wind => Some(SpellVariant::Tornado),
-                        _ => None,
-                    }
-                }
-                //SpellArchetype::Telekinesis => todo!(),
-                SpellArchetype::TurnUndead => Some(SpellVariant::TurnUndead),
-                _ => None,
-            }
-        };
-
-        let variant = if let Some(v) = variant {
-            v
-        } else {
-            log::debug!("Falling back to default spell variant; data: {data:?}");
             SpellVariant::Unknown
         };
 
+
+        if matches!(variant,  SpellVariant::Unknown) {
+            log::debug!("Falling back to default spell variant; data: {data:?}");
+            log::debug!("    keywords: {tags:?}");
+        };
+
         Self { data, variant }
-    }
-}
-
-fn classify_value_mod_archetype(data: &SpellData) -> Option<SpellVariant> {
-    if data.hostile {
-        // can repeat same match as below for stats if necessary
-        return Some(SpellVariant::Damage(data.damage.clone()));
-    }
-
-    // positive effects
-    match data.effect {
-        ActorValue::Health => Some(SpellVariant::Heal),
-        ActorValue::DamageResist => {
-            // various oak bark spells etc
-            todo!()
-        }
-        ActorValue::Stamina => {
-            // respite etc
-            todo!()
-        }
-        ActorValue::WaterBreathing => Some(SpellVariant::Waterbreathing),
-        _ => None,
     }
 }
 
@@ -296,36 +218,12 @@ impl HasIcon for SpellType {
             SpellVariant::TurnUndead => Icon::SpellHoly.icon_file(),
             SpellVariant::Ward => Icon::SpellWard.icon_file(),
             SpellVariant::Waterbreathing => self.icon_fallback(),
+            _ => self.icon_fallback()
         }
     }
 
     fn icon_fallback(&self) -> String {
         self.data.school.icon_file()
-    }
-}
-
-fn bound_weapon_type(assoc: String) -> BoundType {
-    if assoc.is_empty() {
-        return BoundType::Unknown;
-    }
-
-    let_cxx_string!(form_spec = assoc);
-    let assoc = formSpecToHudItem(&form_spec);
-    match assoc.kind() {
-        BaseType::Weapon(w) => match w {
-            WeaponType::AxeOneHanded(_, _) => BoundType::WarAxe,
-            WeaponType::AxeTwoHanded(_, _) => BoundType::BattleAxe,
-            WeaponType::BowShort(_, _) => BoundType::Bow,
-            WeaponType::Bow(_, _) => BoundType::Bow,
-            WeaponType::Crossbow(_, _) => BoundType::Bow,
-            WeaponType::Dagger(_, _) => BoundType::Dagger,
-            WeaponType::Hammer(_, _) => BoundType::Hammer,
-            WeaponType::Mace(_, _) => BoundType::Mace,
-            WeaponType::SwordOneHanded(_, _) => BoundType::Sword,
-            WeaponType::SwordTwoHanded(_, _) => BoundType::Greatsword,
-            _ => BoundType::Unknown,
-        },
-        _ => BoundType::Unknown,
     }
 }
 
@@ -354,6 +252,7 @@ pub enum SpellVariant {
     Unknown,
     Banish,
     Blizzard,
+    Buff,
     BoundWeapon(BoundType),
     Burden,
     Calm,                   // effects will include av calm
@@ -403,9 +302,9 @@ pub enum SpellVariant {
     Thorns,
     Thunderbolt,
     Tornado,
-    // Transmute,
+    Transmute,
     TurnUndead,
     Ward,
     Waterbreathing,
-    // Waterwalking,
+    Waterwalking,
 }

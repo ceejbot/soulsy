@@ -4,7 +4,7 @@
 
 use strum::{Display, EnumIter, IntoEnumIterator};
 
-pub fn strings_to_keywords(tags: Vec<String>) -> Vec<SoulsyKeywords> {
+pub fn strings_to_keywords(tags: &[String]) -> Vec<SoulsyKeywords> {
     let keywords: Vec<SoulsyKeywords> = tags
         .iter()
         .filter_map(|xs| {
@@ -123,4 +123,37 @@ pub enum SoulsyKeywords {
     Shout_ThrowVoice,
     Shout_UnrelentingForce,
     Shout_WhirlwindSprint,
+
+    // vanilla magic keywords
+    MagicArmorSpell,
+    MagicCloak,
+    MagicDamageFire,
+    MagicDamageFrost,
+    MagicDamageResist,
+    MagicDamageShock,
+    MagicInfluence,
+    MagicInfluenceCharm,
+    MagicInfluenceFear,
+    MagicInfluenceFrenzy,
+    MagicInvisibility,
+    MagicNightEye,
+    MagicParalysis,
+    MagicRestoreHealth,
+    MagicRune,
+    MagicSlow,
+    MagicSummonFamiliar,
+    MagicSummonFire,
+    MagicSummonFrost,
+    MagicSummonShock,
+    MagicSummonUndead,
+    MagicTelekinesis,
+    MagicTurnUndead,
+    MagicWard,
+    MagicWeaponSpeed,
+
+    // from OCF and others
+    OCF_MgefSpellDamage_FireCold,
+    MAG_MagicDamageSun,
+    IconWind,
+    IconWater,
 }
