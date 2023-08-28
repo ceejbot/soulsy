@@ -60,12 +60,14 @@ pub enum SoulsyKeywords {
     Archetype_WeaponBuff,
 
     // damage types from spell packs
+    MagicDamage_Arcane,
+    MagicDamage_Arclight,
+    MagicDamage_Astral,
     MagicDamage_Bleed,
     MagicDamage_ColdFire,
     MagicDamage_Disease,
     MagicDamage_Earth,
     MagicDamage_Lunar,
-    MagicDamage_Magic,
     MagicDamage_Necrotic,
     MagicDamage_Poison,
     MagicDamage_Shadow,
