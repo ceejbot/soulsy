@@ -72,10 +72,6 @@ namespace equippable
 		auto resist    = effect->data.resistVariable;
 		auto school    = effect->GetMagickSkill();
 
-		std::string assoc_formspec;
-		if (assoc) { assoc_formspec = helpers::makeFormSpecString(assoc); }
-		else { assoc_formspec = std::string(""); }
-
 		rust::Box<SpellData> data = fill_out_spell_data(isHostile,
 			static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
 			two_handed,

@@ -18,10 +18,8 @@ pub struct SpellType {
 
 impl SpellType {
     pub fn new(mut data: SpellData, tags: Vec<String>) -> Self {
-        let _color = base::color_from_keywords(&tags);
+        // let _color = base::color_from_keywords(&tags);
         let keywords = strings_to_keywords(&tags);
-        log::info!("{keywords:?}");
-
         let icon_hints: Vec<SoulsyKeywords> = keywords
             .iter()
             .filter_map(|xs| {
@@ -124,6 +122,16 @@ impl SpellType {
                 SpellVariant::LightningBolt
             } else if icon_hints.contains(&SoulsyKeywords::ArtProjectile) {
                 SpellVariant::Firebolt
+            } else if icon_hints.contains(&SoulsyKeywords::ArtWall) {
+                if matches!(data.damage, MagicDamageType::Fire) {
+                    SpellVariant::FireWall
+                } else if matches!(data.damage, MagicDamageType::Frost) {
+                    SpellVariant::FrostWall
+                } else if matches!(data.damage, MagicDamageType::Shock) {
+                    SpellVariant::StormWall
+                } else {
+                    SpellVariant::Damage(data.damage.clone())
+                }
             } else if icon_hints.contains(&SoulsyKeywords::ArtBolt) {
                 if matches!(data.damage, MagicDamageType::Fire) {
                     SpellVariant::Firebolt
@@ -135,6 +143,8 @@ impl SpellType {
             } else {
                 SpellVariant::Damage(data.damage.clone())
             }
+        } else if keywords.contains(&SoulsyKeywords::MagicCloak) {
+            SpellVariant::Cloak(data.damage.clone())
         } else if keywords.contains(&SoulsyKeywords::Archetype_Guide) {
             SpellVariant::Guide
         } else if keywords.contains(&SoulsyKeywords::Archetype_Heal) {
@@ -194,6 +204,7 @@ impl HasIcon for SpellType {
     fn color(&self) -> Color {
         match &self.variant {
             SpellVariant::BoundWeapon(_) => InvColor::Eldritch.color(),
+            SpellVariant::Cloak(t) => t.color(),
             SpellVariant::Cure => InvColor::Green.color(),
             SpellVariant::Damage(t) => t.color(),
             SpellVariant::Flame(t) => t.color(),
