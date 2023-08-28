@@ -67,27 +67,21 @@ namespace equippable
 
 	rust::Box<SpellData> fillOutSpellData(bool two_handed, int32_t skill_level, const RE::EffectSetting* effect)
 	{
-		auto isHostile        = effect->IsHostile();
-		auto archetype        = effect->data.archetype;
-		auto primary_effect   = effect->data.primaryAV;
-		auto secondary_effect = effect->data.secondaryAV;
-		auto resist           = effect->data.resistVariable;
-		auto school           = effect->GetMagickSkill();
-		auto assoc            = effect->data.associatedForm;
+		auto isHostile = effect->IsHostile();
+		auto archetype = effect->data.archetype;
+		auto resist    = effect->data.resistVariable;
+		auto school    = effect->GetMagickSkill();
 
 		std::string assoc_formspec;
 		if (assoc) { assoc_formspec = helpers::makeFormSpecString(assoc); }
 		else { assoc_formspec = std::string(""); }
 
 		rust::Box<SpellData> data = fill_out_spell_data(isHostile,
-			static_cast<std::underlying_type_t<RE::ActorValue>>(primary_effect),
-			static_cast<std::underlying_type_t<RE::ActorValue>>(secondary_effect),
 			static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
 			two_handed,
 			static_cast<std::underlying_type_t<RE::ActorValue>>(school),
 			skill_level,
-			static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype),
-			assoc_formspec);
+			static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype));
 		return data;
 	}
 

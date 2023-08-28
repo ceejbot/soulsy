@@ -2,6 +2,7 @@
 //! in various spell packs to identify them for iconnification.
 //! It does so because OCF is great, but it only covers objects.
 
+use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::{Display, EnumIter, IntoEnumIterator};
 
 pub fn strings_to_keywords(tags: &[String]) -> Vec<SoulsyKeywords> {
@@ -19,7 +20,6 @@ pub fn strings_to_keywords(tags: &[String]) -> Vec<SoulsyKeywords> {
     keywords
 }
 
-
 impl TryFrom<&str> for SoulsyKeywords {
     type Error = anyhow::Error;
 
@@ -34,11 +34,26 @@ impl TryFrom<&str> for SoulsyKeywords {
     }
 }
 
+pub const ICON_HINTS: EnumSet<SoulsyKeywords> = enum_set!(
+    SoulsyKeywords::ArtBall
+        | SoulsyKeywords::ArtBlast
+        | SoulsyKeywords::ArtBolt
+        | SoulsyKeywords::ArtBreath
+        | SoulsyKeywords::ArtChainLightning
+        | SoulsyKeywords::ArtFlame
+        | SoulsyKeywords::ArtLightning
+        | SoulsyKeywords::ArtProjectile
+        | SoulsyKeywords::ArtSpike
+        | SoulsyKeywords::ArtStorm
+        | SoulsyKeywords::ArtTornado
+        | SoulsyKeywords::ArtWall
+);
 
-#[derive(Debug, Clone, Hash, Display, EnumIter, Eq, PartialEq)]
+#[derive(Debug, Hash, Display, EnumIter, EnumSetType)]
 #[strum(serialize_all = "lowercase")]
 pub enum SoulsyKeywords {
     // Some vanilla and mod spell archetypes to mark with keywords
+    Archetype_BoundWeapon,
     Archetype_Buff,
     Archetype_CarryWeight,
     Archetype_Cure,
@@ -53,6 +68,7 @@ pub enum SoulsyKeywords {
     Archetype_Root,
     Archetype_Silence,
     Archetype_SoulTrap,
+    Archetype_Summon,
     Archetype_Time,
     Archetype_Vision,
     Archetype_Waterbreathing,
@@ -77,6 +93,10 @@ pub enum SoulsyKeywords {
 
     // Hints about which art to use.
     ArtBall,
+    ArtBlast,
+    ArtBolt,
+    ArtBreath,
+    ArtChainLightning,
     ArtFlame,
     ArtLightning,
     ArtProjectile,
@@ -86,43 +106,15 @@ pub enum SoulsyKeywords {
     ArtWall,
 
     // Bound weapon types
-    BoundAxeOneHanded,
-    BoundAxeTwoHanded,
+    BoundWarAxe,
+    BoundBattleAxe,
     BoundBow,
     BoundDagger,
     BoundHammer,
     BoundMace,
     BoundShield,
-    BoundSwordOneHanded,
-    BoundSwordTwoHanded,
-
-    // vanilla shouts
-    Shout_AnimalAllegiance,
-    Shout_AuraWhisper,
-    Shout_BattleFury,
-    Shout_BecomeEthereal,
-    Shout_BendWill,
-    Shout_CallDragon,
-    Shout_CallOfValor,
-    Shout_ClearSkies,
-    Shout_Disarm,
-    Shout_Dismay,
-    Shout_DragonAspect,
-    Shout_Dragonrend,
-    Shout_DrainVitality,
-    Shout_ElementalFury,
-    Shout_FireBreath,
-    Shout_FrostBreath,
-    Shout_IceForm,
-    Shout_KynesPeace,
-    Shout_MarkedForDeath,
-    Shout_Slowtime,
-    Shout_SoulTear,
-    Shout_StormCall,
-    Shout_SummonDurnehviir,
-    Shout_ThrowVoice,
-    Shout_UnrelentingForce,
-    Shout_WhirlwindSprint,
+    BoundSword,
+    BoundGreatsword,
 
     // vanilla magic keywords
     MagicArmorSpell,
@@ -156,4 +148,32 @@ pub enum SoulsyKeywords {
     MAG_MagicDamageSun,
     IconWind,
     IconWater,
+
+    // vanilla shouts
+    Shout_AnimalAllegiance,
+    Shout_AuraWhisper,
+    Shout_BattleFury,
+    Shout_BecomeEthereal,
+    Shout_BendWill,
+    Shout_CallDragon,
+    Shout_CallOfValor,
+    Shout_ClearSkies,
+    Shout_Disarm,
+    Shout_Dismay,
+    Shout_DragonAspect,
+    Shout_Dragonrend,
+    Shout_DrainVitality,
+    Shout_ElementalFury,
+    Shout_FireBreath,
+    Shout_FrostBreath,
+    Shout_IceForm,
+    Shout_KynesPeace,
+    Shout_MarkedForDeath,
+    Shout_Slowtime,
+    Shout_SoulTear,
+    Shout_StormCall,
+    Shout_SummonDurnehviir,
+    Shout_ThrowVoice,
+    Shout_UnrelentingForce,
+    Shout_WhirlwindSprint,
 }

@@ -1,4 +1,4 @@
-use strum::{Display, EnumString};
+use strum::Display;
 
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
@@ -9,31 +9,23 @@ use crate::plugin::Color;
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellData {
     pub hostile: bool,
-    pub effect: ActorValue,
-    pub secondary: ActorValue,
     pub twohanded: bool,
     pub school: School,
     pub level: MagicSpellLevel,
     pub archetype: SpellArchetype,
     pub damage: MagicDamageType,
-    pub associated: String,
 }
 
 impl SpellData {
     pub fn new(
         hostile: bool,
-        effect: i32,
-        effect2: i32,
         resist: i32,
         twohanded: bool,
         school: i32,
         level: u32,
         archetype: i32,
-        associated: String,
     ) -> Self {
         let school = School::from(school);
-        let effect = ActorValue::from(effect);
-        let secondary = ActorValue::from(effect2);
         let resist = ActorValue::from(resist);
         let archetype = SpellArchetype::from(archetype);
 
@@ -44,20 +36,16 @@ impl SpellData {
             ActorValue::ResistMagic => MagicDamageType::Arcane,
             ActorValue::ResistDisease => MagicDamageType::Disease,
             ActorValue::PoisonResist => MagicDamageType::Poison,
-            // ActorValue::SOMETHING => MagicDamageType::Sun, // TODO SSEdit inspection
             _ => MagicDamageType::None,
         };
 
         Self {
             hostile,
-            effect,
-            secondary,
             twohanded,
             school,
             archetype,
             level: level.into(),
             damage,
-            associated: associated.clone(),
         }
     }
 }
@@ -115,27 +103,23 @@ impl HasIcon for MagicDamageType {
 
     fn icon_file(&self) -> String {
         match self {
-            // These spells have ONLY damage type as their distinguisher.
-            MagicDamageType::None => self.icon_fallback(),
-            MagicDamageType::Arcane => self.icon_fallback(),
-            MagicDamageType::Arclight => self.icon_fallback(),
-            MagicDamageType::Astral => self.icon_fallback(),
+            MagicDamageType::Arcane => Icon::SpellAstral.icon_file(),
+            MagicDamageType::Arclight => Icon::SpellArclight.icon_file(),
+            MagicDamageType::Astral => Icon::SpellAstral.icon_file(),
             MagicDamageType::Bleed => Icon::SpellBleed.icon_file(),
             MagicDamageType::ColdFire => Icon::SpellFire.icon_file(),
-            MagicDamageType::Disease => self.icon_fallback(),
             MagicDamageType::Earth => Icon::SpellEarth.icon_file(),
             MagicDamageType::Fire => Icon::SpellFire.icon_file(),
             MagicDamageType::Frost => Icon::SpellFrost.icon_file(),
             MagicDamageType::Lunar => Icon::SpellMoon.icon_file(),
-            MagicDamageType::Magic => self.icon_fallback(),
-            MagicDamageType::Necrotic => self.icon_fallback(),
+            MagicDamageType::Necrotic => Icon::SpellNecrotic.icon_file(),
             MagicDamageType::Poison => Icon::SpellPoison.icon_file(),
-            MagicDamageType::Shadow => self.icon_fallback(),
+            MagicDamageType::Shadow => Icon::SpellShadow.icon_file(),
             MagicDamageType::Shock => Icon::SpellShock.icon_file(),
-            MagicDamageType::Stamina => self.icon_fallback(),
             MagicDamageType::Sun => Icon::SpellSun.icon_file(),
             MagicDamageType::Water => Icon::SpellWater.icon_file(),
             MagicDamageType::Wind => Icon::SpellWind.icon_file(),
+            _ => self.icon_fallback(),
         }
     }
 

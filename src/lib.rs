@@ -291,14 +291,11 @@ pub mod plugin {
         type SpellData;
         fn fill_out_spell_data(
             hostile: bool,
-            effect: i32,
-            effect2: i32,
             resist: i32,
             twohanded: bool,
             school: i32,
             level: u32,
             archetype: i32,
-            associated: String,
         ) -> Box<SpellData>;
         fn magic_from_spelldata(
             which: ItemCategory,
