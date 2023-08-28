@@ -1,6 +1,8 @@
 //! A cache of HudItems so we don't have to make them all the time. The player probably
-//! has a couple dozen items they cycle through. This allows us to use form spec strings
-//! as the canonical way to identify an item inside the mod.
+//! has a couple dozen items they cycle among. (My tests have me hovering at about 22
+//! items, but that's anecdata.) We cache 100 before we evict. This number is not driven
+//! by memory pressure. The icons use more memory than this, probably. Cache updates
+//! should be handled by the inventory count hooks we've got, but IDK.
 
 use std::num::NonZeroUsize;
 

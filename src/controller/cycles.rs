@@ -513,6 +513,8 @@ pub mod archive_v1 {
                     "" => None,
                     _ => {
                         cxx::let_cxx_string!(form_spec = xs);
+                        // Noting here that we do not go through the cache at all
+                        // while loading these items. We probably should. TODO
                         let found = *formSpecToHudItem(&form_spec);
                         if matches!(found.kind(), BaseType::Empty) {
                             None

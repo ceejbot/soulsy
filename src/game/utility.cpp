@@ -154,11 +154,6 @@ namespace game
 			return;
 		}
 
-		// Let's get the consumable's sound.
-		RE::BGSSoundDescriptor* sound;
-		if (alchemy_item->data.consumptionSound) { sound = alchemy_item->data.consumptionSound->soundDescriptor; }
-		else { sound = RE::TESForm::LookupByID(0x000b6435)->As<RE::BGSSoundDescriptorForm>()->soundDescriptor; }
-
 		logger::trace("queuing task to use consumable; name='{}'; remaining={}; formID={};"sv,
 			obj->GetName(),
 			remaining,
@@ -167,7 +162,6 @@ namespace game
 		if (task)
 		{
 			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item, extra); });
-			// player::play_sound(sound, player);
 		}
 	}
 

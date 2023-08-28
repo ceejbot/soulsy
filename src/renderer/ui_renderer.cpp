@@ -155,8 +155,13 @@ namespace ui
 		auto* svg  = nsvgParseFromFile(filename, "px", 96.0f);
 		auto* rast = nsvgCreateRasterizer();
 
-		auto image_width  = static_cast<int>(svg->width);
-		auto image_height = static_cast<int>(svg->height);
+		// Rasterize at 512px on the longest side.
+		float scale = 1.0f;
+		if (svg->width > svg->height) { scale = 512.0f / svg->width; }
+		else { scale = 512.0f / svg->height; }
+
+		auto image_width  = static_cast<int>(svg->width * scale);
+		auto image_height = static_cast<int>(svg->height * scale);
 
 		auto image_data = (unsigned char*)malloc(image_width * image_height * 4);
 		nsvgRasterize(rast, svg, 0, 0, 1, image_data, image_width, image_height, image_width * 4);
@@ -570,9 +575,6 @@ namespace ui
 						entrypath.filename().extension().string().c_str(),
 						out_struct[icon_file].width,
 						out_struct[icon_file].height);
-
-					out_struct[icon_file].width  = static_cast<int32_t>(out_struct[icon_file].width * res_width);
-					out_struct[icon_file].height = static_cast<int32_t>(out_struct[icon_file].height * res_height);
 				}
 			}
 			else { logger::error("failed to load {}"sv, entrypath.filename().string().c_str()); }
