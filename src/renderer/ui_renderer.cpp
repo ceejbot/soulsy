@@ -458,8 +458,9 @@ namespace ui
 			// now draw the icon over the background...
 			if (slot_layout.icon_color.a > 0)
 			{
-				const auto iconColor                = colorizeIcons ? entry->color() : slot_layout.icon_color;
-				auto iconFile                       = std::string(entry->icon_file());
+				const auto iconColor = colorizeIcons ? entry->color() : slot_layout.icon_color;
+				auto iconFile        = std::string(entry->icon_file());
+				if (!icon_struct[iconFile]) { iconFile = std::string(entry->icon_fallback()); }
 				const auto [texture, width, height] = icon_struct[iconFile];
 				const auto scale                    = width > height ? (slot_layout.icon_size.x * globalScale / width) :
 				                                                       (slot_layout.icon_size.y * globalScale / height);
