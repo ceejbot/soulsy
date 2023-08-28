@@ -10,7 +10,7 @@ use super::magic::SpellData;
 use super::potion::PotionType;
 use super::shout::ShoutVariant;
 use super::spell::SpellType;
-use super::weapon::{WeaponEquipType, WeaponType};
+use super::weapon::WeaponType;
 use super::{HasIcon, HasKeywords, IsHudItem};
 use crate::plugin::{Color, ItemCategory};
 
@@ -238,32 +238,7 @@ impl IsHudItem for BaseType {
 
     fn is_one_handed(&self) -> bool {
         match self {
-            BaseType::Weapon(t) => match t {
-                WeaponType::AxeOneHanded(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::AxeTwoHanded(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::BowShort(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Bow(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Claw(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Crossbow(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Dagger(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Flail(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Grenade(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Gun(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Halberd(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Hammer(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::HandToHand(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Katana(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Lance(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Mace(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Quarterstaff(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Rapier(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Scythe(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Staff(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::SwordOneHanded(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::SwordTwoHanded(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::WeaponDefault(t, _) => matches!(t, WeaponEquipType::OneHanded),
-                WeaponType::Whip(t, _) => matches!(t, WeaponEquipType::OneHanded),
-            },
+            BaseType::Weapon(t) => t.is_one_handed(),
             BaseType::Spell(v) => !v.data.twohanded,
             _ => true,
         }

@@ -118,6 +118,7 @@ pub enum Icon {
     WeaponClaw,
     WeaponCrossbow,
     WeaponDagger,
+    WeaponFishingRod,
     WeaponFlail,
     WeaponGrenade,
     WeaponGun,
@@ -126,6 +127,7 @@ pub enum Icon {
     WeaponKatana,
     WeaponLance,
     WeaponMace,
+    WeaponPickaxe,
     WeaponQuarterstaff,
     WeaponRapier,
     WeaponScythe,
@@ -133,6 +135,7 @@ pub enum Icon {
     WeaponSwordOneHanded,
     WeaponSwordTwoHanded,
     WeaponWhip,
+    WeaponWoodAxe,
 }
 
 impl Icon {
@@ -249,6 +252,7 @@ impl Icon {
             Icon::WeaponClaw => "weapon_claw.svg".to_string(),
             Icon::WeaponCrossbow => "weapon_crossbow.svg".to_string(),
             Icon::WeaponDagger => "weapon_dagger.svg".to_string(),
+            Icon::WeaponFishingRod => "weapon_fishingrod.svg".to_string(),
             Icon::WeaponFlail => "weapon_flail.svg".to_string(),
             Icon::WeaponGrenade => "weapon_grenade.svg".to_string(),
             Icon::WeaponGun => "weapon_gun.svg".to_string(),
@@ -257,6 +261,7 @@ impl Icon {
             Icon::WeaponKatana => "weapon_katana.svg".to_string(),
             Icon::WeaponLance => "weapon_lance.svg".to_string(),
             Icon::WeaponMace => "weapon_mace.svg".to_string(),
+            Icon::WeaponPickaxe => "weapon_pickaxe.svg".to_string(),
             Icon::WeaponQuarterstaff => "weapon_quarterstaff.svg".to_string(),
             Icon::WeaponRapier => "weapon_rapier.svg".to_string(),
             Icon::WeaponScythe => "weapon_scythe.svg".to_string(),
@@ -264,6 +269,7 @@ impl Icon {
             Icon::WeaponSwordOneHanded => "weapon_sword_one_handed.svg".to_string(),
             Icon::WeaponSwordTwoHanded => "weapon_sword_two_handed.svg".to_string(),
             Icon::WeaponWhip => "weapon_whip.svg".to_string(),
+            Icon::WeaponWoodAxe => "weapon_woodaxe.svg".to_string(),
         }
     }
 }
