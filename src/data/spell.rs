@@ -260,7 +260,7 @@ impl HasIcon for SpellType {
             SpellVariant::Guide => Icon::SpellWisp.icon_file(),
             SpellVariant::Heal => Icon::SpellHeal.icon_file(),
             SpellVariant::IceSpike => Icon::SpellIceShard.icon_file(),
-            SpellVariant::IceStorm => self.icon_fallback(),
+            SpellVariant::IceStorm => Icon::SpellStormblast.icon_file(),
             SpellVariant::IcySpear => Icon::SpellIceShard.icon_file(),
             SpellVariant::Invisibility => self.icon_fallback(),
             SpellVariant::Light => Icon::SpellLight.icon_file(),
