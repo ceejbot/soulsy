@@ -138,8 +138,7 @@ namespace ui
 	}
 
 	// Simple helper function to load an image into a DX11 texture with common settings
-	bool ui_renderer::load_texture_from_file(bool scaleSvg,
-		const char* filename,
+	bool ui_renderer::load_texture_from_file(const char* filename,
 		ID3D11ShaderResourceView** out_srv,
 		int32_t& out_width,
 		int32_t& out_height)
@@ -156,16 +155,8 @@ namespace ui
 		auto* svg  = nsvgParseFromFile(filename, "px", 96.0f);
 		auto* rast = nsvgCreateRasterizer();
 
-		// Rasterize at 512px on the longest side if requested.
-		float scale = 1.0f;
-		if (scaleSvg)
-		{
-			if (svg->width > svg->height) { scale = 512.0f / svg->width; }
-			else { scale = 512.0f / svg->height; }
-		}
-
-		auto image_width  = static_cast<int>(svg->width * scale);
-		auto image_height = static_cast<int>(svg->height * scale);
+		auto image_width  = static_cast<int>(svg->width);
+		auto image_height = static_cast<int>(svg->height);
 
 		auto image_data = (unsigned char*)malloc(image_width * image_height * 4);
 		nsvgRasterize(rast, svg, 0, 0, 1, image_data, image_width, image_height, image_width * 4);
@@ -565,8 +556,7 @@ namespace ui
 			std::error_code ec;
 			if (std::filesystem::exists(entrypath, ec))
 			{
-				if (load_texture_from_file(true,
-						entrypath.string().c_str(),
+				if (load_texture_from_file(entrypath.string().c_str(),
 						&out_struct[icon_file].texture,
 						out_struct[icon_file].width,
 						out_struct[icon_file].height))
@@ -603,8 +593,7 @@ namespace ui
 					continue;
 				}
 				const auto index = static_cast<int32_t>(a_map[entry.path().filename().string()]);
-				if (load_texture_from_file(false,
-						entry.path().string().c_str(),
+				if (load_texture_from_file(entry.path().string().c_str(),
 						&a_struct[index].texture,
 						a_struct[index].width,
 						a_struct[index].height))
@@ -639,7 +628,7 @@ namespace ui
 				continue;
 			}
 
-			load_texture_from_file(false, entry.path().string().c_str(), &texture, width, height);
+			load_texture_from_file(entry.path().string().c_str(), &texture, width, height);
 
 			logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
 			image img;
