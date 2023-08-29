@@ -522,7 +522,6 @@ namespace ui
 	{
 		const auto timeDelta = ImGui::GetIO().DeltaTime;
 		advanceTimers(timeDelta);
-		const auto settings = user_settings();
 
 		if (!helpers::hudAllowedOnScreen()) return;
 		makeFadeDecision();
@@ -750,6 +749,8 @@ namespace ui
 
 	void ui_renderer::advanceTransition(float timeDelta)
 	{
+		// This fading code is triggered by the toggle hud shortcut even if autofade
+		// is off. This is maybe the only place where bug #44 might be caused.
 		if (fade_in && is_transitioning)
 		{
 			if (hud_alpha >= 1.0f)
