@@ -116,8 +116,7 @@ namespace helpers
 
 	bool hudShouldAutoFadeOut()
 	{
-		rust::Box<UserSettings> settings = user_settings();
-		if (!settings->autofade()) { return false; }
+		if (!user_settings()->autofade()) { return false; }
 
 		const auto player       = RE::PlayerCharacter::GetSingleton();
 		const bool inCombat     = player->IsInCombat();
@@ -253,12 +252,13 @@ namespace helpers
 
 		if (selected && selected->data.objDesc->object)
 		{
-			auto* obj            = selected->data.objDesc->object;
-			auto form_id         = obj->GetFormID();
-			auto* selection      = new MenuSelection(obj->GetFormID());
-			selection->count     = selected->data.GetCount();
-			selection->poisoned  = selected->data.objDesc->IsPoisoned();
-			selection->favorite  = !selected->data.objDesc->IsFavorited(); // We are handling button DOWN and it is toggled on button UP.
+			auto* obj           = selected->data.objDesc->object;
+			auto form_id        = obj->GetFormID();
+			auto* selection     = new MenuSelection(obj->GetFormID());
+			selection->count    = selected->data.GetCount();
+			selection->poisoned = selected->data.objDesc->IsPoisoned();
+			selection->favorite =
+				!selected->data.objDesc->IsFavorited();  // We are handling button DOWN and it is toggled on button UP.
 			selection->equipped  = selected->data.objDesc->IsWorn();
 			selection->bound_obj = obj->IsBoundObject() ? obj : nullptr;
 			selection->form      = RE::TESForm::LookupByID(form_id);

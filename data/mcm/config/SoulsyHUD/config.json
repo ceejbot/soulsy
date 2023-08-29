@@ -287,6 +287,21 @@
           }
         },
         {
+          "id": "bCycleAmmo:Options",
+          "text": "$SoulsyHUD_Options_CycleAmmo_Text",
+          "help": "$SoulsyHUD_Options_CycleAmmo_Help",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        }
+      ]
+    },
+    {
+      "pageDisplayName": "$SoulsyHUD_Maintenance_Page",
+      "cursorFillMode": "topToBottom",
+      "content": [
+        {
           "text": "$SoulsyHUD_Display_Header",
           "type": "header"
         },
@@ -300,10 +315,21 @@
           }
         },
         {
+          "type": "hiddenToggle",
+          "text": "hidden toggle for show/hide setting groups",
+          "groupControl": 6,
+          "valueOptions": {
+            "sourceType": "PropertyValueBool",
+            "propertyName": "pAutoFadeGroupControl"
+          }
+        },
+        {
           "id": "uFadeTime:Options",
           "text": "$SoulsyHUD_Options_FadeTime_Text",
           "help": "$SoulsyHUD_Options_FadeTime_Help",
           "type": "slider",
+          "groupCondition": 6,
+          "groupBehavior": "skip",
           "valueOptions": {
             "min": 500,
             "max": 5000,
@@ -316,6 +342,19 @@
           "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
           "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
           "type": "keymap",
+          "groupCondition": {
+            "NOT": 6
+          },
+          "groupBehavior": "skip",
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
+          "id": "bColorizeIcons:Options",
+          "text": "$SoulsyHUD_Options_Colorize_Text",
+          "help": "$SoulsyHUD_Options_Colorize_Help",
+          "type": "toggle",
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
@@ -335,34 +374,6 @@
           }
         },
         {
-          "id": "bCycleAmmo:Options",
-          "text": "$SoulsyHUD_Options_CycleAmmo_Text",
-          "help": "$SoulsyHUD_Options_CycleAmmo_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        }
-      ]
-    },
-    {
-      "pageDisplayName": "$SoulsyHUD_Maintenance_Page",
-      "cursorFillMode": "topToBottom",
-      "content": [
-        {
-          "text": "$SoulsyHUD_Maintenance_Layouts_Header",
-          "type": "header"
-        },
-        {
-          "id": "bColorizeIcons:Options",
-          "text": "$SoulsyHUD_Options_Colorize_Text",
-          "help": "$SoulsyHUD_Options_Colorize_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
           "id": "uRefreshKey:Controls",
           "text": "$SoulsyHUD_Controls_RefreshKey_Text",
           "help": "$SoulsyHUD_Controls_RefreshKey_Help",
@@ -370,6 +381,11 @@
           "valueOptions": {
             "sourceType": "ModSettingInt"
           }
+        },
+        {
+          "text": "$SoulsyHUD_Maintenance_Inspection_Header",
+          "type": "header",
+          "position": 1
         },
         {
           "text": "$SoulsyHUD_Clear_Text",
@@ -382,11 +398,6 @@
             "type": "CallFunction",
             "function": "ClearCycles"
           }
-        },
-        {
-          "text": "$SoulsyHUD_Maintenance_Inspection_Header",
-          "type": "header",
-          "position": 1
         },
         {
           "id": "pCycleToShow",

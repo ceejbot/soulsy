@@ -5,6 +5,7 @@ bool property pEnableActivateHotkey = false auto
 bool property pCycleNeedsModifier = false auto
 bool property pMenuNeedsModifier = false auto
 bool property pEnableUnequipModifier = false auto
+bool property pAutoFadeGroupControl = false auto
 int property pCycleToShow = 0 auto
 
 Event OnConfigClose() native
@@ -36,10 +37,10 @@ Event OnSettingChange(String changedID)
     int menuEnum = GetModSettingInt("uHowToggleInMenus:Controls")
     int cycleEnum = GetModSettingInt("uHowToCycle:Controls")
 
-    if (changedID == "uHowToActivate:Controls") 
+    if (changedID == "uHowToActivate:Controls")
         int activateEnum = GetModSettingInt("uHowToActivate:Controls")
         pEnableActivateModifier = (activateEnum == 2)
-        pEnableActivateHotkey = (activateEnum == 0)        
+        pEnableActivateHotkey = (activateEnum == 0)
     elseif (changedID == "uHowToCycle:Controls")
         pCycleNeedsModifier = (cycleEnum == 2)
     elseif (changedID == "uHowToggleInMenus:Controls")
@@ -47,6 +48,8 @@ Event OnSettingChange(String changedID)
     elseif (changedID == "uHowToUnequip:Controls")
         int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
         pEnableUnequipModifier = (unequipEnum == 2)
+    elseif (changedId == "bAutoFade:Options")
+        pAutoFadeGroupControl =  GetModSettingBool("bAutoFade:Options")
     endif
 
     int equipDelay = GetModSettingInt("uEquipDelay:Options")
@@ -67,8 +70,8 @@ Event OnConfigOpen()
     pCycleNeedsModifier = (cycleEnum == 2)
 
     int activateEnum = GetModSettingInt("uHowToActivate:Controls")
-    pEnableActivateModifier = (activateEnum == 2) 
-    pEnableActivateHotkey = (activateEnum == 0)        
+    pEnableActivateModifier = (activateEnum == 2)
+    pEnableActivateHotkey = (activateEnum == 0)
 
     int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
     pEnableUnequipModifier = (unequipEnum == 2)

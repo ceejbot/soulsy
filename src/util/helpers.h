@@ -33,6 +33,7 @@ namespace helpers
 	// Called by the controller when the cycle timeout fires.
 	void exitSlowMotion();
 
+	// Warning: not fully implemented.
 	bool itemIsFavorited(RE::TESForm* item_form);
 
 	std::string vec_to_stdstring(rust::Vec<uint8_t> input);
