@@ -11,7 +11,6 @@ help:
     rustup install nightly
     cargo install nextest
     cargo install tomato-toml
-    cargo install rust-script
 
 # Run initial cmake step. Cannot be run in WSL.
 setup:
