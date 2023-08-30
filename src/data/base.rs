@@ -6,7 +6,6 @@ use super::ammo::AmmoType;
 use super::armor::ArmorType;
 use super::color::InvColor;
 use super::icons::Icon;
-use super::magic::SpellData;
 use super::potion::PotionType;
 use super::shout::ShoutVariant;
 use super::spell::SpellType;
@@ -239,7 +238,7 @@ impl IsHudItem for BaseType {
     fn is_one_handed(&self) -> bool {
         match self {
             BaseType::Weapon(t) => t.is_one_handed(),
-            BaseType::Spell(v) => !v.data.twohanded,
+            BaseType::Spell(v) => !v.two_handed(),
             _ => true,
         }
     }
@@ -256,16 +255,7 @@ impl IsHudItem for BaseType {
         self.is_one_handed()
             || matches!(
                 self,
-                BaseType::Armor(ArmorType::Shield(_, _))
-                    | BaseType::Light
-                    | BaseType::Scroll(_)
-                    | BaseType::Spell(SpellType {
-                        data: SpellData {
-                            twohanded: false,
-                            ..
-                        },
-                        ..
-                    })
+                BaseType::Armor(ArmorType::Shield(_, _)) | BaseType::Light | BaseType::Scroll(_)
             )
     }
 

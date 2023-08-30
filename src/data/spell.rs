@@ -16,9 +16,9 @@ use crate::plugin::Color;
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellType {
-    pub icon: Icon,
-    pub color: InvColor,
-    pub data: SpellData,
+    icon: Icon,
+    color: InvColor,
+    data: SpellData,
 }
 
 impl SpellType {
@@ -215,24 +215,24 @@ impl SpellType {
                     SpellEffectKeywords::MagicTurnUndead => {
                         color = InvColor::Sun;
                         Some(Icon::SpellSun)
-                    },
+                    }
                     SpellEffectKeywords::MagicWard => Some(Icon::SpellWard),
                     SpellEffectKeywords::MagicWeaponSpeed => Some(Icon::SpellElementalFury),
                     SpellEffectKeywords::MagicSummonFamiliar => Some(Icon::SpellSummon),
                     SpellEffectKeywords::MagicSummonFire => {
                         color = InvColor::Fire;
                         Some(Icon::SpellSummon)
-                    },
+                    }
                     SpellEffectKeywords::MagicSummonFrost => {
                         color = InvColor::Frost;
                         Some(Icon::SpellSummon)
-                    },
+                    }
                     SpellEffectKeywords::MagicSummonShock => {
                         color = InvColor::Shock;
                         Some(Icon::SpellSummon)
-                    },
+                    }
                     SpellEffectKeywords::MagicSummonUndead => Some(Icon::SpellReanimate),
-                    SpellEffectKeywords::SpellBound_Weapon  => {
+                    SpellEffectKeywords::SpellBound_Weapon => {
                         color = InvColor::Eldritch;
                         let b = if keywords.contains(&SpellEffectKeywords::BoundBattleAxe) {
                             Icon::WeaponAxeTwoHanded
@@ -256,13 +256,13 @@ impl SpellType {
                             Icon::WeaponSwordOneHanded
                         };
                         Some(b)
-                    },
+                    }
                     SpellEffectKeywords::SpellBound_Armor => {
                         color = InvColor::Eldritch;
                         Some(Icon::ArmorShieldHeavy)
                     }
                     SpellEffectKeywords::SpellShapechange_Werebeast => Some(Icon::SpellWerewolf),
-                    SpellEffectKeywords::SpellShapechange_Creature =>Some(Icon::SpellBear), 
+                    SpellEffectKeywords::SpellShapechange_Creature => Some(Icon::SpellBear),
                     SpellEffectKeywords::SpellShapechange => Some(Icon::SpellBear),
                     // SpellEffectKeywords::Archetype_Waterbreathing => None,
                     // SpellEffectKeywords::Archetype_Waterwalking => None,
@@ -315,6 +315,10 @@ impl SpellType {
         };
 
         Self { icon, color, data }
+    }
+
+    pub fn two_handed(&self) -> bool {
+        self.data.twohanded
     }
 }
 
