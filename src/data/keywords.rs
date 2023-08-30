@@ -9,8 +9,7 @@ pub fn strings_to_keywords(tags: &[String]) -> Vec<SpellEffectKeywords> {
     let keywords: Vec<SpellEffectKeywords> = tags
         .iter()
         .filter_map(|xs| {
-            let sliced = xs.replace("Soulsy_", "").replace("", "");
-            if let Ok(subtype) = SpellEffectKeywords::try_from(sliced.as_str()) {
+            if let Ok(subtype) = SpellEffectKeywords::try_from(xs.as_str()) {
                 Some(subtype)
             } else {
                 None
@@ -24,7 +23,10 @@ impl TryFrom<&str> for SpellEffectKeywords {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let keystr = value.replace("Soulsy_", "").to_lowercase();
+        let keystr = value
+            .to_lowercase()
+            .replace("soulsy_", "")
+            .replace("ocf_mgef", "");
         let keywd = SpellEffectKeywords::iter().find(|xs| keystr == xs.to_string());
         if let Some(k) = keywd {
             Ok(k)
@@ -42,6 +44,7 @@ pub enum SpellEffectKeywords {
     Archetype_Cure,
     Archetype_Detect,
     Archetype_Guide,
+    Archetype_Light,
     Archetype_NightEye,
     Archetype_Protect,
     Archetype_Reflect,
@@ -108,7 +111,9 @@ pub enum SpellEffectKeywords {
     // from OCF and others
     MAG_MagicDamageSun,
     IconWind,
+    IconMagicWind,
     IconWater,
+    IconMagicWater,
 
     // vanilla shouts
     Shout_AnimalAllegiance,
@@ -138,6 +143,7 @@ pub enum SpellEffectKeywords {
     Shout_UnrelentingForce,
     Shout_WhirlwindSprint,
 
+    // From here on it's OCF keywords minus the prefix
     ClassArcane,
     ClassArtificer,
     ClassAsh,
@@ -448,7 +454,7 @@ pub const CONTROL_SPELLS: EnumSet<SpellEffectKeywords> = enum_set!(
         | SpellEffectKeywords::SpellMind_ControlVampire
 );
 
-pub const COUNTER_SPELLS: EnumSet<SpellEffectKeywords> = enum_set!(
+pub const _COUNTER_SPELLS: EnumSet<SpellEffectKeywords> = enum_set!(
     SpellEffectKeywords::SpellCounter_Astral
         | SpellEffectKeywords::SpellCounter_BloodDruid
         | SpellEffectKeywords::SpellCounter_Druid
@@ -456,7 +462,7 @@ pub const COUNTER_SPELLS: EnumSet<SpellEffectKeywords> = enum_set!(
         | SpellEffectKeywords::SpellCounter_Fire
 );
 
-pub const CURSES: EnumSet<SpellEffectKeywords> = enum_set!(
+pub const _CURSES: EnumSet<SpellEffectKeywords> = enum_set!(
     SpellEffectKeywords::SpellCurse_Deconstruct
         | SpellEffectKeywords::SpellCurse_DruidRoot
         | SpellEffectKeywords::SpellCurse_Shadow
@@ -468,7 +474,7 @@ pub const FEAR_SPELLS: EnumSet<SpellEffectKeywords> = enum_set!(
         | SpellEffectKeywords::SpellMind_FearNord
 );
 
-pub const FRENZY_SPELLS: EnumSet<SpellEffectKeywords> = enum_set!(
+pub const _FRENZY_SPELLS: EnumSet<SpellEffectKeywords> = enum_set!(
     SpellEffectKeywords::MagicInfluenceFrenzy | SpellEffectKeywords::SpellMind_FrenzyShadow
 );
 
@@ -603,6 +609,7 @@ pub const DAMAGE_SUN: EnumSet<SpellEffectKeywords> = enum_set!(
 
 pub const DAMAGE_WATER: EnumSet<SpellEffectKeywords> = enum_set!(
     SpellEffectKeywords::ClassWater
+        | SpellEffectKeywords::IconWater
         | SpellEffectKeywords::SpellDamage_Steam
         | SpellEffectKeywords::SpellDamage_Water
         | SpellEffectKeywords::SpellDamage_WaterCloak
@@ -610,6 +617,7 @@ pub const DAMAGE_WATER: EnumSet<SpellEffectKeywords> = enum_set!(
 
 pub const DAMAGE_WIND: EnumSet<SpellEffectKeywords> = enum_set!(
     SpellEffectKeywords::ClassWind
+        | SpellEffectKeywords::IconWind
         | SpellEffectKeywords::SpellDamage_Wind
         | SpellEffectKeywords::SpellDamage_WindCloak
         | SpellEffectKeywords::SpellDamage_Sonic

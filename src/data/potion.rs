@@ -4,7 +4,7 @@ use strum::Display;
 
 use super::game_enums::ActorValue;
 use super::icons::Icon;
-use super::magic::MagicColor;
+use super::magic::MagicCategory;
 use super::{HasIcon, InvColor};
 use crate::plugin::Color;
 
@@ -14,7 +14,7 @@ pub enum PotionType {
     #[default]
     Default,
     Poison,
-    Resist(MagicColor),
+    Resist(MagicCategory),
     Health,
     Magicka,
     Stamina,
@@ -36,12 +36,12 @@ impl PotionType {
             ActorValue::Magicka => PotionType::Magicka,
             ActorValue::MagickaRateMult => PotionType::Magicka,
             ActorValue::MagickaRate => PotionType::Magicka,
-            ActorValue::ResistFire => PotionType::Resist(MagicColor::Fire),
-            ActorValue::ResistFrost => PotionType::Resist(MagicColor::Frost),
-            ActorValue::ResistShock => PotionType::Resist(MagicColor::Shock),
-            ActorValue::ResistMagic => PotionType::Resist(MagicColor::Magic),
-            ActorValue::ResistDisease => PotionType::Resist(MagicColor::Disease),
-            ActorValue::PoisonResist => PotionType::Resist(MagicColor::Poison),
+            ActorValue::ResistFire => PotionType::Resist(MagicCategory::Fire),
+            ActorValue::ResistFrost => PotionType::Resist(MagicCategory::Frost),
+            ActorValue::ResistShock => PotionType::Resist(MagicCategory::Shock),
+            ActorValue::ResistMagic => PotionType::Resist(MagicCategory::Magic),
+            ActorValue::ResistDisease => PotionType::Resist(MagicCategory::Disease),
+            ActorValue::PoisonResist => PotionType::Resist(MagicCategory::Poison),
             _ => {
                 log::debug!("Falling back to default potion type; effect={effect}");
                 PotionType::Default
@@ -66,13 +66,13 @@ impl HasIcon for PotionType {
         match self {
             PotionType::Poison => Icon::PotionPoison.icon_file(),
             PotionType::Resist(t) => match t {
-                MagicColor::Disease => Icon::PotionResist.icon_file(),
-                MagicColor::Fire => Icon::PotionResistFire.icon_file(),
-                MagicColor::Frost => Icon::PotionResistFrost.icon_file(),
-                MagicColor::Magic => Icon::PotionResist.icon_file(),
-                MagicColor::Poison => Icon::PotionResist.icon_file(),
-                MagicColor::Shock => Icon::PotionResistShock.icon_file(),
-                MagicColor::Sun => Icon::PotionResistFire.icon_file(),
+                MagicCategory::Disease => Icon::PotionResist.icon_file(),
+                MagicCategory::Fire => Icon::PotionResistFire.icon_file(),
+                MagicCategory::Frost => Icon::PotionResistFrost.icon_file(),
+                MagicCategory::Magic => Icon::PotionResist.icon_file(),
+                MagicCategory::Poison => Icon::PotionResist.icon_file(),
+                MagicCategory::Shock => Icon::PotionResistShock.icon_file(),
+                MagicCategory::Sun => Icon::PotionResistFire.icon_file(),
                 _ => Icon::PotionResist.icon_file(),
             },
             PotionType::Health => Icon::PotionHealth.icon_file(),

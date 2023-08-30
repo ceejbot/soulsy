@@ -3,8 +3,6 @@ use strum::Display;
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
 use super::icons::Icon;
-use super::HasIcon;
-use crate::plugin::Color;
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellData {
@@ -13,7 +11,7 @@ pub struct SpellData {
     pub school: School,
     pub level: MagicSpellLevel,
     pub archetype: SpellArchetype,
-    pub damage: MagicColor,
+    pub damage: MagicCategory,
 }
 
 impl SpellData {
@@ -30,13 +28,13 @@ impl SpellData {
         let archetype = SpellArchetype::from(archetype);
 
         let damage = match resist {
-            ActorValue::ResistFire => MagicColor::Fire,
-            ActorValue::ResistFrost => MagicColor::Frost,
-            ActorValue::ResistShock => MagicColor::Shock,
-            ActorValue::ResistMagic => MagicColor::Arcane,
-            ActorValue::ResistDisease => MagicColor::Disease,
-            ActorValue::PoisonResist => MagicColor::Poison,
-            _ => MagicColor::None,
+            ActorValue::ResistFire => MagicCategory::Fire,
+            ActorValue::ResistFrost => MagicCategory::Frost,
+            ActorValue::ResistShock => MagicCategory::Shock,
+            ActorValue::ResistMagic => MagicCategory::Arcane,
+            ActorValue::ResistDisease => MagicCategory::Disease,
+            ActorValue::PoisonResist => MagicCategory::Poison,
+            _ => MagicCategory::None,
         };
 
         Self {
@@ -51,7 +49,7 @@ impl SpellData {
 }
 
 #[derive(Clone, Debug, Default, Display, Hash, Eq, PartialEq)]
-pub enum MagicColor {
+pub enum MagicCategory {
     #[default]
     None,
     Arcane,
@@ -77,52 +75,52 @@ pub enum MagicColor {
     Wind,
 }
 
-impl MagicColor {
+impl MagicCategory {
     pub fn color(&self) -> InvColor {
         match self {
-            MagicColor::None => InvColor::default(),
-            MagicColor::Arcane => InvColor::Water,
-            MagicColor::ArcaneFire => InvColor::Blue,
-            MagicColor::Ashfire => InvColor::Ash,
-            MagicColor::Astral => InvColor::Silver,
-            MagicColor::Bleed => InvColor::Blood,
-            MagicColor::Disease => InvColor::Green,
-            MagicColor::Earth => InvColor::Brown,
-            MagicColor::Fire => InvColor::Fire,
-            MagicColor::Frost => InvColor::Frost,
-            MagicColor::FrostFire => InvColor::Frost,
-            MagicColor::Lunar => InvColor::Silver,
-            MagicColor::Magic => InvColor::Blue,
-            MagicColor::Necrotic => InvColor::Eldritch,
-            MagicColor::Poison => InvColor::Poison,
-            MagicColor::Shadow => InvColor::Purple,
-            MagicColor::Shock => InvColor::Shock,
-            MagicColor::ShockArc => InvColor::Water,
-            MagicColor::Stamina => InvColor::Green,
-            MagicColor::Sun => InvColor::Sun,
-            MagicColor::Water => InvColor::Water,
-            MagicColor::Wind => InvColor::Gray,
+            MagicCategory::None => InvColor::default(),
+            MagicCategory::Arcane => InvColor::Blue,
+            MagicCategory::ArcaneFire => InvColor::Pink,
+            MagicCategory::Ashfire => InvColor::Ash,
+            MagicCategory::Astral => InvColor::Silver,
+            MagicCategory::Bleed => InvColor::Blood,
+            MagicCategory::Disease => InvColor::Green,
+            MagicCategory::Earth => InvColor::Brown,
+            MagicCategory::Fire => InvColor::Fire,
+            MagicCategory::Frost => InvColor::Frost,
+            MagicCategory::FrostFire => InvColor::Frost,
+            MagicCategory::Lunar => InvColor::Silver,
+            MagicCategory::Magic => InvColor::Blue,
+            MagicCategory::Necrotic => InvColor::Purple,
+            MagicCategory::Poison => InvColor::Poison,
+            MagicCategory::Shadow => InvColor::Purple,
+            MagicCategory::Shock => InvColor::Shock,
+            MagicCategory::ShockArc => InvColor::Water,
+            MagicCategory::Stamina => InvColor::Green,
+            MagicCategory::Sun => InvColor::Sun,
+            MagicCategory::Water => InvColor::Water,
+            MagicCategory::Wind => InvColor::Gray,
         }
     }
 
     pub fn icon(&self) -> Option<Icon> {
         match self {
-            MagicColor::Arcane => Some(Icon::SpellAstral),
-            MagicColor::ShockArc => Some(Icon::SpellArclight),
-            MagicColor::Astral => Some(Icon::SpellAstral),
-            MagicColor::Bleed => Some(Icon::SpellBleed),
-            MagicColor::FrostFire => Some(Icon::SpellFire),
-            MagicColor::Earth => Some(Icon::SpellEarth),
-            MagicColor::Fire => Some(Icon::SpellFire),
-            MagicColor::Frost => Some(Icon::SpellFrost),
-            MagicColor::Lunar => Some(Icon::SpellMoon),
-            MagicColor::Necrotic => Some(Icon::SpellNecrotic),
-            MagicColor::Poison => Some(Icon::SpellPoison),
-            MagicColor::Shadow => Some(Icon::SpellShadow),
-            MagicColor::Shock => Some(Icon::SpellShock),
-            MagicColor::Sun => Some(Icon::SpellSun),
-            MagicColor::Water => Some(Icon::SpellWater),
-            MagicColor::Wind => Some(Icon::SpellWind),
+            MagicCategory::Arcane => Some(Icon::SpellAstral),
+            MagicCategory::ShockArc => Some(Icon::SpellArclight),
+            MagicCategory::Astral => Some(Icon::SpellAstral),
+            MagicCategory::Bleed => Some(Icon::SpellBleed),
+            MagicCategory::FrostFire => Some(Icon::SpellFire),
+            MagicCategory::Earth => Some(Icon::SpellEarth),
+            MagicCategory::Fire => Some(Icon::SpellFire),
+            MagicCategory::Frost => Some(Icon::SpellFrost),
+            MagicCategory::Lunar => Some(Icon::SpellMoon),
+            MagicCategory::Necrotic => Some(Icon::SpellNecrotic),
+            MagicCategory::Poison => Some(Icon::SpellPoison),
+            MagicCategory::Shadow => Some(Icon::SpellShadow),
+            MagicCategory::Shock => Some(Icon::SpellShock),
+            MagicCategory::Sun => Some(Icon::SpellSun),
+            MagicCategory::Water => Some(Icon::SpellWater),
+            MagicCategory::Wind => Some(Icon::SpellWind),
             _ => None,
         }
     }
@@ -138,27 +136,6 @@ pub enum School {
     Restoration,
     #[default]
     None,
-}
-
-impl HasIcon for School {
-    fn color(&self) -> Color {
-        Color::default()
-    }
-
-    fn icon_file(&self) -> String {
-        match self {
-            School::Alteration => Icon::Alteration.icon_file(),
-            School::Conjuration => Icon::Conjuration.icon_file(),
-            School::Destruction => Icon::Destruction.icon_file(),
-            School::Illusion => Icon::Illusion.icon_file(),
-            School::Restoration => Icon::Restoration.icon_file(),
-            School::None => Icon::IconDefault.icon_file(),
-        }
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::IconDefault.icon_file()
-    }
 }
 
 impl From<i32> for School {
