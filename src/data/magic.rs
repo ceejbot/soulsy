@@ -13,7 +13,7 @@ pub struct SpellData {
     pub school: School,
     pub level: MagicSpellLevel,
     pub archetype: SpellArchetype,
-    pub damage: MagicDamageType,
+    pub damage: MagicColor,
 }
 
 impl SpellData {
@@ -30,13 +30,13 @@ impl SpellData {
         let archetype = SpellArchetype::from(archetype);
 
         let damage = match resist {
-            ActorValue::ResistFire => MagicDamageType::Fire,
-            ActorValue::ResistFrost => MagicDamageType::Frost,
-            ActorValue::ResistShock => MagicDamageType::Shock,
-            ActorValue::ResistMagic => MagicDamageType::Arcane,
-            ActorValue::ResistDisease => MagicDamageType::Disease,
-            ActorValue::PoisonResist => MagicDamageType::Poison,
-            _ => MagicDamageType::None,
+            ActorValue::ResistFire => MagicColor::Fire,
+            ActorValue::ResistFrost => MagicColor::Frost,
+            ActorValue::ResistShock => MagicColor::Shock,
+            ActorValue::ResistMagic => MagicColor::Arcane,
+            ActorValue::ResistDisease => MagicColor::Disease,
+            ActorValue::PoisonResist => MagicColor::Poison,
+            _ => MagicColor::None,
         };
 
         Self {
@@ -51,80 +51,80 @@ impl SpellData {
 }
 
 #[derive(Clone, Debug, Default, Display, Hash, Eq, PartialEq)]
-pub enum MagicDamageType {
+pub enum MagicColor {
     #[default]
     None,
     Arcane,
-    Arclight,
+    ArcaneFire,
+    Ashfire,
     Astral,
     Bleed,
-    ColdFire,
     Disease,
     Earth,
     Fire,
     Frost,
+    FrostFire,
     Lunar,
     Magic,
     Necrotic,
     Poison,
     Shadow,
     Shock,
+    ShockArc,
     Stamina,
     Sun,
     Water,
     Wind,
 }
 
-impl HasIcon for MagicDamageType {
-    fn color(&self) -> Color {
+impl MagicColor {
+    pub fn color(&self) -> InvColor {
         match self {
-            MagicDamageType::None => Color::default(),
-            MagicDamageType::Arcane => InvColor::Water.color(),
-            MagicDamageType::Arclight => InvColor::Water.color(),
-            MagicDamageType::Astral => InvColor::Silver.color(),
-            MagicDamageType::Bleed => InvColor::Blood.color(),
-            MagicDamageType::ColdFire => InvColor::Frost.color(),
-            MagicDamageType::Disease => InvColor::Green.color(),
-            MagicDamageType::Earth => InvColor::Brown.color(),
-            MagicDamageType::Fire => InvColor::Fire.color(),
-            MagicDamageType::Frost => InvColor::Frost.color(),
-            MagicDamageType::Lunar => InvColor::Silver.color(),
-            MagicDamageType::Magic => InvColor::Blue.color(),
-            MagicDamageType::Necrotic => InvColor::Eldritch.color(),
-            MagicDamageType::Poison => InvColor::Poison.color(),
-            MagicDamageType::Shadow => InvColor::Purple.color(),
-            MagicDamageType::Shock => InvColor::Shock.color(),
-            MagicDamageType::Stamina => InvColor::Green.color(),
-            MagicDamageType::Sun => InvColor::Sun.color(),
-            MagicDamageType::Water => InvColor::Water.color(),
-            MagicDamageType::Wind => InvColor::Gray.color(),
+            MagicColor::None => InvColor::default(),
+            MagicColor::Arcane => InvColor::Water,
+            MagicColor::ArcaneFire => InvColor::Blue,
+            MagicColor::Ashfire => InvColor::Ash,
+            MagicColor::Astral => InvColor::Silver,
+            MagicColor::Bleed => InvColor::Blood,
+            MagicColor::Disease => InvColor::Green,
+            MagicColor::Earth => InvColor::Brown,
+            MagicColor::Fire => InvColor::Fire,
+            MagicColor::Frost => InvColor::Frost,
+            MagicColor::FrostFire => InvColor::Frost,
+            MagicColor::Lunar => InvColor::Silver,
+            MagicColor::Magic => InvColor::Blue,
+            MagicColor::Necrotic => InvColor::Eldritch,
+            MagicColor::Poison => InvColor::Poison,
+            MagicColor::Shadow => InvColor::Purple,
+            MagicColor::Shock => InvColor::Shock,
+            MagicColor::ShockArc => InvColor::Water,
+            MagicColor::Stamina => InvColor::Green,
+            MagicColor::Sun => InvColor::Sun,
+            MagicColor::Water => InvColor::Water,
+            MagicColor::Wind => InvColor::Gray,
         }
     }
 
-    fn icon_file(&self) -> String {
+    pub fn icon(&self) -> Option<Icon> {
         match self {
-            MagicDamageType::Arcane => Icon::SpellAstral.icon_file(),
-            MagicDamageType::Arclight => Icon::SpellArclight.icon_file(),
-            MagicDamageType::Astral => Icon::SpellAstral.icon_file(),
-            MagicDamageType::Bleed => Icon::SpellBleed.icon_file(),
-            MagicDamageType::ColdFire => Icon::SpellFire.icon_file(),
-            MagicDamageType::Earth => Icon::SpellEarth.icon_file(),
-            MagicDamageType::Fire => Icon::SpellFire.icon_file(),
-            MagicDamageType::Frost => Icon::SpellFrost.icon_file(),
-            MagicDamageType::Lunar => Icon::SpellMoon.icon_file(),
-            MagicDamageType::Necrotic => Icon::SpellNecrotic.icon_file(),
-            MagicDamageType::Poison => Icon::SpellPoison.icon_file(),
-            MagicDamageType::Shadow => Icon::SpellShadow.icon_file(),
-            MagicDamageType::Shock => Icon::SpellShock.icon_file(),
-            MagicDamageType::Sun => Icon::SpellSun.icon_file(),
-            MagicDamageType::Water => Icon::SpellWater.icon_file(),
-            MagicDamageType::Wind => Icon::SpellWind.icon_file(),
-            _ => self.icon_fallback(),
+            MagicColor::Arcane => Some(Icon::SpellAstral),
+            MagicColor::ShockArc => Some(Icon::SpellArclight),
+            MagicColor::Astral => Some(Icon::SpellAstral),
+            MagicColor::Bleed => Some(Icon::SpellBleed),
+            MagicColor::FrostFire => Some(Icon::SpellFire),
+            MagicColor::Earth => Some(Icon::SpellEarth),
+            MagicColor::Fire => Some(Icon::SpellFire),
+            MagicColor::Frost => Some(Icon::SpellFrost),
+            MagicColor::Lunar => Some(Icon::SpellMoon),
+            MagicColor::Necrotic => Some(Icon::SpellNecrotic),
+            MagicColor::Poison => Some(Icon::SpellPoison),
+            MagicColor::Shadow => Some(Icon::SpellShadow),
+            MagicColor::Shock => Some(Icon::SpellShock),
+            MagicColor::Sun => Some(Icon::SpellSun),
+            MagicColor::Water => Some(Icon::SpellWater),
+            MagicColor::Wind => Some(Icon::SpellWind),
+            _ => None,
         }
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::Destruction.icon_file()
     }
 }
 

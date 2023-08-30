@@ -41,57 +41,57 @@ impl ShoutVariant {
     pub fn new(tags: Vec<String>) -> Self {
         let keywords = strings_to_keywords(&tags);
 
-        if keywords.contains(&SoulsyKeywords::Shout_AnimalAllegiance) {
+        if keywords.contains(&SpellEffectKeywords::Shout_AnimalAllegiance) {
             ShoutVariant::AnimalAllegiance
-        } else if keywords.contains(&SoulsyKeywords::Shout_AuraWhisper) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_AuraWhisper) {
             ShoutVariant::AuraWhisper
-        } else if keywords.contains(&SoulsyKeywords::Shout_BattleFury) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_BattleFury) {
             ShoutVariant::BattleFury
-        } else if keywords.contains(&SoulsyKeywords::Shout_BecomeEthereal) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_BecomeEthereal) {
             ShoutVariant::BecomeEthereal
-        } else if keywords.contains(&SoulsyKeywords::Shout_BendWill) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_BendWill) {
             ShoutVariant::BendWill
-        } else if keywords.contains(&SoulsyKeywords::Shout_CallDragon) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_CallDragon) {
             ShoutVariant::CallDragon
-        } else if keywords.contains(&SoulsyKeywords::Shout_CallOfValor) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_CallOfValor) {
             ShoutVariant::CallOfValor
-        } else if keywords.contains(&SoulsyKeywords::Shout_ClearSkies) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_ClearSkies) {
             ShoutVariant::ClearSkies
-        } else if keywords.contains(&SoulsyKeywords::Shout_Disarm) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_Disarm) {
             ShoutVariant::Disarm
-        } else if keywords.contains(&SoulsyKeywords::Shout_Dismay) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_Dismay) {
             ShoutVariant::Dismay
-        } else if keywords.contains(&SoulsyKeywords::Shout_DragonAspect) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_DragonAspect) {
             ShoutVariant::DragonAspect
-        } else if keywords.contains(&SoulsyKeywords::Shout_Dragonrend) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_Dragonrend) {
             ShoutVariant::Dragonrend
-        } else if keywords.contains(&SoulsyKeywords::Shout_DrainVitality) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_DrainVitality) {
             ShoutVariant::DrainVitality
-        } else if keywords.contains(&SoulsyKeywords::Shout_ElementalFury) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_ElementalFury) {
             ShoutVariant::ElementalFury
-        } else if keywords.contains(&SoulsyKeywords::Shout_FireBreath) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_FireBreath) {
             ShoutVariant::FireBreath
-        } else if keywords.contains(&SoulsyKeywords::Shout_FrostBreath) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_FrostBreath) {
             ShoutVariant::FrostBreath
-        } else if keywords.contains(&SoulsyKeywords::Shout_IceForm) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_IceForm) {
             ShoutVariant::IceForm
-        } else if keywords.contains(&SoulsyKeywords::Shout_KynesPeace) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_KynesPeace) {
             ShoutVariant::KynesPeace
-        } else if keywords.contains(&SoulsyKeywords::Shout_MarkedForDeath) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_MarkedForDeath) {
             ShoutVariant::MarkedForDeath
-        } else if keywords.contains(&SoulsyKeywords::Shout_Slowtime) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_Slowtime) {
             ShoutVariant::Slowtime
-        } else if keywords.contains(&SoulsyKeywords::Shout_SoulTear) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_SoulTear) {
             ShoutVariant::SoulTear
-        } else if keywords.contains(&SoulsyKeywords::Shout_StormCall) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_StormCall) {
             ShoutVariant::StormCall
-        } else if keywords.contains(&SoulsyKeywords::Shout_SummonDurnehviir) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_SummonDurnehviir) {
             ShoutVariant::SummonDurnehviir
-        } else if keywords.contains(&SoulsyKeywords::Shout_ThrowVoice) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_ThrowVoice) {
             ShoutVariant::ThrowVoice
-        } else if keywords.contains(&SoulsyKeywords::Shout_UnrelentingForce) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_UnrelentingForce) {
             ShoutVariant::UnrelentingForce
-        } else if keywords.contains(&SoulsyKeywords::Shout_WhirlwindSprint) {
+        } else if keywords.contains(&SpellEffectKeywords::Shout_WhirlwindSprint) {
             ShoutVariant::WhirlwindSprint
         } else {
             ShoutVariant::Unclassified

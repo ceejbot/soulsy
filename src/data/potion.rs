@@ -4,7 +4,7 @@ use strum::Display;
 
 use super::game_enums::ActorValue;
 use super::icons::Icon;
-use super::magic::MagicDamageType;
+use super::magic::MagicColor;
 use super::{HasIcon, InvColor};
 use crate::plugin::Color;
 
@@ -14,7 +14,7 @@ pub enum PotionType {
     #[default]
     Default,
     Poison,
-    Resist(MagicDamageType),
+    Resist(MagicColor),
     Health,
     Magicka,
     Stamina,
@@ -36,12 +36,12 @@ impl PotionType {
             ActorValue::Magicka => PotionType::Magicka,
             ActorValue::MagickaRateMult => PotionType::Magicka,
             ActorValue::MagickaRate => PotionType::Magicka,
-            ActorValue::ResistFire => PotionType::Resist(MagicDamageType::Fire),
-            ActorValue::ResistFrost => PotionType::Resist(MagicDamageType::Frost),
-            ActorValue::ResistShock => PotionType::Resist(MagicDamageType::Shock),
-            ActorValue::ResistMagic => PotionType::Resist(MagicDamageType::Magic),
-            ActorValue::ResistDisease => PotionType::Resist(MagicDamageType::Disease),
-            ActorValue::PoisonResist => PotionType::Resist(MagicDamageType::Poison),
+            ActorValue::ResistFire => PotionType::Resist(MagicColor::Fire),
+            ActorValue::ResistFrost => PotionType::Resist(MagicColor::Frost),
+            ActorValue::ResistShock => PotionType::Resist(MagicColor::Shock),
+            ActorValue::ResistMagic => PotionType::Resist(MagicColor::Magic),
+            ActorValue::ResistDisease => PotionType::Resist(MagicColor::Disease),
+            ActorValue::PoisonResist => PotionType::Resist(MagicColor::Poison),
             _ => {
                 log::debug!("Falling back to default potion type; effect={effect}");
                 PotionType::Default
@@ -54,7 +54,7 @@ impl HasIcon for PotionType {
     fn color(&self) -> Color {
         match self {
             PotionType::Poison => InvColor::Poison.color(),
-            PotionType::Resist(t) => t.color(),
+            PotionType::Resist(t) => t.color().color(),
             PotionType::Health => InvColor::Red.color(),
             PotionType::Magicka => InvColor::Blue.color(),
             PotionType::Stamina => InvColor::Green.color(),
@@ -66,13 +66,13 @@ impl HasIcon for PotionType {
         match self {
             PotionType::Poison => Icon::PotionPoison.icon_file(),
             PotionType::Resist(t) => match t {
-                MagicDamageType::Disease => Icon::PotionResist.icon_file(),
-                MagicDamageType::Fire => Icon::PotionResistFire.icon_file(),
-                MagicDamageType::Frost => Icon::PotionResistFrost.icon_file(),
-                MagicDamageType::Magic => Icon::PotionResist.icon_file(),
-                MagicDamageType::Poison => Icon::PotionResist.icon_file(),
-                MagicDamageType::Shock => Icon::PotionResistShock.icon_file(),
-                MagicDamageType::Sun => Icon::PotionResistFire.icon_file(),
+                MagicColor::Disease => Icon::PotionResist.icon_file(),
+                MagicColor::Fire => Icon::PotionResistFire.icon_file(),
+                MagicColor::Frost => Icon::PotionResistFrost.icon_file(),
+                MagicColor::Magic => Icon::PotionResist.icon_file(),
+                MagicColor::Poison => Icon::PotionResist.icon_file(),
+                MagicColor::Shock => Icon::PotionResistShock.icon_file(),
+                MagicColor::Sun => Icon::PotionResistFire.icon_file(),
                 _ => Icon::PotionResist.icon_file(),
             },
             PotionType::Health => Icon::PotionHealth.icon_file(),
