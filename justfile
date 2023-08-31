@@ -2,6 +2,8 @@ set windows-shell := ["pwsh.exe", "-Command"]
 set shell := ["bash", "-uc"]
 set dotenv-load := true
 
+spriggit := "/Users/cj/code/forks/Spriggit/Spriggit.CLI/bin/Release/net7.0/publish/Spriggit.CLI"
+
 # List available recipes.
 help:
     just -l
@@ -185,6 +187,14 @@ build-layouts:
         echo "Built $i.7z"
     done
     cd ..
+
+# Use spriggit to dump the plugin to text.
+plugin-ser:
+    {{spriggit}} serialize --InputPath ./data/SoulsyHUD.esl --OutputPath ./plugin/ --GameRelease SkyrimSE --PackageName Spriggit.Json
+
+# Use spriggit to rehydrate the plugin.
+@plugin-de:
+    {{spriggit}} deserialize --InputPath ./plugin --OutputPath ./SoulsyHUD_test.esl
 
 # The traditional
 @clean:

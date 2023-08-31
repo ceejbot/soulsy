@@ -1,0 +1,27 @@
+{
+  "SpriggitSource": {
+    "PackageName": "Spriggit.Json.Skyrim",
+    "Version": "0.3.0"
+  },
+  "ModKey": "SoulsyHUD.esl",
+  "GameRelease": "SkyrimSE",
+  "ModHeader": {
+    "Flags": [
+      "Master",
+      "LightMaster"
+    ],
+    "Stats": {
+      "NumRecords": 66,
+      "NextFormID": 2130
+    },
+    "Author": "ceejbot",
+    "MasterReferences": [
+      {
+        "Master": "Skyrim.esm"
+      },
+      {
+        "Master": "Update.esm"
+      }
+    ]
+  }
+}

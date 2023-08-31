@@ -1,0 +1,44 @@
+{
+  "FormKey": "000800:SoulsyHUD.esl",
+  "EditorID": "SoulsyHUD_MCM_Quest",
+  "VirtualMachineAdapter": {
+    "Scripts": [
+      {
+        "Name": "SoulsyHUD_MCM"
+      }
+    ],
+    "FileName": "",
+    "Aliases": [
+      {
+        "Property": {
+          "Name": "",
+          "Object": "000800:SoulsyHUD.esl",
+          "Alias": 0
+        },
+        "Scripts": [
+          {
+            "Name": "ski_playerloadgamealias"
+          }
+        ]
+      }
+    ]
+  },
+  "Name": {
+    "TargetLanguage": "English",
+    "Value": "SoulsyHUD_MCM_Quest"
+  },
+  "Flags": [
+    "StartGameEnabled",
+    "0x10",
+    "RunOnce"
+  ],
+  "QuestFormVersion": 203,
+  "Aliases": [
+    {
+      "Name": "PlayerAlias",
+      "Flags": [],
+      "ForcedReference": "000014:Skyrim.esm",
+      "VoiceTypes": "Null"
+    }
+  ]
+}
