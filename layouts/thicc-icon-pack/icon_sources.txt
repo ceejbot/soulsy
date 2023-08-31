@@ -1,0 +1,24 @@
+All icons in this pack were sourced with permission from The Handy Icon Collective Collection.
+The source attributions from the sub-packs used as sources are reproduced here.
+SWF files were renamed to fit with the SoulsyHUD naming scheme, which differs from the 
+naming scheme used by the THICC sources.
+
+
+https://game-icons.net/ per CC BY 3.0 license
+caro-asercian
+catsu
+darkzaitzev
+delapouite
+lorc
+sbed
+skoll
+willdabeast
+various
+
+
+Some modifications made by GroundAura.
+
+psychosteve
+ashingda
+
+Jelidity

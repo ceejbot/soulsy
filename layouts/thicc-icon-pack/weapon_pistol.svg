@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="crossed-pistols.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.7050781"
+     inkscape:cx="256"
+     inkscape:cy="255.70676"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <g
+     id="g363"
+     transform="translate(-47.288601,-0.28002674)">
+    <path
+       id="path2"
+       style="fill:#ffffff"
+       d="m 151.97461,27.449219 -36.36719,42.40039 207.5293,178.013671 c 3.992,3.426 7.73739,6.80263 11.27539,10.14063 -9.11,10.77 -14.73731,21.43729 -16.69531,32.27929 -1.995,11.046 0.0543,21.91008 4.77734,31.83008 8.896,18.685 26.41302,35.05911 47.66602,53.41211 -10.29,17.038 -26.74025,30.6583 -42.90625,42.5293 -10.355,7.605 -12.40614,15.24895 -10.74414,24.37695 1.66,9.13 8.53409,19.70563 18.74609,27.89063 10.212,8.186 23.48322,13.9015 36.69922,14.6875 13.218,0.786 26.32764,-2.92424 38.30664,-14.24024 58.46,-55.225 51.44375,-126.41951 28.96875,-164.85351 l -11.57617,-19.79688 22.11523,6.07031 c 20.454,5.61 30.96819,1.24627 36.49219,-6.05273 4.46,-5.893 6.0933,-15.65703 3.4043,-27.20703 -9.253,2.936 -20.32263,5.49493 -32.64063,5.33593 -16.77,-0.218 -35.75198,-5.81421 -53.83398,-21.32421 L 151.97656,27.451172 Z m 195.62109,243.914061 0.002,0.002 c 27.33,29.94 36.1849,56.29249 32.0039,79.64649 -0.403,2.25 -0.92997,4.4447 -1.54297,6.5957 -18.655,-16.48 -32.68036,-30.89929 -38.69336,-43.5293 -3.432,-7.20999 -4.50976,-13.5466 -3.25976,-20.4746 1.17,-6.472 4.58723,-13.77524 11.49023,-22.24024 z" />
+  </g>
+</svg>

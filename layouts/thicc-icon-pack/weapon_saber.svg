@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="crossed-sabres.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.7050781"
+     inkscape:cx="256"
+     inkscape:cy="255.70676"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <g
+     id="g321"
+     transform="translate(0.10786348,-1.5427338)">
+    <path
+       id="path2"
+       style="fill:#ffffff"
+       d="m 27.084,18.248 c -44.987,128.23 116.066,259.672 287.412,362.826 -4.645,13.767 -5.585,27.628 -3.394,40.635 4.44,26.355 20.974,48.997 42.86,62.425 21.884,13.428 49.776,17.57 75.645,5.765 25.87,-11.804 48.69,-38.923 62.737,-84.654 l -17.865,-5.488 c -13,42.318 -32.806,64.094 -52.63,73.14 -19.825,9.047 -40.69,5.998 -58.116,-4.693 -17.425,-10.69 -30.75,-29.095 -34.205,-49.6 -3.455,-20.507 2.232,-43.318 24.677,-65.218 20.743,-20.24 32.068,-41.615 30.434,-61.24 l -18.622,1.552 c 0.74,8.89 -4.35,22.76 -16.684,37.486 C 222.057,230.8 73.838,128.622 27.084,18.248 Z M 366.543,365.76 c -6.225,6.822 -10.67,13.61 -13.68,20.21 14.886,22.85 48.89,51.3 74.736,60.255 5.656,-4.918 11.1,-11.51 16.05,-20.14 -15.018,-24.07 -51.004,-51.724 -77.105,-60.325 z" />
+  </g>
+</svg>

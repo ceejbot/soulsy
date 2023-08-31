@@ -78,7 +78,7 @@ archive:
 
 # copy files to my test mod
 test:
-    #!/bin/bash
+    #!/usr/bin/env bash
     echo "copying to live mod for testing..."
     outdir="/mnt/g/VortexStaging/Soulsy HUD dev version/"
     cp -rp data/* "$outdir"
@@ -87,7 +87,7 @@ test:
 
 # Copy English translation to other translation files.
 translations:
-    #!/bin/bash
+    #!/usr/bin/env bash
     declare -a langs=(czech french german italian japanese polish russian spanish)
     for lang in "${langs[@]}"; do
         cp -p data/Interface/Translations/SoulsyHUD_english.txt data/Interface/Translations/SoulsyHUD_$lang.txt
@@ -95,7 +95,7 @@ translations:
 
 # check that all $ strings in config have matching translation strings
 check-translations:
-    #!/bin/bash
+    #!/usr/bin/env bash
     converted=$(iconv -f utf-16 -t utf-8 data/Interface/Translations/SoulsyHUD_english.txt > tmp.txt)
 
     # I am too lazy to figure out how to get jq to do all of it.
@@ -174,12 +174,17 @@ build-layouts:
     cp -p layouts/curvy/left-bottom-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
     cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
 
-    # build the icon pack
+    # build the Soulsy icon pack
     dest="releases/SoulsyHUD_icon_pack/SKSE/plugins/resources/icons"
     mkdir -p "$dest"
     cp -rp layouts/icon-pack/*.svg "$dest/"
 
-    layouts="SoulsyHUD_icon_pack SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD-hexagons-1 SoulsyHUD-hexagons-2"
+    # build the THICC icon pack
+    dest="releases/THICC_icon_pack/SKSE/plugins/resources/icons"
+    mkdir -p "$dest"
+    cp -rp layouts/thicc-icon-pack/*.svg "$dest/"
+
+    layouts="SoulsyHUD_icon_pack THICC_icon_pack SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD-hexagons-1 SoulsyHUD-hexagons-2"
     cd releases
     for i in $layouts; do
          ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"
