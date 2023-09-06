@@ -20,8 +20,8 @@ use crate::{control, hud_layout};
 // ---------- logging
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
-    let hudl = hud_layout(); // yeah, it's in here, sorry.
-    let log_level = if hudl.debug {
+    let settings = user_settings();
+    let log_level = if settings.debug() {
         LevelFilter::Trace
     } else {
         LevelFilter::Info

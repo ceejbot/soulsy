@@ -44,6 +44,9 @@ pub fn refresh_user_settings() {
 /// write it.
 #[derive(Debug, Clone)]
 pub struct UserSettings {
+    /// Whether to log at debug level or not.
+    debug: bool,
+
     /// The key for powers. uPowerCycleKey
     power: u32,
     /// The key for utility items. uUtilityCycleKey
@@ -106,6 +109,7 @@ pub struct UserSettings {
 impl Default for UserSettings {
     fn default() -> Self {
         Self {
+            debug: false,
             // The map in key_path.h starts with numeral 1 => 2.
             left: 5,
             right: 7,
@@ -169,6 +173,8 @@ impl UserSettings {
         } else {
             &empty
         };
+
+        self.debug = read_from_ini(self.debug, "bDebugMode", options);
 
         self.left = read_from_ini(self.left, "uLeftCycleKey", controls);
         self.right = read_from_ini(self.right, "uRightCycleKey", controls);
@@ -237,6 +243,10 @@ impl UserSettings {
         self.colorize_icons = read_from_ini(self.colorize_icons, "bColorizeIcons", options);
 
         Ok(())
+    }
+
+    pub fn debug(&self) -> bool {
+        self.debug
     }
 
     pub fn unequip_with_modifier(&self) -> bool {

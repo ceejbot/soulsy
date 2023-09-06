@@ -121,8 +121,6 @@ pub mod plugin {
         /// Whether to build glyphs for Vietnamese text display.
         #[serde(default)]
         vietnamese_glyphs: bool,
-        /// Enable debug logging for the plugin.
-        debug: bool,
     }
 
     /// Layout variables for a single HUD slot, e.g, the power slot.
@@ -274,6 +272,8 @@ pub mod plugin {
         fn link_to_favorites(self: &UserSettings) -> bool;
         /// If icons should be colorful.
         fn colorize_icons(self: &UserSettings) -> bool;
+        /// If we should log at debug level.
+        fn debug(self: &UserSettings) -> bool;
 
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();

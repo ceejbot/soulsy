@@ -383,6 +383,15 @@
           }
         },
         {
+          "id": "bDebugMode:Options",
+          "text": "$SoulsyHUD_Options_Debug_Text",
+          "help": "$SoulsyHUD_Options_Debug_Help",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingInt"
+          }
+        },
+        {
           "text": "$SoulsyHUD_Maintenance_Inspection_Header",
           "type": "header",
           "position": 1

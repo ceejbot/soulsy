@@ -82,9 +82,9 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	logger::info(
 		"---------- {} @ {}.{}.{} loading"sv, Version::PROJECT, Version::MAJOR, Version::MINOR, Version::PATCH);
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
-	auto hud = hud_layout();
+	auto settings = user_settings();
 
-	if (hud.debug)
+	if (settings.debug())
 	{
 		spdlog::set_level(spdlog::level::trace);
 		spdlog::flush_on(spdlog::level::trace);
@@ -115,7 +115,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) constinit auto SKSEPlugin_Versio
 	SKSE::PluginVersionData v;
 	v.PluginName(Version::PROJECT.data());
 	v.AuthorName(Version::AUTHOR);
-	v.PluginVersion({ Version::MAJOR, Version::MINOR, Version::PATCH, 0 });
+	v.PluginVersion({ Version::MAJOR, Version::MINOR, Version::PATCH, VERSION::BETA });
 	v.UsesAddressLibrary(true);
 	v.CompatibleVersions({ SKSE::RUNTIME_SSE_LATEST });
 	v.UsesNoStructs();

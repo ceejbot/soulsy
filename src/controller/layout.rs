@@ -3,6 +3,8 @@
 //! toml; the C++ side uses the data in layout. The majority of the implementation
 //! is filing in defaults.
 
+#![allow(non_snake_case, non_camel_case_types)]
+
 use std::fmt::Display;
 use std::fs;
 use std::io::Write;
@@ -313,7 +315,6 @@ impl Default for HudLayout {
             },
             size: Point { x: 300.0, y: 300.0 },
             bg_color: Color::default(),
-            debug: false,
             hide_ammo_when_irrelevant: false,
             hide_left_when_irrelevant: false,
             layouts,
