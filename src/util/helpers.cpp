@@ -415,7 +415,7 @@ namespace helpers
 		*currentMult             = newFactor;
 
 		isInSlowMotion = true;
-		logger::info("entered slow-motion"sv);
+		logger::info("Slow-motion: entered slow time."sv);
 	}
 
 	void exitSlowMotion()
@@ -423,13 +423,23 @@ namespace helpers
 		if (!isInSlowMotion) { return; }
 
 		auto currentMult         = reinterpret_cast<float*>(getGlobalTimeMultPtr());
+		// If we're already not in slow-motion, either some other mod tinkered with
+		// time, or we re-entered. Pin it back down to 1.0.
+		if (*currentMult >= 1.0f)
+		{
+			logger::info("Slow motion: game speed={} but our flag was still set."sv, *currentMult);
+			*currentMult = 1.0f;
+			isInSlowMotion = false;
+			return;
+		}
+
 		const auto desiredFactor = user_settings()->slow_time_factor();
 		float newFactor          = (*currentMult) / desiredFactor;
 		if (std::fabs(newFactor - 1.0f) < 0.01) { newFactor = 1.0f; }
 		*currentMult = newFactor;
 
 		isInSlowMotion = false;
-		logger::info("exited slow-motion"sv);
+		logger::info("Slow motion: returned to normal time."sv);
 	}
 
 	/*
