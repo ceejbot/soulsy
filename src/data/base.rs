@@ -29,7 +29,7 @@ pub enum BaseType {
     Shout(ShoutVariant),
     Spell(SpellType),
     Weapon(WeaponType),
-} 
+}
 
 #[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum Proxy {
@@ -327,7 +327,7 @@ mod tests {
         assert_eq!(
             result,
             BaseType::Weapon(WeaponType::SwordTwoHanded(
-                WeaponEquipType::TwoHanded,
+                crate::data::weapon::WeaponEquipType::TwoHanded,
                 InvColor::Fire
             ))
         );

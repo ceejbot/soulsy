@@ -673,7 +673,7 @@ mod tests {
         let result = WeaponType::classify("TestName", input, false);
         assert_eq!(
             result,
-            WeaponType::WeaponDefault(WeaponEquipType::OneHanded, InvColor::White)
+            WeaponType::WeaponDefault(WeaponEquipType::EitherHand, InvColor::White)
         );
 
         let input = vec![
