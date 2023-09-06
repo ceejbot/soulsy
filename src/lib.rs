@@ -425,8 +425,8 @@ pub mod plugin {
     unsafe extern "C++" {
         include!("ui_renderer.h");
 
-        fn get_resolution_width() -> f32;
-        fn get_resolution_height() -> f32;
+        fn resolutionWidth() -> f32;
+        fn resolutionHeight() -> f32;
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.

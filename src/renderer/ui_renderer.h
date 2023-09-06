@@ -20,6 +20,9 @@ namespace ui
 		int32_t height                    = 0;
 	};
 
+	float resolutionWidth();
+	float resolutionHeight();
+
 	class ui_renderer
 	{
 		struct wnd_proc_hook
@@ -102,9 +105,6 @@ namespace ui
 	public:
 		static float get_resolution_scale_width();
 		static float get_resolution_scale_height();
-
-		static float get_resolution_width();
-		static float get_resolution_height();
 
 		static void startAlphaTransition(bool a_in, float a_value);
 		static float easeInCubic(float progress);

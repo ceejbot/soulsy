@@ -74,12 +74,12 @@ namespace papyrus
 
 	RE::BSFixedString get_resolution_width(RE::TESQuest*)
 	{
-		return fmt::format(FMT_STRING("{:.2f}"), ui::ui_renderer::get_resolution_width());
+		return fmt::format(FMT_STRING("{:.2f}"), ui::resolutionWidth());
 	}
 
 	RE::BSFixedString get_resolution_height(RE::TESQuest*)
 	{
-		return fmt::format(FMT_STRING("{:.2f}"), ui::ui_renderer::get_resolution_height());
+		return fmt::format(FMT_STRING("{:.2f}"), ui::resolutionHeight());
 	}
 
 }

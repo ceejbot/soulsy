@@ -379,8 +379,8 @@ namespace ui
 		auto hudsize            = top_layout.size;
 		bool rangedEquipped     = player::hasRangedEquipped();
 		const auto settings     = user_settings();
-		const auto screenWidth  = get_resolution_width();
-		const auto screenHeight = get_resolution_height();
+		const auto screenWidth  = resolutionWidth();
+		const auto screenHeight = resolutionHeight();
 		bool colorizeIcons      = settings->colorize_icons();
 
 		auto globalScale = top_layout.global_scale;
@@ -665,8 +665,8 @@ namespace ui
 	float ui_renderer::get_resolution_scale_width() { return 1.0f; }
 	float ui_renderer::get_resolution_scale_height() { return 1.0f; }
 
-	float ui_renderer::get_resolution_width() { return ImGui::GetIO().DisplaySize.x; }
-	float ui_renderer::get_resolution_height() { return ImGui::GetIO().DisplaySize.y; }
+	float resolutionWidth() { return ImGui::GetIO().DisplaySize.x; }
+	float resolutionHeight() { return ImGui::GetIO().DisplaySize.y; }
 
 	void ui_renderer::show_briefly()
 	{

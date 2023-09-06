@@ -6,7 +6,6 @@
 use std::fmt::Display;
 use std::fs;
 use std::io::Write;
-use std::path::PathBuf;
 use std::sync::Mutex;
 
 use anyhow::Result;
@@ -22,17 +21,17 @@ static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::init()));
 
 #[cfg(target_os = "windows")]
-use crate::{get_resolution_height, get_resolution_width};
+use crate::plugin::{resolutionHeight, resolutionWidth};
 
 // mocked screen resolution numbers, because these functions are provided by
 // C++ and require imgui etc.
 #[cfg(any(target_os = "macos", target_os = "unix"))]
-fn get_resolution_width() -> f32 {
+fn resolutionWidth() -> f32 {
     3440.0
 }
 
 #[cfg(any(target_os = "macos", target_os = "unix"))]
-fn get_resolution_height() -> f32 {
+fn resolutionHeight() -> f32 {
     1440.0
 }
 
@@ -61,8 +60,8 @@ impl HudLayout {
                 Ok(mut v) => {
                     // If we read a named anchor point, turn it into pixels.
                     // The anchor point is the location of the hud CENTER, so we offset.
-                    let screen_width = get_resolution_width();
-                    let screen_height = get_resolution_height();
+                    let screen_width = resolutionWidth();
+                    let screen_height = resolutionHeight();
                     let width = v.size.x * v.global_scale;
                     let height = v.size.y * v.global_scale;
                     match v.anchor_point {
