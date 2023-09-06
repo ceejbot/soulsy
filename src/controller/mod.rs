@@ -15,5 +15,5 @@ pub mod layout;
 pub mod settings;
 
 pub use facade::*;
-pub use layout::{deserialize_align, hud_layout};
+pub use layout::{deserialize_align, deserialize_named_anchor, hud_layout};
 pub use settings::{user_settings, UserSettings};

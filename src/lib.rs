@@ -34,6 +34,17 @@ pub mod plugin {
         Center,
     }
 
+    /// Named HUD anchor points.
+    #[derive(Debug, Clone, Hash)]
+    enum NamedAnchor {
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight,
+        Center,
+        None,
+    }
+
     /// An x,y coordinate used to indicate size or an offset.
     #[derive(Deserialize, Serialize, Debug, Clone, Default)]
     struct Point {
@@ -61,7 +72,10 @@ pub mod plugin {
         /// A global scaling factor for the entire hud.
         global_scale: f32,
         /// Where to draw the HUD; an offset from the top left corner.
+        #[serde(default)]
         anchor: Point,
+        #[serde(default, deserialize_with = "crate::deserialize_named_anchor")]
+        anchor_point: NamedAnchor,
         /// The dimensions of a bounding box for the HUD.
         size: Point,
         /// The color to draw the HUD bg image with; if zero will not be drawn.
@@ -405,6 +419,14 @@ pub mod plugin {
         fn honk();
         /// Make a full rust-side item from a form spec string.
         fn formSpecToHudItem(form_spec: &CxxString) -> Box<HudItem>;
+    }
+
+    #[namespace = "ui"]
+    unsafe extern "C++" {
+        include!("ui_renderer.h");
+
+        fn get_resolution_width() -> f32;
+        fn get_resolution_height() -> f32;
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.

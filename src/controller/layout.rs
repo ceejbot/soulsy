@@ -14,12 +14,27 @@ use once_cell::sync::Lazy;
 use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
 
-use crate::plugin::{Action, Align, Color, HudElement, HudLayout, Point, SlotLayout};
+use crate::plugin::{Action, Align, Color, HudElement, HudLayout, NamedAnchor, Point, SlotLayout};
 
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
 /// There can be only one. Not public because we want access managed.
 static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::init()));
+
+#[cfg(target_os = "windows")]
+use crate::{get_resolution_height, get_resolution_width};
+
+// mocked screen resolution numbers, because these functions are provided by
+// C++ and require imgui etc.
+#[cfg(any(target_os = "macos", target_os = "unix"))]
+fn get_resolution_width() -> f32 {
+    3440.0
+}
+
+#[cfg(any(target_os = "macos", target_os = "unix"))]
+fn get_resolution_height() -> f32 {
+    1440.0
+}
 
 /// Read our layout data from the file, or fall back to defaults if the file
 /// is not present or is invalid TOML.
@@ -31,9 +46,9 @@ pub fn hud_layout() -> HudLayout {
 }
 
 impl HudLayout {
-    /// Read a settings object from a toml file.
-    pub fn read_from_file() -> Result<Self> {
-        let path = std::path::Path::new(LAYOUT_PATH);
+    /// Read a layout object from a toml file.
+    pub fn read_from_file(pathstr: &str) -> Result<Self> {
+        let path = std::path::Path::new(pathstr);
         if !path.exists() {
             // No file? We write out defaults.
             let layout = HudLayout::default();
@@ -41,9 +56,50 @@ impl HudLayout {
             let mut fp = fs::File::create(path)?;
             write!(fp, "{buf}")?;
             Ok(HudLayout::default())
-        } else if let Ok(buf) = fs::read_to_string(PathBuf::from(LAYOUT_PATH)) {
+        } else if let Ok(buf) = fs::read_to_string(path) {
             match toml::from_str::<HudLayout>(&buf) {
-                Ok(v) => Ok(v),
+                Ok(mut v) => {
+                    // If we read a named anchor point, turn it into pixels.
+                    // The anchor point is the location of the hud CENTER, so we offset.
+                    let screen_width = get_resolution_width();
+                    let screen_height = get_resolution_height();
+                    let width = v.size.x * v.global_scale;
+                    let height = v.size.y * v.global_scale;
+                    match v.anchor_point {
+                        NamedAnchor::TopLeft => {
+                            v.anchor = Point {
+                                x: width / 2.0,
+                                y: height / 2.0,
+                            }
+                        }
+                        NamedAnchor::TopRight => {
+                            v.anchor = Point {
+                                x: screen_width - width / 2.0,
+                                y: height / 2.0,
+                            }
+                        }
+                        NamedAnchor::BottomLeft => {
+                            v.anchor = Point {
+                                x: width / 2.0,
+                                y: screen_height - height / 2.0,
+                            }
+                        }
+                        NamedAnchor::BottomRight => {
+                            v.anchor = Point {
+                                x: screen_width - width / 2.0,
+                                y: screen_height - height / 2.0,
+                            }
+                        }
+                        NamedAnchor::Center => {
+                            v.anchor = Point {
+                                x: screen_width / 2.0,
+                                y: screen_height / 2.0,
+                            }
+                        }
+                        _ => {} // do nothing
+                    }
+                    Ok(v)
+                }
                 Err(e) => {
                     // We are *not* overwriting a bad TOML file, but we are logging it.
                     // The player might be editing it and experimenting.
@@ -73,7 +129,7 @@ impl HudLayout {
             }
         }
 
-        match HudLayout::read_from_file() {
+        match HudLayout::read_from_file(LAYOUT_PATH) {
             Ok(v) => {
                 log::info!(
                     "hud layout read: loc={}, {}; size={}, {}; global scale={};",
@@ -95,7 +151,7 @@ impl HudLayout {
     }
 
     pub fn init() -> HudLayout {
-        match HudLayout::read_from_file() {
+        match HudLayout::read_from_file(LAYOUT_PATH) {
             Ok(v) => {
                 log::info!("successfully initialized HUD layout from player file");
                 v
@@ -251,6 +307,7 @@ impl Default for HudLayout {
         ];
         Self {
             global_scale: 1.0,
+            anchor_point: NamedAnchor::None,
             anchor: Point {
                 x: 100.0,
                 y: 1400.0,
@@ -343,6 +400,8 @@ impl Point {
     }
 }
 
+// ---------- Align
+
 impl Display for Align {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
@@ -377,6 +436,62 @@ where
     }
 }
 
+// ---------- NamedAnchor
+
+impl Default for NamedAnchor {
+    fn default() -> Self {
+        NamedAnchor::None
+    }
+}
+
+impl Display for NamedAnchor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            NamedAnchor::TopLeft => write!(f, "top_left"),
+            NamedAnchor::TopRight => write!(f, "top_right"),
+            NamedAnchor::BottomLeft => write!(f, "bottom_left"),
+            NamedAnchor::BottomRight => write!(f, "bottom_right"),
+            NamedAnchor::Center => write!(f, "center"),
+            _ => write!(f, "none"),
+        }
+    }
+}
+
+impl Serialize for NamedAnchor {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+pub fn deserialize_named_anchor<'de, D>(deserializer: D) -> Result<NamedAnchor, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+
+    match s.to_lowercase().as_str() {
+        "top_left" => Ok(NamedAnchor::TopLeft),
+        "top_right" => Ok(NamedAnchor::TopRight),
+        "bottom_left" => Ok(NamedAnchor::BottomLeft),
+        "bottom_right" => Ok(NamedAnchor::BottomRight),
+        "center" => Ok(NamedAnchor::Center),
+        "none" => Ok(NamedAnchor::None),
+        _ => Err(Error::unknown_variant(
+            &s,
+            &[
+                "top_left",
+                "top_right",
+                "bottom_left",
+                "bottom_right",
+                "center",
+            ],
+        )),
+    }
+}
+
 /// All this converting makes me suspect the abstraction is wrong.
 impl From<Action> for HudElement {
     fn from(value: Action) -> Self {
@@ -404,5 +519,52 @@ impl Display for HudElement {
             HudElement::Utility => write!(f, "Utility"),
             _ => write!(f, "unknown"),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_anchor_points() {
+        let layout = HudLayout::read_from_file("layouts/SoulsyHUD_topleft.toml")
+            .expect("failed to parse known-good layout toml");
+        assert_eq!(layout.anchor_point, NamedAnchor::None);
+        assert_eq!(layout.anchor.x, 150.0);
+        assert_eq!(layout.anchor.y, 150.0);
+    }
+
+    #[test]
+    fn parses_named_anchors() {
+        let builtin = HudLayout::read_from_file("data/SKSE/plugins/SoulsyHUD_layout.toml")
+            .expect("failed to parse known-good layout toml");
+        assert_eq!(builtin.anchor_point, NamedAnchor::BottomLeft);
+        assert_eq!(builtin.anchor.x, 150.0);
+        assert_eq!(builtin.anchor.y, 1290.0);
+
+        let centered = HudLayout::read_from_file("layouts/SoulsyHUD_centered.toml")
+            .expect("failed to parse known-good layout toml");
+        assert_eq!(centered.anchor_point, NamedAnchor::Center);
+        assert_eq!(centered.anchor.x, 1720.0);
+        assert_eq!(centered.anchor.y, 720.0);
+
+        let hexa1 = HudLayout::read_from_file("layouts/hexagons/SoulsyHUD_hexagons_lr.toml")
+            .expect("failed to parse known-good layout toml");
+        assert_eq!(hexa1.anchor_point, NamedAnchor::TopRight);
+        assert_eq!(hexa1.anchor.x, 3290.0);
+        assert_eq!(hexa1.anchor.y, 150.0);
+
+        let hexa1 = HudLayout::read_from_file("layouts/hexagons/SoulsyHUD_hexagons_tb.toml")
+            .expect("failed to parse known-good layout toml");
+        assert_eq!(hexa1.anchor_point, NamedAnchor::BottomRight);
+        assert_eq!(hexa1.anchor.x, 3290.0);
+        assert_eq!(hexa1.anchor.y, 1290.0);
+
+        let layout = HudLayout::read_from_file("layouts/SoulsyHUD_minimal.toml")
+            .expect("failed to parse known-good layout toml");
+        assert_eq!(layout.anchor_point, NamedAnchor::BottomLeft);
+        assert_eq!(layout.anchor.x, 150.0);
+        assert_eq!(layout.anchor.y, 1315.0);
     }
 }

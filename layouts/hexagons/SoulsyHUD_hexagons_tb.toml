@@ -15,9 +15,14 @@ korean_glyphs = false
 thai_glyphs = false
 vietnamese_glyphs = false
 
-# The location of the *center* of the HUD, in pixels.
-# This location is NOT scaled.
-anchor = { x = 2000.0, y = 800.0 }
+# A named location for the HUD. Use this as a shortcut for common anchor
+# points. These work no matter what the player's screen resolution is, because this
+# is turned into a location point at run-time.
+# Values: bottom_left, bottom_right, top_left, top_right, center
+anchor_point = "bottom_right"
+# You can also specify the anchor point like this if a named anchor point
+# doesn't work for your layout. These values are NOT scaled.
+# anchor = { x = 2000.0, y = 800.0 }
 
 # The size of the hud, in pixels. Will be scaled.
 size = { x = 600.0, y = 600.0 }
