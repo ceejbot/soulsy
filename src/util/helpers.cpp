@@ -229,13 +229,19 @@ namespace helpers
 		{
 			if (favorite.item->formID == form_id)
 			{
-				auto* selection      = new MenuSelection(form_id);
-				selection->form      = favorite.item;
-				selection->favorite  = favorite.entryData->IsFavorited();
-				selection->poisoned  = favorite.entryData->IsPoisoned();
-				selection->equipped  = favorite.entryData->IsWorn();
-				selection->count     = favorite.entryData->countDelta;  // probably wrong
-				selection->bound_obj = favorite.entryData->object;
+				auto* selection = new MenuSelection(form_id);
+				selection->form = favorite.item;
+				if (favorite.entryData)
+				{
+					selection->favorite  = favorite.entryData->IsFavorited();
+					selection->poisoned  = favorite.entryData->IsPoisoned();
+					selection->equipped  = favorite.entryData->IsWorn();
+					selection->count     = favorite.entryData->countDelta;  // probably wrong
+					selection->bound_obj = favorite.entryData->object;
+				} else 
+				{
+					selection->favorite = true; // this is the only thing we know for sure.
+				}
 
 				outSelection = selection;
 			}

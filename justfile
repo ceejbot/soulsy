@@ -80,7 +80,7 @@ archive:
 test:
     #!/usr/bin/env bash
     echo "copying to live mod for testing..."
-    outdir="/mnt/g/VortexStaging/Soulsy HUD dev version/"
+    outdir="/mnt/g/Vortex Mods/skyrimse/Soulsy HUD dev version/"
     cp -rp data/* "$outdir"
     cp -p build/Release/SoulsyHUD.dll "${outdir}/SKSE/plugins/SoulsyHUD.dll"
     cp -p build/Release/SoulsyHUD.pdb "${outdir}/SKSE/plugins/SoulsyHUD.pdb"
