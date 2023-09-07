@@ -42,6 +42,10 @@ pub mod plugin {
         BottomLeft,
         BottomRight,
         Center,
+        CenterTop,    // top edge
+        CenterBottom, // bottom edge
+        LeftCenter,   // left edge midway down
+        RightCenter,  // right edge
         None,
     }
 

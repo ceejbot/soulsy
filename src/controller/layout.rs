@@ -97,7 +97,31 @@ impl HudLayout {
                                 y: screen_height / 2.0,
                             }
                         }
-                        _ => {} // do nothing
+                        NamedAnchor::CenterTop => {
+                            v.anchor = Point {
+                                x: screen_width / 2.0,
+                                y: height / 2.0,
+                            }
+                        }
+                        NamedAnchor::CenterBottom => {
+                            v.anchor = Point {
+                                x: screen_width / 2.0,
+                                y: screen_height - height / 2.0,
+                            }
+                        }
+                        NamedAnchor::LeftCenter => {
+                            v.anchor = Point {
+                                x: width / 2.0,
+                                y: screen_height / 2.0,
+                            }
+                        }
+                        NamedAnchor::RightCenter => {
+                            v.anchor = Point {
+                                x: screen_width - width / 2.0,
+                                y: screen_height / 2.0,
+                            }
+                        }
+                        _ => {}
                     }
                     Ok(v)
                 }
@@ -452,6 +476,10 @@ impl Display for NamedAnchor {
             NamedAnchor::BottomLeft => write!(f, "bottom_left"),
             NamedAnchor::BottomRight => write!(f, "bottom_right"),
             NamedAnchor::Center => write!(f, "center"),
+            NamedAnchor::CenterTop => write!(f, "center_top"),
+            NamedAnchor::CenterBottom => write!(f, "center_bottom"),
+            NamedAnchor::LeftCenter => write!(f, "left_center"),
+            NamedAnchor::RightCenter => write!(f, "right_center"),
             _ => write!(f, "none"),
         }
     }
@@ -478,6 +506,10 @@ where
         "bottom_left" => Ok(NamedAnchor::BottomLeft),
         "bottom_right" => Ok(NamedAnchor::BottomRight),
         "center" => Ok(NamedAnchor::Center),
+        "center_top" => Ok(NamedAnchor::CenterTop),
+        "center_bottom" => Ok(NamedAnchor::CenterBottom),
+        "left_center" => Ok(NamedAnchor::LeftCenter),
+        "right_center" => Ok(NamedAnchor::RightCenter),
         "none" => Ok(NamedAnchor::None),
         _ => Err(Error::unknown_variant(
             &s,
@@ -487,6 +519,10 @@ where
                 "bottom_left",
                 "bottom_right",
                 "center",
+                "center_top",
+                "center_bottom",
+                "left_center",
+                "right_center",
             ],
         )),
     }
