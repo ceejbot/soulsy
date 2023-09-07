@@ -24,7 +24,7 @@ pub struct SpellType {
 impl SpellType {
     pub fn new(data: SpellData, tags: Vec<String>) -> Self {
         let keywords = strings_to_keywords(&tags);
-        log::info!("{keywords:?}");
+        // log::info!("{keywords:?}");
 
         let mut damage_category = keywords.iter().find_map(|xs| {
             if DAMAGE_ARCANE.contains(*xs) {
@@ -144,7 +144,7 @@ impl SpellType {
                 None
             }
         });
-        log::info!("art hint: {art_hint:?}");
+        // og::info!("art hint: {art_hint:?}");
 
         let icon = if let Some(v) = keywords.iter().find_map(|xs| {
             if CLOAK_SPELLS.contains(*xs) {

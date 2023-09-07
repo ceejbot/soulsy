@@ -59,12 +59,12 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 				register_all_sinks();
 				hooks::install_hooks();
 				papyrus::registerPapyrusFunctions();
+				initialize_hud();
 			}
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
 		case SKSE::MessagingInterface::kNewGame:
 			logger::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
-			initialize_hud();
 			logger::info("SKSE kNewGame post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
 			break;
 		default: break;
@@ -84,7 +84,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
 	auto settings = user_settings();
 
-	if (settings.debug())
+	if (settings->debug())
 	{
 		spdlog::set_level(spdlog::level::trace);
 		spdlog::flush_on(spdlog::level::trace);
@@ -115,7 +115,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) constinit auto SKSEPlugin_Versio
 	SKSE::PluginVersionData v;
 	v.PluginName(Version::PROJECT.data());
 	v.AuthorName(Version::AUTHOR);
-	v.PluginVersion({ Version::MAJOR, Version::MINOR, Version::PATCH, VERSION::BETA });
+	v.PluginVersion({ Version::MAJOR, Version::MINOR, Version::PATCH, Version::BETA });
 	v.UsesAddressLibrary(true);
 	v.CompatibleVersions({ SKSE::RUNTIME_SSE_LATEST });
 	v.UsesNoStructs();

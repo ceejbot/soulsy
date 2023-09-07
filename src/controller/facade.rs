@@ -56,6 +56,7 @@ pub fn initialize_hud() {
         log::info!("Cosave data not yet loaded.");
         ctrl.cycles = CycleData::default();
     }
+    HudLayout::refresh();
 }
 
 /// Function for C++ to call to send a relevant button event to us.
