@@ -35,6 +35,18 @@ namespace papyrus
 
 	void handleClearCycles(RE::TESQuest*) { clear_cycles(); }
 
+	bool handleSaveEquipSet(RE::StaticFunctionTag*, std::string* name, uint32_t setnum)
+	{
+		// TODO
+		return false;
+	}
+
+	bool handleRemoveEquipSet(RE::StaticFunctionTag*, std::string* name, uint32_t setnum)
+	{
+		// TODO
+		return false;
+	}
+
 	RE::BSTArray<RE::BSFixedString> getCycleNames(RE::TESQuest*, int inWhich)
 	{
 		int which = std::clamp(inWhich, 0, 3);

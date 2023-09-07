@@ -5,6 +5,8 @@ use std::fmt::Display;
 use cxx::CxxVector;
 
 use super::control::MenuEventResponse;
+use super::cosave;
+use super::equipset::EquipSet;
 use super::keys::CycleSlot;
 use super::user_settings;
 use crate::data::item_cache::ItemCache;
@@ -21,7 +23,7 @@ use crate::plugin::{
 pub struct CycleData {
     /// Vec of item formspecs. A formspec looks like "mod.esp|0xdeadbeef":
     /// mod esp file and form id delimited by |.
-    left: Vec<String>,
+    pub left: Vec<String>,
     /// Right hand cycle formspecs.
     right: Vec<String>,
     /// Shouts and powers cycle formspecs.
@@ -29,7 +31,7 @@ pub struct CycleData {
     /// Utility items and consumables formspecs.
     utility: Vec<String>,
     /// Was the hud visible when we saved?
-    hud_visible: bool,
+    pub hud_visible: bool,
     /// Was this cycle loaded from a cosave or are we operating on defaults?
     pub loaded: bool,
 }
@@ -53,6 +55,7 @@ impl CycleData {
         self.utility.clear();
         self.left.clear();
         self.right.clear();
+        self.equipsets.clear();
     }
 
     pub fn names(&self, which: &CycleSlot, cache: &mut ItemCache) -> Vec<String> {
@@ -424,23 +427,32 @@ impl CycleData {
     // bincode serialization to cosave
 
     pub fn serialize_version() -> u32 {
-        archive_v1::VERSION
+        cosave::v2::VERSION
     }
 
-    // bincode serialization to cosave
-
     pub fn serialize(&self) -> Vec<u8> {
-        archive_v1::serialize(self)
+        let value = cosave::v2::CycleSerialized::from(self);
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        log::debug!(
+            "writing cosave format version {}; data len={};",
+            CycleData::serialize_version(),
+            bytes.len()
+        );
+        bytes
     }
 
     pub fn deserialize(bytes: &CxxVector<u8>, version: u32) -> Option<CycleData> {
-        if version == 0 {
-            archive_v0::deserialize(bytes)
-        } else if version == 1 {
-            archive_v1::deserialize(bytes)
-        } else {
-            log::info!("The cosave data is format version {version}, which this version of the plugin has never heard of.");
-            None
+        match version {
+            0 => cosave::v0::deserialize(bytes),
+            1 => cosave::v1::deserialize(bytes),
+            2 => cosave::v2::deserialize(bytes),
+            _ => {
+                log::warn!(
+                    "Cosave data is version {version}, which this plugin version cannot decode."
+                );
+                None
+            }
         }
     }
 }
@@ -460,191 +472,4 @@ impl Display for CycleData {
 
 fn vec_to_debug_string(input: &[String]) -> String {
     format!("[{}]", input.join(", "))
-}
-
-pub mod archive_v1 {
-    use bincode::{Decode, Encode};
-    use cxx::CxxVector;
-
-    use super::CycleData;
-    use crate::data::base::BaseType;
-    use crate::plugin::formSpecToHudItem;
-
-    pub const VERSION: u32 = 1;
-
-    pub fn serialize(cycle: &CycleData) -> Vec<u8> {
-        let value = CycleSerialized::from(cycle);
-        let config = bincode::config::standard();
-        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
-        log::debug!(
-            "writing cosave format version {VERSION}; data len={};",
-            bytes.len()
-        );
-        bytes
-    }
-
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        let bytes: Vec<u8> = bytes.iter().copied().collect();
-        let config = bincode::config::standard();
-        log::debug!(
-            "reading cosave format version {VERSION}; data len={};",
-            bytes.len()
-        );
-
-        match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
-            Ok((value, _len)) => {
-                log::info!("Cycles successfully read from cosave data.");
-                Some(value.into())
-            }
-            Err(e) => {
-                log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
-                log::error!("{e:?}");
-                None
-            }
-        }
-    }
-
-    /// The serialization format is a list of form strings. Two drivers for
-    /// this choice: 1) It's compact. 2) It can be deserialized into any
-    /// representation of a TES form item we want, thus making it not care about
-    /// implementation details of the hud item cache.
-    #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
-    pub struct CycleSerialized {
-        left: Vec<String>,
-        right: Vec<String>,
-        power: Vec<String>,
-        utility: Vec<String>,
-        hud_visible: bool,
-    }
-
-    impl From<&CycleData> for CycleSerialized {
-        fn from(value: &CycleData) -> Self {
-            Self {
-                left: value.left.to_vec(),
-                right: value.right.to_vec(),
-                power: value.power.to_vec(),
-                utility: value.utility.to_vec(),
-                hud_visible: value.hud_visible,
-            }
-        }
-    }
-
-    impl From<CycleSerialized> for CycleData {
-        fn from(value: CycleSerialized) -> Self {
-            fn filter_func(xs: &String) -> Option<String> {
-                log::debug!("    processing formspec={xs};");
-                match xs.as_str() {
-                    "health_proxy" => Some(xs.clone()),
-                    "magicka_proxy" => Some(xs.clone()),
-                    "stamina_proxy" => Some(xs.clone()),
-                    "unarmed_proxy" => Some(xs.clone()),
-                    "" => None,
-                    _ => {
-                        cxx::let_cxx_string!(form_spec = xs);
-                        // Noting here that we do not go through the cache at all
-                        // while loading these items. We probably should. TODO
-                        let found = *formSpecToHudItem(&form_spec);
-                        if matches!(found.kind(), BaseType::Empty) {
-                            None
-                        } else {
-                            log::debug!("        found='{}';", found.name());
-                            Some(found.form_string())
-                        }
-                    }
-                }
-            }
-
-            Self {
-                left: value.left.iter().filter_map(filter_func).collect(),
-                right: value.right.iter().filter_map(filter_func).collect(),
-                power: value.power.iter().filter_map(filter_func).collect(),
-                utility: value.utility.iter().filter_map(filter_func).collect(),
-                hud_visible: value.hud_visible,
-                loaded: true,
-            }
-        }
-    }
-}
-
-pub mod archive_v0 {
-    use bincode::{Decode, Encode};
-    use cxx::CxxVector;
-
-    use super::CycleData;
-    use crate::data::base::BaseType;
-    use crate::plugin::formSpecToHudItem;
-
-    const VERSION: u8 = 0;
-
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        let bytes: Vec<u8> = bytes.iter().copied().collect();
-        let config = bincode::config::standard();
-        log::debug!(
-            "reading cosave format version {VERSION}; data len={};",
-            bytes.len()
-        );
-        match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
-            Ok((value, _len)) => {
-                log::info!("Cycles successfully read from cosave data.");
-                Some(value.into())
-            }
-            Err(e) => {
-                log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
-                log::error!("{e:?}");
-                None
-            }
-        }
-    }
-
-    #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
-    pub struct CycleSerialized {
-        left: Vec<ItemSerialized>,
-        right: Vec<ItemSerialized>,
-        power: Vec<ItemSerialized>,
-        utility: Vec<ItemSerialized>,
-        hud_visible: bool,
-    }
-
-    #[derive(Decode, Encode, Hash, Debug, Clone, Default, PartialEq, Eq)]
-    pub struct ItemSerialized {
-        name_bytes: Vec<u8>,
-        form_string: String,
-        kind: u8,
-        two_handed: bool,
-        has_count: bool,
-        count: u32,
-    }
-
-    impl From<CycleSerialized> for CycleData {
-        fn from(value: CycleSerialized) -> Self {
-            fn filter_func(item: &ItemSerialized) -> Option<String> {
-                let formstr = item.form_string.clone();
-                match formstr.as_str() {
-                    "health_proxy" => Some(formstr.clone()),
-                    "magicka_proxy" => Some(formstr.clone()),
-                    "stamina_proxy" => Some(formstr.clone()),
-                    "unarmed_proxy" => Some(formstr.clone()),
-                    "" => None,
-                    _ => {
-                        cxx::let_cxx_string!(form_spec = formstr);
-                        let found = *formSpecToHudItem(&form_spec);
-                        if matches!(found.kind(), BaseType::Empty) {
-                            None
-                        } else {
-                            Some(found.form_string())
-                        }
-                    }
-                }
-            }
-
-            Self {
-                left: value.left.iter().filter_map(filter_func).collect(),
-                right: value.right.iter().filter_map(filter_func).collect(),
-                power: value.power.iter().filter_map(filter_func).collect(),
-                utility: value.utility.iter().filter_map(filter_func).collect(),
-                hud_visible: value.hud_visible,
-                loaded: true,
-            }
-        }
-    }
 }

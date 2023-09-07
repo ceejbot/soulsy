@@ -1,4 +1,5 @@
 ScriptName SoulsyHUD_MCM Extends MCM_ConfigBase
+import SKI_ConfigBase
 
 import SKI_ConfigBase
 
@@ -19,6 +20,13 @@ string function GetResolutionHeight() native
 string[] function GetCycleFormIDs(int which) native
 string[] function GetCycleNames(int which) native
 function ClearCycles() native
+
+bool function HandleSaveEquipSet(string name, int setnum) native
+
+; equip sets
+function SaveEquipSet(string name, int setnum)
+    bool result = HandleSaveEquipSet(name, setnum
+endFunction
 
 function ShowCycleEntries(int which)
     pCycleToShow = which

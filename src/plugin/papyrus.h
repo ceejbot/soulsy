@@ -11,6 +11,8 @@ namespace papyrus
 	RE::BSFixedString get_resolution_width(RE::TESQuest*);
 	RE::BSFixedString get_resolution_height(RE::TESQuest*);
 
+	bool handleSaveEquipSet(RE::StaticFunctionTag*, std::string* name, uint32_t setnum);
+	bool handleRemoveEquipSet(RE::StaticFunctionTag*, std::string* name, uint32_t setnum);
 	bool buildIsPreAE(RE::TESQuest*);
 	void setIsPreAEBuild(bool input);
 
