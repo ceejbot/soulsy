@@ -19,11 +19,7 @@ korean_glyphs = false
 thai_glyphs = false
 vietnamese_glyphs = false
 
-# The location of the *center* of the HUD, in pixels.
-# This location is NOT scaled.
-[anchor]
-x = 20.0
-y = 1420.0
+anchor_point = "bottom_left"
 
 # The size of the hud, in pixels. Will be scaled.
 [size]
