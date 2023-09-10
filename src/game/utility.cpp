@@ -17,16 +17,13 @@ namespace game
 
 	void equipAmmoByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
-		logger::debug(
-			"trying to equip ammo; name='{}'; formID={}"sv, form->GetName(), string_util::int_to_hex(form->formID));
-
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
 		auto remaining           = boundObjectForForm(form, player, obj, extra);
 
 		if (!obj || remaining == 0)
 		{
-			logger::warn("ammo not found in inventory! name='{}';"sv, form->GetName());
+			logger::warn("Ammo not found in inventory! name='{}';"sv, form->GetName());
 			return;
 		}
 
@@ -36,7 +33,7 @@ namespace game
 			return;
 		}
 
-		logger::trace("queuing task to equip ammo; name='{}'; bound formID={}"sv,
+		logger::debug("queuing task to equip ammo; name='{}'; bound formID={}"sv,
 			obj->GetName(),
 			string_util::int_to_hex(obj->formID));
 		auto* task = SKSE::GetTaskInterface();
@@ -48,7 +45,6 @@ namespace game
 
 	void unequipCurrentAmmo()
 	{
-		logger::debug("unequipping current ammo if needed"sv);
 		auto player = RE::PlayerCharacter::GetSingleton();
 
 		auto* obj = player->GetCurrentAmmo();

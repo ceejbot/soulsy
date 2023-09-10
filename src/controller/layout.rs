@@ -59,72 +59,7 @@ impl HudLayout {
             Ok(HudLayout::default())
         } else if let Ok(buf) = fs::read_to_string(path) {
             match toml::from_str::<HudLayout>(&buf) {
-                Ok(mut v) => {
-                    // If we read a named anchor point, turn it into pixels.
-                    // The anchor point is the location of the hud CENTER, so we offset.
-                    let screen_width = resolutionWidth();
-                    let screen_height = resolutionHeight();
-                    let width = v.size.x * v.global_scale;
-                    let height = v.size.y * v.global_scale;
-                    match v.anchor_point {
-                        NamedAnchor::TopLeft => {
-                            v.anchor = Point {
-                                x: width / 2.0,
-                                y: height / 2.0,
-                            }
-                        }
-                        NamedAnchor::TopRight => {
-                            v.anchor = Point {
-                                x: screen_width - width / 2.0,
-                                y: height / 2.0,
-                            }
-                        }
-                        NamedAnchor::BottomLeft => {
-                            v.anchor = Point {
-                                x: width / 2.0,
-                                y: screen_height - height / 2.0,
-                            }
-                        }
-                        NamedAnchor::BottomRight => {
-                            v.anchor = Point {
-                                x: screen_width - width / 2.0,
-                                y: screen_height - height / 2.0,
-                            }
-                        }
-                        NamedAnchor::Center => {
-                            v.anchor = Point {
-                                x: screen_width / 2.0,
-                                y: screen_height / 2.0,
-                            }
-                        }
-                        NamedAnchor::CenterTop => {
-                            v.anchor = Point {
-                                x: screen_width / 2.0,
-                                y: height / 2.0,
-                            }
-                        }
-                        NamedAnchor::CenterBottom => {
-                            v.anchor = Point {
-                                x: screen_width / 2.0,
-                                y: screen_height - height / 2.0,
-                            }
-                        }
-                        NamedAnchor::LeftCenter => {
-                            v.anchor = Point {
-                                x: width / 2.0,
-                                y: screen_height / 2.0,
-                            }
-                        }
-                        NamedAnchor::RightCenter => {
-                            v.anchor = Point {
-                                x: screen_width - width / 2.0,
-                                y: screen_height / 2.0,
-                            }
-                        }
-                        _ => {}
-                    }
-                    Ok(v)
-                }
+                Ok(v) => Ok(v),
                 Err(e) => {
                     // We are *not* overwriting a bad TOML file, but we are logging it.
                     // The player might be editing it and experimenting.
@@ -185,6 +120,55 @@ impl HudLayout {
                 log::warn!("Failed to read layout file; initializing from defaults; {e:?}");
                 HudLayout::default()
             }
+        }
+    }
+
+    pub fn anchor(&self) -> Point {
+        // If we read a named anchor point, turn it into pixels.
+        // The anchor point is the location of the hud CENTER, so we offset.
+        let screen_width = resolutionWidth();
+        let screen_height = resolutionHeight();
+        let width = self.size.x * self.global_scale;
+        let height = self.size.y * self.global_scale;
+
+        match self.anchor_point {
+            NamedAnchor::TopLeft => Point {
+                x: width / 2.0,
+                y: height / 2.0,
+            },
+            NamedAnchor::TopRight => Point {
+                x: screen_width - width / 2.0,
+                y: height / 2.0,
+            },
+            NamedAnchor::BottomLeft => Point {
+                x: width / 2.0,
+                y: screen_height - height / 2.0,
+            },
+            NamedAnchor::BottomRight => Point {
+                x: screen_width - width / 2.0,
+                y: screen_height - height / 2.0,
+            },
+            NamedAnchor::Center => Point {
+                x: screen_width / 2.0,
+                y: screen_height / 2.0,
+            },
+            NamedAnchor::CenterTop => Point {
+                x: screen_width / 2.0,
+                y: height / 2.0,
+            },
+            NamedAnchor::CenterBottom => Point {
+                x: screen_width / 2.0,
+                y: screen_height - height / 2.0,
+            },
+            NamedAnchor::LeftCenter => Point {
+                x: width / 2.0,
+                y: screen_height / 2.0,
+            },
+            NamedAnchor::RightCenter => Point {
+                x: screen_width - width / 2.0,
+                y: screen_height / 2.0,
+            },
+            _ => self.anchor.clone(),
         }
     }
 }
@@ -567,8 +551,8 @@ mod tests {
         let layout = HudLayout::read_from_file("layouts/SoulsyHUD_topleft.toml")
             .expect("failed to parse known-good layout toml");
         assert_eq!(layout.anchor_point, NamedAnchor::None);
-        assert_eq!(layout.anchor.x, 150.0);
-        assert_eq!(layout.anchor.y, 150.0);
+        assert_eq!(layout.anchor().x, 150.0);
+        assert_eq!(layout.anchor().y, 150.0);
     }
 
     #[test]
@@ -576,31 +560,31 @@ mod tests {
         let builtin = HudLayout::read_from_file("data/SKSE/plugins/SoulsyHUD_layout.toml")
             .expect("failed to parse known-good layout toml");
         assert_eq!(builtin.anchor_point, NamedAnchor::BottomLeft);
-        assert_eq!(builtin.anchor.x, 150.0);
-        assert_eq!(builtin.anchor.y, 1290.0);
+        assert_eq!(builtin.anchor().x, 150.0);
+        assert_eq!(builtin.anchor().y, 1290.0);
 
         let centered = HudLayout::read_from_file("layouts/SoulsyHUD_centered.toml")
             .expect("failed to parse known-good layout toml");
         assert_eq!(centered.anchor_point, NamedAnchor::Center);
-        assert_eq!(centered.anchor.x, 1720.0);
-        assert_eq!(centered.anchor.y, 720.0);
+        assert_eq!(centered.anchor().x, 1720.0);
+        assert_eq!(centered.anchor().y, 720.0);
 
         let hexa1 = HudLayout::read_from_file("layouts/hexagons/SoulsyHUD_hexagons_lr.toml")
             .expect("failed to parse known-good layout toml");
         assert_eq!(hexa1.anchor_point, NamedAnchor::TopRight);
-        assert_eq!(hexa1.anchor.x, 3290.0);
-        assert_eq!(hexa1.anchor.y, 150.0);
+        assert_eq!(hexa1.anchor().x, 3290.0);
+        assert_eq!(hexa1.anchor().y, 150.0);
 
         let hexa1 = HudLayout::read_from_file("layouts/hexagons/SoulsyHUD_hexagons_tb.toml")
             .expect("failed to parse known-good layout toml");
         assert_eq!(hexa1.anchor_point, NamedAnchor::BottomRight);
-        assert_eq!(hexa1.anchor.x, 3290.0);
-        assert_eq!(hexa1.anchor.y, 1290.0);
+        assert_eq!(hexa1.anchor().x, 3290.0);
+        assert_eq!(hexa1.anchor().y, 1290.0);
 
         let layout = HudLayout::read_from_file("layouts/SoulsyHUD_minimal.toml")
             .expect("failed to parse known-good layout toml");
         assert_eq!(layout.anchor_point, NamedAnchor::BottomLeft);
-        assert_eq!(layout.anchor.x, 150.0);
-        assert_eq!(layout.anchor.y, 1315.0);
+        assert_eq!(layout.anchor().x, 150.0);
+        assert_eq!(layout.anchor().y, 1315.0);
     }
 }

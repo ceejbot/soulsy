@@ -43,7 +43,7 @@ namespace ui
 	auto fade_out_timer   = 0.33f;  // seconds
 	bool doing_brief_peek = false;
 
-	ImFont* loaded_font;
+	ImFont* imFont;
 	auto tried_font_load = false;
 
 	LRESULT ui_renderer::wnd_proc_hook::thunk(const HWND h_wnd,
@@ -124,7 +124,7 @@ namespace ui
 
 		if (!d_3d_init_hook::initialized.load()) { return; }
 
-		if (!loaded_font && !tried_font_load) { load_font(); }
+		if (!imFont && !tried_font_load) { load_font(); }
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -234,7 +234,7 @@ namespace ui
 
 		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a * hud_alpha);
 		const ImVec2 text_bounds = ImGui::CalcTextSize(text.c_str());
-		auto* font               = loaded_font;
+		auto* font               = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
 
 		// It's left-aligned by default.
@@ -289,7 +289,7 @@ namespace ui
 		const auto position =
 			ImVec2(a_x + a_offset_x + a_offset_extra_x + text_x, a_y + a_offset_y + a_offset_extra_y + text_y);
 
-		auto* font = loaded_font;
+		auto* font = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
 
 		ImGui::GetWindowDrawList()->AddText(font, a_font_size, position, color, a_text, nullptr, 0.0f, nullptr);
@@ -375,7 +375,7 @@ namespace ui
 	void ui_renderer::drawAllSlots()
 	{
 		auto top_layout         = hud_layout();
-		auto anchor             = top_layout.anchor;
+		auto anchor             = top_layout->anchor();
 		auto hudsize            = top_layout.size;
 		bool rangedEquipped     = player::hasRangedEquipped();
 		const auto settings     = user_settings();
@@ -384,21 +384,16 @@ namespace ui
 		bool colorizeIcons      = settings->colorize_icons();
 
 		auto globalScale = top_layout.global_scale;
-		if (globalScale == 0.0f)
-		{
-			globalScale = 1.0f;  // serde's default for missing f32 fields is 0
-		}
+		// serde's default for missing f32 fields is 0
+		if (globalScale == 0.0f) { globalScale = 1.0f; }
 
-		// If the layout is larger than the HUD, clamp it to screen size.
-		hudsize.x = std::min(screenWidth, globalScale * hudsize.x);
-		hudsize.y = std::min(screenHeight, globalScale * hudsize.y);
+		// If the layout is larger than the HUD, restrict it to one quarter screen size.
+		hudsize.x = std::min(screenWidth / 4.0f, globalScale * hudsize.x);
+		hudsize.y = std::min(screenHeight / 4.0f, globalScale * hudsize.y);
 
 		// If the layout is trying to draw the HUD offscreen, clamp it to an edge.
-		anchor.x = std::max(hudsize.x / 2.0f, anchor.x);  // anchor point is center
-		anchor.x = std::min(screenWidth - hudsize.x / 2.0f, anchor.x);
-		anchor.y = std::max(hudsize.y / 2.0f, anchor.y);
-		anchor.y = std::min(screenHeight - hudsize.y / 2.0f, anchor.y);
-
+		anchor.x = std::clamp(anchor.x, hudsize.x / 2.0f, screenWidth - hudsize.x / 2.0f);
+		anchor.y = std::clamp(anchor.y, hudsize.y / 2.0f, screenHeight - hudsize.y / 2.0f);
 
 		// Draw the HUD background if requested.
 		if (top_layout.bg_color.a > 0)
@@ -576,10 +571,8 @@ namespace ui
 		std::map<uint32_t, image>& a_struct,
 		std::string& file_path)
 	{
-		const auto res_width = 1.0f;
-		get_resolution_scale_width();
-		const auto res_height = 1.0f;
-		get_resolution_scale_height();
+		const auto res_width  = get_resolution_scale_width();
+		const auto res_height = get_resolution_scale_height();
 
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
@@ -808,7 +801,7 @@ namespace ui
 
 			builder.BuildRanges(&ranges);
 
-			loaded_font = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(), hud.font_size, nullptr, ranges.Data);
+			imFont = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(), hud.font_size, nullptr, ranges.Data);
 			if (io.Fonts->Build())
 			{
 				ImGui_ImplDX11_CreateDeviceObjects();

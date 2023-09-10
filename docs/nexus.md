@@ -16,7 +16,7 @@ To add or remove an item from a cycle, bring up the inventory, magic or favorite
 
 Soulsy also has a hotkey for activating your selected utility item. This is the only category of item that Soulsy will try to activate for you; everything else needs to used the same way the base game has you use them. The last hotkey-able shortcut is for hiding and showing the HUD. There is an MCM setting if you want the HUD to fade out when you're not in combat or don't have your weapons readied.
 
-That's it for the feature set. Soulsy's goal is to equip what you tell it to equip, as quickly and reliably as it can. 
+That's it for the feature set. Soulsy's goal is to equip what you tell it to equip, as quickly and reliably as it can.
 
 ## Set up hotkeys first
 
@@ -36,6 +36,7 @@ __Important notes for controller users:__ A natural setup for HUD mods like this
 
 Thanks to user requests, SoulsyHUD now has a lot of optional features to support your gameplay beyond just changing what you have readied. Explore the MCM to see all of them. Here's a fast overview:
 
+- favoriting & unfavoriting an item to add and remove it from appropriate cycles
 - a window of time to keep tapping a cycle button before an item gets equipped
 - two different ways to support unarmed combat (adding unarmed as a cycle entry; long-press to unequip a slot)
 - slow-motion if you're cycling items in combat; how slow is settable
@@ -48,11 +49,11 @@ For a detailed walk-through of the config settings, see the [configuration optio
 
 ## Theming
 
-Soulsy does not have any in-game way to edit the UI. However, almost everything about how it looks can be modified by tabbing out and editing a layout file.Use any text editor to change values in `SoulsyHUD_Layout.toml`, save the file, then press the refresh hotkey in-game. The HUD reads your new layout and redraws itself.
+Soulsy does not have any in-game way to edit the UI. However, almost everything about how it looks can be modified by tabbing out and editing a layout file. Use any text editor to change values in `SoulsyHUD_Layout.toml`, save the file, then press the refresh hotkey in-game. The HUD reads your new layout and redraws itself.
 
-You can change almost every aspect of the HUD, and edit locations and appearance of each HUD slot independently. You can also replace the entire icon set used by Soulsy if you want. See the optional layouts and icon packs for examples. 
+You can change almost every aspect of the HUD, and edit locations and appearance of each HUD slot independently. You can also replace the entire icon set used by Soulsy if you want. See the optional layouts and icon packs for examples.
 
-Please read the [theming article](https://www.nexusmods.com/skyrimspecialedition/articles/5633) for more details on how to change layouts to match your game UI's theme.
+If you read the [theming article](https://www.nexusmods.com/skyrimspecialedition/articles/5633) for more details on how to change layouts to match your game UI's theme.
 
 ## Bug reports and feature requests
 

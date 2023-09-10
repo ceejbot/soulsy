@@ -90,26 +90,32 @@ namespace player
 
 	rust::Vec<rust::String> getAmmoInventory()
 	{
-		auto player       = RE::PlayerCharacter::GetSingleton();
-		auto* currentAmmo = player->GetCurrentAmmo();
-		auto damage       = 0.0f;
-		if (currentAmmo) { damage = currentAmmo->data.damage; }
-		bool isBolt = currentAmmo->IsBolt();
+		auto player     = RE::PlayerCharacter::GetSingleton();
+		auto* rightItem = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		bool useBolts   = false;
+		if (rightItem->IsWeapon())
+		{
+			auto* weapon = rightItem->As<RE::TESObjectWEAP>();
+			useBolts     = weapon->IsCrossbow();
+		}
+		else
+		{
+			// filter for the same type that we have equipped
+			auto* currentAmmo = player->GetCurrentAmmo();
+			useBolts          = currentAmmo->IsBolt();
+		}
 
 		auto ammoTypes = getInventoryForType(player, RE::FormType::Ammo);
-
-		auto sorted = new std::vector<RE::TESAmmo*>();
+		auto sorted    = new std::vector<RE::TESAmmo*>();
 		for (const auto& [item, inv_data] : ammoTypes)
 		{
 			const auto& [num_items, entry] = inv_data;
 			auto* new_ammo                 = item->As<RE::TESAmmo>();
-			if (new_ammo->IsBolt() == isBolt) { sorted->push_back(new_ammo); }
+			if (new_ammo->IsBolt() == useBolts) { sorted->push_back(new_ammo); }
 		}
-
 		sort(sorted->begin(), sorted->end(), compare);
 
 		auto specs = new rust::Vec<rust::String>();
-
 		for (auto* ammo : *sorted)
 		{
 			auto spec = helpers::makeFormSpecString(ammo->As<RE::TESForm>());

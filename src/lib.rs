@@ -283,6 +283,9 @@ pub mod plugin {
         fn refresh_user_settings();
         /// Fetch a read-only copy of our current layout.
         fn hud_layout() -> HudLayout;
+        /// Get the hud's anchor point, computed on the fly from the
+        /// current screen size and layout data.
+        fn anchor(self: &HudLayout) -> Point;
         /// Clear all cycles on player request.
         fn clear_cycles();
         /// Get the names of the entries in the given cycle as a string.
