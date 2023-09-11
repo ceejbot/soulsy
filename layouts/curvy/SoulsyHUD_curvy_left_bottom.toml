@@ -19,7 +19,7 @@ korean_glyphs = false
 thai_glyphs = false
 vietnamese_glyphs = false
 
-anchor_point = "bottom_left"
+anchor_name = "bottom_left"
 
 # The size of the hud, in pixels. Will be scaled.
 [size]

@@ -15,7 +15,7 @@ font_size = 20.0
 # points. These work no matter what the player's screen resolution is, because this
 # is turned into a location point at run-time.
 # Values: bottom_left, bottom_right, top_left, top_right, center
-# anchor_point = "top_left"
+# anchor_name = "top_left"
 # You can also specify the anchor point like this if a named anchor point
 # doesn't work for your layout. These values are NOT scaled.
 anchor = { x = 150.0, y = 150.0 }

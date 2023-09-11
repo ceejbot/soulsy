@@ -375,7 +375,7 @@ namespace ui
 	void ui_renderer::drawAllSlots()
 	{
 		auto top_layout         = hud_layout();
-		auto anchor             = top_layout->anchor();
+		auto anchor             = top_layout.anchor_point();
 		auto hudsize            = top_layout.size;
 		bool rangedEquipped     = player::hasRangedEquipped();
 		const auto settings     = user_settings();

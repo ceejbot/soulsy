@@ -79,7 +79,7 @@ pub mod plugin {
         #[serde(default)]
         anchor: Point,
         #[serde(default, deserialize_with = "crate::deserialize_named_anchor")]
-        anchor_point: NamedAnchor,
+        anchor_name: NamedAnchor,
         /// The dimensions of a bounding box for the HUD.
         size: Point,
         /// The color to draw the HUD bg image with; if zero will not be drawn.
@@ -285,7 +285,7 @@ pub mod plugin {
         fn hud_layout() -> HudLayout;
         /// Get the hud's anchor point, computed on the fly from the
         /// current screen size and layout data.
-        fn anchor(self: &HudLayout) -> Point;
+        fn anchor_point(self: &HudLayout) -> Point;
         /// Clear all cycles on player request.
         fn clear_cycles();
         /// Get the names of the entries in the given cycle as a string.
