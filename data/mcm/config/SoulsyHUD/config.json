@@ -405,7 +405,7 @@
           },
           "action": {
             "type": "CallFunction",
-            "function": "ClearCycles"
+            "function": "ClearCyclesPapyrus"
           }
         },
         {

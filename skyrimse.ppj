@@ -9,7 +9,8 @@
     <Imports>
         <Import>.\data\scripts\source</Import>
         <Import>G:\SteamLibrary\steamapps\common\Skyrim Special Edition\Data\Source\Scripts</Import>
-        <Import>G:\VortexStaging\MCM SDK\Source\Scripts</Import>
+        <Import>G:\Vortex Mods\skyrimse\MCM SDK\Source\Scripts</Import>
+        <Import>G:\Vortex Mods\skyrimse\SkyUI_5.1_SDK\Scripts</Import>
     </Imports>
     <Folders>
         <Folder>.\data\scripts\source</Folder>

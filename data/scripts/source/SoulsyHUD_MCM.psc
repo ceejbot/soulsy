@@ -1,5 +1,7 @@
 ScriptName SoulsyHUD_MCM Extends MCM_ConfigBase
 
+import SKI_ConfigBase
+
 bool property pEnableActivateModifier = false auto
 bool property pEnableActivateHotkey = false auto
 bool property pCycleNeedsModifier = false auto
@@ -29,6 +31,11 @@ function ShowCycleEntries(int which)
     elseif (which == 3)
         SetMenuOptions("cycleDisplay", getRightCycleNames(), empty)
     endif
+endFunction
+
+function ClearCyclesPapyrus()
+    ClearCycles()
+    ShowMessage("$SoulsyHUD_CyclesCleared_Message")
 endFunction
 
 Event OnSettingChange(String changedID)
