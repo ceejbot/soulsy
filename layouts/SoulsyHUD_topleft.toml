@@ -1,7 +1,3 @@
-# Enable to turn on debug logging. Requires a game restart.
-# Helpful if you want to report a bug.
-debug = true
-
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
 

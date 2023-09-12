@@ -1,7 +1,5 @@
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
-# Enable to turn on debug logging. Requires a restart.
-debug = true
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "Inter-Medium.ttf"
 # Point size to use for all name text. Scales with the global_scale.
