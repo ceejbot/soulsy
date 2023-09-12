@@ -2,7 +2,7 @@ set windows-shell := ["pwsh.exe", "-Command"]
 set shell := ["bash", "-uc"]
 set dotenv-load := true
 
-spriggit := "/Users/cj/code/forks/Spriggit/Spriggit.CLI/bin/Release/net7.0/publish/Spriggit.CLI"
+spriggit := "~/bin/spriggit"
 
 # List available recipes.
 help:

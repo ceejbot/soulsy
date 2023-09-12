@@ -161,7 +161,7 @@ namespace game
 		}
 	}
 
-	void poison_weapon(RE::PlayerCharacter*& the_player, RE::AlchemyItem*& a_poison, uint32_t a_count)
+	void poison_weapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& a_poison, uint32_t a_count)
 	{
 		logger::trace("try to apply poison to weapon, inventory count={}"sv, a_count);
 		uint32_t poison_doses = 1;
@@ -178,10 +178,10 @@ other add av multiply implementations need to be handled by getting the data
 from the game
 the MCM setting will be left for overwrite handling
 */
-		if (the_player->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
+		if (thePlayer->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
 		{
-			auto perk_visit = perk_visitor(the_player, static_cast<float>(poison_doses));
-			the_player->ForEachPerkEntry(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount, perk_visit);
+			auto perk_visit = perk_visitor(thePlayer, static_cast<float>(poison_doses));
+			thePlayer->ForEachPerkEntry(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount, perk_visit);
 			poison_doses = static_cast<int>(perk_visit.get_result());
 		}
 		logger::trace("poison doses read from perks; poison_doses={};"sv, poison_doses);
@@ -194,7 +194,7 @@ the MCM setting will be left for overwrite handling
 		}
 
 		auto used             = 0;
-		auto* equipped_object = the_player->GetEquippedEntryData(false);
+		auto* equipped_object = thePlayer->GetEquippedEntryData(false);
 		if (equipped_object && equipped_object->object->IsWeapon() && !equipped_object->IsPoisoned() && a_count > 0)
 		{
 			logger::trace("about to poison right-hand weapon; poison='{}'; weapon='{}';"sv,
@@ -202,13 +202,13 @@ the MCM setting will be left for overwrite handling
 				equipped_object->GetDisplayName());
 			equipped_object->PoisonObject(a_poison, poison_doses);
 			// We only play the sound once, even if we also dose the left-hand item.
-			player::play_sound(sound_descriptor, the_player);
+			player::play_sound(sound_descriptor, thePlayer);
 			used++;
 			a_count--;
 		}
 
 		logger::trace("now considering left-hand item."sv);
-		auto* equipped_object_left = the_player->GetEquippedEntryData(true);
+		auto* equipped_object_left = thePlayer->GetEquippedEntryData(true);
 		if (equipped_object_left && equipped_object_left->object->IsWeapon() && !equipped_object_left->IsPoisoned() &&
 			a_count > 0)
 		{
@@ -223,7 +223,7 @@ the MCM setting will be left for overwrite handling
 		{
 			logger::trace("queuing remove item tasks..."sv);
 			task->AddTask(
-				[=]() { the_player->RemoveItem(a_poison, used, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr); });
+				[=]() { thePlayer->RemoveItem(a_poison, used, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr); });
 		}
 	}
 
@@ -232,14 +232,14 @@ the MCM setting will be left for overwrite handling
 	const static float MIN_PERFECT = 0.7f;
 	const static float MAX_PERFECT = 1.2f;
 
-	void consumeBestOption(RE::ActorValue vital_stat)
+	void consumeBestOption(RE::ActorValue vitalStat)
 	{
-		auto* the_player = RE::PlayerCharacter::GetSingleton();
-		if (!the_player) return;
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+		if (!thePlayer) return;
 
-		auto current         = the_player->AsActorValueOwner()->GetActorValue(vital_stat);
-		auto permanent       = the_player->AsActorValueOwner()->GetPermanentActorValue(vital_stat);
-		auto temporary       = the_player->GetActorValueModifier(RE::ACTOR_VALUE_MODIFIER::kTemporary, vital_stat);
+		auto current         = thePlayer->AsActorValueOwner()->GetActorValue(vitalStat);
+		auto permanent       = thePlayer->AsActorValueOwner()->GetPermanentActorValue(vitalStat);
+		auto temporary       = thePlayer->GetActorValueModifier(RE::ACTOR_VALUE_MODIFIER::kTemporary, vitalStat);
 		auto max_actor_value = permanent + temporary;
 		auto deficit         = max_actor_value - current;
 		auto goalMin         = deficit * MIN_PERFECT;
@@ -247,7 +247,7 @@ the MCM setting will be left for overwrite handling
 
 		if (deficit == 0)
 		{
-			logger::info("Not drinking a {} potion because you don't need one."sv, vital_stat);
+			logger::info("Not drinking a {} potion because you don't need one."sv, vitalStat);
 			helpers::honk();
 			return;
 		}
@@ -258,10 +258,11 @@ the MCM setting will be left for overwrite handling
 			fmt::format(FMT_STRING("{:.2f}"), goalMax));
 
 		RE::TESBoundObject* obj = nullptr;
-		float prev_rating       = 0.0f;
+		float prevRating        = -100.0f;
 
-		auto candidates = player::getInventoryForType(the_player, RE::FormType::AlchemyItem);
-		logger::debug("{} candidates for best {} potion"sv, candidates.size(), vital_stat);
+		auto candidates = player::getInventoryForType(thePlayer, RE::FormType::AlchemyItem);
+		logger::debug("{} potions in inventory"sv, candidates.size(), vitalStat);
+		auto count = 0;
 		for (const auto& [item, inv_data] : candidates)
 		{
 			const auto& [num_items, entry] = inv_data;
@@ -270,52 +271,58 @@ the MCM setting will be left for overwrite handling
 			if (alchemy_item->IsPoison() || alchemy_item->IsFood()) { continue; }
 			auto actor_value = equippable::getPotionEffect(item, true);
 			if (actor_value == RE::ActorValue::kNone) { continue; }
+			if (actor_value != vitalStat) { continue; }
 
-			if (actor_value == vital_stat)
+			// this potion might be useful
+			count++;
+			auto magnitude = alchemy_item->GetCostliestEffectItem()->GetMagnitude();
+			auto duration  = alchemy_item->GetCostliestEffectItem()->GetDuration();
+			if (duration == 0) { duration = 1; }
+			auto max_restored = magnitude * duration;
+			auto diff         = std::fabs(max_restored - deficit);
+			auto rating       = max_restored > deficit ? diff : -diff;
+
+			if (!obj)
 			{
-				auto magnitude = alchemy_item->GetCostliestEffectItem()->GetMagnitude();
-				auto duration  = alchemy_item->GetCostliestEffectItem()->GetDuration();
-				if (duration == 0) { duration = 1; }
-				auto max_restored = magnitude * duration;
-				auto diff         = std::fabs(max_restored - deficit);
-				auto rating       = max_restored > deficit ? diff : -diff;
 				// any match is better than no match
-				if (!obj)
-				{
-					obj         = alchemy_item;
-					prev_rating = rating;
-					if (rating == 0) break;  // this item is perfect already
-					continue;
-				}
+				obj        = alchemy_item;
+				prevRating = rating;
+				logger::debug("found at least one {} potion: rating={}; max_restored={}; deficit={};"sv,
+					vitalStat,
+					prevRating,
+					max_restored,
+					deficit);
+				if (rating == 0) break;  // this item is perfect already
+				continue;
+			}
 
-				// We have at least a second candidate. Is it better than our current choice?
-				if (std::fabs(prev_rating) < std::fabs(rating))
-				{
-					logger::debug("improved selection: rating={}; max_restored={}; deficit={};"sv,
-						prev_rating,
-						max_restored,
-						deficit);
-
-					obj         = alchemy_item;
-					prev_rating = rating;
-					if (rating == 0) break;  // perfection
-					continue;
-				}
+			// We have at least a second candidate. Is it better than our current choice?
+			if (std::fabs(rating) < std::fabs(prevRating))
+			{
+				logger::debug(
+					"improved selection: rating={}; max_restored={}; deficit={};"sv, prevRating, max_restored, deficit);
+				obj        = alchemy_item;
+				prevRating = rating;
+				if (rating == 0) break;  // perfection
+				continue;
 			}
 		}
 
 		if (obj)
 		{
-			logger::debug("found a potion: rating={}; name='{}';"sv, prev_rating, obj->GetName());
+			logger::debug("after considering {} candidates, found a potion: rating={}; name='{}';"sv,
+				vitalStat,
+				prevRating,
+				obj->GetName());
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
-				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(the_player, obj); });
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, obj); });
 			}
 		}
 		else
 		{
-			logger::warn("We couldn't find any {} potions!"sv, vital_stat);
+			logger::warn("We couldn't find any {} potions!"sv, vitalStat);
 			helpers::honk();
 		}
 	}
