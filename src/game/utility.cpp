@@ -289,7 +289,7 @@ the MCM setting will be left for overwrite handling
 				prevRating = rating;
 				logger::debug("found at least one {} potion: rating={}; max_restored={}; deficit={};"sv,
 					vitalStat,
-					prevRating,
+					rating,
 					max_restored,
 					deficit);
 				if (rating == 0) break;  // this item is perfect already
@@ -300,7 +300,7 @@ the MCM setting will be left for overwrite handling
 			if (std::fabs(rating) < std::fabs(prevRating))
 			{
 				logger::debug(
-					"improved selection: rating={}; max_restored={}; deficit={};"sv, prevRating, max_restored, deficit);
+					"improved selection: rating={}; max_restored={}; deficit={};"sv, rating, max_restored, deficit);
 				obj        = alchemy_item;
 				prevRating = rating;
 				if (rating == 0) break;  // perfection
