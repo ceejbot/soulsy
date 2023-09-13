@@ -92,8 +92,13 @@ endif()
 
 set(Boost_USE_STATIC_LIBS ON)
 
+add_compile_definitions(SKYRIM)
+set(CommonLibPath "extern/CommonLibSSE-NG")
+set(CommonLibName "CommonLibSSE")
+set(GameVersion "Skyrim")
+
 # Find our vcpkg dependencies.
-find_package(CommonLibSSE CONFIG REQUIRED)
+# find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(spdlog REQUIRED CONFIG)
 find_package(imgui REQUIRED)
 find_package(nanosvg CONFIG REQUIRED)
@@ -203,6 +208,8 @@ if(MSVC)
         VS_USER_PROPS ${CMAKE_CURRENT_SOURCE_DIR}/cmake/no_precomp_std.props
     )
 endif()
+
+add_subdirectory(${CommonLibPath} ${CommonLibName} EXCLUDE_FROM_ALL)
 
 target_include_directories(
     ${PROJECT_NAME}
