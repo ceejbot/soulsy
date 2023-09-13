@@ -436,7 +436,7 @@ impl Controller {
     }
 
     fn handle_cycle_left(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
-        log::debug!("Left hand advance requested");
+        // log::trace!("Left hand advance requested");
 
         // Left hand logic:
         // Do we have a bow equipped, and if so, is the "handle ammo" boolean set?
@@ -675,7 +675,6 @@ impl Controller {
     }
 
     fn advance_ammo(&mut self) -> KeyEventResponse {
-        log::debug!("advance_ammo() called. Plink plink.");
         let form_string = specEquippedAmmo();
         let mut ammotypes = getAmmoInventory();
         if ammotypes.len() < 2 {
@@ -848,7 +847,7 @@ impl Controller {
 
     pub fn handle_item_unequipped(&mut self, form_spec: &String, right: bool, left: bool) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
-        log::debug!("item UNequipped; right={right}; left={left}; form_spec={form_spec};");
+        // log::debug!("item UNequipped; right={right}; left={left}; form_spec={form_spec};");
 
         let right_vis = self.visible.get(&HudElement::Right);
         let left_vis = self.visible.get(&HudElement::Left);
@@ -889,8 +888,14 @@ impl Controller {
         if !equipped {
             return self.handle_item_unequipped(form_spec, right, left);
         }
-        log::debug!("item equipped; right={right}; left={left}; form_spec={form_spec};");
         let item = self.cache.get(form_spec);
+        if right && left {
+            log::info!("item equipped in both hands: name='{}'; form_spec={form_spec};", item.name());
+        } else if right {
+            log::info!("item equipped in right hand: name='{}'; form_spec={form_spec};", item.name());
+        } else {
+            log::info!("item equipped in left hand: name='{}'; form_spec={form_spec};", item.name());
+        }
 
         if item.kind().is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
