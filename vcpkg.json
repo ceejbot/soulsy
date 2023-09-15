@@ -1,11 +1,10 @@
 {
     "name": "soulsyhud",
-    "version-string": "1.0.0",
+    "version-string": "0.9.4",
     "description": "hotkey and hud for Skyrim AE",
     "homepage": "https://github.com/ceejbot/soulsy",
     "license": "GPL-2.0-or-later",
     "dependencies": [
-        "commonlibsse-ng",
         "nanosvg",
         {
             "name": "imgui",
@@ -15,7 +14,10 @@
             ]
         }
     ],
-  "overrides": [
-    { "name": "imgui", "version": "1.88" }
-  ]
+    "overrides": [
+        {
+            "name": "imgui",
+            "version": "1.88"
+        }
+    ]
 }
