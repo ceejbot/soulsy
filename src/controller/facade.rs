@@ -35,7 +35,7 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
 
     if let Ok(logfile) = File::create(path) {
         let _ = WriteLogger::init(log_level, Config::default(), logfile);
-        log::info!("Rust side standing by.");
+        log::info!("Rust logging standing by.");
     } else {
         // Welp, we failed and I have nowhere to write the darn error. Ha ha.
     }
@@ -46,17 +46,24 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
 /// Let's get this party started.
 pub fn initialize_hud() {
     let settings = user_settings();
-    log::info!("Reading and applying settings.");
+    log::info!("Reading and applying settings. Your settings are:");
     let mut ctrl = control::get();
     log::info!("{settings:?}");
 
-    let _hud = hud_layout();
+    let hud = hud_layout();
     ctrl.apply_settings();
     if !ctrl.cycles.loaded {
         log::info!("Cosave data not yet loaded.");
         ctrl.cycles = CycleData::default();
     }
     HudLayout::refresh();
+    if settings.autofade() {
+        log::info!("The HUD is in autofade mode and ready to go.");
+    } else {
+        log::info!("The HUD is in toggle mode and ready to go. Currently visible: {}", ctrl.cycles.hud_visible());
+    }
+    let anchor = hud.anchor_point();
+    log::info!("HUD location is: x={}; y={};", anchor.x, anchor.y);
 }
 
 /// Function for C++ to call to send a relevant button event to us.
