@@ -17,17 +17,34 @@ use crate::plugin::{
 /// Manage the player's configured item cycles. Track changes, persist data in
 /// files, and advance the cycle when the player presses a cycle button. This
 /// struct now holds all data we need to persist across game starts.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct CycleData {
     /// Vec of item formspecs. A formspec looks like "mod.esp|0xdeadbeef":
     /// mod esp file and form id delimited by |.
     left: Vec<String>,
+    /// Right hand cycle formspecs.
     right: Vec<String>,
+    /// Shouts and powers cycle formspecs.
     power: Vec<String>,
+    /// Utility items and consumables formspecs.
     utility: Vec<String>,
     /// Was the hud visible when we saved?
     hud_visible: bool,
+    /// Was this cycle loaded from a cosave or are we operating on defaults?
     pub loaded: bool,
+}
+
+impl Default for CycleData {
+    fn default() -> Self {
+        Self {
+            left: Default::default(),
+            right: Default::default(),
+            power: Default::default(),
+            utility: Default::default(),
+            hud_visible: true,
+            loaded: false,
+        }
+    }
 }
 
 impl CycleData {
