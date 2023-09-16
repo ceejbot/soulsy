@@ -111,10 +111,12 @@ impl Default for UserSettings {
         Self {
             debug: false,
             // The map in key_path.h starts with numeral 1 => 2.
-            left: 5,
-            right: 7,
+            showhide: 2,
             power: 3,
+            left: 5,
             utility: 6,
+            right: 7,
+            refresh_layout: 8,
             how_to_activate: ActivationMethod::Hotkey,
             activate: 4,
             activate_modifier: -1,
@@ -126,8 +128,6 @@ impl Default for UserSettings {
             link_to_favorites: false,
             unarmed_handling: UnarmedMethod::None,
             unequip_modifier: -1,
-            refresh_layout: 8,
-            showhide: 2,
             equip_delay_ms: 750, // in milliseconds
             long_press_ms: 1250, // in milliseconds
             autofade: true,
@@ -135,7 +135,7 @@ impl Default for UserSettings {
             controller_kind: 0, // PS5
             cycling_slows_time: false,
             slow_time_factor: 0.25,
-            cycle_ammo: false,
+            cycle_ammo: true,
             colorize_icons: true,
         }
     }
