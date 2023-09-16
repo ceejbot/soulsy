@@ -1,7 +1,7 @@
 [package]
 name = "soulsy"
 description = "A minimal Souls-like HUD for Skyrim AE. SKSE plugin."
-version = "0.9.4"
+version = "0.9.5"
 edition = "2021"
 authors = ["C J Silverio <ceejceej@gmail.com>"]
 license = "GPL-3.0"
