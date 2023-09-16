@@ -63,13 +63,13 @@ impl HudLayout {
                 Err(e) => {
                     // We are *not* overwriting a bad TOML file, but we are logging it.
                     // The player might be editing it and experimenting.
-                    log::warn!("bad toml in hud layout; {e:?}");
+                    log::warn!("Bad TOML in hud layout!; {e:?}");
                     Ok(HudLayout::default())
                 }
             }
         } else {
             log::warn!(
-                "unable to read any data from {}! falling back to defaults",
+                "Unable to read any data from {}! Falling back to defaults",
                 LAYOUT_PATH
             );
             Ok(HudLayout::default())
@@ -84,7 +84,7 @@ impl HudLayout {
             let path = std::path::Path::new(&backup);
             if let Ok(mut fp) = fs::File::create(path) {
                 if write!(fp, "{buf}").is_ok() {
-                    log::info!("backed up old layout to {}", path.display());
+                    log::info!("Previous layout file has been backed up to {}", path.display());
                 }
             }
         }
@@ -113,11 +113,11 @@ impl HudLayout {
     pub fn init() -> HudLayout {
         match HudLayout::read_from_file(LAYOUT_PATH) {
             Ok(v) => {
-                log::info!("successfully initialized HUD layout from player file");
+                log::info!("Successfully initialized HUD layout from TOML file.");
                 v
             }
             Err(e) => {
-                log::warn!("Failed to read layout file; initializing from defaults; {e:?}");
+                log::warn!("Failed to read TOML layout file; initializing from defaults; {e:?}");
                 HudLayout::default()
             }
         }

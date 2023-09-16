@@ -51,10 +51,11 @@ pub fn initialize_hud() {
     log::info!("{settings:?}");
 
     let hud = hud_layout();
-    ctrl.apply_settings();
     if !ctrl.cycles.loaded {
         log::info!("Cosave data not yet loaded.");
         ctrl.cycles = CycleData::default();
+    } else {
+        ctrl.apply_settings();
     }
     HudLayout::refresh();
     if settings.autofade() {
@@ -152,11 +153,11 @@ pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32) {
     let mut ctrl = control::get();
     if let Some(cosave_cycle) = CycleData::deserialize(bytes, version) {
         ctrl.cycles = cosave_cycle;
+        ctrl.apply_settings();
         ctrl.validate_cycles();
         log::info!("Cycles loaded and ready to rock.");
     } else {
         log::warn!("Cosave load failed. Defaulting to fresh start.");
-        ctrl.cycles = CycleData::default();
     }
 }
 

@@ -522,6 +522,7 @@ pub mod archive_v1 {
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
             fn filter_func(xs: &String) -> Option<String> {
+                log::debug!("    processing formspec={xs};");
                 match xs.as_str() {
                     "health_proxy" => Some(xs.clone()),
                     "magicka_proxy" => Some(xs.clone()),
@@ -536,6 +537,7 @@ pub mod archive_v1 {
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
+                            log::debug!("        found='{}';", found.name());
                             Some(found.form_string())
                         }
                     }
