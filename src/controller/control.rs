@@ -889,13 +889,16 @@ impl Controller {
             return self.handle_item_unequipped(form_spec, right, left);
         }
         let item = self.cache.get(form_spec);
-        if right && left {
-            log::info!("item equipped in both hands: name='{}'; form_spec={form_spec};", item.name());
+        let prefix = if right && left {
+            "item equipped in both hands"
         } else if right {
-            log::info!("item equipped in right hand: name='{}'; form_spec={form_spec};", item.name());
+            "item equipped in right hand"
+        } else if left {
+            "item equipped in left hand"
         } else {
-            log::info!("item equipped in left hand: name='{}'; form_spec={form_spec};", item.name());
-        }
+            "item equipped"
+        };
+        log::info!("{prefix}: name='{}'; form_spec={form_spec};", item.name());
 
         if item.kind().is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
