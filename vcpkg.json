@@ -12,7 +12,10 @@
                 "dx11-binding",
                 "win32-binding"
             ]
-        }
+        },
+        "fmt",
+        "spdlog",
+        "rapidcsv"
     ],
     "overrides": [
         {
