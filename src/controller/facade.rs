@@ -51,12 +51,8 @@ pub fn initialize_hud() {
     log::info!("{settings:?}");
 
     let hud = hud_layout();
-    if !ctrl.cycles.loaded {
-        log::info!("Cosave data not yet loaded.");
-        ctrl.cycles = CycleData::default();
-    } else {
-        ctrl.apply_settings();
-    }
+    ctrl.apply_settings();
+    
     HudLayout::refresh();
     if settings.autofade() {
         log::info!("The HUD is in autofade mode and ready to go.");

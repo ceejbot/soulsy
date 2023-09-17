@@ -13,7 +13,7 @@ namespace cosave
 		auto uniq           = settings->skse_identifier();
 		logger::info("Initializing cosave serialization.");
 		auto* cosave = SKSE::GetSerializationInterface();
-		cosave->SetUniqueID(_byteswap_ulong(uniq));
+		cosave->SetUniqueID(uniq);
 		cosave->SetSaveCallback(cosave::gameSavedHandler);
 		cosave->SetRevertCallback(cosave::revertHandler);
 		cosave->SetLoadCallback(cosave::gameLoadedHandler);
@@ -34,7 +34,7 @@ namespace cosave
 			return;
 		}
 
-		if (version < 2) { cosave->WriteRecordData(bufsize); }
+		cosave->WriteRecordData(bufsize);
 		cosave->WriteRecordData(buffer.data(), bufsize);
 	}
 
@@ -51,14 +51,10 @@ namespace cosave
 				logger::info("reading cosave data version {}"sv, version);
 				uint32_t bufSize;
 				std::vector<uint8_t> buffer;
+				cosave->ReadRecordData(bufSize);
+				buffer.resize(bufSize);
 
-				if (version < 2)
-				{
-					cosave->ReadRecordData(bufSize);
-					buffer.resize(bufSize);
-				}
-
-				const auto read = cosave->ReadRecordData(buffer.data());
+				const auto read = cosave->ReadRecordData(buffer.data(), bufSize);
 				buffer.resize(read);
 				logger::debug("read {} bytes from cosave; buffer len is {}"sv, read, buffer.size());
 				cycle_loaded_from_cosave(buffer, version);
