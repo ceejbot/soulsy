@@ -104,6 +104,8 @@ pub struct UserSettings {
     cycle_ammo: bool,
     /// True if icons should be drawn in living color.
     colorize_icons: bool,
+    /// The identifier for the mod in SKSE cosaves. Defaults to SOLS.
+    skse_identifier: String,
 }
 
 impl Default for UserSettings {
@@ -137,6 +139,7 @@ impl Default for UserSettings {
             slow_time_factor: 0.25,
             cycle_ammo: true,
             colorize_icons: true,
+            skse_identifier: "SOLS".to_string(),
         }
     }
 }
@@ -241,6 +244,8 @@ impl UserSettings {
 
         self.cycle_ammo = read_from_ini(self.cycle_ammo, "bCycleAmmo", options);
         self.colorize_icons = read_from_ini(self.colorize_icons, "bColorizeIcons", options);
+        self.skse_identifier =
+            read_from_ini(self.skse_identifier.clone(), "sSKSEIdentifier", options);
 
         Ok(())
     }
@@ -365,6 +370,15 @@ impl UserSettings {
     pub fn colorize_icons(&self) -> bool {
         self.colorize_icons
     }
+
+    pub fn skse_identifier(&self) -> u32 {
+        let exactly_four = format!("{:4}", self.skse_identifier);
+        let slice: [u8; 4] = exactly_four
+            .as_bytes()
+            .try_into()
+            .expect("You must provide exactly four characters as the mod identifier string.");
+        u32::from_le_bytes(slice)
+    }
 }
 
 fn clamp(num: u32, min: u32, max: u32) -> u32 {
@@ -467,5 +481,11 @@ impl FromIniStr for i32 {
         } else {
             None
         }
+    }
+}
+
+impl FromIniStr for String {
+    fn from_ini(value: &str) -> Option<Self> {
+        Some(value.to_string())
     }
 }

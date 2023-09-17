@@ -3,7 +3,7 @@
 
 pub mod controller;
 use controller::*;
-mod data;
+pub mod data;
 use data::icons::icon_files;
 use data::{HudItem, SpellData, *};
 
@@ -278,6 +278,8 @@ pub mod plugin {
         fn colorize_icons(self: &UserSettings) -> bool;
         /// If we should log at debug level.
         fn debug(self: &UserSettings) -> bool;
+        /// The identifier to use for this mod in SKSE cosaves. Not exposed in UI.
+        fn skse_identifier(self: &UserSettings) -> u32;
 
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
