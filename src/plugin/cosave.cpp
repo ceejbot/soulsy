@@ -9,9 +9,11 @@ namespace cosave
 
 	void initializeCosaves()
 	{
-		logger::info("Initializing cosave serialization...");
+		const auto settings = user_settings();
+		auto uniq           = settings->skse_identifier();
+		logger::info("Initializing cosave serialization.");
 		auto* cosave = SKSE::GetSerializationInterface();
-		cosave->SetUniqueID(_byteswap_ulong('SOLS'));
+		cosave->SetUniqueID(uniq);
 		cosave->SetSaveCallback(cosave::gameSavedHandler);
 		cosave->SetRevertCallback(cosave::revertHandler);
 		cosave->SetLoadCallback(cosave::gameLoadedHandler);
