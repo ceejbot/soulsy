@@ -383,6 +383,15 @@
           }
         },
         {
+          "id": "sSKSEIdentifier:Options",
+          "text": "$SoulsyHUD_ModIdString_Text",
+          "help": "$SoulsyHUD_ModIdString_Help",
+          "type": "input",
+          "valueOptions": {
+            "sourceType": "ModSettingString"
+          }
+        },
+        {
           "id": "bDebugMode:Options",
           "text": "$SoulsyHUD_Options_Debug_Text",
           "help": "$SoulsyHUD_Options_Debug_Help",
