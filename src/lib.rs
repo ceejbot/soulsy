@@ -23,6 +23,7 @@ pub mod plugin {
         Left,
         Right,
         Ammo,
+        EquipSet,
         None, // not drawn
     }
 
@@ -195,6 +196,7 @@ pub mod plugin {
         /// Refresh the layout by re-reading the toml file.
         RefreshLayout,
         /// Long press tracking for timers. The next 4 are menu timers.
+        /// The equipset cycle hotkey.
         LongPressLeft,
         /// Long press the right cycle key.
         LongPressRight,
@@ -202,6 +204,9 @@ pub mod plugin {
         LongPressPower,
         /// Long press the powers/shouts key.
         LongPressUtility,
+        /// The equipset cycle hotkey.
+        Equipment,
+
     }
 
     #[derive(Debug, Clone, Hash)]
@@ -384,6 +389,12 @@ pub mod plugin {
         fn handle_inventory_changed(form_spec: &String, delta: i32);
         /// Favoriting & unfavoriting.
         fn handle_favorite_event(_button: &ButtonEvent, is_favorite: bool, _item: Box<HudItem>);
+        /// Save an equipment set.
+        fn handle_update_equipset(id: u32, name: String) -> bool;
+        /// Rename an equipment set.
+        fn handle_rename_equipset(id: u32, name: String) -> bool;
+        /// Remove an equipment set.
+        fn handle_remove_equipset(id: u32) -> bool;
     }
 
     #[namespace = "RE"]
@@ -472,6 +483,9 @@ pub mod plugin {
         fn hasRangedEquipped() -> bool;
         fn getAmmoInventory() -> Vec<String>;
 
+        /// Get a list of form specs for all equipped armor.
+        fn getEquippedItems() -> Vec<String>;
+
         /// Unequip the relevant slot.
         fn unequipSlot(which: Action);
 
@@ -483,9 +497,11 @@ pub mod plugin {
         fn equipWeapon(form_spec: &CxxString, which: Action);
         /// Re-equip an item in the left hand. This forces an un-equip first.
         fn reequipHand(which: Action, form_spec: &CxxString);
-        /// Equip the armor matching the form spec.
+        /// Toggle the armor matching the form spec.
+        fn toggleArmor(form_spec: &CxxString);
+        /// Equip the armor; do not toggle.
         fn equipArmor(form_spec: &CxxString);
-        /// Equip the amoo matching the form spec.
+        /// Equip the ammo matching the form spec.
         fn equipAmmo(form_spec: &CxxString);
         /// Potions great and small.
         fn consumePotion(form_spec: &CxxString);

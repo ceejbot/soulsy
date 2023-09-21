@@ -8,7 +8,7 @@
 
 namespace papyrus
 {
-	static const char* mcm_name = "SoulsyHUD_MCM";
+	static const char* MCM_NAME = "SoulsyHUD_MCM";
 
 	void registerPapyrusFunctions()
 	{
@@ -18,8 +18,17 @@ namespace papyrus
 
 	bool Register(RE::BSScript::IVirtualMachine* a_vm)
 	{
-		a_vm->RegisterFunction("OnConfigClose", mcm_name, handleConfigClose);
-		a_vm->RegisterFunction("ClearCycles", mcm_name, handleClearCycles);
+		a_vm->RegisterFunction("OnConfigClose", MCM_NAME, handleConfigClose);
+		a_vm->RegisterFunction("ClearCycles", MCM_NAME, handleClearCycles);
+		a_vm->RegisterFunction("getPowerCycleNames", MCM_NAME, getPowerCycleNames);
+		a_vm->RegisterFunction("getUtilityCycleNames", MCM_NAME, getUtilityCycleNames);
+		a_vm->RegisterFunction("getLeftCycleNames", MCM_NAME, getLeftCycleNames);
+		a_vm->RegisterFunction("getRightCycleNames", MCM_NAME, getRightCycleNames);
+		a_vm->RegisterFunction("GetResolutionWidth", MCM_NAME, get_resolution_width);
+		a_vm->RegisterFunction("GetResolutionHeight", MCM_NAME, get_resolution_height);
+		a_vm->RegisterFunction("BuildIsPreAE", MCM_NAME, buildIsPreAE);
+		a_vm->RegisterFunction("HandleSaveEquipSet", MCM_NAME, handleSaveEquipSet);
+		a_vm->RegisterFunction("HandleRemoveEquipSet", MCM_NAME, handleRemoveEquipSet);
 
 		a_vm->RegisterFunction("GetCycleNames", mcm_name, getCycleNames);
 		a_vm->RegisterFunction("GetCycleFormIDs", mcm_name, getCycleFormIDs);
@@ -27,7 +36,7 @@ namespace papyrus
 		a_vm->RegisterFunction("GetResolutionWidth", mcm_name, get_resolution_width);
 		a_vm->RegisterFunction("GetResolutionHeight", mcm_name, get_resolution_height);
 
-		logger::info("Registered papyrus functions for the MCM; classname {}."sv, mcm_name);
+		logger::info("Registered papyrus functions for the MCM; classname {}."sv, MCM_NAME);
 		return true;
 	}
 
@@ -35,16 +44,28 @@ namespace papyrus
 
 	void handleClearCycles(RE::TESQuest*) { clear_cycles(); }
 
-	bool handleSaveEquipSet(RE::StaticFunctionTag*, std::string* name, uint32_t setnum)
+	bool handleSaveEquipSet(RE::StaticFunctionTag*, RE::BSFixedString* name, uint32_t setnum)
 	{
-		// TODO
-		return false;
+		return handle_equipset(setnum, *name);
 	}
 
-	bool handleRemoveEquipSet(RE::StaticFunctionTag*, std::string* name, uint32_t setnum)
+	bool handleRemoveEquipSet(RE::StaticFunctionTag*, RE::BSFixedString* name, uint32_t setnum)
 	{
-		// TODO
-		return false;
+		return handle_remove_equipset(setnum, *name);
+	}
+
+	RE::BSTArray<RE::BSFixedString> getPowerCycleNames(RE::TESQuest*)
+	{
+		auto names = get_cycle_names(0);
+		auto array = RE::BSTArray<RE::BSFixedString>();
+		for (auto name : names) { array.push_back(std::string(name)); }
+
+		return array;
+	}
+
+	RE::BSTArray<RE::BSFixedString> getUtilityCycleNames(RE::TESQuest*)
+	{
+	 	return handle_remove_equipset(setnum, *name);
 	}
 
 	RE::BSTArray<RE::BSFixedString> getCycleNames(RE::TESQuest*, int inWhich)

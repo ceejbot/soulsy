@@ -178,6 +178,14 @@ namespace player
 		game::equipItemByFormAndSlot(form, equip_slot, player);
 	}
 
+	void toggleArmor(const std::string& form_spec)
+	{
+		auto* form = helpers::formSpecToFormItem(form_spec);
+		if (!form) { return; }
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		game::toggleArmorByForm(form, player);
+	}
+
 	void equipArmor(const std::string& form_spec)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
@@ -362,5 +370,25 @@ namespace player
 	void chooseStaminaPotion() { game::consumeBestOption(RE::ActorValue::kStamina); }
 	void chooseHealthPotion() { game::consumeBestOption(RE::ActorValue::kHealth); }
 	void chooseMagickaPotion() { game::consumeBestOption(RE::ActorValue::kMagicka); }
+
+	rust::Vec<rust::String> getEquippedItems()
+	{
+		auto specs = new rust::Vec<rust::String>();
+
+		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		if (!the_player) return std::move(*specs);
+
+		for (uint32_t slot = 0; slot < 32; slot++)
+		{
+			// TESObjectARMO* Actor::GetWornArmor(BGSBipedObjectForm::BipedObjectSlot a_slot, bool a_noInit)
+			auto* item = the_player->GetWornArmor(static_cast<RE::BGSBipedObjectForm::BipedObjectSlot>(slot));
+			if (!item) continue;
+			std::string formSpec = helpers::makeFormSpecString(item);
+			logger::info("found item in slot {}: {} {}", slot, item->GetName(), formSpec);
+			specs->push_back(formSpec);
+		}
+
+		return std::move(*specs);
+	}
 
 }  // player

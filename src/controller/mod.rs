@@ -8,9 +8,8 @@
 //! There is little defined in this module file, but everything it re-exports
 //! is available to be bridged to C++ in the `plugin` module.
 pub mod control;
-pub mod cosave;
+pub mod cycleentries;
 pub mod cycles;
-pub mod equipset;
 pub mod facade;
 pub mod keys;
 pub mod layout;

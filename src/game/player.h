@@ -26,6 +26,7 @@ namespace player
 	rust::Vec<rust::String> getAmmoInventory();
 	bool compare(RE::TESAmmo* left, RE::TESAmmo* right);
 
+	rust::Vec<rust::String> getEquippedItems();
 
 	rust::Vec<uint16_t> playerName();
 
@@ -38,6 +39,7 @@ namespace player
 	void equipShout(const std::string& form_spec);
 	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout);
 	void reequipHand(Action which, const std::string& form_spec);
+	void toggleArmor(const std::string& form_spec);
 	void equipArmor(const std::string& form_spec);
 	void equipMagic(const std::string& form_spec, Action slot);
 	void equipWeapon(const std::string& form_spec, Action slot);
@@ -55,5 +57,4 @@ namespace player
 	void chooseMagickaPotion();
 	void chooseHealthPotion();
 	void chooseStaminaPotion();
-
 }

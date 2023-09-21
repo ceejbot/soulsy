@@ -7,7 +7,7 @@ namespace game
 	void equipAmmoByForm(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
 	void unequipCurrentAmmo();
 
-	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player);
+	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player);
 	// reurns true if anything was unequipped.
 	bool unequipArmor(RE::TESBoundObject*& a_obj,
 		RE::PlayerCharacter*& a_player,

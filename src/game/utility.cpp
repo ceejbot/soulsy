@@ -82,10 +82,10 @@ namespace game
 		return is_worn;
 	}
 
-	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
+	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
 		// This is a toggle in reality. Also, use this as a model for other equip funcs.
-		logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
+		logger::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
 		auto remaining           = boundObjectForForm(form, player, obj, extra);
@@ -111,6 +111,28 @@ namespace game
 		}
 		else
 		{
+			task->AddTask([=]() { equip_manager->EquipObject(player, obj, extra); });
+		}
+	}
+
+	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
+	{
+		logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
+		RE::TESBoundObject* obj  = nullptr;
+		RE::ExtraDataList* extra = nullptr;
+		auto remaining           = boundObjectForForm(form, player, obj, extra);
+
+		if (!obj || remaining == 0)
+		{
+			logger::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
+			return;
+		}
+
+		const auto is_worn = isItemWorn(obj, player);
+		if (!is_worn)
+		{
+			auto* task          = SKSE::GetTaskInterface();
+			auto* equip_manager = RE::ActorEquipManager::GetSingleton();
 			task->AddTask([=]() { equip_manager->EquipObject(player, obj, extra); });
 		}
 	}

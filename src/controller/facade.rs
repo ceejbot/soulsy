@@ -77,6 +77,18 @@ pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
     control::get().handle_key_event(key, button)
 }
 
+pub fn handle_update_equipset(id: u32, name: String) -> bool {
+    control::get().handle_update_equipset(id, name)
+}
+
+pub fn handle_rename_equipset(id: u32, name: String) -> bool {
+    control::get().handle_rename_equipset(id, name)
+}
+
+pub fn handle_remove_equipset(id: u32) -> bool {
+    control::get().handle_remove_equipset(id)
+}
+
 pub fn show_ui() -> bool {
     control::get().cycles.hud_visible()
 }

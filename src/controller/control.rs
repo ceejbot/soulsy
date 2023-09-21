@@ -9,6 +9,7 @@ use strfmt::strfmt;
 use super::cycles::*;
 use super::keys::*;
 use super::settings::{settings, ActivationMethod, UnarmedMethod};
+use crate::cycleentries::*;
 use crate::data::item_cache::ItemCache;
 use crate::data::potion::PotionType;
 use crate::data::*;
@@ -98,8 +99,8 @@ impl Controller {
             UnarmedMethod::AddToCycles => {
                 let h2h = HudItem::make_unarmed_proxy();
                 self.cache.record(h2h.clone());
-                self.cycles.include_item(CycleSlot::Left, &h2h);
-                self.cycles.include_item(CycleSlot::Right, &h2h);
+                self.cycles.add_item(CycleSlot::Left, &h2h);
+                self.cycles.add_item(CycleSlot::Right, &h2h);
             }
             _ => {
                 // remove any item with h2h type from cycles
@@ -118,7 +119,7 @@ impl Controller {
             );
             let proxy = make_stamina_proxy();
             self.cache.record(proxy.clone());
-            self.cycles.include_item(CycleSlot::Utility, &proxy);
+            self.cycles.add_item(CycleSlot::Utility, &proxy);
 
             self.cycles.filter_kind(
                 &CycleSlot::Utility,
@@ -127,7 +128,7 @@ impl Controller {
             );
             let proxy = make_health_proxy();
             self.cache.record(proxy.clone());
-            self.cycles.include_item(CycleSlot::Utility, &proxy);
+            self.cycles.add_item(CycleSlot::Utility, &proxy);
 
             self.cycles.filter_kind(
                 &CycleSlot::Utility,
@@ -136,7 +137,7 @@ impl Controller {
             );
             let proxy = make_magicka_proxy();
             self.cache.record(proxy.clone());
-            self.cycles.include_item(CycleSlot::Utility, &proxy);
+            self.cycles.add_item(CycleSlot::Utility, &proxy);
         } else {
             let proxy = make_stamina_proxy();
             self.cycles.remove_item(CycleSlot::Utility, &proxy);
@@ -293,8 +294,8 @@ impl Controller {
             return KeyEventResponse::handled();
         }
 
-        let settings = settings();
-        if settings.autofade() {
+        let le_options = settings();
+        if le_options.autofade() {
             show_briefly();
         }
 
@@ -303,8 +304,9 @@ impl Controller {
             Hotkey::Utility => self.handle_cycle_utility(),
             Hotkey::Left => self.handle_cycle_left(&hotkey),
             Hotkey::Right => self.handle_cycle_right(&hotkey),
+            Hotkey::Equipment => self.handle_equipset_cycle(&hotkey),
             Hotkey::Activate => {
-                let activation_method = settings.how_to_activate();
+                let activation_method = le_options.how_to_activate();
                 if matches!(activation_method, ActivationMethod::Hotkey) {
                     self.use_utility_item()
                 } else {
@@ -316,7 +318,7 @@ impl Controller {
                 KeyEventResponse::handled()
             }
             Hotkey::ShowHide => {
-                if !user_settings().autofade() {
+                if !le_options.autofade() {
                     self.cycles.toggle_hud();
                 }
                 KeyEventResponse::handled()
@@ -770,6 +772,11 @@ impl Controller {
         }
 
         let hud = HudElement::from(which);
+        if matches!(which, Action::Equipment) {
+            self.equip_selected_set();
+            return;
+        }
+
         let Some(item) = &self.visible.get(&hud) else {
             log::warn!(
                 "visible item in hud slot was None, which should not happen; slot={:?};",
@@ -782,7 +789,7 @@ impl Controller {
         // We equip whatever the HUD is showing right now.
         let kind = item.kind();
         if matches!(kind, BaseType::HandToHand) {
-            log::info!("Melee time! Unequipping slot {which:?}");
+            log::info!("Melee time! Unequipping slot {which:?} so you can go punch a dragon.");
             if matches!(which, Action::Left) {
                 // TODO wasteful but better than a magic string?
                 self.left_hand_cached = HudItem::make_unarmed_proxy().form_string();
@@ -871,7 +878,7 @@ impl Controller {
         if kind.is_magic() || kind.left_hand_ok() || kind.right_hand_ok() {
             equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
-            equipArmor(&form_spec);
+            toggleArmor(&form_spec);
         } else if matches!(kind, BaseType::Ammo(_)) {
             equipAmmo(&form_spec);
         } else {
@@ -1398,7 +1405,7 @@ impl Controller {
             cxx::let_cxx_string!(msg = message);
             notifyPlayer(&msg);
         } else {
-            log::debug!("no notification sent to player because message couldn't be formatted");
+            log::debug!("No notification sent to player because message couldn't be formatted");
         }
     }
 
@@ -1468,6 +1475,53 @@ impl Controller {
             }
         }
     }
+
+    /// Add the equipset with this id OR update its items with what the player
+    /// has equipped currently.
+    pub fn handle_update_equipset(&mut self, id: u32, name: String) -> bool {
+        let items = getEquippedItems();
+        let set = EquipSet::new(id.to_string(), name, items);
+        self.cycles.replace_equipset(set)
+    }
+
+    /// Rename the equipset with the given ID.
+    pub fn handle_rename_equipset(&mut self, id: u32, name: String) -> bool {
+        self.cycles.rename_equipset(id.to_string(), name)
+    }
+
+    /// Remove the equipset with the given ID.
+    pub fn handle_remove_equipset(&mut self, id: u32) -> bool {
+        self.cycles.remove_equipset(id.to_string())
+    }
+
+    /// Advance the equipment set and start the timer.
+    fn handle_equipset_cycle(&mut self, _hotkey: &Hotkey) -> KeyEventResponse {
+        // For now, no user interface drawn for equip sets. We just equip them.
+        let candidate = self.cycles.advance_equipset(1);
+        if let Some(_next) = candidate {
+            // self.update_slot(hud, &item);
+            KeyEventResponse {
+                handled: true,
+                start_timer: Action::Equipment,
+                stop_timer: Action::None,
+            }
+        } else {
+            KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            }
+        }
+    }
+
+    /// Called when equipment timer expires: equip that equip set!
+    fn equip_selected_set(&self) {
+        let equipset = self.cycles.get_top_equipset();
+        equipset.iter().for_each(|item| {
+            let_cxx_string!(form_spec = item.identifier());
+            equipArmor(&form_spec);
+        });
+        todo!()
+    }
 }
 
 impl Default for KeyEventResponse {
@@ -1509,6 +1563,8 @@ impl From<u32> for Action {
             Action::ShowHide
         } else if value == settings.refresh_layout() {
             Action::RefreshLayout
+        } else if value == settings.equipset() as u32 {
+            Action::Equipment
         } else {
             Action::None
         }

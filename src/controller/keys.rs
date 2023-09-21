@@ -116,6 +116,7 @@ impl From<&Action> for Hotkey {
             Action::Left => Hotkey::Left,
             Action::Power => Hotkey::Power,
             Action::Right => Hotkey::Right,
+            Action::Equipment => Hotkey::Equipment,
             Action::ShowHide => Hotkey::ShowHide,
             Action::Utility => Hotkey::Utility,
             Action::RefreshLayout => Hotkey::Refresh,
@@ -135,6 +136,8 @@ impl From<u32> for Hotkey {
             Hotkey::Left
         } else if v == settings.right() {
             Hotkey::Right
+        } else if v == settings.equipset() as u32 {
+            Hotkey::Equipment
         } else if v == settings.refresh_layout() {
             Hotkey::Refresh
         } else if v == settings.showhide() {

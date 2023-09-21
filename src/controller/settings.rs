@@ -7,7 +7,7 @@ use strum::Display;
 
 use crate::plugin::HudElement;
 
-use super::keys::HotkeyKind;
+use super::keys::Hotkey;
 
 /// This is the path to players's modified settings.
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
@@ -57,6 +57,8 @@ pub struct UserSettings {
     left: u32,
     /// The key for the right hand's cycle. uRightCycleKey
     right: u32,
+    /// The key for equip sets. iEquipSetCycleKey
+    equipset: i32,
 
     /// How the player wants to use the utility item. uHowToActivate
     how_to_activate: ActivationMethod,
@@ -123,6 +125,7 @@ impl Default for UserSettings {
             left: 5,
             utility: 6,
             right: 7,
+            equipset: 9,
             refresh_layout: 8,
             how_to_activate: ActivationMethod::Hotkey,
             activate: 4,
@@ -189,6 +192,7 @@ impl UserSettings {
         self.right = read_from_ini(self.right, "uRightCycleKey", controls);
         self.power = read_from_ini(self.power, "uPowerCycleKey", controls);
         self.utility = read_from_ini(self.utility, "uUtilityCycleKey", controls);
+        self.equipset = read_from_ini(self.equipset, "iEquipSetCycleKey", controls);
         self.how_to_cycle = read_from_ini(self.how_to_cycle, "uHowToCycle", controls);
         self.cycle_modifier = read_from_ini(self.cycle_modifier, "iCycleModifierKey", controls);
         self.long_press_matches =
@@ -258,11 +262,11 @@ impl UserSettings {
         self.unequip_modifier
     }
 
-    pub fn start_long_press_timer(&self, key: &HotkeyKind) -> bool {
-        let is_hand_cycle = matches!(key, HotkeyKind::Left | HotkeyKind::Right);
+    pub fn start_long_press_timer(&self, key: &Hotkey) -> bool {
+        let is_hand_cycle = matches!(key, Hotkey::Left | Hotkey::Right);
         let can_be_unequipped = matches!(
             key,
-            HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right
+            Hotkey::Left | Hotkey::Power | Hotkey::Right
         );
 
         // These three should be mutually exclusive, so order shouldn't matter.
@@ -273,7 +277,7 @@ impl UserSettings {
         if matches!(self.how_to_activate, ActivationMethod::LongPress)
             && matches!(
                 key,
-                HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right | HotkeyKind::Utility
+                Hotkey::Left | Hotkey::Power | Hotkey::Right | Hotkey::Utility
             )
         {
             return true;
@@ -316,7 +320,8 @@ impl UserSettings {
             HudElement::Left => self.left,
             HudElement::Right => self.right,
             HudElement::Ammo => self.left, // This is objectively correct.
-            _ => self.refresh_layout,      // Required because this is a C-style enum.
+            HudElement::EquipSet => self.equipset as u32,
+            _ => self.refresh_layout, // Required because this is a C-style enum.
         }
     }
 
@@ -331,6 +336,9 @@ impl UserSettings {
     }
     pub fn utility(&self) -> u32 {
         self.utility
+    }
+    pub fn equipset(&self) -> i32 {
+        self.equipset
     }
 
     pub fn how_to_activate(&self) -> &ActivationMethod {
