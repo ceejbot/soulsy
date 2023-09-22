@@ -84,6 +84,7 @@ count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the item name. Gets scaled.
 name_offset = { x = 110.0, y = 110.0 }
+# Font size for the item name.
 name_font_size = 20.0
 
 # The consumables slot. You can change all of these values

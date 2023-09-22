@@ -15,12 +15,15 @@ use once_cell::sync::Lazy;
 use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
 
-use crate::plugin::{Action, Align, Color, HudElement, HudLayout, NamedAnchor, Point, SlotLayout};
+use crate::plugin::{Action, Align, Color, HudElement, HudLayout, NamedAnchor, Point};
 
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
 /// There can be only one. Not public because we want access managed.
 static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::init()));
+
+/// Lazy parsing of the compile-time include of the default layout, as a fallback.
+static DEFAULT_LAYOUT: Lazy<HudLayout> = Lazy::new(|| HudLayout::default());
 
 #[cfg(target_os = "windows")]
 use crate::plugin::{resolutionHeight, resolutionWidth};
@@ -52,11 +55,11 @@ impl HudLayout {
         let path = std::path::Path::new(pathstr);
         if !path.exists() {
             // No file? We write out defaults.
-            let layout = HudLayout::default();
+            let layout = DEFAULT_LAYOUT.clone();
             let buf = toml::to_string_pretty(&layout)?;
             let mut fp = fs::File::create(path)?;
             write!(fp, "{buf}")?;
-            Ok(HudLayout::default())
+            Ok(layout)
         } else if let Ok(buf) = fs::read_to_string(path) {
             match toml::from_str::<HudLayout>(&buf) {
                 Ok(v) => Ok(v),
@@ -64,7 +67,7 @@ impl HudLayout {
                     // We are *not* overwriting a bad TOML file, but we are logging it.
                     // The player might be editing it and experimenting.
                     log::warn!("Bad TOML in hud layout!; {e:?}");
-                    Ok(HudLayout::default())
+                    Ok(DEFAULT_LAYOUT.clone())
                 }
             }
         } else {
@@ -72,7 +75,7 @@ impl HudLayout {
                 "Unable to read any data from {}! Falling back to defaults",
                 LAYOUT_PATH
             );
-            Ok(HudLayout::default())
+            Ok(DEFAULT_LAYOUT.clone())
         }
     }
 
@@ -84,7 +87,10 @@ impl HudLayout {
             let path = std::path::Path::new(&backup);
             if let Ok(mut fp) = fs::File::create(path) {
                 if write!(fp, "{buf}").is_ok() {
-                    log::info!("Previous layout file has been backed up to {}", path.display());
+                    log::info!(
+                        "Previous layout file has been backed up to {}",
+                        path.display()
+                    );
                 }
             }
         }
@@ -118,7 +124,7 @@ impl HudLayout {
             }
             Err(e) => {
                 log::warn!("Failed to read TOML layout file; initializing from defaults; {e:?}");
-                HudLayout::default()
+                DEFAULT_LAYOUT.clone()
             }
         }
     }
@@ -175,210 +181,11 @@ impl HudLayout {
 
 impl Default for HudLayout {
     fn default() -> Self {
-        // Yes, this is annoyingly complex. Obviously this solution is wrong.
-        let power_default = SlotLayout {
-            element: HudElement::Power,
-            name: "Shouts/Powers".to_string(),
-            align_text: Align::Left,
-            offset: Point { x: 0.0, y: -125.0 },
-            size: Point { x: 125.0, y: 125.0 },
-            bg_color: Color::default(),
-            icon_color: Color {
-                r: 255,
-                g: 255,
-                b: 200,
-                a: 255,
-            },
-            icon_size: Point { x: 120.0, y: 120.0 },
-            icon_offset: Point::default(),
-            hotkey_color: Color::default(),
-            hotkey_offset: Point { x: 10.0, y: 0.0 },
-            hotkey_size: Point { x: 30.0, y: 30.0 },
-            hotkey_bg_color: Color::default(),
-            count_offset: Point { x: 0.0, y: 0.0 },
-            count_font_size: 20.0,
-            count_color: Color::default(),
-            name_color: Color::default(),
-            name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 20.0,
-        };
-        let utility_default = SlotLayout {
-            element: HudElement::Utility,
-            name: "Consumables".to_string(),
-            align_text: Align::Right,
-            offset: Point { x: 0.0, y: 125.0 },
-            size: Point { x: 125.0, y: 125.0 },
-            bg_color: Color::default(),
-            icon_color: Color {
-                r: 200,
-                g: 255,
-                b: 255,
-                a: 255,
-            },
-            icon_size: Point { x: 120.0, y: 120.0 },
-            icon_offset: Point::default(),
-            hotkey_color: Color::default(),
-            hotkey_offset: Point { x: 10.0, y: 0.0 },
-            hotkey_size: Point { x: 30.0, y: 30.0 },
-            hotkey_bg_color: Color::default(),
-            count_offset: Point { x: 0.0, y: 0.0 },
-            count_font_size: 20.0,
-            count_color: Color::default(),
-            name_color: Color::default(),
-            name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 20.0,
-        };
-        let left_default = SlotLayout {
-            element: HudElement::Left,
-            name: "Left Hand".to_string(),
-            align_text: Align::Right,
-            offset: Point { x: -125.0, y: 0.0 },
-            size: Point { x: 125.0, y: 125.0 },
-            bg_color: Color::default(),
-            icon_color: Color {
-                r: 255,
-                g: 200,
-                b: 255,
-                a: 255,
-            },
-            icon_size: Point { x: 120.0, y: 120.0 },
-            icon_offset: Point::default(),
-            hotkey_color: Color::default(),
-            hotkey_offset: Point { x: 10.0, y: 0.0 },
-            hotkey_size: Point { x: 30.0, y: 30.0 },
-            hotkey_bg_color: Color::default(),
-            count_offset: Point { x: 0.0, y: 0.0 },
-            count_font_size: 20.0,
-            count_color: Color::default(),
-            name_color: Color::default(),
-            name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 20.0,
-        };
-        let right_default = SlotLayout {
-            element: HudElement::Right,
-            name: "Right Hand".to_string(),
-            align_text: Align::Left,
-            offset: Point { x: 125.0, y: 0.0 },
-            size: Point { x: 125.0, y: 125.0 },
-            bg_color: Color::default(),
-            icon_color: Color {
-                r: 200,
-                g: 255,
-                b: 200,
-                a: 255,
-            },
-            icon_size: Point { x: 120.0, y: 120.0 },
-            icon_offset: Point::default(),
-            hotkey_color: Color::default(),
-            hotkey_offset: Point { x: 10.0, y: 0.0 },
-            hotkey_size: Point { x: 30.0, y: 30.0 },
-            hotkey_bg_color: Color::default(),
-            count_offset: Point { x: 0.0, y: 0.0 },
-            count_font_size: 20.0,
-            count_color: Color::default(),
-            name_color: Color::default(),
-            name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 20.0,
-        };
-        let ammo_default = SlotLayout {
-            element: HudElement::Ammo,
-            name: "Ammo".to_string(),
-            align_text: Align::Left,
-            offset: Point { x: 0.0, y: 0.0 },
-            size: Point { x: 62.0, y: 62.0 },
-            bg_color: Color::default(),
-            icon_color: Color {
-                r: 200,
-                g: 200,
-                b: 255,
-                a: 255,
-            },
-            icon_size: Point { x: 50.0, y: 50.0 },
-            icon_offset: Point::default(),
-            hotkey_color: Color::default(),
-            hotkey_offset: Point { x: 10.0, y: 0.0 },
-            hotkey_size: Point { x: 30.0, y: 30.0 },
-            hotkey_bg_color: Color::default(),
-            count_offset: Point { x: 0.0, y: 0.0 },
-            count_font_size: 20.0,
-            count_color: Color::default(),
-            name_color: Color::default(),
-            name_offset: Point { x: 0.0, y: 20.0 },
-            name_font_size: 20.0,
-        };
-
-        let layouts = vec![
-            power_default,
-            utility_default,
-            left_default,
-            right_default,
-            ammo_default,
-        ];
-        Self {
-            global_scale: 1.0,
-            anchor_name: NamedAnchor::TopLeft,
-            anchor: Point {
-                x: 20.0,
-                y: 20.0,
-            },
-            size: Point { x: 300.0, y: 300.0 },
-            bg_color: Color::default(),
-            hide_ammo_when_irrelevant: false,
-            hide_left_when_irrelevant: false,
-            layouts,
-            animation_alpha: 51,
-            animation_duration: 0.1,
-            font: "futura-book-bt.ttf".to_string(),
-            font_size: 20.0,
-            chinese_full_glyphs: false,
-            simplified_chinese_glyphs: true,
-            cyrillic_glyphs: true,
-            japanese_glyphs: false,
-            korean_glyphs: false,
-            thai_glyphs: false,
-            vietnamese_glyphs: false,
-        }
-    }
-}
-
-impl SlotLayout {
-    pub fn default_for_element(element: HudElement, name: &str) -> Self {
-        Self {
-            element,
-            name: name.to_string(),
-            ..Default::default()
-        }
-    }
-}
-
-impl Default for SlotLayout {
-    fn default() -> Self {
-        Self {
-            element: HudElement { repr: 1 },
-            name: "unknown".to_string(),
-            align_text: Align::Left,
-            offset: Point::default(),
-            size: Point { x: 125.0, y: 125.0 },
-            bg_color: Color::default(),
-            icon_size: Point { x: 100.0, y: 100.0 },
-            icon_color: Color {
-                r: 200,
-                g: 200,
-                b: 255,
-                a: 125,
-            },
-            icon_offset: Point::default(),
-            hotkey_color: Color::default(),
-            hotkey_offset: Point { x: 20.0, y: 0.0 },
-            hotkey_size: Point { x: 30.0, y: 30.0 },
-            hotkey_bg_color: Color::default(),
-            count_offset: Point::default(),
-            count_font_size: 20.0,
-            count_color: Color::default(),
-            name_offset: Point::default(),
-            name_color: Color::default(),
-            name_font_size: 20.0,
-        }
+        // compile-time include of default layout toml
+        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_Layout.toml");
+        let parsed = toml::from_str::<HudLayout>(&buf)
+            .expect("Default layout is not valid toml! Cannot proceed.");
+        parsed
     }
 }
 
