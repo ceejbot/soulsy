@@ -106,6 +106,7 @@ pub enum Icon {
     SpellShock,
     SpellShockStrong,
     SpellSilence,
+    SpellSlow,
     SpellSmoke,
     SpellSoultrap,
     SpellSprint,
@@ -148,7 +149,6 @@ pub enum Icon {
     WeaponSwordTwoHanded,
     WeaponWhip,
     WeaponWoodAxe,
-    SpellSlow,
 }
 
 impl Icon {
@@ -253,6 +253,7 @@ impl Icon {
             Icon::SpellShock => "spell_shock.svg".to_string(),
             Icon::SpellShockStrong => "spell_shock_strong.svg".to_string(),
             Icon::SpellSilence => "spell_silence.svg".to_string(),
+            Icon::SpellSlow => "spell_slow.svg".to_string(),
             Icon::SpellSmoke => "spell_smoke.svg".to_string(),
             Icon::SpellSoultrap => "spell_soultrap.svg".to_string(),
             Icon::SpellSprint => "spell_sprint.svg".to_string(),
@@ -295,7 +296,170 @@ impl Icon {
             Icon::WeaponSwordTwoHanded => "weapon_sword_two_handed.svg".to_string(),
             Icon::WeaponWhip => "weapon_whip.svg".to_string(),
             Icon::WeaponWoodAxe => "weapon_woodaxe.svg".to_string(),
-            Icon::SpellSlow => "spell_slow.svg".to_string(),
+        }
+    }
+
+    /// Fall back from any icon to one in the core set guaranteed to come with the base HUD.
+    /// Fallbacks for the base icons are provided for some, but unlikely to have hits in the
+    /// case where the user has nuked the base icons set.
+    pub fn fallback(&self) -> Icon {
+        match self {
+            // grouping logically, starting with magic schools
+            Icon::Alteration => Icon::Scroll,
+            Icon::Conjuration => Icon::Scroll,
+            Icon::Destruction => Icon::Scroll,
+            Icon::Illusion => Icon::Scroll,
+            Icon::Restoration => Icon::Scroll,
+
+            // now all bound armor
+            Icon::ArmorAmulet => Icon::ArmorHeavy,
+            Icon::ArmorBackpack => Icon::ArmorHeavy,
+            Icon::ArmorBelt => Icon::ArmorHeavy,
+            Icon::ArmorBracelet => Icon::ArmorHeavy,
+            Icon::ArmorCirclet => Icon::ArmorHeavy,
+            Icon::ArmorCloak => Icon::ArmorHeavy,
+            Icon::ArmorClothingFeet => Icon::ArmorHeavy,
+            Icon::ArmorClothingHands => Icon::ArmorHeavy,
+            Icon::ArmorClothingHead => Icon::ArmorHeavy,
+            Icon::ArmorClothing => Icon::ArmorHeavy,
+            Icon::ArmorEarring => Icon::ArmorHeavy,
+            Icon::ArmorHeavyFeet => Icon::ArmorHeavy,
+            Icon::ArmorHeavyHands => Icon::ArmorHeavy,
+            Icon::ArmorHeavyHead => Icon::ArmorHeavy,
+            Icon::ArmorHeavy => Icon::ArmorHeavy,
+            Icon::ArmorLightFeet => Icon::ArmorHeavy,
+            Icon::ArmorLightHands => Icon::ArmorHeavy,
+            Icon::ArmorLightHead => Icon::ArmorHeavy,
+            Icon::ArmorLight => Icon::ArmorHeavy,
+            Icon::ArmorMask => Icon::ArmorHeavy,
+            Icon::ArmorRing => Icon::ArmorHeavy,
+            Icon::ArmorRobes => Icon::ArmorHeavy,
+            Icon::ArmorShieldHeavy => Icon::ArmorHeavy,
+            Icon::ArmorShieldLight => Icon::ArmorHeavy,
+
+            Icon::Arrow => Icon::Arrow,
+
+            Icon::DrinkBeer => Icon::Food,
+            Icon::DrinkWater => Icon::Food,
+            Icon::FoodMeat => Icon::Food,
+            Icon::Food => Icon::Food,
+
+            Icon::HandToHand => Icon::HandToHand,
+            Icon::IconDefault => Icon::IconDefault,
+            Icon::Lantern => Icon::Lantern,
+
+            Icon::PotionDefault => Icon::PotionDefault,
+            Icon::PotionHealth => Icon::PotionDefault,
+            Icon::PotionMagicka => Icon::PotionDefault,
+            Icon::PotionPoison => Icon::PotionDefault,
+            Icon::PotionResist => Icon::PotionDefault,
+            Icon::PotionResistFire => Icon::PotionDefault,
+            Icon::PotionResistFrost => Icon::PotionDefault,
+            Icon::PotionResistShock => Icon::PotionDefault,
+            Icon::PotionStamina => Icon::PotionDefault,
+
+            Icon::Power => Icon::Power,
+            Icon::Scroll => Icon::Scroll,
+            Icon::Shout => Icon::Shout,
+            Icon::Soulgem => Icon::Conjuration,
+
+            // Most spells won't ever reach this because they'll fall back to their
+            // schools, but just in case.
+            Icon::SpellArclight => Icon::Destruction,
+            Icon::SpellAstral => Icon::Destruction,
+            Icon::SpellBear => Icon::Restoration,
+            Icon::SpellBlast => Icon::Destruction,
+            Icon::SpellBleed => Icon::Destruction,
+            Icon::SpellBolt => Icon::Destruction,
+            Icon::SpellBreathAttack => Icon::Destruction,
+            Icon::SpellChainLightning => Icon::Destruction,
+            Icon::SpellControl => Icon::Illusion,
+            Icon::SpellCure => Icon::Restoration,
+            Icon::SpellDeath => Icon::Destruction,
+            Icon::SpellDetect => Icon::Alteration,
+            Icon::SpellDrain => Icon::Destruction,
+            Icon::SpellEagleEye => Icon::Alteration,
+            Icon::SpellEarth => Icon::Destruction,
+            Icon::SpellElementalFury => Icon::Illusion,
+            Icon::SpellEvade => Icon::Illusion,
+            Icon::SpellFear => Icon::Illusion,
+            Icon::SpellFeather => Icon::Alteration,
+            Icon::SpellFire => Icon::Destruction,
+            Icon::SpellFireball => Icon::Destruction,
+            Icon::SpellFireDual => Icon::Destruction,
+            Icon::SpellFireWall => Icon::Destruction,
+            Icon::SpellFreeze => Icon::Destruction,
+            Icon::SpellFrost => Icon::Destruction,
+            Icon::SpellFrostWall => Icon::Destruction,
+            Icon::SpellHeal => Icon::Restoration,
+            Icon::SpellHoly => Icon::Restoration,
+            Icon::SpellIceShard => Icon::Destruction,
+            Icon::SpellLeaf => Icon::Restoration,
+            Icon::SpellLeaves => Icon::Restoration,
+            Icon::SpellLight => Icon::Alteration,
+            Icon::SpellLightning => Icon::Destruction,
+            Icon::SpellLightningBall => Icon::Destruction,
+            Icon::SpellLightningBlast => Icon::Destruction,
+            Icon::SpellMeteor => Icon::Destruction,
+            Icon::SpellMoon => Icon::Destruction,
+            Icon::SpellNecrotic => Icon::Destruction,
+            Icon::SpellParalyze => Icon::Alteration,
+            Icon::SpellPoison => Icon::Restoration,
+            Icon::SpellReanimate => Icon::Conjuration,
+            Icon::SpellReflect => Icon::Alteration,
+            Icon::SpellRoot => Icon::Restoration,
+            Icon::SpellRune => Icon::Destruction,
+            Icon::SpellShadow => Icon::Destruction,
+            Icon::SpellSharpen => Icon::Alteration,
+            Icon::SpellShock => Icon::Destruction,
+            Icon::SpellShockStrong => Icon::Destruction,
+            Icon::SpellSilence => Icon::Illusion,
+            Icon::SpellSlow => Icon::Alteration,
+            Icon::SpellSmoke => Icon::Illusion,
+            Icon::SpellSoultrap => Icon::Conjuration,
+            Icon::SpellSprint => Icon::Alteration,
+            Icon::SpellStamina => Icon::Restoration,
+            Icon::SpellStormblast => Icon::Destruction,
+            Icon::SpellSummon => Icon::Conjuration,
+            Icon::SpellSun => Icon::Restoration,
+            Icon::SpellTeleport => Icon::Alteration,
+            Icon::SpellTime => Icon::Alteration,
+            Icon::SpellTornado => Icon::Destruction,
+            Icon::SpellWard => Icon::Restoration,
+            Icon::SpellWater => Icon::Destruction,
+            Icon::SpellWave => Icon::Destruction,
+            Icon::SpellWerewolf => Icon::Restoration,
+            Icon::SpellWind => Icon::Destruction,
+            Icon::SpellWisp => Icon::Illusion,
+
+            Icon::Torch => Icon::Torch,
+
+            // weapons
+            Icon::WeaponAxeOneHanded => Icon::WeaponAxeOneHanded, // core set
+            Icon::WeaponAxeTwoHanded => Icon::WeaponAxeTwoHanded, // core set
+            Icon::WeaponBow => Icon::WeaponBow,                   // core set
+            Icon::WeaponBowShort => Icon::WeaponBow,
+            Icon::WeaponClaw => Icon::WeaponSwordOneHanded,
+            Icon::WeaponCrossbow => Icon::WeaponCrossbow, // core set
+            Icon::WeaponDagger => Icon::WeaponDagger,     // core set
+            Icon::WeaponFishingRod => Icon::WeaponSwordOneHanded,
+            Icon::WeaponFlail => Icon::WeaponMace,
+            Icon::WeaponGrenade => Icon::WeaponDagger,
+            Icon::WeaponGun => Icon::WeaponBow,
+            Icon::WeaponHalberd => Icon::WeaponHalberd, // core set
+            Icon::WeaponHammer => Icon::WeaponMace,
+            Icon::WeaponKatana => Icon::WeaponSwordOneHanded,
+            Icon::WeaponLance => Icon::WeaponHalberd,
+            Icon::WeaponMace => Icon::WeaponMace, // core set
+            Icon::WeaponPickaxe => Icon::WeaponAxeTwoHanded,
+            Icon::WeaponQuarterstaff => Icon::WeaponQuarterstaff, // core set
+            Icon::WeaponRapier => Icon::WeaponRapier,             // core set
+            Icon::WeaponScythe => Icon::WeaponHalberd,
+            Icon::WeaponStaff => Icon::WeaponStaff, // core set
+            Icon::WeaponSwordOneHanded => Icon::WeaponAxeOneHanded, // core set
+            Icon::WeaponSwordTwoHanded => Icon::WeaponAxeTwoHanded, // core set
+            Icon::WeaponWhip => Icon::WeaponWhip,   // core set
+            Icon::WeaponWoodAxe => Icon::WeaponAxeOneHanded,
         }
     }
 }

@@ -8,35 +8,38 @@ use super::icons::Icon;
 use super::{base, HasIcon, HasKeywords};
 use crate::plugin::Color;
 
-#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
-pub enum ArmorType {
-    Head(ArmorWeight, InvColor),
-    Body(ArmorWeight, InvColor),
-    Hands(ArmorWeight, InvColor),
-    Feet(ArmorWeight, InvColor),
-    Shield(ArmorWeight, InvColor),
-    Amulet(InvColor),
-    Circlet(InvColor),
-    Cloak(InvColor),
-    Earring(InvColor),
-    Mask(InvColor),
-    Ring(InvColor),
-    Robes(InvColor),
-    Belt,
-    Backpack,
-    Lantern,
-    Default,
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct ArmorType {
+    icon: Icon,
+    color: InvColor,
 }
 
-#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
-pub enum ArmorWeight {
-    Clothing,
-    Light,
-    Heavy,
+impl ArmorType {
+    pub fn new(icon: Icon, color: InvColor) -> Self {
+        Self { icon, color }
+    }
+
+    pub fn is_utility(&self) -> bool {
+        matches!(self.icon, Icon::ArmorShieldHeavy | Icon::ArmorShieldLight)
+    }
+}
+
+impl HasIcon for ArmorType {
+    fn color(&self) -> Color {
+        self.color.color()
+    }
+
+    fn icon_file(&self) -> String {
+        self.icon.icon_file()
+    }
+
+    fn icon_fallback(&self) -> String {
+        self.icon.fallback().icon_file()
+    }
 }
 
 impl HasKeywords for ArmorType {
-    fn classify(name: &str, keywords: Vec<String>, _ignored: bool) -> Self {
+    fn classify(name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
         let color = base::color_from_keywords(&keywords);
 
         let tags: Vec<ArmorTag> = keywords
@@ -66,115 +69,74 @@ impl HasKeywords for ArmorType {
             ArmorWeight::Clothing
         };
 
-        let kind = if let Some(k) = tags.iter().find_map(|tag| {
+        let icon = if let Some(i) = tags.iter().find_map(|tag| {
             if AMULETS.contains(*tag) {
-                Some(ArmorType::Amulet(color.clone()))
+                Some(Icon::ArmorAmulet)
             } else if CIRCLETS.contains(*tag) {
-                Some(ArmorType::Circlet(color.clone()))
+                Some(Icon::ArmorCirclet)
             } else if HEAD.contains(*tag) {
-                Some(ArmorType::Head(weight.clone(), color.clone()))
+                match weight {
+                    ArmorWeight::Clothing => Some(Icon::ArmorClothingHead),
+                    ArmorWeight::Light => Some(Icon::ArmorLightHead),
+                    ArmorWeight::Heavy => Some(Icon::ArmorHeavyHead),
+                }
             } else if HANDS.contains(*tag) {
-                Some(ArmorType::Hands(weight.clone(), color.clone()))
+                match weight {
+                    ArmorWeight::Clothing => Some(Icon::ArmorClothingHands),
+                    ArmorWeight::Light => Some(Icon::ArmorLightHands),
+                    ArmorWeight::Heavy => Some(Icon::ArmorHeavyHands),
+                }
             } else if BODY.contains(*tag) {
-                Some(ArmorType::Body(weight.clone(), color.clone()))
+                match weight {
+                    ArmorWeight::Clothing => Some(Icon::ArmorClothing),
+                    ArmorWeight::Light => Some(Icon::ArmorLight),
+                    ArmorWeight::Heavy => Some(Icon::ArmorHeavy),
+                }
             } else if FEET.contains(*tag) {
-                Some(ArmorType::Feet(weight.clone(), color.clone()))
+                match weight {
+                    ArmorWeight::Clothing => Some(Icon::ArmorClothingFeet),
+                    ArmorWeight::Light => Some(Icon::ArmorLightFeet),
+                    ArmorWeight::Heavy => Some(Icon::ArmorHeavyFeet),
+                }
             } else if SHIELDS.contains(*tag) {
-                Some(ArmorType::Shield(weight.clone(), color.clone()))
+                match weight {
+                    ArmorWeight::Clothing => Some(Icon::ArmorShieldLight),
+                    ArmorWeight::Light => Some(Icon::ArmorShieldLight),
+                    ArmorWeight::Heavy => Some(Icon::ArmorShieldHeavy),
+                }
             } else if RINGS.contains(*tag) {
-                Some(ArmorType::Ring(color.clone()))
+                Some(Icon::ArmorRing)
             } else if CLOAKS.contains(*tag) {
-                Some(ArmorType::Cloak(color.clone()))
+                Some(Icon::ArmorCloak)
             } else if MASKS.contains(*tag) {
-                Some(ArmorType::Mask(color.clone()))
+                Some(Icon::ArmorMask)
             } else if BELTS.contains(*tag) {
-                Some(ArmorType::Belt)
+                Some(Icon::ArmorBelt)
             } else if LIGHTS.contains(*tag) {
-                Some(ArmorType::Lantern)
+                Some(Icon::Lantern)
             } else if JEWELRY.contains(*tag) {
-                Some(ArmorType::Earring(color.clone()))
+                Some(Icon::ArmorEarring)
             } else if matches!(tag, ArmorTag::OCF_BagTypeBackpack) {
-                Some(ArmorType::Backpack)
+                Some(Icon::ArmorBackpack)
             } else {
                 None
             }
         }) {
-            k
+            i
         } else {
             log::warn!("We couldn't classify this armor! name='{name}'; keywords: {keywords:?}");
-            ArmorType::Default
+            Icon::ArmorHeavy
         };
 
-        kind
+        ArmorType::new(icon, color)
     }
 }
 
-impl HasIcon for ArmorType {
-    fn color(&self) -> Color {
-        Color::default()
-    }
-
-    fn icon_file(&self) -> String {
-        match self {
-            ArmorType::Head(weight, _c) => match weight {
-                ArmorWeight::Clothing => Icon::ArmorClothingHead.icon_file(),
-                ArmorWeight::Heavy => Icon::ArmorHeavyHead.icon_file(),
-                ArmorWeight::Light => Icon::ArmorLightHead.icon_file(),
-            },
-            ArmorType::Body(weight, _c) => match weight {
-                ArmorWeight::Clothing => Icon::ArmorClothing.icon_file(),
-                ArmorWeight::Heavy => Icon::ArmorHeavy.icon_file(),
-                ArmorWeight::Light => Icon::ArmorLight.icon_file(),
-            },
-            ArmorType::Hands(weight, _c) => match weight {
-                ArmorWeight::Clothing => Icon::ArmorClothingHands.icon_file(),
-                ArmorWeight::Heavy => Icon::ArmorHeavyHands.icon_file(),
-                ArmorWeight::Light => Icon::ArmorLightHands.icon_file(),
-            },
-            ArmorType::Feet(weight, _c) => match weight {
-                ArmorWeight::Clothing => Icon::ArmorClothingFeet.icon_file(),
-                ArmorWeight::Heavy => Icon::ArmorHeavyFeet.icon_file(),
-                ArmorWeight::Light => Icon::ArmorLightFeet.icon_file(),
-            },
-            ArmorType::Shield(weight, _c) => match weight {
-                ArmorWeight::Clothing => Icon::ArmorShieldLight.icon_file(),
-                ArmorWeight::Heavy => Icon::ArmorShieldHeavy.icon_file(),
-                ArmorWeight::Light => Icon::ArmorShieldLight.icon_file(),
-            },
-            ArmorType::Amulet(_) => Icon::ArmorAmulet.icon_file(),
-            ArmorType::Earring(_) => Icon::ArmorEarring.icon_file(),
-            ArmorType::Circlet(_) => Icon::ArmorCirclet.icon_file(),
-            ArmorType::Cloak(_) => Icon::ArmorCloak.icon_file(),
-            ArmorType::Mask(_) => Icon::ArmorMask.icon_file(),
-            ArmorType::Ring(_) => Icon::ArmorRing.icon_file(),
-            ArmorType::Robes(_) => Icon::ArmorRobes.icon_file(),
-            ArmorType::Backpack => Icon::ArmorBackpack.icon_file(),
-            ArmorType::Belt => Icon::ArmorBelt.icon_file(),
-            ArmorType::Lantern => Icon::Lantern.icon_file(),
-            ArmorType::Default => Icon::ArmorClothing.icon_file(),
-        }
-    }
-
-    fn icon_fallback(&self) -> String {
-        match self {
-            ArmorType::Head(_, _) => Icon::ArmorHeavy.icon_file(),
-            ArmorType::Body(_, _) => Icon::ArmorHeavy.icon_file(),
-            ArmorType::Hands(_, _) => Icon::ArmorHeavy.icon_file(),
-            ArmorType::Feet(_, _) => Icon::ArmorHeavy.icon_file(),
-            ArmorType::Shield(_, _) => Icon::ArmorShieldHeavy.icon_file(),
-            ArmorType::Amulet(_) => Icon::ArmorClothing.icon_file(),
-            ArmorType::Circlet(_) => Icon::ArmorClothing.icon_file(),
-            ArmorType::Cloak(_) => Icon::ArmorClothing.icon_file(),
-            ArmorType::Earring(_) => Icon::ArmorClothing.icon_file(),
-            ArmorType::Mask(_) => Icon::ArmorClothing.icon_file(),
-            ArmorType::Ring(_) => Icon::ArmorClothing.icon_file(),
-            ArmorType::Robes(_) => Icon::ArmorClothing.icon_file(),
-            ArmorType::Backpack => Icon::ArmorClothing.icon_file(),
-            ArmorType::Belt => Icon::ArmorClothing.icon_file(),
-            ArmorType::Lantern => Icon::Torch.icon_file(),
-            ArmorType::Default => Icon::ArmorClothing.icon_file(),
-        }
-    }
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
+pub enum ArmorWeight {
+    Clothing,
+    Light,
+    Heavy,
 }
 
 const CLOTHES: EnumSet<ArmorTag> = enum_set!(

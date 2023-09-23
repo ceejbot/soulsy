@@ -230,6 +230,7 @@ namespace player
 
 	bool hasItemOrSpell(const std::string& form_spec)
 	{
+		if (form_spec.find(std::string("_proxy")) != std::string::npos) { return true; }
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{

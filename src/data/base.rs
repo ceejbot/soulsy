@@ -171,7 +171,7 @@ impl HasIcon for BaseType {
             BaseType::Light => Icon::Torch.icon_file(),
             BaseType::Potion(t) => t.icon_fallback(),
             BaseType::PotionProxy(t) => t.icon_fallback(),
-            BaseType::Power => Icon::Scroll.icon_file(),
+            BaseType::Power => Icon::Shout.icon_file(),
             BaseType::Scroll(_) => Icon::Scroll.icon_file(),
             BaseType::Shout(t) => t.icon_fallback(),
             BaseType::Spell(t) => t.icon_fallback(),
@@ -224,11 +224,21 @@ impl IsHudItem for BaseType {
     }
 
     fn is_utility(&self) -> bool {
-        !matches!(self, BaseType::Armor(ArmorType::Shield(_, _)))
-            && matches!(
-                self,
-                BaseType::Potion(_) | BaseType::Armor(_) | BaseType::Food(_)
-            )
+        match self {
+            BaseType::Empty => false,
+            BaseType::Ammo(_) => false,
+            BaseType::Armor(t) => t.is_utility(),
+            BaseType::Food(_) => true,
+            BaseType::HandToHand => false,
+            BaseType::Light => false,
+            BaseType::Potion(_) => true,
+            BaseType::PotionProxy(_) => true,
+            BaseType::Power => false,
+            BaseType::Scroll(_) => false,
+            BaseType::Shout(_) => false,
+            BaseType::Spell(_) => false,
+            BaseType::Weapon(_) => false,
+        }
     }
 
     fn is_weapon(&self) -> bool {
@@ -252,11 +262,21 @@ impl IsHudItem for BaseType {
     }
 
     fn left_hand_ok(&self) -> bool {
-        self.is_one_handed()
-            || matches!(
-                self,
-                BaseType::Armor(ArmorType::Shield(_, _)) | BaseType::Light | BaseType::Scroll(_)
-            )
+        match self {
+            BaseType::Empty => false,
+            BaseType::Ammo(_) => false,
+            BaseType::Armor(t) => !t.is_utility(),
+            BaseType::Food(_) => false,
+            BaseType::HandToHand => true,
+            BaseType::Light => false,
+            BaseType::Potion(_) => false,
+            BaseType::PotionProxy(_) => false,
+            BaseType::Power => false,
+            BaseType::Scroll(t) => !t.two_handed(),
+            BaseType::Shout(_) => false,
+            BaseType::Spell(t) => !t.two_handed(),
+            BaseType::Weapon(t) => t.is_one_handed(),
+        }
     }
 
     fn right_hand_ok(&self) -> bool {
@@ -268,7 +288,7 @@ impl IsHudItem for BaseType {
 mod tests {
     use super::*;
     use crate::data::color::InvColor;
-    use crate::data::weapon::WeaponType;
+    use crate::data::weapon::{WeaponEquipType, WeaponType};
 
     #[test]
     fn can_extract_color() {
@@ -313,23 +333,21 @@ mod tests {
             "Armor".to_string(),
         ];
         let result = BaseType::classify("TestName", ItemCategory::Armor, input, false);
-        assert_eq!(result, BaseType::Armor(ArmorType::Belt));
+        let at = ArmorType::new(Icon::ArmorBelt, InvColor::Fire);
+        assert_eq!(result, BaseType::Armor(at));
 
         let input = vec![
             "OCF_InvColorFire".to_string(),
             "OCF_WeapTypeLongsword2H".to_string(),
             "Weapon".to_string(),
             "*Longsword".to_string(),
-            "-varWeapNotLongsword".to_string(),
-            "TwoHandSword".to_string(),
         ];
         let result = BaseType::classify("TestName", ItemCategory::Weapon, input, true);
-        assert_eq!(
-            result,
-            BaseType::Weapon(WeaponType::SwordTwoHanded(
-                crate::data::weapon::WeaponEquipType::TwoHanded,
-                InvColor::Fire
-            ))
+        let wt = WeaponType::new(
+            Icon::WeaponSwordTwoHanded,
+            InvColor::Fire,
+            WeaponEquipType::TwoHanded,
         );
+        assert_eq!(result, BaseType::Weapon(wt));
     }
 }

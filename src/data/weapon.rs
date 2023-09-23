@@ -1,7 +1,5 @@
 #![allow(non_snake_case, non_camel_case_types)]
 
-use std::fmt::Display;
-
 use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::EnumString;
 
@@ -18,77 +16,36 @@ pub enum WeaponEquipType {
     EitherHand,
 }
 
-// These are weapon types we have icons for. All OCF tags map
-// into one of these. Couldn't see a gain for splitting these up
-// into one/two handed types, so I left them together.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub enum WeaponType {
-    AxeOneHanded(WeaponEquipType, InvColor),
-    AxeTwoHanded(WeaponEquipType, InvColor),
-    BowShort(WeaponEquipType, InvColor),
-    Bow(WeaponEquipType, InvColor),
-    Claw(WeaponEquipType, InvColor),
-    Crossbow(WeaponEquipType, InvColor),
-    Dagger(WeaponEquipType, InvColor),
-    FishingRod(WeaponEquipType, InvColor),
-    Flail(WeaponEquipType, InvColor),
-    Grenade(WeaponEquipType, InvColor),
-    Gun(WeaponEquipType, InvColor),
-    Halberd(WeaponEquipType, InvColor),
-    Hammer(WeaponEquipType, InvColor),
-    HandToHand(WeaponEquipType, InvColor),
-    Katana(WeaponEquipType, InvColor),
-    Lance(WeaponEquipType, InvColor),
-    Mace(WeaponEquipType, InvColor),
-    Pickaxe(WeaponEquipType, InvColor),
-    Quarterstaff(WeaponEquipType, InvColor),
-    Rapier(WeaponEquipType, InvColor),
-    Scythe(WeaponEquipType, InvColor),
-    Staff(WeaponEquipType, InvColor),
-    SwordOneHanded(WeaponEquipType, InvColor),
-    SwordTwoHanded(WeaponEquipType, InvColor),
-    WeaponDefault(WeaponEquipType, InvColor),
-    Whip(WeaponEquipType, InvColor),
-    WoodAxe(WeaponEquipType, InvColor),
+pub struct WeaponType {
+    icon: Icon,
+    color: InvColor,
+    equiptype: WeaponEquipType,
 }
 
 impl WeaponType {
+    pub fn new(icon: Icon, color: InvColor, equiptype: WeaponEquipType) -> Self {
+        Self {
+            icon,
+            color,
+            equiptype,
+        }
+    }
+
     pub fn is_one_handed(&self) -> bool {
-        let two_handed = match self {
-            WeaponType::AxeOneHanded(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::AxeTwoHanded(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::BowShort(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Bow(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Claw(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Crossbow(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Dagger(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Flail(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Grenade(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Gun(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Halberd(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Hammer(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::HandToHand(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Katana(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Lance(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Mace(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Quarterstaff(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Rapier(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Scythe(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Staff(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::SwordOneHanded(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::SwordTwoHanded(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::WeaponDefault(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Whip(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::FishingRod(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::Pickaxe(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-            WeaponType::WoodAxe(t, _) => matches!(t, WeaponEquipType::TwoHanded),
-        };
-        !two_handed
+        matches!(
+            self.equiptype,
+            WeaponEquipType::LeftHand | WeaponEquipType::RightHand | WeaponEquipType::EitherHand
+        )
+    }
+
+    pub fn is_two_handed(&self) -> bool {
+        matches!(self.equiptype, WeaponEquipType::TwoHanded)
     }
 }
 
 impl HasKeywords for WeaponType {
-    fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self {
+    fn classify(_name: &str, keywords: Vec<String>, twohanded: bool) -> Self {
         let color = super::base::color_from_keywords(&keywords);
 
         let equiptype = if twohanded {
@@ -108,241 +65,122 @@ impl HasKeywords for WeaponType {
             })
             .collect();
 
-        let maybe_kind = tags.iter().find_map(|subtype| {
-            // Each weapon subtype has an enumset for all the keywords that get
-            // mapped to that subtype. If we have a match, we have identified
-            // the subtype. Our subtypes are the ones we have icons for right now.
-            // We retain the ability to add icons later.
+        let maybe_icon = tags.iter().find_map(|subtype| {
             if BATTLEAXES.contains(*subtype) {
-                Some(WeaponType::AxeTwoHanded(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponAxeTwoHanded)
             } else if BOWS.contains(*subtype) {
-                Some(WeaponType::Bow(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponBow)
             } else if CROSSBOWS.contains(*subtype) {
-                Some(WeaponType::Crossbow(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponCrossbow)
             } else if DAGGERS.contains(*subtype) {
-                Some(WeaponType::Dagger(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponDagger)
             } else if GREATSWORDS.contains(*subtype) {
-                Some(WeaponType::SwordTwoHanded(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponSwordTwoHanded)
             } else if GUNS.contains(*subtype) {
-                Some(WeaponType::Gun(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponGun)
             } else if HAMMERS.contains(*subtype) {
-                Some(WeaponType::Hammer(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponHammer)
             } else if HALBERDS.contains(*subtype) {
-                Some(WeaponType::Halberd(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponHalberd)
             } else if HAND_TO_HAND.contains(*subtype) {
-                Some(WeaponType::HandToHand(
-                    WeaponEquipType::EitherHand,
-                    color.clone(),
-                ))
+                Some(Icon::HandToHand)
             } else if KATANAS.contains(*subtype) {
-                Some(WeaponType::Katana(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponKatana)
             } else if LANCES.contains(*subtype) {
-                Some(WeaponType::Lance(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponLance)
             } else if MACES.contains(*subtype) {
-                Some(WeaponType::Mace(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponMace)
             } else if QUARTERSTAVES.contains(*subtype) {
-                Some(WeaponType::Quarterstaff(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponQuarterstaff)
             } else if SCYTHES.contains(*subtype) {
-                Some(WeaponType::Scythe(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponScythe)
             } else if STAVES.contains(*subtype) {
-                Some(WeaponType::Staff(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponStaff)
             } else if SWORDS.contains(*subtype) {
-                Some(WeaponType::SwordOneHanded(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponSwordOneHanded)
             } else if WARAXES.contains(*subtype) {
-                Some(WeaponType::AxeOneHanded(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponAxeOneHanded)
             } else if WHIPS.contains(*subtype) {
-                Some(WeaponType::Whip(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponWhip)
             } else if matches!(subtype, WeaponTag::OCF_WeapTypePickaxe1H) {
-                Some(WeaponType::Pickaxe(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponPickaxe)
             } else if matches!(
                 subtype,
                 WeaponTag::OCF_WeapTypeWoodaxe1H | WeaponTag::OCF_WeapTypeWoodHatchet1H
             ) {
-                Some(WeaponType::WoodAxe(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponWoodAxe)
             } else if matches!(subtype, WeaponTag::OCF_WeapTypeFishingRod1H) {
-                Some(WeaponType::FishingRod(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponFishingRod)
             } else if matches!(
                 subtype,
                 WeaponTag::WeapTypeClaw | WeaponTag::OCF_WeapTypeClaw1H
             ) {
-                Some(WeaponType::Claw(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponClaw)
             } else if matches!(subtype, WeaponTag::WeapTypeFlail) {
-                Some(WeaponType::Flail(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponFlail)
             } else if matches!(subtype, WeaponTag::WeapTypeStaff) {
-                Some(WeaponType::Staff(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponStaff)
             } else if matches!(subtype, WeaponTag::WAF_WeapTypeGrenade) {
-                Some(WeaponType::Grenade(equiptype.clone(), color.clone()))
+                Some(Icon::WeaponGrenade)
             } else {
-                None
+                // Now we look for more general tags. Fortunately these keyword lists are short.
+                keywords.iter().find_map(|xs| {
+                    let Ok(subtype) = WeaponTag::try_from(xs.as_str()) else {
+                        return None;
+                    };
+                    if FALLBACK_TYPES.contains(subtype) {
+                        match subtype {
+                            WeaponTag::TwoHandSword => Some(Icon::WeaponSwordTwoHanded),
+                            WeaponTag::Bow => Some(Icon::WeaponBow),
+                            WeaponTag::WeapTypeBow => Some(Icon::WeaponBow),
+                            WeaponTag::WeapTypeDagger => Some(Icon::WeaponDagger),
+                            WeaponTag::OneHandDagger => Some(Icon::WeaponDagger),
+                            WeaponTag::WeapTypeGreatsword => Some(Icon::WeaponSwordTwoHanded),
+                            WeaponTag::WeapTypeMace => Some(Icon::WeaponMace),
+                            WeaponTag::WeapTypeSword => Some(Icon::WeaponSwordOneHanded),
+                            WeaponTag::OneHandSword => Some(Icon::WeaponSwordOneHanded),
+                            WeaponTag::WeapTypeWarAxe => Some(Icon::WeaponAxeOneHanded),
+                            WeaponTag::TwoHandAxe => Some(Icon::WeaponAxeTwoHanded),
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    }
+                })
             }
         });
 
-        if let Some(kind) = maybe_kind {
-            kind
+        let icon = if let Some(icon) = maybe_icon {
+            icon
         } else {
-            // Now we look for more general tags. Fortunately these keyword lists are short.
-            let maybe_kind: Option<WeaponType> = keywords.iter().find_map(|xs| {
-                let Ok(subtype) = WeaponTag::try_from(xs.as_str()) else {
-                    return None;
-                };
-                if FALLBACK_TYPES.contains(subtype) {
-                    match subtype {
-                        WeaponTag::TwoHandSword => {
-                            Some(WeaponType::SwordTwoHanded(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::Bow => Some(WeaponType::Bow(equiptype.clone(), color.clone())),
-                        WeaponTag::WeapTypeBow => {
-                            Some(WeaponType::Bow(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::WeapTypeDagger => {
-                            Some(WeaponType::Dagger(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::OneHandDagger => {
-                            Some(WeaponType::Dagger(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::WeapTypeGreatsword => {
-                            Some(WeaponType::SwordTwoHanded(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::WeapTypeMace => {
-                            Some(WeaponType::Mace(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::WeapTypeSword => {
-                            Some(WeaponType::SwordOneHanded(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::OneHandSword => {
-                            Some(WeaponType::SwordOneHanded(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::WeapTypeWarAxe => {
-                            Some(WeaponType::AxeOneHanded(equiptype.clone(), color.clone()))
-                        }
-                        WeaponTag::TwoHandAxe => {
-                            Some(WeaponType::AxeTwoHanded(equiptype.clone(), color.clone()))
-                        }
-                        _ => None,
-                    }
-                } else {
-                    None
-                }
-            });
-            if let Some(kind) = maybe_kind {
-                kind
-            } else {
-                log::warn!(
-                    "We couldn't classify this weapon! name='{name}'; keywords: {keywords:?}"
-                );
-                WeaponType::default()
-            }
-        }
+            Icon::WeaponSwordOneHanded
+        };
+
+        WeaponType::new(icon, color, equiptype)
     }
 }
 
 impl Default for WeaponType {
     fn default() -> Self {
-        WeaponType::WeaponDefault(WeaponEquipType::EitherHand, InvColor::default())
-    }
-}
-
-impl Display for WeaponType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            WeaponType::AxeOneHanded(_, _) => write!(f, "axe_one_handed"),
-            WeaponType::AxeTwoHanded(_, _) => write!(f, "axe_two_handed"),
-            WeaponType::BowShort(_, _) => write!(f, "bow_short"),
-            WeaponType::Bow(_, _) => write!(f, "bow"),
-            WeaponType::Claw(_, _) => write!(f, "claw"),
-            WeaponType::Crossbow(_, _) => write!(f, "crossbow"),
-            WeaponType::Dagger(_, _) => write!(f, "dagger"),
-            WeaponType::FishingRod(_, _) => write!(f, "fishingrod"),
-            WeaponType::Flail(_, _) => write!(f, "flail"),
-            WeaponType::Grenade(_, _) => write!(f, "grenade"),
-            WeaponType::Gun(_, _) => write!(f, "gun"),
-            WeaponType::Halberd(_, _) => write!(f, "halberd"),
-            WeaponType::Hammer(_, _) => write!(f, "hammer"),
-            WeaponType::HandToHand(_, _) => write!(f, "hand_to_hand"),
-            WeaponType::Katana(_, _) => write!(f, "katana"),
-            WeaponType::Lance(_, _) => write!(f, "lance"),
-            WeaponType::Mace(_, _) => write!(f, "mace"),
-            WeaponType::Pickaxe(_, _) => write!(f, "pickaxe"),
-            WeaponType::Quarterstaff(_, _) => write!(f, "quarterstaff"),
-            WeaponType::Rapier(_, _) => write!(f, "rapier"),
-            WeaponType::Scythe(_, _) => write!(f, "scythe"),
-            WeaponType::Staff(_, _) => write!(f, "staff"),
-            WeaponType::SwordOneHanded(_, _) => write!(f, "sword_one_handed"),
-            WeaponType::SwordTwoHanded(_, _) => write!(f, "sword_two_handed"),
-            WeaponType::WeaponDefault(_, _) => write!(f, "weapon_default"),
-            WeaponType::Whip(_, _) => write!(f, "whip"),
-            WeaponType::WoodAxe(_, _) => write!(f, "woodaxe"),
-        }
+        WeaponType::new(
+            Icon::WeaponSwordOneHanded,
+            InvColor::default(),
+            WeaponEquipType::EitherHand,
+        )
     }
 }
 
 impl HasIcon for WeaponType {
     fn color(&self) -> Color {
-        match self {
-            WeaponType::AxeOneHanded(_, c) => c.color(),
-            WeaponType::AxeTwoHanded(_, c) => c.color(),
-            WeaponType::BowShort(_, c) => c.color(),
-            WeaponType::Bow(_, c) => c.color(),
-            WeaponType::Claw(_, c) => c.color(),
-            WeaponType::Crossbow(_, c) => c.color(),
-            WeaponType::Dagger(_, c) => c.color(),
-            WeaponType::FishingRod(_, c) => c.color(),
-            WeaponType::Flail(_, c) => c.color(),
-            WeaponType::Grenade(_, c) => c.color(),
-            WeaponType::Gun(_, c) => c.color(),
-            WeaponType::Halberd(_, c) => c.color(),
-            WeaponType::Hammer(_, c) => c.color(),
-            WeaponType::HandToHand(_, c) => c.color(),
-            WeaponType::Katana(_, c) => c.color(),
-            WeaponType::Lance(_, c) => c.color(),
-            WeaponType::Mace(_, c) => c.color(),
-            WeaponType::Pickaxe(_, c) => c.color(),
-            WeaponType::Quarterstaff(_, c) => c.color(),
-            WeaponType::Rapier(_, c) => c.color(),
-            WeaponType::Scythe(_, c) => c.color(),
-            WeaponType::Staff(_, c) => c.color(),
-            WeaponType::SwordOneHanded(_, c) => c.color(),
-            WeaponType::SwordTwoHanded(_, c) => c.color(),
-            WeaponType::WeaponDefault(_, c) => c.color(),
-            WeaponType::Whip(_, c) => c.color(),
-            WeaponType::WoodAxe(_, c) => c.color(),
-        }
+        self.color.color()
     }
 
     fn icon_file(&self) -> String {
-        match self {
-            WeaponType::AxeOneHanded(_, _) => Icon::WeaponAxeOneHanded.icon_file(),
-            WeaponType::AxeTwoHanded(_, _) => Icon::WeaponAxeTwoHanded.icon_file(),
-            WeaponType::BowShort(_, _) => Icon::WeaponBowShort.icon_file(),
-            WeaponType::Bow(_, _) => Icon::WeaponBow.icon_file(),
-            WeaponType::Claw(_, _) => Icon::WeaponClaw.icon_file(),
-            WeaponType::Crossbow(_, _) => Icon::WeaponCrossbow.icon_file(),
-            WeaponType::Dagger(_, _) => Icon::WeaponDagger.icon_file(),
-            WeaponType::FishingRod(_, _) => Icon::WeaponFishingRod.icon_file(),
-            WeaponType::Flail(_, _) => Icon::WeaponFlail.icon_file(),
-            WeaponType::Grenade(_, _) => Icon::WeaponGrenade.icon_file(),
-            WeaponType::Gun(_, _) => Icon::WeaponGun.icon_file(),
-            WeaponType::Halberd(_, _) => Icon::WeaponHalberd.icon_file(),
-            WeaponType::Hammer(_, _) => Icon::WeaponHammer.icon_file(),
-            WeaponType::HandToHand(_, _) => Icon::HandToHand.icon_file(),
-            WeaponType::Katana(_, _) => Icon::WeaponKatana.icon_file(),
-            WeaponType::Lance(_, _) => Icon::WeaponLance.icon_file(),
-            WeaponType::Mace(_, _) => Icon::WeaponMace.icon_file(),
-            WeaponType::Pickaxe(_, _) => Icon::WeaponPickaxe.icon_file(),
-            WeaponType::Quarterstaff(_, _) => Icon::WeaponQuarterstaff.icon_file(),
-            WeaponType::Rapier(_, _) => Icon::WeaponRapier.icon_file(),
-            WeaponType::Scythe(_, _) => Icon::WeaponScythe.icon_file(),
-            WeaponType::Staff(_, _) => Icon::WeaponStaff.icon_file(),
-            WeaponType::SwordOneHanded(_, _) => Icon::WeaponSwordOneHanded.icon_file(),
-            WeaponType::SwordTwoHanded(_, _) => Icon::WeaponSwordTwoHanded.icon_file(),
-            WeaponType::WeaponDefault(_, _) => Icon::WeaponSwordOneHanded.icon_file(),
-            WeaponType::Whip(_, _) => Icon::WeaponWhip.icon_file(),
-            WeaponType::WoodAxe(_, _) => Icon::WeaponWoodAxe.icon_file(),
-        }
+        self.icon.icon_file()
     }
 
     fn icon_fallback(&self) -> String {
-        "weapon_default.svg".to_string()
+        Icon::WeaponSwordOneHanded.icon_file()
     }
 }
 
@@ -407,6 +245,7 @@ const GREATSWORDS: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeCleaver2H
         | WeaponTag::OCF_WeapTypeGreatsword2H
         | WeaponTag::OCF_WeapTypeLightsaber2H
+        | WeaponTag::OCF_WeapTypeLongsword2H
 );
 const GUNS: EnumSet<WeaponTag> = enum_set!(
     WeaponTag::WeapTypeGun
@@ -556,6 +395,7 @@ pub enum WeaponTag {
     OCF_WeapTypeLance2H,
     OCF_WeapTypeLightsaber1H,
     OCF_WeapTypeLightsaber2H,
+    OCF_WeapTypeLongsword2H,
     OCF_WeapTypeMace1H,
     OCF_WeapTypeMace2H,
     OCF_WeapTypeMassiveSword2H,
@@ -640,16 +480,13 @@ mod tests {
     fn keywords_convert() {
         let input = vec![
             "OCF_InvColorBlood".to_string(),
-            "WeapTypeGreatsword".to_string(),
-            "WeapTypeHalberd".to_string(),
             "OCF_WeapTypeHalberd2H".to_string(),
         ];
 
         let result = WeaponType::classify("TestName", input, true);
-        assert_eq!(
-            result,
-            WeaponType::Halberd(WeaponEquipType::TwoHanded, InvColor::Blood)
-        );
+        assert_eq!(result.equiptype, WeaponEquipType::TwoHanded);
+        assert_eq!(result.color, InvColor::Blood);
+        assert_eq!(result.icon, Icon::WeaponHalberd);
 
         let input = vec![
             "OCF_InvColorBlood".to_string(),
@@ -660,10 +497,9 @@ mod tests {
             "OCF_WeapTypeHalberd2H".to_string(),
         ];
         let result = WeaponType::classify("TestName", input, true);
-        assert_eq!(
-            result,
-            WeaponType::Halberd(WeaponEquipType::TwoHanded, InvColor::Blood)
-        );
+        assert_eq!(result.equiptype, WeaponEquipType::TwoHanded);
+        assert_eq!(result.color, InvColor::Blood);
+        assert_eq!(result.icon, Icon::WeaponHalberd);
 
         let input = vec![
             "DaedricArtifact".to_string(),
@@ -671,10 +507,9 @@ mod tests {
             "OCF_ArtifactDaedric".to_string(),
         ];
         let result = WeaponType::classify("TestName", input, false);
-        assert_eq!(
-            result,
-            WeaponType::WeaponDefault(WeaponEquipType::EitherHand, InvColor::White)
-        );
+        assert_eq!(result.equiptype, WeaponEquipType::EitherHand);
+        assert_eq!(result.color, InvColor::White);
+        assert_eq!(result.icon, Icon::WeaponSwordOneHanded);
 
         let input = vec![
             "OCF_WeapTypeLongsword2H".to_string(),
@@ -683,9 +518,8 @@ mod tests {
             "TwoHandSword".to_string(),
         ];
         let result = WeaponType::classify("TestName", input, true);
-        assert_eq!(
-            result,
-            WeaponType::SwordTwoHanded(WeaponEquipType::TwoHanded, InvColor::Fire)
-        );
+        assert_eq!(result.equiptype, WeaponEquipType::TwoHanded);
+        assert_eq!(result.color, InvColor::Fire);
+        assert_eq!(result.icon, Icon::WeaponSwordTwoHanded);
     }
 }

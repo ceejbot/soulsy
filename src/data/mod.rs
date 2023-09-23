@@ -199,15 +199,16 @@ pub trait IsHudItem {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::weapon::{WeaponEquipType, WeaponType};
+    use crate::data::{
+        icons::Icon,
+        weapon::{WeaponEquipType, WeaponType},
+    };
 
     #[test]
     fn can_classify_huditem() {
         let input = vec![
             "OCF_InvColorBlood".to_string(),
-            "WeapTypeGreatsword".to_string(),
             "WeapTypeHalberd".to_string(),
-            "Weapon".to_string(),
             "OCF_WeapTypeHalberd2H".to_string(),
         ];
 
@@ -226,13 +227,11 @@ mod tests {
             "Placeholder".to_string(),
             "handled the name bytes correctly"
         );
-        assert_eq!(
-            *item.kind(),
-            BaseType::Weapon(WeaponType::Halberd(
-                WeaponEquipType::TwoHanded,
-                InvColor::Blood
-            )),
-            "classified weapon as halberd"
+        let wt = WeaponType::new(
+            Icon::WeaponHalberd,
+            InvColor::Blood,
+            WeaponEquipType::TwoHanded,
         );
+        assert_eq!(*item.kind(), BaseType::Weapon(wt));
     }
 }

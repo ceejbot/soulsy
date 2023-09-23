@@ -332,6 +332,13 @@ impl HasIcon for SpellType {
     }
 
     fn icon_fallback(&self) -> String {
-        Icon::Scroll.icon_file()
+        match self.data.school {
+            School::Alteration => Icon::Alteration.icon_file(),
+            School::Conjuration => Icon::Conjuration.icon_file(),
+            School::Destruction => Icon::Destruction.icon_file(),
+            School::Illusion => Icon::Illusion.icon_file(),
+            School::Restoration => Icon::Restoration.icon_file(),
+            School::None => self.icon.fallback().icon_file(),
+        }
     }
 }
