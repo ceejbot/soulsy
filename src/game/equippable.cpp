@@ -173,33 +173,39 @@ namespace equippable
 
 			// Regular spells.
 			logger::info("making HudItem for spell: '{}'"sv, item_form->GetName());
-			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
-			effect->ForEachKeyword(KeywordAccumulator::collect);
-			auto& keywords = KeywordAccumulator::mKeywords;
-			if (effect)
+			const auto* costliest = spell->GetCostliestEffectItem();
+			if (costliest)
 			{
-				auto skill_level        = effect->GetMinimumSkillLevel();
-				auto data               = fillOutSpellData(two_handed, skill_level, effect);
-				rust::Box<HudItem> item = magic_from_spelldata(
-					ItemCategory::Spell, std::move(data), *keywords, std::move(chonker), form_string, 1);
-				return item;
+				const auto* effect = costliest->baseEffect;
+				if (effect)
+				{
+					effect->ForEachKeyword(KeywordAccumulator::collect);
+					auto& keywords          = KeywordAccumulator::mKeywords;
+					auto skill_level        = effect->GetMinimumSkillLevel();
+					auto data               = fillOutSpellData(two_handed, skill_level, effect);
+					rust::Box<HudItem> item = magic_from_spelldata(
+						ItemCategory::Spell, std::move(data), *keywords, std::move(chonker), form_string, 1);
+					return item;
+				}
 			}
 		}
 
 		if (item_form->Is(RE::FormType::Scroll))
 		{
 			logger::info("making HudItem for scroll: '{}'"sv, item_form->GetName());
+			auto* scroll = item_form->As<RE::ScrollItem>();
+			if (scroll->GetCostliestEffectItem() && scroll->GetCostliestEffectItem()->baseEffect)
+			{
+				const auto effect = scroll->GetCostliestEffectItem()->baseEffect;
+				effect->ForEachKeyword(KeywordAccumulator::collect);
+				auto& keywords   = KeywordAccumulator::mKeywords;
+				auto skill_level = effect->GetMinimumSkillLevel();
 
-			auto* scroll      = item_form->As<RE::ScrollItem>();
-			const auto effect = scroll->GetCostliestEffectItem()->baseEffect;
-			effect->ForEachKeyword(KeywordAccumulator::collect);
-			auto& keywords   = KeywordAccumulator::mKeywords;
-			auto skill_level = effect->GetMinimumSkillLevel();
-
-			auto data               = fillOutSpellData(two_handed, skill_level, effect);
-			rust::Box<HudItem> item = magic_from_spelldata(
-				ItemCategory::Scroll, std::move(data), *keywords, std::move(chonker), form_string, 1);
-			return item;
+				auto data               = fillOutSpellData(two_handed, skill_level, effect);
+				rust::Box<HudItem> item = magic_from_spelldata(
+					ItemCategory::Scroll, std::move(data), *keywords, std::move(chonker), form_string, 1);
+				return item;
+			}
 		}
 
 		if (item_form->Is(RE::FormType::AlchemyItem))
