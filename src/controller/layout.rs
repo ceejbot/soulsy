@@ -23,7 +23,7 @@ static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::init()));
 
 /// Lazy parsing of the compile-time include of the default layout, as a fallback.
-static DEFAULT_LAYOUT: Lazy<HudLayout> = Lazy::new(|| HudLayout::default());
+static DEFAULT_LAYOUT: Lazy<HudLayout> = Lazy::new(HudLayout::default);
 
 #[cfg(target_os = "windows")]
 use crate::plugin::{resolutionHeight, resolutionWidth};
@@ -183,9 +183,7 @@ impl Default for HudLayout {
     fn default() -> Self {
         // compile-time include of default layout toml
         let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_Layout.toml");
-        let parsed = toml::from_str::<HudLayout>(&buf)
-            .expect("Default layout is not valid toml! Cannot proceed.");
-        parsed
+        toml::from_str::<HudLayout>(buf).expect("Default layout is not valid toml! Cannot proceed.")
     }
 }
 
