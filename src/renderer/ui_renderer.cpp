@@ -137,7 +137,7 @@ namespace ui
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
-	// Simple helper function to load an image into a DX11 texture with common settings
+	// Helper function to load an image into a DX11 texture with common settings
 	bool ui_renderer::load_texture_from_file(const char* filename,
 		ID3D11ShaderResourceView** out_srv,
 		int32_t& out_width,
@@ -374,16 +374,16 @@ namespace ui
 
 	void ui_renderer::drawAllSlots()
 	{
-		auto top_layout         = hud_layout();
-		auto anchor             = top_layout.anchor_point();
-		auto hudsize            = top_layout.size;
+		auto topLayout          = hud_layout();
+		auto anchor             = topLayout.anchor_point();
+		auto hudsize            = topLayout.size;
 		bool rangedEquipped     = player::hasRangedEquipped();
 		const auto settings     = user_settings();
 		const auto screenWidth  = resolutionWidth();
 		const auto screenHeight = resolutionHeight();
 		bool colorizeIcons      = settings->colorize_icons();
 
-		auto globalScale = top_layout.global_scale;
+		auto globalScale = topLayout.global_scale;
 		// serde's default for missing f32 fields is 0
 		if (globalScale == 0.0f) { globalScale = 1.0f; }
 
@@ -396,27 +396,27 @@ namespace ui
 		anchor.y = std::clamp(anchor.y, hudsize.y / 2.0f, screenHeight - hudsize.y / 2.0f);
 
 		// Draw the HUD background if requested.
-		if (top_layout.bg_color.a > 0)
+		if (topLayout.bg_color.a > 0)
 		{
 			constexpr auto angle                = 0.f;
 			const auto center                   = ImVec2(anchor.x, anchor.y);
 			const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::hud)];
 			const auto size                     = ImVec2(hudsize.x, hudsize.y);
-			drawElement(texture, center, size, angle, top_layout.bg_color);
+			drawElement(texture, center, size, angle, topLayout.bg_color);
 		}
 
-		for (auto slot_layout : top_layout.layouts)
+		for (auto slotLayout : topLayout.layouts)
 		{
-			if ((slot_layout.element == HudElement::Left) && top_layout.hide_left_when_irrelevant && rangedEquipped)
+			if ((slotLayout.element == HudElement::Left) && topLayout.hide_left_when_irrelevant && rangedEquipped)
 			{
 				continue;
 			}
-			if ((slot_layout.element == HudElement::Ammo) && top_layout.hide_ammo_when_irrelevant && !rangedEquipped)
+			if ((slotLayout.element == HudElement::Ammo) && topLayout.hide_ammo_when_irrelevant && !rangedEquipped)
 			{
 				continue;
 			}
 
-			rust::Box<HudItem> entry = entry_to_show_in_slot(slot_layout.element);
+			rust::Box<HudItem> entry = entry_to_show_in_slot(slotLayout.element);
 
 			auto entry_name = std::string("");
 			// We use the data cached in the entry if at all possible
@@ -431,82 +431,82 @@ namespace ui
 				entry_name = helpers::vec_to_stdstring(bytes);
 			}
 
-			const auto hotkey = settings->hotkey_for(slot_layout.element);
+			const auto hotkey = settings->hotkey_for(slotLayout.element);
 			const auto slot_center =
-				ImVec2(anchor.x + slot_layout.offset.x * globalScale, anchor.y + slot_layout.offset.y * globalScale);
+				ImVec2(anchor.x + slotLayout.offset.x * globalScale, anchor.y + slotLayout.offset.y * globalScale);
 
-			slot_layout.size.x *= globalScale;
-			slot_layout.size.y *= globalScale;
+			slotLayout.size.x *= globalScale;
+			slotLayout.size.y *= globalScale;
 
-			if (slot_layout.bg_color.a > 0)
+			if (slotLayout.bg_color.a > 0)
 			{
 				const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::slot)];
-				const auto size                     = ImVec2(slot_layout.size.x, slot_layout.size.y);
-				drawElement(texture, slot_center, size, 0.f, slot_layout.bg_color);
+				const auto size                     = ImVec2(slotLayout.size.x, slotLayout.size.y);
+				drawElement(texture, slot_center, size, 0.f, slotLayout.bg_color);
 			}
 
 			// now draw the icon over the background...
-			if (slot_layout.icon_color.a > 0)
+			if (slotLayout.icon_color.a > 0)
 			{
-				const auto iconColor = colorizeIcons ? entry->color() : slot_layout.icon_color;
+				const auto iconColor = colorizeIcons ? entry->color() : slotLayout.icon_color;
 				auto iconFile        = std::string(entry->icon_file());
 				if (icon_struct[iconFile].width == 0) { iconFile = std::string(entry->icon_fallback()); }
 				const auto [texture, width, height] = icon_struct[iconFile];
-				const auto scale                    = width > height ? (slot_layout.icon_size.x * globalScale / width) :
-				                                                       (slot_layout.icon_size.y * globalScale / height);
+				const auto scale                    = width > height ? (slotLayout.icon_size.x * globalScale / width) :
+				                                                       (slotLayout.icon_size.y * globalScale / height);
 				const auto size                     = ImVec2(width * scale, height * scale);
-				const auto icon_pos                 = ImVec2(slot_center.x + slot_layout.icon_offset.x * globalScale,
-                    slot_center.y + slot_layout.icon_offset.y * globalScale);
+				const auto icon_pos                 = ImVec2(slot_center.x + slotLayout.icon_offset.x * globalScale,
+                    slot_center.y + slotLayout.icon_offset.y * globalScale);
 
 				drawElement(texture, slot_center, size, 0.f, iconColor);
 			}
 
 			// Now decide if we should draw the text showing the item's name.
-			if (slot_layout.name_color.a > 0 && (entry_name.size() > 0))
+			if (slotLayout.name_color.a > 0 && (entry_name.size() > 0))
 			{
-				const auto textPos = ImVec2(slot_center.x + slot_layout.name_offset.x * globalScale,
-					slot_center.y + slot_layout.name_offset.y * globalScale);
-				auto fontSize      = slot_layout.name_font_size;
-				if (fontSize == 0.0) { fontSize = top_layout.font_size; }
+				const auto textPos = ImVec2(slot_center.x + slotLayout.name_offset.x * globalScale,
+					slot_center.y + slotLayout.name_offset.y * globalScale);
+				auto fontSize      = slotLayout.name_font_size;
+				if (fontSize == 0.0) { fontSize = topLayout.font_size; }
 
-				drawText(entry_name, textPos, fontSize * globalScale, slot_layout.name_color, slot_layout.align_text);
+				drawText(entry_name, textPos, fontSize * globalScale, slotLayout.name_color, slotLayout.align_text);
 			}
 
 			// Do we need to draw a count?
-			if (slot_layout.count_color.a > 0 && entry->count_matters())
+			if (slotLayout.count_color.a > 0 && entry->count_matters())
 			{
 				auto count         = entry->count();
 				auto countText     = std::to_string(count);
-				const auto textPos = ImVec2(slot_center.x + slot_layout.count_offset.x * globalScale,
-					slot_center.y + slot_layout.count_offset.y * globalScale);
+				const auto textPos = ImVec2(slot_center.x + slotLayout.count_offset.x * globalScale,
+					slot_center.y + slotLayout.count_offset.y * globalScale);
 
 				if (!countText.empty())
 				{
 					drawText(countText,
 						textPos,
-						slot_layout.count_font_size * globalScale,
-						slot_layout.count_color,
-						slot_layout.align_text);
+						slotLayout.count_font_size * globalScale,
+						slotLayout.count_color,
+						slotLayout.align_text);
 				}
 			}
 
-			if (slot_layout.hotkey_color.a > 0)
+			if (slotLayout.hotkey_color.a > 0)
 			{
-				const auto hk_im_center = ImVec2(slot_center.x + slot_layout.hotkey_offset.x * globalScale,
-					slot_center.y + slot_layout.hotkey_offset.y * globalScale);
+				const auto hk_im_center = ImVec2(slot_center.x + slotLayout.hotkey_offset.x * globalScale,
+					slot_center.y + slotLayout.hotkey_offset.y * globalScale);
 
-				if (slot_layout.hotkey_bg_color.a > 0)
+				if (slotLayout.hotkey_bg_color.a > 0)
 				{
 					const auto [texture, width, height] = image_struct[static_cast<uint32_t>(image_type::key)];
 					const auto size =
-						ImVec2(slot_layout.hotkey_size.x * globalScale, slot_layout.hotkey_size.y * globalScale);
-					drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_bg_color);
+						ImVec2(slotLayout.hotkey_size.x * globalScale, slotLayout.hotkey_size.y * globalScale);
+					drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_bg_color);
 				}
 
 				const auto [texture, width, height] = get_key_icon(hotkey);
-				const auto size = ImVec2(static_cast<float>(slot_layout.hotkey_size.x * globalScale - 2.0f),
-					static_cast<float>(slot_layout.hotkey_size.y * globalScale - 2.0f));
-				drawElement(texture, hk_im_center, size, 0.f, slot_layout.hotkey_color);
+				const auto size = ImVec2(static_cast<float>(slotLayout.hotkey_size.x * globalScale - 2.0f),
+					static_cast<float>(slotLayout.hotkey_size.y * globalScale - 2.0f));
+				drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_color);
 			}
 		}
 
@@ -555,14 +555,14 @@ namespace ui
 						out_struct[icon_file].width,
 						out_struct[icon_file].height))
 				{
-					logger::debug("loading texture {}, type: {}, width: {}, height: {}"sv,
+					logger::debug("loaded texture {}, type: {}, width: {}, height: {}"sv,
 						entrypath.filename().string().c_str(),
 						entrypath.filename().extension().string().c_str(),
 						out_struct[icon_file].width,
 						out_struct[icon_file].height);
 				}
 			}
-			else { logger::error("failed to load {}"sv, entrypath.filename().string().c_str()); }
+			else { logger::error("this pack has no icon data for {}"sv, entrypath.filename().string().c_str()); }
 		}
 	}
 
