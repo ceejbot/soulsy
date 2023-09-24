@@ -133,6 +133,10 @@ impl ShoutType {
             variant,
         }
     }
+
+    pub fn variant(&self) -> &ShoutVariant {
+        &self.variant
+    }
 }
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]

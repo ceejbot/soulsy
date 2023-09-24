@@ -78,8 +78,6 @@ impl SpellType {
         let damage = damage_category.map_or(data.damage.clone(), |xs| xs);
         let mut color = damage.color(); // we might override this
 
-        log::info!("magic category: {damage:?}");
-
         let art_hint = keywords.iter().find_map(|xs| {
             if matches!(xs, SpellEffectKeywords::ArtBall) {
                 if matches!(data.damage, MagicCategory::Fire) {

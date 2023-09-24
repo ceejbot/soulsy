@@ -34,14 +34,14 @@ namespace ui
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 
-	auto hud_alpha        = 0.0f;
-	auto goal_alpha       = 1.0f;
-	auto fade_in          = true;
-	auto fade_duration    = 3.0f;  // seconds
-	auto transition_timer = 2.0f;  // seconds
-	auto is_transitioning = false;
-	auto fade_out_timer   = 0.33f;  // seconds
-	bool doing_brief_peek = false;
+	auto hud_alpha          = 0.0f;
+	auto goal_alpha         = 1.0f;
+	auto fade_in            = true;
+	auto fade_duration      = 3.0f;  // seconds
+	auto transition_timer   = 2.0f;  // seconds
+	auto is_transitioning   = false;
+	auto delayBeforeFadeout = 0.33f;  // seconds
+	bool doing_brief_peek   = false;
 
 	ImFont* imFont;
 	auto tried_font_load = false;
@@ -669,24 +669,23 @@ namespace ui
 		ui_renderer::startAlphaTransition(true, 1.0f);
 	}
 
-	void ui_renderer::startAlphaTransition(const bool a_in, const float a_value)
+	void ui_renderer::startAlphaTransition(const bool becomingVisible, const float a_value)
 	{
-		if (a_in && hud_alpha == 1.0f) { return; }
-		if (!a_in && hud_alpha == 0.0f) { return; }
-		logger::debug(
-			"startAlphaTransition() called with in={} and goal={}; hud_alpha={};"sv, a_in, a_value, hud_alpha);
-		is_transitioning = true;
-		fade_in          = a_in;
+		if (becomingVisible && hud_alpha == 1.0f) { return; }
+		if (!becomingVisible && hud_alpha == 0.0f) { return; }
+		logger::debug("startAlphaTransition() called with in={} and goal={}; hud_alpha={};"sv,
+			becomingVisible,
+			a_value,
+			hud_alpha);
 
-		// unused right now
-		if (a_value < 0) { goal_alpha = 0.0; }
-		else if (a_value > 1.0) { goal_alpha = 1.0; }
-		else { goal_alpha = a_value; }
+		goal_alpha = std::clamp(a_value, 0.0f, 1.0f);
+		fade_in    = becomingVisible;
 
 		// The game will report that the player has sheathed weapons when
 		// the player has merely equipped something new. So we give it some
-		// time to decide that the weapons are truly gone.
-		fade_out_timer = FADEOUT_HYSTERESIS;
+		// time to decide that the weapons are truly gone. This number is the
+		// how long we'll wait before actually fading.
+		if (!fade_in) { delayBeforeFadeout = FADEOUT_HYSTERESIS; }
 
 		auto settings   = user_settings();
 		float fade_time = static_cast<float>(settings->fade_time()) / 1000.0f;
@@ -700,6 +699,13 @@ namespace ui
 		// Scale the transition time for how much of the shift remains.
 		if (fade_in) { fade_duration = 1.0f - hud_alpha * transition_timer; }
 		else { fade_duration = hud_alpha * transition_timer; }
+		if (fade_duration < 0.001f)
+		{
+			hud_alpha = goal_alpha;
+			return;
+		}
+
+		is_transitioning = true;
 	}
 
 	void ui_renderer::makeFadeDecision()
@@ -758,7 +764,7 @@ namespace ui
 		}
 		else if (!fade_in && is_transitioning)
 		{
-			if (fade_out_timer > 0.0f) { fade_out_timer -= timeDelta; }
+			if (delayBeforeFadeout > 0.0f) { delayBeforeFadeout -= timeDelta; }
 			else
 			{
 				if (hud_alpha <= 0.0f)
@@ -767,7 +773,7 @@ namespace ui
 					transition_timer = 0.0f;
 					is_transitioning = false;
 				}
-				fade_out_timer = 0.0f;
+				delayBeforeFadeout = 0.0f;
 				if (transition_timer > 0.0f) { transition_timer -= timeDelta; }
 				hud_alpha = 1.0f - ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
 			}
