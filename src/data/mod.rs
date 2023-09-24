@@ -24,7 +24,7 @@ pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
 use self::potion::PotionType;
-use self::shout::ShoutVariant;
+use self::shout::ShoutType;
 use self::spell::SpellType;
 pub use super::magic::SpellData;
 use crate::plugin::{
@@ -86,7 +86,7 @@ pub fn magic_from_spelldata(
     let kind = match which {
         ItemCategory::Scroll => BaseType::Scroll(SpellType::new(data, keywords)),
         ItemCategory::Spell => BaseType::Spell(SpellType::new(data, keywords)),
-        ItemCategory::Shout => BaseType::Shout(ShoutVariant::new(keywords)),
+        ItemCategory::Shout => BaseType::Shout(ShoutType::new(keywords)),
         _ => BaseType::Spell(SpellType::new(data, keywords)),
     };
     let result = HudItem::preclassified(name_bytes, form_string, count, kind);
@@ -104,7 +104,7 @@ pub fn simple_from_formdata(
         ItemCategory::Light => BaseType::Light,
         ItemCategory::Power => BaseType::Power,
         ItemCategory::Food => BaseType::Food(base::FoodType::Fruit),
-        ItemCategory::Shout => BaseType::Shout(ShoutVariant::default()),
+        ItemCategory::Shout => BaseType::Shout(ShoutType::default()),
         _ => BaseType::Empty,
     };
     let result = HudItem::preclassified(name_bytes, form_string, 1, classification);

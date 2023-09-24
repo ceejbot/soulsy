@@ -7,7 +7,7 @@ use super::armor::ArmorType;
 use super::color::InvColor;
 use super::icons::Icon;
 use super::potion::PotionType;
-use super::shout::ShoutVariant;
+use super::shout::ShoutType;
 use super::spell::SpellType;
 use super::weapon::WeaponType;
 use super::{HasIcon, HasKeywords, IsHudItem};
@@ -26,7 +26,7 @@ pub enum BaseType {
     PotionProxy(Proxy),
     Power,
     Scroll(SpellType),
-    Shout(ShoutVariant),
+    Shout(ShoutType),
     Spell(SpellType),
     Weapon(WeaponType),
 }
@@ -102,7 +102,7 @@ impl BaseType {
             ItemCategory::Potion => Self::Potion(PotionType::Default),
             ItemCategory::Power => Self::Power,
             ItemCategory::Scroll => Self::Scroll(SpellType::default()),
-            ItemCategory::Shout => Self::Shout(ShoutVariant::default()),
+            ItemCategory::Shout => Self::Shout(ShoutType::new(keywords)),
             ItemCategory::Spell => Self::Spell(SpellType::default()),
             ItemCategory::Weapon => {
                 Self::Weapon(WeaponType::classify(name, keywords.clone(), twohanded))
