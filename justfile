@@ -9,17 +9,17 @@ help:
     just -l
 
 # Install required tools.
-@install:
+@tools:
     rustup install nightly
-    cargo install nextest
+    cargo install cargo-nextest
     cargo install tomato-toml
 
 # Run initial cmake step. Cannot be run in WSL.
-setup:
+cmake:
     cmake --preset vs2022-windows
 
 # Rebuild the archive for testing. Requires windows.
-@rebuild:
+@build:
     # if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
@@ -29,6 +29,10 @@ setup:
     cargo +nightly fmt
     find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
     cargo clippy
+
+# Run rust tests
+@test:
+    cargo nextest run
 
 # Generate source files list for CMake. Bash.
 sources:
@@ -77,7 +81,7 @@ archive:
     echo "Mod archive for v${version} ready at releases/${release_name}.7z"
 
 # copy files to my test mod
-test:
+install:
     #!/usr/bin/env bash
     echo "copying to live mod for testing..."
     outdir="/mnt/g/Vortex Mods/skyrimse/Soulsy HUD dev version/"

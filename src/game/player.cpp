@@ -5,7 +5,6 @@
 #include "magic.h"
 #include "shouts.h"
 #include "utility.h"
-#include "weapons.h"
 
 #include "helpers.h"
 #include "offset.h"

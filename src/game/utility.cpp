@@ -186,11 +186,12 @@ the MCM setting will be left for overwrite handling
 		}
 		logger::trace("poison doses read from perks; poison_doses={};"sv, poison_doses);
 
-		RE::BGSSoundDescriptor* sound_descriptor;
+		RE::BGSSoundDescriptor* sound_descriptor = nullptr;
 		if (a_poison->data.consumptionSound) { sound_descriptor = a_poison->data.consumptionSound->soundDescriptor; }
 		else
 		{
-			sound_descriptor = RE::TESForm::LookupByID(0x00106614)->As<RE::BGSSoundDescriptorForm>()->soundDescriptor;
+			auto* form = RE::TESForm::LookupByID(0x00106614);
+			if (form) { sound_descriptor = form->As<RE::BGSSoundDescriptorForm>()->soundDescriptor; }
 		}
 
 		auto used             = 0;
@@ -202,7 +203,7 @@ the MCM setting will be left for overwrite handling
 				equipped_object->GetDisplayName());
 			equipped_object->PoisonObject(a_poison, poison_doses);
 			// We only play the sound once, even if we also dose the left-hand item.
-			player::play_sound(sound_descriptor, thePlayer);
+			if (sound_descriptor) { player::play_sound(sound_descriptor, thePlayer); }
 			used++;
 			a_count--;
 		}

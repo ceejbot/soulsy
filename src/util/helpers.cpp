@@ -19,8 +19,12 @@ namespace helpers
 		// UIMenuInactiveSD 0x00057f93
 		// UIAlchemyFail    0x000c8c72
 		auto* the_player = RE::PlayerCharacter::GetSingleton();
-		auto* sound      = RE::TESForm::LookupByID(0x0006d1c6)->As<RE::BGSSoundDescriptorForm>();
-		player::play_sound(sound->soundDescriptor, the_player);
+		auto* form       = RE::TESForm::LookupByID(0x0006d1c6);
+		if (form)
+		{
+			auto* sound = form->As<RE::BGSSoundDescriptorForm>();
+			if (sound) { player::play_sound(sound->soundDescriptor, the_player); }
+		}
 	}
 
 	// How you know I've been replaced by a pod person: if I ever declare that
@@ -238,9 +242,10 @@ namespace helpers
 					selection->equipped  = favorite.entryData->IsWorn();
 					selection->count     = favorite.entryData->countDelta;  // probably wrong
 					selection->bound_obj = favorite.entryData->object;
-				} else 
+				}
+				else
 				{
-					selection->favorite = true; // this is the only thing we know for sure.
+					selection->favorite = true;  // this is the only thing we know for sure.
 				}
 
 				outSelection = selection;
@@ -422,13 +427,13 @@ namespace helpers
 	{
 		if (!isInSlowMotion) { return; }
 
-		auto currentMult         = reinterpret_cast<float*>(getGlobalTimeMultPtr());
+		auto currentMult = reinterpret_cast<float*>(getGlobalTimeMultPtr());
 		// If we're already not in slow-motion, either some other mod tinkered with
 		// time, or we re-entered. Pin it back down to 1.0.
 		if (*currentMult >= 1.0f)
 		{
 			logger::info("Slow motion: game speed={} but our flag was still set."sv, *currentMult);
-			*currentMult = 1.0f;
+			*currentMult   = 1.0f;
 			isInSlowMotion = false;
 			return;
 		}

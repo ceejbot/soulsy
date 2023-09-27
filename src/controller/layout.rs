@@ -174,7 +174,17 @@ impl HudLayout {
                 x: screen_width - width / 2.0,
                 y: screen_height / 2.0,
             },
-            _ => self.anchor.clone(),
+            _ => {
+                if self.anchor == Point::default() {
+                    log::info!("Layout has neither a named anchor nor an anchor point. Falling back to top left.");
+                    Point {
+                        x: width / 2.0,
+                        y: height / 2.0,
+                    }
+                } else {
+                    self.anchor.clone()
+                }
+            },
         }
     }
 }

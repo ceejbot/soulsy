@@ -50,7 +50,7 @@ pub mod plugin {
     }
 
     /// An x,y coordinate used to indicate size or an offset.
-    #[derive(Deserialize, Serialize, Debug, Clone, Default)]
+    #[derive(Deserialize, Serialize, Debug, Clone, Default, PartialEq)]
     struct Point {
         /// Width or side-to-side offset. Negative values move left.
         x: f32,
@@ -103,6 +103,7 @@ pub mod plugin {
         /// The font file to load to use for all text.
         font: String,
         /// The font size for most things.
+        #[serde(default)]
         font_size: f32,
         /// Whether to buld glyphs for full Chinese text display.
         #[serde(default)]

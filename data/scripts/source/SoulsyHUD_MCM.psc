@@ -21,7 +21,7 @@ function ClearCycles() native
 
 function ShowCycleEntries(int which)
     pCycleToShow = which
-    string[] empty = new string[1]
+    string[] empty = new string[30]
     if (which == 0)
         SetMenuOptions("cycleDisplay", getPowerCycleNames(), empty)
     elseif (which == 1)
@@ -31,7 +31,7 @@ function ShowCycleEntries(int which)
     elseif (which == 3)
         SetMenuOptions("cycleDisplay", getRightCycleNames(), empty)
     endif
-endFunction
+endFunction 
 
 function ClearCyclesPapyrus()
     ClearCycles()

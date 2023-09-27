@@ -4,12 +4,32 @@
 #include "offset.h"
 #include "player.h"
 #include "string_util.h"
-#include "weapons.h"
 
 #include "lib.rs.h"
 
 namespace game
 {
+	RE::BGSEquipSlot* right_hand_equip_slot()
+	{
+		using func_t = decltype(&right_hand_equip_slot);
+		const REL::Relocation<func_t> func{ REL::ID(offset::right_hand_equip_slot) };
+		return func();
+	}
+
+	RE::BGSEquipSlot* left_hand_equip_slot()
+	{
+		using func_t = decltype(&left_hand_equip_slot);
+		const REL::Relocation<func_t> func{ REL::ID(offset::left_hand_equip_slot) };
+		return func();
+	}
+
+	RE::BGSEquipSlot* power_equip_slot()
+	{
+		using func_t = decltype(&power_equip_slot);
+		const REL::Relocation<func_t> func{ REL::ID(offset::getPowerEquipSlot) };
+		return func();
+	}
+
 	int boundObjectForForm(const RE::TESForm* form,
 		RE::PlayerCharacter*& the_player,
 		RE::TESBoundObject*& outobj,
@@ -207,4 +227,64 @@ namespace game
 			slot_is_left,
 			util::string_util::int_to_hex(form->formID));
 	}
+
+	void unequipHand(RE::PlayerCharacter*& player, Action which)
+	{
+		RE::BGSEquipSlot* slot = nullptr;
+		if (which == Action::Left) { slot = left_hand_equip_slot(); }
+		else if (which == Action::Right) { slot = right_hand_equip_slot(); }
+		else
+		{
+			logger::debug("somebody called unequipHand() with slot={};"sv, static_cast<uint8_t>(which));
+			return;
+		}
+
+		unequipLeftOrRightSlot(slot, player);
+	}
+
+	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	{
+		// We're starting with a slot not a hand enum.
+		RE::TESForm* equipped = nullptr;
+		if (slot == left_hand_equip_slot())
+		{
+			equipped = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		}
+		else if (slot == right_hand_equip_slot())
+		{
+			equipped = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		}
+		else
+		{
+			logger::debug("slot is not left/right!");
+			return;
+		}
+		if (!equipped) { return; }
+
+		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
+		auto* task          = SKSE::GetTaskInterface();
+		if (!task)
+		{
+			logger::warn("Unable to get SKSE task interface! Cannot equip or unequip anything."sv);
+			return;
+		}
+
+		if (equipped->Is(RE::FormType::Spell))
+		{
+			// We have to do the dagger proxy trick. If we can't find the dagger because
+			// this is the Skyrim engine without the Skyrim assets, then we don't equip
+			// it because oh well. At least we didn't crash.
+			auto* form = RE::TESForm::LookupByID<RE::TESForm>(0x00020163);
+			if (!form) { return; }
+			auto* proxy = form->As<RE::TESObjectWEAP>();
+			task->AddTask([=]() { equip_manager->EquipObject(player, proxy, nullptr, 1, slot, false, true, false); });
+			task->AddTask([=]() { equip_manager->UnequipObject(player, proxy, nullptr, 1, slot, false, true, false); });
+			return;
+		}
+
+		auto* object = equipped->As<RE::TESBoundObject>();
+		if (!object) { return; }
+		task->AddTask([=]() { equip_manager->UnequipObject(player, object, nullptr, 1, slot, false, true, false); });
+	}
+
 }
