@@ -24,7 +24,7 @@ hide_left_when_irrelevant = true
 font = "futura-book-bt.ttf"
 # A font sizing hint to the font loader about what size most of the text will use.
 # Text rendered at this size will look best. This value is NOT scaled.
-font_size = "20.0"
+font_size = 20.0
 
 # Enable any of these you need text rendering for.
 chinese_full_glyphs = false

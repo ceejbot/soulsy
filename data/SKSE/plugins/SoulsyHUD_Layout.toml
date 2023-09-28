@@ -27,7 +27,7 @@ hide_left_when_irrelevant = true
 font = "futura-book-bt.ttf"
 # A font sizing hint to the font loader about what size most of the text will use.
 # Text rendered at this size will look best. This value is NOT scaled.
-font_size = "20.0"
+font_size = 20.0
 
 # Enable any of these you need text rendering for.
 # You will need to supply a true-type font with the glyphs; futura doesn't have them.
@@ -85,7 +85,7 @@ count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the item name. Gets scaled.
 name_offset = { x = 110.0, y = 110.0 }
-# Font sized used for item name. 
+# Font sized used for item name.
 name_font_size = 20.0
 
 # The consumables slot. You can change all of these values

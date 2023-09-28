@@ -184,7 +184,7 @@ impl HudLayout {
                 } else {
                     self.anchor.clone()
                 }
-            },
+            }
         }
     }
 }
@@ -306,9 +306,13 @@ where
         "bottom_right" => Ok(NamedAnchor::BottomRight),
         "center" => Ok(NamedAnchor::Center),
         "center_top" => Ok(NamedAnchor::CenterTop),
+        "top_center" => Ok(NamedAnchor::CenterTop),
         "center_bottom" => Ok(NamedAnchor::CenterBottom),
+        "bottom_center" => Ok(NamedAnchor::CenterBottom),
         "left_center" => Ok(NamedAnchor::LeftCenter),
+        "center_left" => Ok(NamedAnchor::LeftCenter),
         "right_center" => Ok(NamedAnchor::RightCenter),
+        "center_right" => Ok(NamedAnchor::RightCenter),
         "none" => Ok(NamedAnchor::None),
         _ => Err(Error::unknown_variant(
             &s,
@@ -361,10 +365,28 @@ impl Display for HudElement {
 mod tests {
     use super::*;
 
+    #[derive(Deserialize, Serialize, Debug, Clone)]
+    struct TestAnchor {
+        #[serde(default, deserialize_with = "deserialize_named_anchor")]
+        anchor: NamedAnchor,
+    }
+
+    #[test]
+    fn deserde_anchor_names() {
+        let input = r#"anchor = "center""#;
+        let parsed: TestAnchor = toml::from_str(input).expect("this should be parseable");
+        assert_eq!(parsed.anchor, NamedAnchor::Center);
+
+        let input = r#"anchor = "bottom_center""#;
+        let parsed: TestAnchor = toml::from_str(input).expect("this should be parseable");
+        assert_eq!(parsed.anchor, NamedAnchor::CenterBottom);
+    }
+
     #[test]
     fn parses_anchor_points() {
-        let layout = HudLayout::read_from_file("layouts/SoulsyHUD_topleft.toml")
-            .expect("failed to parse known-good layout toml");
+        let data =
+            std::fs::read_to_string("layouts/SoulsyHUD_topleft.toml").expect("file not found?");
+        let layout: HudLayout = toml::from_str(data.as_str()).expect("layout should be valid toml");
         assert_eq!(layout.anchor_name, NamedAnchor::None);
         assert_eq!(layout.anchor_point().x, 150.0);
         assert_eq!(layout.anchor_point().y, 150.0);
@@ -372,32 +394,39 @@ mod tests {
 
     #[test]
     fn parses_named_anchors() {
-        let builtin = HudLayout::read_from_file("data/SKSE/plugins/SoulsyHUD_layout.toml")
-            .expect("failed to parse known-good layout toml");
+        let data = std::fs::read_to_string("data/SKSE/plugins/SoulsyHUD_layout.toml")
+            .expect("file not found?");
+        let builtin: HudLayout =
+            toml::from_str(data.as_str()).expect("layout should be valid toml");
         assert_eq!(builtin.anchor_name, NamedAnchor::BottomLeft);
         assert_eq!(builtin.anchor_point().x, 150.0);
         assert_eq!(builtin.anchor_point().y, 1290.0);
 
-        let centered = HudLayout::read_from_file("layouts/SoulsyHUD_centered.toml")
-            .expect("failed to parse known-good layout toml");
+        let data =
+            std::fs::read_to_string("layouts/SoulsyHUD_centered.toml").expect("file not found?");
+        let centered: HudLayout =
+            toml::from_str(data.as_str()).expect("layout should be valid toml");
         assert_eq!(centered.anchor_name, NamedAnchor::Center);
         assert_eq!(centered.anchor_point().x, 1720.0);
         assert_eq!(centered.anchor_point().y, 720.0);
 
-        let hexa1 = HudLayout::read_from_file("layouts/hexagons/SoulsyHUD_hexagons_lr.toml")
-            .expect("failed to parse known-good layout toml");
+        let data = std::fs::read_to_string("layouts/hexagons/SoulsyHUD_hexagons_lr.toml")
+            .expect("file not found?");
+        let hexa1: HudLayout = toml::from_str(data.as_str()).expect("layout should be valid toml");
         assert_eq!(hexa1.anchor_name, NamedAnchor::TopRight);
         assert_eq!(hexa1.anchor_point().x, 3290.0);
         assert_eq!(hexa1.anchor_point().y, 150.0);
 
-        let hexa1 = HudLayout::read_from_file("layouts/hexagons/SoulsyHUD_hexagons_tb.toml")
-            .expect("failed to parse known-good layout toml");
-        assert_eq!(hexa1.anchor_name, NamedAnchor::BottomRight);
-        assert_eq!(hexa1.anchor_point().x, 3290.0);
-        assert_eq!(hexa1.anchor_point().y, 1290.0);
+        let data = std::fs::read_to_string("layouts/hexagons/SoulsyHUD_hexagons_tb.toml")
+            .expect("file not found?");
+        let hexa2: HudLayout = toml::from_str(data.as_str()).expect("layout should be valid toml");
+        assert_eq!(hexa2.anchor_name, NamedAnchor::BottomRight);
+        assert_eq!(hexa2.anchor_point().x, 3290.0);
+        assert_eq!(hexa2.anchor_point().y, 1290.0);
 
-        let layout = HudLayout::read_from_file("layouts/SoulsyHUD_minimal.toml")
-            .expect("failed to parse known-good layout toml");
+        let data =
+            std::fs::read_to_string("layouts/SoulsyHUD_minimal.toml").expect("file not found?");
+        let layout: HudLayout = toml::from_str(data.as_str()).expect("layout should be valid toml");
         assert_eq!(layout.anchor_name, NamedAnchor::BottomLeft);
         assert_eq!(layout.anchor_point().x, 150.0);
         assert_eq!(layout.anchor_point().y, 1315.0);

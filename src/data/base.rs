@@ -268,19 +268,33 @@ impl IsHudItem for BaseType {
             BaseType::Armor(t) => !t.is_utility(),
             BaseType::Food(_) => false,
             BaseType::HandToHand => true,
-            BaseType::Light => false,
+            BaseType::Light => true,
             BaseType::Potion(_) => false,
             BaseType::PotionProxy(_) => false,
             BaseType::Power => false,
             BaseType::Scroll(t) => !t.two_handed(),
             BaseType::Shout(_) => false,
             BaseType::Spell(t) => !t.two_handed(),
-            BaseType::Weapon(t) => t.is_one_handed(),
+            BaseType::Weapon(t) => t.left_hand_ok(),
         }
     }
 
     fn right_hand_ok(&self) -> bool {
-        self.is_weapon() || matches!(self, BaseType::Scroll(_) | BaseType::Spell(_))
+        match self {
+            BaseType::Empty => false,
+            BaseType::Ammo(_) => false,
+            BaseType::Armor(_) => false,
+            BaseType::Food(_) => false,
+            BaseType::HandToHand => true,
+            BaseType::Light => false,
+            BaseType::Potion(_) => false,
+            BaseType::PotionProxy(_) => false,
+            BaseType::Power => false,
+            BaseType::Scroll(_) => true,
+            BaseType::Shout(_) => false,
+            BaseType::Spell(_) => true,
+            BaseType::Weapon(t) => t.right_hand_ok(),
+        }
     }
 }
 
@@ -349,5 +363,93 @@ mod tests {
             WeaponEquipType::TwoHanded,
         );
         assert_eq!(result, BaseType::Weapon(wt));
+    }
+
+    #[test]
+    fn utility_items() {
+        let shield = ArmorType::new(Icon::ArmorShieldHeavy, InvColor::Ash);
+        let item = BaseType::Armor(shield);
+        assert_eq!(item.is_utility(), false);
+
+        let armor = ArmorType::new(Icon::ArmorHeavyHead, InvColor::Ash);
+        let item = BaseType::Armor(armor);
+        assert_eq!(item.is_utility(), true);
+
+        assert_eq!(BaseType::Light.is_utility(), false);
+
+        let potion = BaseType::Potion(PotionType::Health);
+        assert_eq!(potion.is_utility(), true);
+
+        let food = BaseType::Food(FoodType::Vegetable);
+        assert_eq!(food.is_utility(), true);
+    }
+
+    #[test]
+    fn left_hand_items() {
+        assert_eq!(BaseType::Light.left_hand_ok(), true);
+        let shield = BaseType::Armor(ArmorType::new(Icon::ArmorShieldHeavy, InvColor::Ash));
+        assert_eq!(shield.left_hand_ok(), true);
+        let dagger = BaseType::Weapon(WeaponType::new(
+            Icon::WeaponDagger,
+            InvColor::Blue,
+            WeaponEquipType::EitherHand,
+        ));
+        assert_eq!(dagger.left_hand_ok(), true);
+        let dagger = BaseType::Weapon(WeaponType::new(
+            Icon::WeaponDagger,
+            InvColor::Blue,
+            WeaponEquipType::LeftHand,
+        ));
+        assert_eq!(dagger.left_hand_ok(), true);
+
+        let sword = BaseType::Weapon(WeaponType::new(
+            Icon::WeaponSwordTwoHanded,
+            InvColor::Blue,
+            WeaponEquipType::TwoHanded,
+        ));
+        assert_eq!(sword.left_hand_ok(), false);
+
+        let sword = BaseType::Weapon(WeaponType::new(
+            Icon::WeaponSwordTwoHanded,
+            InvColor::Blue,
+            WeaponEquipType::RightHand,
+        ));
+        assert_eq!(sword.left_hand_ok(), false);
+    }
+
+    #[test]
+    fn right_hand_items() {
+        assert_eq!(BaseType::Light.right_hand_ok(), false);
+
+        let shield = BaseType::Armor(ArmorType::new(Icon::ArmorShieldHeavy, InvColor::Ash));
+        assert_eq!(shield.right_hand_ok(), false);
+
+        let dagger = BaseType::Weapon(WeaponType::new(
+            Icon::WeaponDagger,
+            InvColor::Blue,
+            WeaponEquipType::EitherHand,
+        ));
+        assert_eq!(dagger.right_hand_ok(), true);
+
+        let dagger = BaseType::Weapon(WeaponType::new(
+            Icon::WeaponDagger,
+            InvColor::Blue,
+            WeaponEquipType::LeftHand,
+        ));
+        assert_eq!(dagger.right_hand_ok(), false);
+
+        let sword = BaseType::Weapon(WeaponType::new(
+            Icon::WeaponSwordTwoHanded,
+            InvColor::Blue,
+            WeaponEquipType::TwoHanded,
+        ));
+        assert_eq!(sword.right_hand_ok(), true);
+
+        let sword = BaseType::Weapon(WeaponType::new(
+            Icon::WeaponSwordTwoHanded,
+            InvColor::Blue,
+            WeaponEquipType::RightHand,
+        ));
+        assert_eq!(sword.right_hand_ok(), true);
     }
 }

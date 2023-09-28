@@ -808,40 +808,37 @@ impl Controller {
 
         if matches!(which, Action::Power) {
             // Equip that fus-ro-dah, dovahkin!
-            match item.kind() {
-                BaseType::Shout(t) => {
-                    match t.variant() {
-                        shout::ShoutVariant::AnimalAllegiance => log::info!("Raan-mir-tah!"),
-                        shout::ShoutVariant::AuraWhisper =>log::info!("Laas-ya-nir."),
-                        shout::ShoutVariant::BattleFury => log::info!("Mid-vur-shaan!"),
-                        shout::ShoutVariant::BecomeEthereal => log::info!("Feim-zii-gron!"),
-                        shout::ShoutVariant::BendWill => log::info!("Gol-hah-dov!"),
-                        shout::ShoutVariant::CallDragon => log::info!("Oh-ah-viing!"),
-                        shout::ShoutVariant::CallOfValor => log::info!("Hun-kaal-zoor!"),
-                        shout::ShoutVariant::ClearSkies => log::info!("Lok-vah-koor!"),
-                        shout::ShoutVariant::Cyclone => log::info!("Ven-gaar-nos!"),
-                        shout::ShoutVariant::Disarm => log::info!("Zun-haal-viik!"),
-                        shout::ShoutVariant::Dismay => log::info!("Faas-ru-maar!"),
-                        shout::ShoutVariant::DragonAspect => log::info!("Mul-qah-diiv!"),
-                        shout::ShoutVariant::Dragonrend => log::info!("Joor-zah-frul!"),
-                        shout::ShoutVariant::DrainVitality => log::info!("Gaan-lah-haas!"),
-                        shout::ShoutVariant::ElementalFury => log::info!("Su-grah-dun!"),
-                        shout::ShoutVariant::FireBreath => log::info!("Yol-toor-shul!"),
-                        shout::ShoutVariant::FrostBreath => log::info!("Fo-krah-diin!!"),
-                        shout::ShoutVariant::IceForm => log::info!("Iiz-slen-nus!"),
-                        shout::ShoutVariant::KynesPeace => log::info!("Kaan-drem-ov!"),
-                        shout::ShoutVariant::MarkedForDeath => log::info!("Krii-lun-aus!"),
-                        shout::ShoutVariant::Slowtime => log::info!("Tiid-klo-ui!"),
-                        shout::ShoutVariant::SoulTear => log::info!("Rii-vaaz-zol!"),
-                        shout::ShoutVariant::StormCall => log::info!("Strun-bah-qo!"),
-                        shout::ShoutVariant::SummonDurnehviir => log::info!("Dur-neh-viir!"),
-                        shout::ShoutVariant::ThrowVoice => log::info!("Zul-mey-gut!"),
-                        shout::ShoutVariant::UnrelentingForce => log::info!("Fus-ro-dah!"),
-                        shout::ShoutVariant::WhirlwindSprint => log::info!("Wuld-nah-kest!!"),
-                        _ => {},
-                    }
-                },
-                _ => {},
+            if let BaseType::Shout(t) = item.kind() {
+                match t.variant() {
+                    shout::ShoutVariant::AnimalAllegiance => log::info!("Raan-mir-tah!"),
+                    shout::ShoutVariant::AuraWhisper => log::info!("Laas-ya-nir."),
+                    shout::ShoutVariant::BattleFury => log::info!("Mid-vur-shaan!"),
+                    shout::ShoutVariant::BecomeEthereal => log::info!("Feim-zii-gron!"),
+                    shout::ShoutVariant::BendWill => log::info!("Gol-hah-dov!"),
+                    shout::ShoutVariant::CallDragon => log::info!("Oh-ah-viing!"),
+                    shout::ShoutVariant::CallOfValor => log::info!("Hun-kaal-zoor!"),
+                    shout::ShoutVariant::ClearSkies => log::info!("Lok-vah-koor!"),
+                    shout::ShoutVariant::Cyclone => log::info!("Ven-gaar-nos!"),
+                    shout::ShoutVariant::Disarm => log::info!("Zun-haal-viik!"),
+                    shout::ShoutVariant::Dismay => log::info!("Faas-ru-maar!"),
+                    shout::ShoutVariant::DragonAspect => log::info!("Mul-qah-diiv!"),
+                    shout::ShoutVariant::Dragonrend => log::info!("Joor-zah-frul!"),
+                    shout::ShoutVariant::DrainVitality => log::info!("Gaan-lah-haas!"),
+                    shout::ShoutVariant::ElementalFury => log::info!("Su-grah-dun!"),
+                    shout::ShoutVariant::FireBreath => log::info!("Yol-toor-shul!"),
+                    shout::ShoutVariant::FrostBreath => log::info!("Fo-krah-diin!!"),
+                    shout::ShoutVariant::IceForm => log::info!("Iiz-slen-nus!"),
+                    shout::ShoutVariant::KynesPeace => log::info!("Kaan-drem-ov!"),
+                    shout::ShoutVariant::MarkedForDeath => log::info!("Krii-lun-aus!"),
+                    shout::ShoutVariant::Slowtime => log::info!("Tiid-klo-ui!"),
+                    shout::ShoutVariant::SoulTear => log::info!("Rii-vaaz-zol!"),
+                    shout::ShoutVariant::StormCall => log::info!("Strun-bah-qo!"),
+                    shout::ShoutVariant::SummonDurnehviir => log::info!("Dur-neh-viir!"),
+                    shout::ShoutVariant::ThrowVoice => log::info!("Zul-mey-gut!"),
+                    shout::ShoutVariant::UnrelentingForce => log::info!("Fus-ro-dah!"),
+                    shout::ShoutVariant::WhirlwindSprint => log::info!("Wuld-nah-kest!!"),
+                    _ => {}
+                }
             }
             cxx::let_cxx_string!(form_spec = item.form_string());
             equipShout(&form_spec);

@@ -32,6 +32,20 @@ impl WeaponType {
         }
     }
 
+    pub fn left_hand_ok(&self) -> bool {
+        matches!(
+            self.equiptype,
+            WeaponEquipType::LeftHand | WeaponEquipType::EitherHand
+        )
+    }
+
+    pub fn right_hand_ok(&self) -> bool {
+        matches!(
+            self.equiptype,
+            WeaponEquipType::RightHand | WeaponEquipType::EitherHand | WeaponEquipType::TwoHanded
+        )
+    }
+
     pub fn is_one_handed(&self) -> bool {
         matches!(
             self.equiptype,
