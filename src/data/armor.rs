@@ -20,7 +20,7 @@ impl ArmorType {
     }
 
     pub fn is_utility(&self) -> bool {
-        matches!(self.icon, Icon::ArmorShieldHeavy | Icon::ArmorShieldLight)
+        !matches!(self.icon, Icon::ArmorShieldHeavy | Icon::ArmorShieldLight)
     }
 }
 
