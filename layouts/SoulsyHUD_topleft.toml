@@ -1,17 +1,23 @@
+# Enable to turn on debug logging. Requires a game restart.
+# Helpful if you want to report a bug.
+debug = true
+
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
 
-# Typeface to use. Must be truetype. Must be in resources/fonts.
+# A font sizing hint to the font loader about what size most of the text will use.
+# Text rendered at this size will look best. This value is NOT scaled.
 font = "futura-book-bt.ttf"
 
-# Deprecated name font size. Scales with the global_scale.
+# A font sizing hint to the font loader about what size most of the text will use.
+# Text rendered at this size will look best. This value is NOT scaled.
 font_size = 20.0
 
 # A named location for the HUD. Use this as a shortcut for common anchor
 # points. These work no matter what the player's screen resolution is, because this
 # is turned into a location point at run-time.
 # Values: bottom_left, bottom_right, top_left, top_right, center
-# anchor_name = "top_left"
+# anchor_point = "top_left"
 # You can also specify the anchor point like this if a named anchor point
 # doesn't work for your layout. These values are NOT scaled.
 anchor = { x = 150.0, y = 150.0 }
@@ -99,8 +105,8 @@ hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 20.0
-count_offset = { x = 40.0, y = 20.0 }
-name_offset = { x = 65.0, y = 20.0 }
+count_offset = { x = 65.0, y = -4.0 }
+name_offset = { x = 90.0, y = -4.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 20.0
 
@@ -118,11 +124,11 @@ hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = 60.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
+count_offset = { x = 125.0, y = 107.0 }
+name_offset = { x = 125.0, y = 107.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 175.0, y = 50.0 }
 name_font_size = 20.0
 
 [[layouts]]
@@ -143,7 +149,7 @@ count_offset = { x = 0.0, y = 0.0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = -15.0, y = 75.0 }
+name_offset = { x = 10.0, y = 52.0 }
 name_font_size = 20.0
 
 
@@ -161,9 +167,9 @@ hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = 60.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
-count_color = { r = 255, g = 255, b = 255, a = 0 }
+count_color = { r = 255, g = 255, b = 255, a = 255 }
 count_font_size = 20.0
+count_offset = { x = 125.0, y = 107.0 }
+name_offset = { x = 155.0, y = 107.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 175.0, y = 50.0 }
 name_font_size = 20.0

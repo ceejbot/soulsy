@@ -14,8 +14,9 @@ size = { x = 300.0, y = 300.0 }
 bg_color = { r = 0, g = 0, b = 0, a = 0 }
 # Typeface to use. Must be truetype or otf. Must be in resources/fonts.
 font = "Inter-Light.ttf"
-# Point size to use for all name text. Scales with the global_scale.
-font_size = 20.0
+# A font sizing hint to the font loader about what size most of the text will use.
+# Text rendered at this size will look best. This value is NOT scaled.
+font_size = "20.0"
 # Enable any of these you need text rendering for. The Inter typeface
 # should support all of them.
 chinese_full_glyphs = false

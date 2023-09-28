@@ -5,7 +5,7 @@ debug = false
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "Inter-Light.ttf"
 # Point size to use for all name text. Scales with the global_scale.
-font_size = 35.0
+font_size = 37.0
 # Enable any of these you need text rendering for.
 chinese_full_glyphs = false
 simplified_chinese_glyphs = false

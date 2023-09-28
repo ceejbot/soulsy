@@ -25,9 +25,13 @@ hide_left_when_irrelevant = true
 
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "futura-book-bt.ttf"
+# A font sizing hint to the font loader about what size most of the text will use.
+# Text rendered at this size will look best. This value is NOT scaled.
+font_size = "20.0"
 
 # Enable any of these you need text rendering for.
-# You will need to supply a font with the glyphs; futura doesn't have them.
+# You will need to supply a true-type font with the glyphs; futura doesn't have them.
+# The "Inter" font packaged with the i18 layout does have them.
 chinese_full_glyphs = false
 simplified_chinese_glyphs = false
 cyrillic_glyphs = false
@@ -35,9 +39,6 @@ japanese_glyphs = false
 korean_glyphs = false
 thai_glyphs = false
 vietnamese_glyphs = false
-
-# Deprecated name font size. Scales with the global_scale.
-font_size = 20.0
 
 # This is the sub-layout for the shouts and powers slot.
 [[layouts]]
@@ -84,7 +85,7 @@ count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the item name. Gets scaled.
 name_offset = { x = 110.0, y = 110.0 }
-# Font size for the item name.
+# Font sized used for item name. 
 name_font_size = 20.0
 
 # The consumables slot. You can change all of these values
@@ -104,8 +105,8 @@ hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 20.0
-count_offset = { x = 40.0, y = 20.0 }
-name_offset = { x = 65.0, y = 20.0 }
+count_offset = { x = 65.0, y = -4.0 }
+name_offset = { x = 90.0, y = -4.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 20.0
 
@@ -123,11 +124,11 @@ hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = 60.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
+count_offset = { x = 125.0, y = 107.0 }
+name_offset = { x = 125.0, y = 107.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 175.0, y = 50.0 }
 name_font_size = 20.0
 
 [[layouts]]
@@ -148,7 +149,7 @@ count_offset = { x = 0.0, y = 0.0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = -15.0, y = 75.0 }
+name_offset = { x = 10.0, y = 52.0 }
 name_font_size = 20.0
 
 
@@ -166,9 +167,9 @@ hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = 60.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
-count_color = { r = 255, g = 255, b = 255, a = 0 }
+count_color = { r = 255, g = 255, b = 255, a = 255 }
 count_font_size = 20.0
+count_offset = { x = 125.0, y = 107.0 }
+name_offset = { x = 155.0, y = 107.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 175.0, y = 50.0 }
 name_font_size = 20.0

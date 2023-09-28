@@ -2,8 +2,9 @@
 global_scale = 1.0
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "Inter-Medium.ttf"
-# Point size to use for all name text. Scales with the global_scale.
-font_size = 20.0
+# A font sizing hint to the font loader about what size most of the text will use.
+# Text rendered at this size will look best. This value is NOT scaled.
+font_size = "20.0"
 # A named location for the HUD. Use this as a shortcut for common anchor
 # points. These work no matter what the player's screen resolution is, because this
 # is turned into a location point at run-time.
