@@ -4,6 +4,7 @@
     Game="sse" 
     Output="data\scripts" 
     Optimize="true" 
+    Anonymize="true"
     Release="false" 
     Final="false">
     <Imports>
