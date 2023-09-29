@@ -92,7 +92,8 @@ namespace game
 		auto worn = false;
 		for (const auto& [item, inv_data] : player::getInventoryForType(player, RE::FormType::Armor))
 		{
-			if (const auto& [count, entry] = inv_data; entry->object->formID == bound_obj->formID && entry->IsWorn())
+			const auto& [count, entry] = inv_data;
+			if (entry && entry->object && (entry->object->formID == bound_obj->formID) && entry->IsWorn())
 			{
 				worn = true;
 				break;
