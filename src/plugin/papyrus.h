@@ -12,6 +12,9 @@ namespace papyrus
 	RE::BSFixedString get_resolution_width(RE::TESQuest*);
 	RE::BSFixedString get_resolution_height(RE::TESQuest*);
 
+	bool buildIsPreAE(RE::TESQuest*);
+	void setIsPreAEBuild(bool input);
+
 	bool Register(RE::BSScript::IVirtualMachine* a_vm);
 
 	void registerPapyrusFunctions();

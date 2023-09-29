@@ -65,7 +65,7 @@ size = { x = 100.0 , y = 100.0 }
 # Center alignment: the offset refers to the middle of the text box. 
 # Left alignment: the offset refers to the middle of the left edge.
 # Right alignment: the offset refers to the middle of the right edge.
-align_text = "center"
+align_text = "left"
 
 # The color to use to draw this slot's background. Alpha of 0 means it's not visible.
 # Color is expressed as RGBA; values are 0-255.

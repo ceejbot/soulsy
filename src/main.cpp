@@ -142,5 +142,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI
 		return false;
 	}
 
+	papyrus::setIsPreAEBuild(ver <= SKSE::RUNTIME_SSE_1_5_97);
+
 	return true;
 }

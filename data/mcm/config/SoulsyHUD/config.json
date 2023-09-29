@@ -418,6 +418,15 @@
           }
         },
         {
+          "type": "hiddenToggle",
+          "text": "hidden toggle for cycle auditing",
+          "groupControl": 7,
+          "valueOptions": {
+            "sourceType": "PropertyValueBool",
+            "propertyName": "pBuildIsPreAE"
+          }
+        },
+        {
           "id": "pCycleToShow",
           "text": "$SoulsyHUD_ChooseCycle_Text",
           "help": "$SoulsyHUD_ChooseCycle_Help",
@@ -439,7 +448,11 @@
             "params": [
               "{value}"
             ]
-          }
+          },
+          "groupCondition": {
+            "NOT": 7
+          },
+          "groupBehavior": "skip"
         },
         {
           "id": "cycleDisplay",
@@ -453,7 +466,11 @@
             ],
             "propertyName": "pUnusedChoice",
             "defaultValue": 0
-          }
+          },
+          "groupCondition": {
+            "NOT": 7
+          },
+          "groupBehavior": "skip"
         }
       ]
     }

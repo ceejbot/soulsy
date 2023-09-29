@@ -8,6 +8,7 @@ bool property pCycleNeedsModifier = false auto
 bool property pMenuNeedsModifier = false auto
 bool property pEnableUnequipModifier = false auto
 bool property pAutoFadeGroupControl = false auto
+bool property pBuildIsPreAE = false auto
 int property pCycleToShow = 0 auto
 
 Event OnConfigClose() native
@@ -17,19 +18,23 @@ string[] function getPowerCycleNames() native
 string[] function getUtilityCycleNames() native
 string[] function getLeftCycleNames() native
 string[] function getRightCycleNames() native
+bool function BuildIsPreAE() native
 function ClearCycles() native
 
 function ShowCycleEntries(int which)
+    if (BuildIsPreAE()) 
+        return
+    endif
     pCycleToShow = which
-    string[] empty = new string[30]
+    
     if (which == 0)
-        SetMenuOptions("cycleDisplay", getPowerCycleNames(), empty)
+        SetMenuOptions("cycleDisplay", getPowerCycleNames())
     elseif (which == 1)
-        SetMenuOptions("cycleDisplay", getUtilityCycleNames(), empty)
+        SetMenuOptions("cycleDisplay", getUtilityCycleNames())
     elseif (which == 2)
-        SetMenuOptions("cycleDisplay", getLeftCycleNames(), empty)
+        SetMenuOptions("cycleDisplay", getLeftCycleNames())
     elseif (which == 3)
-        SetMenuOptions("cycleDisplay", getRightCycleNames(), empty)
+        SetMenuOptions("cycleDisplay", getRightCycleNames())
     endif
 endFunction 
 
@@ -71,6 +76,8 @@ EndEvent
 Event OnConfigOpen()
     parent.OnConfigOpen()
 
+    pBuildIsPreAE = BuildIsPreAE()
+
     int menuEnum = GetModSettingInt("uHowToggleInMenus:Controls")
     pMenuNeedsModifier = (menuEnum == 2)
     int cycleEnum = GetModSettingInt("uHowToCycle:Controls")
@@ -83,7 +90,9 @@ Event OnConfigOpen()
     int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
     pEnableUnequipModifier = (unequipEnum == 2)
 
-    ShowCycleEntries(pCycleToShow)
+    if (!pBuildIsPreAE)
+        ShowCycleEntries(pCycleToShow)
+    endif
 
     ForcePageReset()
 EndEvent
