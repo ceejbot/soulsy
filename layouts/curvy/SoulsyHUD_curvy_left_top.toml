@@ -123,11 +123,11 @@ name_offset = { x = 0.0, y = -210.0 }
 
 [[layouts]]
 name = "Right Hand"
-align_text = "center"
 element = { repr = 3 }
 offset = { x = 230.0, y = 230.0 }
 size = { x = 300.0 , y = 300.0 }
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
+align_text = "center"
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 175.0, y = 175.0 }
 icon_offset = { x = 0.0, y = 0.0 }

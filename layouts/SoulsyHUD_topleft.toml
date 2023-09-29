@@ -1,16 +1,14 @@
-# Enable to turn on debug logging. Requires a game restart.
-# Helpful if you want to report a bug.
-debug = true
+# This is the same as the default layout, but located in the top left of the screen.
 
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
 
 # A font sizing hint to the font loader about what size most of the text will use.
-# Text rendered at this size will look best. This value is NOT scaled.
+# Text rendered at this size will look best.
 font = "futura-book-bt.ttf"
 
 # A font sizing hint to the font loader about what size most of the text will use.
-# Text rendered at this size will look best. This value is NOT scaled.
+# Text rendered at this size will look best.
 font_size = 20.0
 
 # A named location for the HUD. Use this as a shortcut for common anchor

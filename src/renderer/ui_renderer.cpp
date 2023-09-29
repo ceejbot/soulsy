@@ -237,15 +237,24 @@ namespace ui
 		auto* font               = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
 
-		// It's left-aligned by default.
+		// Listen up, future maintainer aka ceej of the future!
+		// Text alignment is, for cognitive ease reasons, also a statement about
+		// where the stated anchor point is. 
+		// Center alignment: the offset refers to the center of the text box. (easy case!)
+		// Left alignment: the offset refers to the center of the left edge.
+		// Right alignment: the offset refers to the center of the right edge.
+		// Since imgui takes a *LEFT* edge point, we have to offset the other two cases
+		// by an amount that depends on the size of the text box.
+		// Center alignment: offset to the left by half.
+		// Right alignment: offset to the left by the entire length of the box.
 		float adjustment = 0;
-		if (align == Align::Center) { adjustment = -0.25f * text_bounds.x; }
-		else if (align == Align::Right) { adjustment = -1.25f * text_bounds.x; }
+		if (align == Align::Center) { adjustment = -0.5f * text_bounds.x; }
+		else if (align == Align::Right) { adjustment = -1.0f * text_bounds.x; }
 
-		ImVec2 aligned_center = ImVec2(center.x + adjustment, center.y);
+		ImVec2 aligned_loc = ImVec2(center.x + adjustment, center.y);
 
 		ImGui::GetWindowDrawList()->AddText(
-			font, font_size, aligned_center, text_color, text.c_str(), nullptr, 0.0f, nullptr);
+			font, font_size, aligned_loc, text_color, text.c_str(), nullptr, 0.0f, nullptr);
 	}
 
 
@@ -787,7 +796,7 @@ namespace ui
 		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + fontfile;
 		auto file_path   = std::filesystem::path(path);
 
-		logger::trace("about to try to load font; path={}"sv, path);
+		logger::trace("about to try to load font; size={}; globalScale={}; path={}"sv, hud.font_size, hud.global_scale, path);
 		tried_font_load = true;
 		if (std::filesystem::is_regular_file(file_path) &&
 			((file_path.extension() == ".ttf") || (file_path.extension() == ".otf")))
@@ -806,8 +815,9 @@ namespace ui
 			if (hud.vietnamese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese()); }
 
 			builder.BuildRanges(&ranges);
+			auto scaledSize = hud.font_size * hud.global_scale;
 
-			imFont = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(), hud.font_size, nullptr, ranges.Data);
+			imFont = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(), scaledSize, nullptr, ranges.Data);
 			if (io.Fonts->Build())
 			{
 				ImGui_ImplDX11_CreateDeviceObjects();

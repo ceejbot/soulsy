@@ -1,25 +1,40 @@
+# This layout looks like the default layout, but comes with a font that can render
+# glyphs for languages with character sets different from Western European languages.
+
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
-# Typeface to use. Must be truetype. Must be in resources/fonts.
-font = "Inter-Medium.ttf"
-# A font sizing hint to the font loader about what size most of the text will use.
-# Text rendered at this size will look best. This value is NOT scaled.
-font_size = 20.0
+
 # A named location for the HUD. Use this as a shortcut for common anchor
 # points. These work no matter what the player's screen resolution is, because this
 # is turned into a location point at run-time.
-# Values: bottom_left, bottom_right, top_left, top_right, center
+# Values: bottom_left, bottom_right, top_left, top_right, center,
+# center_top, center_bottom, left_center, right_center
 anchor_name = "bottom_left"
+
 # You can also specify the anchor point like this if a named anchor point
 # doesn't work for your layout. These values are NOT scaled.
-#anchor = { x = 170.0, y = 1225.0 }
+# anchor = { x = 2100.0, y = 825.0 }
+
 # The size of the hud, before the global scaling factor is applied.
 size = { x = 300.0, y = 300.0 }
+
 # The color of the HUD background file. Set alpha to 0 to skip drawing a background.
 bg_color = { r = 0, g = 0, b = 0, a = 64 }
 
+# Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
+hide_ammo_when_irrelevant = true
+# Hide the left hand slot when a ranged weapon is equipped. This lets you
+# use the same location as the left hand to show ammo.
+hide_left_when_irrelevant = true
+
+# Typeface to use. Must be truetype. Must be in resources/fonts.
+font = "Inter-Medium.ttf"
+# A font sizing hint to the font loader about what size most of the text will use.
+# Text rendered at this size will look best.
+font_size = 20.0
+
 # Enable any of these you need text rendering for.
-# Inter should be able to render all of them.
+# The "Inter" font packaged with this layout should have all of these glyphs.
 chinese_full_glyphs = false
 simplified_chinese_glyphs = true
 cyrillic_glyphs = true
@@ -40,8 +55,15 @@ element = { repr = 0 }
 # This gets scaled when the global scaling factor is applied.
 offset = { x = 0.0, y = -83.0 }
 # Size of this slot, before scaling.
-size = { x = 94.0 , y = 94.0 }
-# How to align name and count text for this slot.
+size = { x = 100.0 , y = 100.0 }
+
+# How to align name and count text for this slot. IMPORTANT DOCUMENTATION!
+# The options are left, right, center.
+# Text alignment is, for cognitive ease reasons, also a statement about
+# where the stated anchor point is. 
+# Center alignment: the offset refers to the center of the text box. 
+# Left alignment: the offset refers to the center of the left edge.
+# Right alignment: the offset refers to the center of the right edge.
 align_text = "left"
 
 # The color to use to draw this slot's background. Alpha of 0 means it's not visible.
@@ -51,12 +73,12 @@ bg_color = { r = 255, g = 255, b = 255, a = 128 }
 # always centered in the slot.
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 # Size of the icon for this slot, before scaling.
-icon_size = { x = 40.0, y = 40.0 }
+icon_size = { x = 43.0, y = 43.0 }
 
 # Color for this HUD's hotkey. Alpha of 0 means it's not drawn.
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the hotkey. Gets scaled.
-hotkey_offset = { x = -41.0, y = 41.0 }
+hotkey_offset = { x = 0.0, y = 60.0 }
 # Size of the hotkey. Also scaled.
 hotkey_size = { x = 30.0, y = 30.0 }
 # Background color for the hotkey. Alpha means invisible.
@@ -73,82 +95,91 @@ count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the item name. Gets scaled.
 name_offset = { x = 110.0, y = 110.0 }
+# Font sized used for item name.
+name_font_size = 20.0
 
 # The consumables slot. You can change all of these values
 # independently from the other slots.
 [[layouts]]
 name = "Consumables"
 element = { repr = 1 }
-align_text = "left"
 offset = { x = 0.0, y = 83.0 }
-size = { x = 94.0 , y = 94.0 }
+size = { x = 100.0 , y = 100.0 }
+align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 40.0, y = 40.0 }
+icon_size = { x = 43.0, y = 43.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 41.0, y = -41.0 }
+hotkey_offset = { x = 0.0, y = -60.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 55.0, y = 0.0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 20.0
+count_offset = { x = 65.0, y = -4.0 }
+name_offset = { x = 90.0, y = -4.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 30.0, y = 40.0 }
+name_font_size = 20.0
 
 [[layouts]]
 name = "Left Hand"
 element = { repr = 2 }
 offset = { x = -83.0, y = 0.0 }
-size = { x = 94.0 , y = 94.0 }
+size = { x = 100.0 , y = 100.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 40.0, y = 40.0 }
+icon_size = { x = 43.0, y = 43.0 }
+icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 41.0, y = 41.0 }
+hotkey_offset = { x = 60.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
+count_offset = { x = 125.0, y = 107.0 }
+name_offset = { x = 125.0, y = 107.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 175.0, y = 50.0 }
+name_font_size = 20.0
 
 [[layouts]]
 name = "Right Hand"
 element = { repr = 3 }
 offset = { x = 83.0, y = 0.0 }
-size = { x = 94.0 , y = 94.0 }
+size = { x = 100.0 , y = 100.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 40.0, y = 40.0 }
+icon_size = { x = 43.0, y = 43.0 }
+icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = -41.0, y = -41.0 }
+hotkey_offset = { x = -60.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_offset = { x = 0.0, y = 0.0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = -15.0, y = 75.0 }
+name_offset = { x = 10.0, y = 52.0 }
+name_font_size = 20.0
 
 
 [[layouts]]
 name = "Ammo"
 element = { repr = 4 }
-offset = { x = 0.0, y = 0.0 }
-size = { x = 50.0 , y = 50.0 }
+offset = { x = -83.0, y = 0.0 }
+size = { x = 100.0 , y = 100.0 }
 align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 0 }
+bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 35.0, y = 35.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
-hotkey_offset = { x = 0.0, y = 0.0 }
+icon_size = { x = 43.0, y = 43.0 }
+icon_offset = { x = 0.0, y=0.0 }
+hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
+hotkey_offset = { x = 60.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 50.0, y = 100.0 }
 count_color = { r = 255, g = 255, b = 255, a = 255 }
 count_font_size = 20.0
+count_offset = { x = 125.0, y = 107.0 }
+name_offset = { x = 155.0, y = 107.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 75.0, y = 100.0 }
+name_font_size = 20.0

@@ -1,3 +1,5 @@
+# The default layout that ships with SoulsyHUD.
+
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
 
@@ -17,6 +19,7 @@ size = { x = 300.0, y = 300.0 }
 
 # The color of the HUD background file. Set alpha to 0 to skip drawing a background.
 bg_color = { r = 0, g = 0, b = 0, a = 64 }
+
 # Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
 hide_ammo_when_irrelevant = true
 # Hide the left hand slot when a ranged weapon is equipped. This lets you
@@ -26,7 +29,8 @@ hide_left_when_irrelevant = true
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "futura-book-bt.ttf"
 # A font sizing hint to the font loader about what size most of the text will use.
-# Text rendered at this size will look best. This value is NOT scaled.
+# Text rendered at this size will look best. This value is scaled before the font is loaded.
+# Text alignment calculations are made using this font size.
 font_size = 20.0
 
 # Enable any of these you need text rendering for.
@@ -53,8 +57,15 @@ element = { repr = 0 }
 offset = { x = 0.0, y = -83.0 }
 # Size of this slot, before scaling.
 size = { x = 100.0 , y = 100.0 }
-# How to align name and count text for this slot.
-align_text = "left"
+
+# How to align name and count text for this slot. IMPORTANT DOCUMENTATION!
+# The options are left, right, center.
+# Text alignment is, for cognitive ease reasons, also a statement about
+# where the stated anchor point is. 
+# Center alignment: the offset refers to the middle of the text box. 
+# Left alignment: the offset refers to the middle of the left edge.
+# Right alignment: the offset refers to the middle of the right edge.
+align_text = "center"
 
 # The color to use to draw this slot's background. Alpha of 0 means it's not visible.
 # Color is expressed as RGBA; values are 0-255.

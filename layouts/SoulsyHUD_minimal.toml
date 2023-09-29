@@ -1,3 +1,5 @@
+# A minimal layout in the lower left corner.
+
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
 
@@ -23,7 +25,7 @@ hide_left_when_irrelevant = true
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "futura-book-bt.ttf"
 # A font sizing hint to the font loader about what size most of the text will use.
-# Text rendered at this size will look best. This value is NOT scaled.
+# Text rendered at this size will look best. 
 font_size = 20.0
 
 # Enable any of these you need text rendering for.
@@ -89,7 +91,7 @@ name_font_size = 15.0
 [[layouts]]
 name = "Consumables"
 element = { repr = 1 }
-offset = { x = -110.0, y = -75.0 }
+offset = { x = -35.0, y = 0.0 }
 size = { x = 75.0, y = 75.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 0 }
@@ -101,15 +103,15 @@ hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 20.0
-count_offset = { x = 30.0, y = 7.0 }
-name_offset = { x = 65.0, y = 7.0 }
-name_color = { r = 255, g = 255, b = 255, a = 0 }
+count_offset = { x = 30.0, y = 0.0 }
+name_offset = { x = 60.0, y = 0.0 }
+name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 20.0
 
 [[layouts]]
 name = "Left Hand"
 element = { repr = 2 }
-offset = { x = -35.0, y = 0.0 }
+offset = { x = -35.0, y = -75.0 }
 size = { x = 75.0, y = 75.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 0 }
@@ -130,7 +132,7 @@ name_font_size = 20.0
 [[layouts]]
 name = "Right Hand"
 element = { repr = 3 }
-offset = { x = 40.0, y = 0.0 }
+offset = { x = -110.0, y = -75.0 }
 size = { x = 75.0, y = 75.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 0 }
@@ -151,7 +153,7 @@ name_font_size = 20.0
 [[layouts]]
 name = "Ammo"
 element = { repr = 4 }
-offset = { x = -35.0, y = -72.0 }
+offset = { x = -35.0, y = -75.0 }
 size = { x = 75.0, y = 75.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 0 }
@@ -159,12 +161,12 @@ icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 50.0, y = 50.0 }
 icon_offset = { x = 0.0, y = 0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
-hotkey_offset = { x = -60.0, y = 0.0 }
+hotkey_offset = { x = 60.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_offset = { x = 0.0, y = 0.0 }
-count_color = { r = 255, g = 255, b = 255, a = 0 }
+count_color = { r = 255, g = 255, b = 255, a = 255 }
 count_font_size = 20.0
-name_color = { r = 255, g = 255, b = 255, a = 0 }
-name_offset = { x = -15.0, y = 75.0 }
+name_color = { r = 255, g = 255, b = 255, a = 255 }
+name_offset = { x = 30.0, y = 0.0 }
 name_font_size = 20.0
