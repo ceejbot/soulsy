@@ -213,6 +213,16 @@ namespace helpers
 		return equippable::hudItemFromForm(form_item);
 	}
 
+	std::string lookupTranslation(const std::string key)
+	{
+		std::string* translated = nullptr;
+		SKSE::Translation::Translate(key, translated);
+		// You know, I really would like an option monad here.
+		// I have become that kind of person, I guess.
+		if (translated) return std::move(translated);
+		return std::string("");
+	}
+
 	MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid) {}
 
 	void MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelection*& outSelection)

@@ -39,6 +39,8 @@ namespace helpers
 	std::string vec_to_stdstring(rust::Vec<uint8_t> input);
 	std::vector<uint8_t> chars_to_vec(const char* input);
 
+	std::string lookupTranslation(std::string key);
+
 	//void addCycleKeyword(const std::string& form_spec);
 	//void removeCycleKeyword(const std::string& form_spec);
 
