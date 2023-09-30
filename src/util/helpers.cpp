@@ -135,6 +135,13 @@ namespace helpers
 		RE::DebugNotification(msg);
 	}
 
+	rust::String lookupTranslation(const std::string& key)
+	{
+		std::string translated = std::string();
+		SKSE::Translation::Translate(key, translated);
+		return translated;
+	}
+
 	void startAlphaTransition(const bool shift, const float target)
 	{
 		ui::ui_renderer::startAlphaTransition(shift, target);
@@ -213,16 +220,6 @@ namespace helpers
 		return equippable::hudItemFromForm(form_item);
 	}
 
-	std::string lookupTranslation(const std::string key)
-	{
-		std::string* translated = nullptr;
-		SKSE::Translation::Translate(key, translated);
-		// You know, I really would like an option monad here.
-		// I have become that kind of person, I guess.
-		if (translated) return std::move(translated);
-		return std::string("");
-	}
-
 	MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid) {}
 
 	void MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelection*& outSelection)
@@ -271,7 +268,7 @@ namespace helpers
 		auto* itemList = menu->GetRuntimeData().itemList;
 		auto* selected = itemList->GetSelectedItem();
 
-		if (selected && selected->data && selected->data.objDesc && selected->data.objDesc->object)
+		if (selected->data.objDesc && selected->data.objDesc->object)
 		{
 			auto* obj           = selected->data.objDesc->object;
 			auto form_id        = obj->GetFormID();
