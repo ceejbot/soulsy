@@ -1220,7 +1220,7 @@ impl Controller {
                 }
             } else if item.two_handed() {
                 if self.cycles.remove_item(CycleSlot::Right, &item) {
-                    Some(translated_key(FMT_ITEM_RIGHT_HAND))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
@@ -1230,9 +1230,9 @@ impl Controller {
                 if removed_right && removed_left {
                     Some(translated_key(FMT_ITEM_BOTH_HANDS))
                 } else if removed_left {
-                    Some(translated_key(FMT_ITEM_LEFT_HAND))
+                    Some(translated_key(FMT_ITEM_LEFT_CYCLE))
                 } else if removed_right {
-                    Some(translated_key(FMT_ITEM_RIGHT_HAND))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
@@ -1263,7 +1263,7 @@ impl Controller {
                 }
             } else if item.two_handed() || matches!(item.kind(), BaseType::Scroll(_)) {
                 if self.cycles.add_item(CycleSlot::Right, &item) {
-                    Some(translated_key(FMT_ITEM_RIGHT_HAND))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
@@ -1273,20 +1273,20 @@ impl Controller {
                 if added_right && added_left {
                     Some(translated_key(FMT_ITEM_BOTH_HANDS))
                 } else if added_left {
-                    Some(translated_key(FMT_ITEM_LEFT_HAND))
+                    Some(translated_key(FMT_ITEM_LEFT_CYCLE))
                 } else if added_right {
-                    Some(translated_key(FMT_ITEM_RIGHT_HAND))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
             } else if item.kind().right_hand_ok() {
                 if self.cycles.add_item(CycleSlot::Right, &item) {
-                    Some(translated_key(FMT_ITEM_RIGHT_HAND))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
             } else if self.cycles.add_item(CycleSlot::Left, &item) {
-                Some(translated_key(FMT_ITEM_LEFT_HAND))
+                Some(translated_key(FMT_ITEM_LEFT_CYCLE))
             } else {
                 None
             };
@@ -1485,6 +1485,4 @@ const FMT_ITEM_POWERS_CYCLE: &str = "$SoulsyHUD_fmt_PowersCycle";
 const FMT_ITEM_UTILITIES_CYCLE: &str = "$SoulsyHUD_fmt_UtilitiesCycle";
 const FMT_ITEM_LEFT_CYCLE: &str = "$SoulsyHUD_fmt_LeftHandCycle";
 const FMT_ITEM_RIGHT_CYCLE: &str = "$SoulsyHUD_fmt_RightHandCycle";
-const FMT_ITEM_LEFT_HAND: &str = "$SoulsyHUD_fmt_LeftHand";
-const FMT_ITEM_RIGHT_HAND: &str = "$SoulsyHUD_fmt_RightHand";
-const FMT_ITEM_BOTH_HANDS: &str = "$SoulsyHUD_fmt_RightHand";
+const FMT_ITEM_BOTH_HANDS: &str = "$SoulsyHUD_fmt_BothHands";
