@@ -409,6 +409,8 @@ pub mod plugin {
 
         /// Display a debug notification on the screen. Used as hacky action confirmation.
         fn notifyPlayer(message: &CxxString);
+        /// Look up a translation for a format string.
+        fn lookupTranslation(key: &CxxString) -> String;
         /// Start the HUD widget fading in or out to the goal transparency.
         fn startAlphaTransition(fade_in: bool, alpha: f32);
         /// Enter slow time while cycling.

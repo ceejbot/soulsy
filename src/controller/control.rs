@@ -4,6 +4,7 @@ use std::sync::Mutex;
 
 use cxx::let_cxx_string;
 use once_cell::sync::Lazy;
+use strfmt::strfmt;
 
 use super::cycles::*;
 use super::keys::*;
@@ -929,7 +930,7 @@ impl Controller {
         } else {
             "item equipped"
         };
-        log::info!("{prefix}: name='{}'; form_spec={form_spec};", item.name());
+        log::info!("{prefix}: name='{}'; form_spec='{form_spec}';", item.name());
 
         if item.kind().is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
@@ -1201,21 +1202,25 @@ impl Controller {
 
         let maybe_message = if !is_favorite {
             // This formerly-favorite item is now disliked.
-            if item.kind().is_utility() {
+            let format = translated_key(FMT_ITEM_REMOVED);
+            let mut vars = HashMap::new();
+            vars.insert("item".to_string(), item.name());
+
+            let maybe_cycle = if item.kind().is_utility() {
                 if self.cycles.remove_item(CycleSlot::Utility, &item) {
-                    Some(format!("{} removed from utilities cycle.", item.name()))
+                    Some(translated_key(FMT_ITEM_UTILITIES_CYCLE))
                 } else {
                     None
                 }
             } else if item.kind().is_power() {
                 if self.cycles.remove_item(CycleSlot::Power, &item) {
-                    Some(format!("{} removed from powers cycle.", item.name()))
+                    Some(translated_key(FMT_ITEM_POWERS_CYCLE))
                 } else {
                     None
                 }
             } else if item.two_handed() {
                 if self.cycles.remove_item(CycleSlot::Right, &item) {
-                    Some(format!("{} removed from right hand.", item.name()))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
@@ -1223,32 +1228,42 @@ impl Controller {
                 let removed_right = self.cycles.remove_item(CycleSlot::Right, &item);
                 let removed_left = self.cycles.remove_item(CycleSlot::Left, &item);
                 if removed_right && removed_left {
-                    Some(format!("{} removed from both hands.", item.name()))
+                    Some(translated_key(FMT_ITEM_BOTH_HANDS))
                 } else if removed_left {
-                    Some(format!("{} removed from left hand.", item.name()))
+                    Some(translated_key(FMT_ITEM_LEFT_CYCLE))
                 } else if removed_right {
-                    Some(format!("{} removed from right hand.", item.name()))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
+            };
+            if let Some(cycle) = maybe_cycle {
+                vars.insert("cycle".to_string(), cycle);
+                strfmt(&format, &vars).ok()
+            } else {
+                None
             }
         } else {
             // This item is a new fave! Add to whatever the appropriate cycle is.
-            if item.kind().is_utility() {
+            let format = translated_key(FMT_ITEM_ADDED);
+            let mut vars = HashMap::new();
+            vars.insert("item".to_string(), item.name());
+
+            let maybe_cycle = if item.kind().is_utility() {
                 if self.cycles.add_item(CycleSlot::Utility, &item) {
-                    Some(format!("{} added to utilities cycle.", item.name()))
+                    Some(translated_key(FMT_ITEM_UTILITIES_CYCLE))
                 } else {
                     None
                 }
             } else if item.kind().is_power() {
                 if self.cycles.add_item(CycleSlot::Power, &item) {
-                    Some(format!("{} added to powers cycle.", item.name()))
+                    Some(translated_key(FMT_ITEM_POWERS_CYCLE))
                 } else {
                     None
                 }
             } else if item.two_handed() || matches!(item.kind(), BaseType::Scroll(_)) {
                 if self.cycles.add_item(CycleSlot::Right, &item) {
-                    Some(format!("{} added to right hand.", item.name()))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
@@ -1256,22 +1271,28 @@ impl Controller {
                 let added_right = self.cycles.add_item(CycleSlot::Right, &item);
                 let added_left = self.cycles.add_item(CycleSlot::Left, &item);
                 if added_right && added_left {
-                    Some(format!("{} added to both hands.", item.name()))
+                    Some(translated_key(FMT_ITEM_BOTH_HANDS))
                 } else if added_left {
-                    Some(format!("{} added to left hand.", item.name()))
+                    Some(translated_key(FMT_ITEM_LEFT_CYCLE))
                 } else if added_right {
-                    Some(format!("{} added to right hand.", item.name()))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
             } else if item.kind().right_hand_ok() {
                 if self.cycles.add_item(CycleSlot::Right, &item) {
-                    Some(format!("{} added to right hand.", item.name()))
+                    Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {
                     None
                 }
             } else if self.cycles.add_item(CycleSlot::Left, &item) {
-                Some(format!("{} added to left hand.", item.name()))
+                Some(translated_key(FMT_ITEM_LEFT_CYCLE))
+            } else {
+                None
+            };
+            if let Some(cycle) = maybe_cycle {
+                vars.insert("cycle".to_string(), cycle);
+                strfmt(&format, &vars).ok()
             } else {
                 None
             }
@@ -1342,24 +1363,30 @@ impl Controller {
 
         // notify the player what happened...
         let verb = match result {
-            MenuEventResponse::ItemAdded => "added to",
-            MenuEventResponse::ItemRemoved => "removed from",
-            MenuEventResponse::ItemInappropriate => "can't go into the",
-            MenuEventResponse::TooManyItems => "would overflow the",
-            _ => "not changed in",
+            MenuEventResponse::ItemAdded => translated_key(FMT_ITEM_ADDED),
+            MenuEventResponse::ItemRemoved => translated_key(FMT_ITEM_REMOVED),
+            MenuEventResponse::ItemInappropriate => translated_key(FMT_ITEM_REJECTED),
+            MenuEventResponse::TooManyItems => translated_key(FMT_ITEM_TOOMANY),
+            _ => translated_key(FMT_ITEM_NOCHANGE),
         };
         let cyclename = match action {
-            Action::Power => "powers",
-            Action::Left => "left-hand",
-            Action::Right => "right-hand",
-            Action::Utility => "utility items",
-            _ => "any",
+            Action::Power => translated_key(FMT_ITEM_POWERS_CYCLE),
+            Action::Left => translated_key(FMT_ITEM_LEFT_CYCLE),
+            Action::Right => translated_key(FMT_ITEM_RIGHT_CYCLE),
+            Action::Utility => translated_key(FMT_ITEM_UTILITIES_CYCLE),
+            _ => "any".to_string(), // should be unreachable
         };
 
-        let message = format!("{} {} {} cycle", item.name(), verb, cyclename);
-        log::info!("{}; kind={:?};", message, item.kind());
-        cxx::let_cxx_string!(msg = message);
-        notifyPlayer(&msg);
+        let mut vars = HashMap::new();
+        vars.insert("item".to_string(), item.name());
+        vars.insert("cycle".to_string(), cyclename);
+        if let Ok(message) = strfmt(&verb, &vars) {
+            log::info!("{}; kind={:?};", message, item.kind());
+            cxx::let_cxx_string!(msg = message);
+            notifyPlayer(&msg);
+        } else {
+            log::debug!("no notification sent to player because message couldn't be formatted");
+        }
     }
 
     // watching the keys
@@ -1443,3 +1470,19 @@ impl Default for Controller {
         Controller::new()
     }
 }
+
+pub fn translated_key(key: &str) -> String {
+    let_cxx_string!(cxxkey = key);
+    lookupTranslation(&cxxkey)
+}
+
+const FMT_ITEM_REMOVED: &str = "$SoulsyHUD_fmt_ItemRemoved";
+const FMT_ITEM_ADDED: &str = "$SoulsyHUD_fmt_ItemAdded";
+const FMT_ITEM_REJECTED: &str = "$SoulsyHUD_fmt_ItemRejected";
+const FMT_ITEM_TOOMANY: &str = "$SoulsyHUD_fmt_TooMany";
+const FMT_ITEM_NOCHANGE: &str = "$SoulsyHUD_fmt_NoChange";
+const FMT_ITEM_POWERS_CYCLE: &str = "$SoulsyHUD_fmt_PowersCycle";
+const FMT_ITEM_UTILITIES_CYCLE: &str = "$SoulsyHUD_fmt_UtilitiesCycle";
+const FMT_ITEM_LEFT_CYCLE: &str = "$SoulsyHUD_fmt_LeftHandCycle";
+const FMT_ITEM_RIGHT_CYCLE: &str = "$SoulsyHUD_fmt_RightHandCycle";
+const FMT_ITEM_BOTH_HANDS: &str = "$SoulsyHUD_fmt_BothHands";

@@ -135,6 +135,13 @@ namespace helpers
 		RE::DebugNotification(msg);
 	}
 
+	rust::String lookupTranslation(const std::string& key)
+	{
+		std::string translated = std::string();
+		SKSE::Translation::Translate(key, translated);
+		return translated;
+	}
+
 	void startAlphaTransition(const bool shift, const float target)
 	{
 		ui::ui_renderer::startAlphaTransition(shift, target);
@@ -261,7 +268,7 @@ namespace helpers
 		auto* itemList = menu->GetRuntimeData().itemList;
 		auto* selected = itemList->GetSelectedItem();
 
-		if (selected && selected->data && selected->data.objDesc && selected->data.objDesc->object)
+		if (selected->data.objDesc && selected->data.objDesc->object)
 		{
 			auto* obj           = selected->data.objDesc->object;
 			auto form_id        = obj->GetFormID();
