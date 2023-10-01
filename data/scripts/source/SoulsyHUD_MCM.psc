@@ -22,20 +22,21 @@ bool function BuildIsPreAE() native
 function ClearCycles() native
 
 function ShowCycleEntries(int which)
-    if (BuildIsPreAE()) 
-        return
-    endif
     pCycleToShow = which
+    string[] names
+    ;string[] shortnames = new string[30]
     
     if (which == 0)
-        SetMenuOptions("cycleDisplay", getPowerCycleNames())
+        names = getPowerCycleNames()
     elseif (which == 1)
-        SetMenuOptions("cycleDisplay", getUtilityCycleNames())
+        names = getUtilityCycleNames()
     elseif (which == 2)
-        SetMenuOptions("cycleDisplay", getLeftCycleNames())
+        names = getLeftCycleNames()
     elseif (which == 3)
-        SetMenuOptions("cycleDisplay", getRightCycleNames())
+        names = getRightCycleNames()
     endif
+
+    SetMenuOptions("cycleDisplay", names, a_shortNames = none)
 endFunction 
 
 function ClearCyclesPapyrus()
@@ -76,7 +77,7 @@ EndEvent
 Event OnConfigOpen()
     parent.OnConfigOpen()
 
-    pBuildIsPreAE = BuildIsPreAE()
+    ;pBuildIsPreAE = BuildIsPreAE()
 
     int menuEnum = GetModSettingInt("uHowToggleInMenus:Controls")
     pMenuNeedsModifier = (menuEnum == 2)
