@@ -4,10 +4,9 @@ namespace papyrus
 {
 	void handleConfigClose(RE::TESQuest*);
 	void handleClearCycles(RE::TESQuest*);
-	RE::BSTArray<RE::BSFixedString> getPowerCycleNames(RE::TESQuest*);
-	RE::BSTArray<RE::BSFixedString> getUtilityCycleNames(RE::TESQuest*);
-	RE::BSTArray<RE::BSFixedString> getLeftCycleNames(RE::TESQuest*);
-	RE::BSTArray<RE::BSFixedString> getRightCycleNames(RE::TESQuest*);
+	
+	RE::BSTArray<RE::BSFixedString> getCycleNames(RE::TESQuest*, int which);
+	RE::BSTArray<RE::BSFixedString> getCycleFormIDs(RE::TESQuest*, int which);
 
 	RE::BSFixedString get_resolution_width(RE::TESQuest*);
 	RE::BSFixedString get_resolution_height(RE::TESQuest*);

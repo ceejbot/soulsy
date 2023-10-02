@@ -14,34 +14,25 @@ int property pCycleToShow = 0 auto
 Event OnConfigClose() native
 string function GetResolutionWidth() native
 string function GetResolutionHeight() native
-string[] function getPowerCycleNames() native
-string[] function getUtilityCycleNames() native
-string[] function getLeftCycleNames() native
-string[] function getRightCycleNames() native
-bool function BuildIsPreAE() native
-function ClearCycles() native
+string[] function GetCycleFormIDs(int which) native
+string[] function GetCycleNames(int which) native
+function ClearCycles() native 
 
 function ShowCycleEntries(int which)
     pCycleToShow = which
-    string[] names
-    ;string[] shortnames = new string[30]
-    
-    if (which == 0)
-        names = getPowerCycleNames()
-    elseif (which == 1)
-        names = getUtilityCycleNames()
-    elseif (which == 2)
-        names = getLeftCycleNames()
-    elseif (which == 3)
-        names = getRightCycleNames()
-    endif
+    ; string[] values = GetCycleFormIDs(which)
+    string[] names = GetCycleNames(which)
+    string[] empty
 
-    SetMenuOptions("cycleDisplay", names, a_shortNames = none)
+    SetMenuOptions("cycleDisplay", names, a_shortNames = empty)
 endFunction 
 
 function ClearCyclesPapyrus()
-    ClearCycles()
-    ShowMessage("$SoulsyHUD_CyclesCleared_Message")
+    bool doit = ShowMessage("$SoulsyHUD_AreYouSure_Message", a_withCancel = true)
+    if (doit) 
+        ClearCycles()
+        ShowMessage("$SoulsyHUD_CyclesCleared_Message")
+    endif
 endFunction
 
 Event OnSettingChange(String changedID)
@@ -77,8 +68,6 @@ EndEvent
 Event OnConfigOpen()
     parent.OnConfigOpen()
 
-    ;pBuildIsPreAE = BuildIsPreAE()
-
     int menuEnum = GetModSettingInt("uHowToggleInMenus:Controls")
     pMenuNeedsModifier = (menuEnum == 2)
     int cycleEnum = GetModSettingInt("uHowToCycle:Controls")
@@ -91,9 +80,7 @@ Event OnConfigOpen()
     int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
     pEnableUnequipModifier = (unequipEnum == 2)
 
-    if (!pBuildIsPreAE)
-        ShowCycleEntries(pCycleToShow)
-    endif
-
     ForcePageReset()
+
+    ShowCycleEntries(pCycleToShow)
 EndEvent

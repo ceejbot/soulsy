@@ -284,7 +284,8 @@ pub mod plugin {
         /// Clear all cycles on player request.
         fn clear_cycles();
         /// Get the names of the entries in the given cycle as a string.
-        fn get_cycle_names(which: u32) -> Vec<String>;
+        fn get_cycle_names(which: i32) -> Vec<String>;
+        fn get_cycle_formids(which: i32) -> Vec<String>;
 
         /// NEW cycle entry type. This is opaque.
         type HudItem;

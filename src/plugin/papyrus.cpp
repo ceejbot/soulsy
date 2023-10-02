@@ -8,7 +8,6 @@
 
 namespace papyrus
 {
-	static bool bIsPreAEBuild = false;
 	static const char* mcm_name = "SoulsyHUD_MCM";
 
 	void registerPapyrusFunctions()
@@ -21,68 +20,37 @@ namespace papyrus
 	{
 		a_vm->RegisterFunction("OnConfigClose", mcm_name, handleConfigClose);
 		a_vm->RegisterFunction("ClearCycles", mcm_name, handleClearCycles);
-		a_vm->RegisterFunction("getPowerCycleNames", mcm_name, getPowerCycleNames);
-		a_vm->RegisterFunction("getUtilityCycleNames", mcm_name, getUtilityCycleNames);
-		a_vm->RegisterFunction("getLeftCycleNames", mcm_name, getLeftCycleNames);
-		a_vm->RegisterFunction("getRightCycleNames", mcm_name, getRightCycleNames);
+
+		a_vm->RegisterFunction("GetCycleNames", mcm_name, getCycleNames);
+		a_vm->RegisterFunction("GetCycleFormIDs", mcm_name, getCycleFormIDs);
+
 		a_vm->RegisterFunction("GetResolutionWidth", mcm_name, get_resolution_width);
 		a_vm->RegisterFunction("GetResolutionHeight", mcm_name, get_resolution_height);
-		a_vm->RegisterFunction("BuildIsPreAE", mcm_name, buildIsPreAE);
 
 		logger::info("Registered papyrus functions for the MCM; classname {}."sv, mcm_name);
 		return true;
-	}
-
-	void setIsPreAEBuild(bool input)
-	{
-		bIsPreAEBuild = input;
-	}
-
-	bool buildIsPreAE(RE::TESQuest*)
-	{
-		// Can we send None as the second param to SetMenuOptions()
-		// or do we need to send an array with a different number of entries?
-		// I think this is a bug in the old 1.5.97 build of MCMHelper, but a lot
-		// of people have that version installed.
-		return bIsPreAEBuild;
 	}
 
 	void handleConfigClose(RE::TESQuest*) { refresh_user_settings(); }
 
 	void handleClearCycles(RE::TESQuest*) { clear_cycles(); }
 
-	RE::BSTArray<RE::BSFixedString> getPowerCycleNames(RE::TESQuest*)
+	RE::BSTArray<RE::BSFixedString> getCycleNames(RE::TESQuest*, int inWhich)
 	{
-		auto names = get_cycle_names(0);
+		int which = std::clamp(inWhich, 0, 3);
+		rust::Vec<rust::String> names = get_cycle_names(which);
 		auto array = RE::BSTArray<RE::BSFixedString>();
 		for (auto name : names) { array.push_back(std::string(name)); }
 
 		return array;
 	}
 
-	RE::BSTArray<RE::BSFixedString> getUtilityCycleNames(RE::TESQuest*)
+	RE::BSTArray<RE::BSFixedString> getCycleFormIDs(RE::TESQuest*, int inWhich)
 	{
-		auto names = get_cycle_names(1);
+		int which = std::clamp(inWhich, 0, 3);
+		rust::Vec<rust::String> ids = get_cycle_formids(which);
 		auto array = RE::BSTArray<RE::BSFixedString>();
-		for (auto name : names) { array.push_back(std::string(name)); }
-
-		return array;
-	}
-
-	RE::BSTArray<RE::BSFixedString> getLeftCycleNames(RE::TESQuest*)
-	{
-		auto names = get_cycle_names(2);
-		auto array = RE::BSTArray<RE::BSFixedString>();
-		for (auto name : names) { array.push_back(std::string(name)); }
-
-		return array;
-	}
-
-	RE::BSTArray<RE::BSFixedString> getRightCycleNames(RE::TESQuest*)
-	{
-		auto names = get_cycle_names(3);
-		auto array = RE::BSTArray<RE::BSFixedString>();
-		for (auto name : names) { array.push_back(std::string(name)); }
+		for (auto id : ids) { array.push_back(std::string(id)); }
 
 		return array;
 	}

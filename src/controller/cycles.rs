@@ -68,6 +68,20 @@ impl CycleData {
             .collect::<Vec<_>>()
     }
 
+    pub fn formids(&self, which: &CycleSlot) -> Vec<String> {
+        let cycle = match which {
+            CycleSlot::Power => &self.power,
+            CycleSlot::Left => &self.left,
+            CycleSlot::Right => &self.right,
+            CycleSlot::Utility => &self.utility,
+        };
+        cycle
+            .iter()
+            .map(|xs| xs.clone())
+            .collect::<Vec<_>>()
+    }
+
+
     /// Advance the given cycle by one. Returns a copy of the newly-top item.
     ///
     /// Called when the player presses a hotkey bound to one of the cycle slots.

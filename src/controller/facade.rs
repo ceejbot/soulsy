@@ -52,12 +52,15 @@ pub fn initialize_hud() {
 
     let hud = hud_layout();
     ctrl.apply_settings();
-    
+
     HudLayout::refresh();
     if settings.autofade() {
         log::info!("The HUD is in autofade mode and ready to go.");
     } else {
-        log::info!("The HUD is in toggle mode and ready to go. Currently visible: {}", ctrl.cycles.hud_visible());
+        log::info!(
+            "The HUD is in toggle mode and ready to go. Currently visible: {}",
+            ctrl.cycles.hud_visible()
+        );
     }
     let anchor = hud.anchor_point();
     log::info!("HUD location is: x={}; y={};", anchor.x, anchor.y);
@@ -131,8 +134,12 @@ pub fn clear_cycles() {
     control::get().clear_cycles();
 }
 
-pub fn get_cycle_names(which: u32) -> Vec<String> {
+pub fn get_cycle_names(which: i32) -> Vec<String> {
     control::get().cycle_names(which)
+}
+
+pub fn get_cycle_formids(which: i32) -> Vec<String> {
+    control::get().cycle_formids(which)
 }
 
 pub fn serialize_version() -> u32 {

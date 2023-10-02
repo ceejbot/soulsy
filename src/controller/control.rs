@@ -70,12 +70,23 @@ impl Controller {
         self.cycles.clear();
     }
 
-    pub fn cycle_names(&mut self, which: u32) -> Vec<String> {
+    // needs to be mut because the cache might be changed
+    pub fn cycle_names(&mut self, which: i32) -> Vec<String> {
         match which {
             0 => self.cycles.names(&CycleSlot::Power, &mut self.cache),
             1 => self.cycles.names(&CycleSlot::Utility, &mut self.cache),
             2 => self.cycles.names(&CycleSlot::Left, &mut self.cache),
             3 => self.cycles.names(&CycleSlot::Right, &mut self.cache),
+            _ => Vec::new(),
+        }
+    }
+
+    pub fn cycle_formids(&self, which: i32) -> Vec<String> {
+        match which {
+            0 => self.cycles.formids(&CycleSlot::Power),
+            1 => self.cycles.formids(&CycleSlot::Utility),
+            2 => self.cycles.formids(&CycleSlot::Left),
+            3 => self.cycles.formids(&CycleSlot::Right),
             _ => Vec::new(),
         }
     }
