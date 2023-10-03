@@ -37,11 +37,11 @@ namespace ui
 	auto gHudAlpha          = 0.0f;
 	auto gGoalAlpha         = 1.0f;
 	auto doFadeIn           = true;
-	auto fade_duration      = 3.0f;  // seconds
-	auto transition_timer   = 2.0f;  // seconds
-	auto is_transitioning   = false;
+	auto gFullFadeDuration  = 3.0f;  // seconds
+	auto gFadeDurRemaining  = 2.0f;  // seconds
+	auto gIsFading          = false;
 	auto delayBeforeFadeout = 0.33f;  // seconds
-	bool doing_brief_peek   = false;
+	bool gDoingBriefPeek    = false;
 
 	ImFont* imFont;
 	auto tried_font_load = false;
@@ -674,21 +674,21 @@ namespace ui
 
 	void ui_renderer::show_briefly()
 	{
-		if (doing_brief_peek || gHudAlpha == 1.0f || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
+		if (gDoingBriefPeek || gHudAlpha == 1.0f || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
 
-		doing_brief_peek = true;
+		gDoingBriefPeek = true;
 		ui_renderer::startAlphaTransition(true, 1.0f);
 	}
 
-	void ui_renderer::startAlphaTransition(const bool becomingVisible, const float goal)
+	void ui_renderer::startAlphaTransition(const bool becomeVisible, const float goal)
 	{
-		if (becomingVisible && gHudAlpha == 1.0f) { return; }
-		if (!becomingVisible && gHudAlpha == 0.0f) { return; }
+		if (becomeVisible && gHudAlpha == 1.0f) { return; }
+		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
 		logger::debug(
-			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomingVisible, goal, gHudAlpha);
+			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomeVisible, goal, gHudAlpha);
 
 		gGoalAlpha = std::clamp(goal, 0.0f, 1.0f);
-		doFadeIn   = becomingVisible;
+		doFadeIn   = becomeVisible;
 
 		// The game will report that the player has sheathed weapons when
 		// the player has merely equipped something new. So we give it some
@@ -698,47 +698,42 @@ namespace ui
 
 		auto settings   = user_settings();
 		float fade_time = static_cast<float>(settings->fade_time()) / 1000.0f;
-		if (doing_brief_peek)
+		if (gDoingBriefPeek)
 		{
 			fade_time = fade_time / 2.0f;  // fastest fade-in in the west
 		}
-		transition_timer = doFadeIn ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
+		gFullFadeDuration = doFadeIn ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
 
 		// We must allow for the transition starting while the alpha is not pinned.
 		// Scale the transition time for how much of the shift remains.
-		if (doFadeIn) { fade_duration = gGoalAlpha - gHudAlpha * transition_timer; }
-		else { fade_duration = gHudAlpha * transition_timer; }
-		if (fade_duration < 0.001f)
+		auto alphaGap = std::fabs(gGoalAlpha - gHudAlpha);
+		gFadeDurRemaining = alphaGap * gFullFadeDuration;
+		if (gFadeDurRemaining < 0.005f)
 		{
 			// Not enough time to bother fading. Just snap to the goal.
 			gHudAlpha = gGoalAlpha;
+			gFadeDurRemaining = 0.0f;
 			return;
 		}
 
-		is_transitioning = true;
+		gIsFading = true;
 	}
 
 	void ui_renderer::makeFadeDecision()
 	{
 		if (helpers::hudShouldAutoFadeOut())
 		{
-			if (doing_brief_peek)
+			if (gDoingBriefPeek)
 			{
 				if (gHudAlpha < 1.0f) { return; }
-				else { doing_brief_peek = false; }
+				else { gDoingBriefPeek = false; }
 			}
 
-			if ((gHudAlpha > 0.0f && !is_transitioning) || (is_transitioning && doFadeIn))
-			{
-				startAlphaTransition(false, 0.0f);
-			}
+			if ((gHudAlpha > 0.0f && !gIsFading) || (gIsFading && doFadeIn)) { startAlphaTransition(false, 0.0f); }
 		}
 		else if (helpers::hudShouldAutoFadeIn())
 		{
-			if ((gHudAlpha < 1.0f && !is_transitioning) || (is_transitioning && !doFadeIn))
-			{
-				startAlphaTransition(true, 1.0f);
-			}
+			if ((gHudAlpha < 1.0f && !gIsFading) || (gIsFading && !doFadeIn)) { startAlphaTransition(true, 1.0f); }
 		}
 	}
 
@@ -760,32 +755,32 @@ namespace ui
 	{
 		// This fading code is triggered by the toggle hud shortcut even if autofade
 		// is off. This is maybe the only place where bug #44 might be caused.
-		if (doFadeIn && is_transitioning)
+		if (doFadeIn && gIsFading)
 		{
 			if (gHudAlpha >= 1.0f)
 			{
-				gHudAlpha        = 1.0f;
-				transition_timer = 0.0f;
-				is_transitioning = false;
+				gHudAlpha         = 1.0f;
+				gFadeDurRemaining = 0.0f;
+				gIsFading         = false;
 				return;
 			}
-			if (transition_timer > 0.0f) { transition_timer -= timeDelta; }
-			gHudAlpha = ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
+			if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
+			gHudAlpha = ui_renderer::easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
 		}
-		else if (!doFadeIn && is_transitioning)
+		else if (!doFadeIn && gIsFading)
 		{
 			if (delayBeforeFadeout > 0.0f) { delayBeforeFadeout -= timeDelta; }
 			else
 			{
 				if (gHudAlpha <= 0.0f)
 				{
-					gHudAlpha        = 0.0f;
-					transition_timer = 0.0f;
-					is_transitioning = false;
+					gHudAlpha         = 0.0f;
+					gFadeDurRemaining = 0.0f;
+					gIsFading         = false;
 				}
 				delayBeforeFadeout = 0.0f;
-				if (transition_timer > 0.0f) { transition_timer -= timeDelta; }
-				gHudAlpha = 1.0f - ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
+				if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
+				gHudAlpha = 1.0f - ui_renderer::easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
 			}
 		}
 	}
