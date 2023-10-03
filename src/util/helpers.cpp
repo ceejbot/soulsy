@@ -216,7 +216,11 @@ namespace helpers
 	rust::Box<HudItem> formSpecToHudItem(const std::string& spec)
 	{
 		auto* form_item = formSpecToFormItem(spec);
-		if (!form_item) { return empty_huditem(); }
+		if (!form_item)
+		{
+			logger::debug("form item not found for form spec='{}';", spec);
+			return empty_huditem();
+		}
 		return equippable::hudItemFromForm(form_item);
 	}
 

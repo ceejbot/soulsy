@@ -112,11 +112,13 @@ namespace equippable
 
 		if (item_form->IsWeapon())
 		{
-			if (const auto* weapon = item_form->As<RE::TESObjectWEAP>(); !weapon->IsBound())
+			const auto* weapon = item_form->As<RE::TESObjectWEAP>();
+			if (weapon)
 			{
 				logger::info("making HudItem for weapon: '{}'"sv, item_form->GetName());
 				weapon->ForEachKeyword(KeywordAccumulator::collect);
-				auto& keywords          = KeywordAccumulator::mKeywords;
+				auto& keywords = KeywordAccumulator::mKeywords;
+				if (weapon->IsBound()) { keywords->push_back(std::string("OCF_InvColorBound")); }
 				auto count              = player::getInventoryCountByForm(item_form);
 				rust::Box<HudItem> item = hud_item_from_keywords(
 					ItemCategory::Weapon, *keywords, std::move(chonker), form_string, count, two_handed);
@@ -237,6 +239,12 @@ namespace equippable
 			}
 		}
 
+		const auto formtype = item_form->GetFormType();
+		const auto formstr  = RE::FormTypeToString(formtype);
+		logger::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
+			formstr,
+			item_form->GetName(),
+			form_string);
 		return empty_huditem();
 	}
 
