@@ -10,6 +10,7 @@ bool property pEnableUnequipModifier = false auto
 bool property pAutoFadeGroupControl = false auto
 bool property pBuildIsPreAE = false auto
 int property pCycleToShow = 0 auto
+int property pCycleItemShown  = 0 auto
 
 Event OnConfigClose() native
 string function GetResolutionWidth() native
@@ -20,11 +21,13 @@ function ClearCycles() native
 
 function ShowCycleEntries(int which)
     pCycleToShow = which
-    ; string[] values = GetCycleFormIDs(which)
-    string[] names = GetCycleNames(which)
-    string[] empty
-
-    SetMenuOptions("cycleDisplay", names, a_shortNames = empty)
+    string[] values = GetCycleNames(which)
+    if (values.Length == 0)
+        values = new string[2]
+        values[0] = "$SoulsyHUD_empty_cycle"
+        values[1] = ""
+    endif
+    SetMenuOptions("cycleDisplay", a_options = values)
 endFunction 
 
 function ClearCyclesPapyrus()
@@ -32,6 +35,8 @@ function ClearCyclesPapyrus()
     if (doit) 
         ClearCycles()
         ShowMessage("$SoulsyHUD_CyclesCleared_Message")
+        pCycleItemShown = 0
+        ShowCycleEntries(pCycleToShow)
     endif
 endFunction
 

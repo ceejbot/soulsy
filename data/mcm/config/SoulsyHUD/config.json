@@ -461,7 +461,8 @@
               " ",
               " "
             ],
-            "propertyName": "pUnusedChoice",
+            "sourceType": "PropertyValueInt",
+            "propertyName": "pCycleItemShown",
             "defaultValue": 0
           }
         }
