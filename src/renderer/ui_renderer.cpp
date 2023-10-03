@@ -34,9 +34,9 @@ namespace ui
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 
-	auto hud_alpha          = 0.0f;
-	auto goal_alpha         = 1.0f;
-	auto fade_in            = true;
+	auto gHudAlpha          = 0.0f;
+	auto gGoalAlpha         = 1.0f;
+	auto doFadeIn           = true;
 	auto fade_duration      = 3.0f;  // seconds
 	auto transition_timer   = 2.0f;  // seconds
 	auto is_transitioning   = false;
@@ -232,17 +232,19 @@ namespace ui
 	{
 		if (!text.length() || color.a == 0) { return; }
 
-		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a * hud_alpha);
+		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
 		const ImVec2 text_bounds = ImGui::CalcTextSize(text.c_str());
 		auto* font               = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
 
 		// Listen up, future maintainer aka ceej of the future!
 		// Text alignment is, for cognitive ease reasons, also a statement about
-		// where the stated anchor point is. 
+		// where the stated anchor point is.
+		//
 		// Center alignment: the offset refers to the center of the text box. (easy case!)
 		// Left alignment: the offset refers to the center of the left edge.
 		// Right alignment: the offset refers to the center of the right edge.
+		//
 		// Since imgui takes a *LEFT* edge point, we have to offset the other two cases
 		// by an amount that depends on the size of the text box.
 		// Center alignment: offset to the left by half.
@@ -282,7 +284,7 @@ namespace ui
 
 		if (!a_text || !*a_text || a_alpha == 0) { return; }
 
-		const ImU32 color = IM_COL32(a_red, a_green, a_blue, a_alpha * hud_alpha);
+		const ImU32 color = IM_COL32(a_red, a_green, a_blue, a_alpha * gHudAlpha);
 
 		const ImVec2 text_size = ImGui::CalcTextSize(a_text);
 		if (a_center_text)
@@ -365,7 +367,7 @@ namespace ui
 		const float angle,
 		const Color color)
 	{
-		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * hud_alpha);
+		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
 
 		const float cos_a   = cosf(angle);
 		const float sin_a   = sinf(angle);
@@ -530,7 +532,7 @@ namespace ui
 		if (!helpers::hudAllowedOnScreen()) return;
 		makeFadeDecision();
 		advanceTransition(timeDelta);
-		if (hud_alpha == 0.0f) { return; }
+		if (gHudAlpha == 0.0f) { return; }
 
 		static constexpr ImGuiWindowFlags window_flags =
 			ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs;
@@ -539,7 +541,7 @@ namespace ui
 
 		ImGui::SetNextWindowSize(ImVec2(screen_size_x, screen_size_y));
 		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-		ImGui::GetStyle().Alpha = hud_alpha;
+		ImGui::GetStyle().Alpha = gHudAlpha;
 		ImGui::Begin(hud_name, nullptr, window_flags);
 
 		drawAllSlots();
@@ -672,45 +674,44 @@ namespace ui
 
 	void ui_renderer::show_briefly()
 	{
-		if (doing_brief_peek || hud_alpha == 1.0f || (fade_in == true && hud_alpha > 0.0f)) { return; }
+		if (doing_brief_peek || gHudAlpha == 1.0f || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
 
 		doing_brief_peek = true;
 		ui_renderer::startAlphaTransition(true, 1.0f);
 	}
 
-	void ui_renderer::startAlphaTransition(const bool becomingVisible, const float a_value)
+	void ui_renderer::startAlphaTransition(const bool becomingVisible, const float goal)
 	{
-		if (becomingVisible && hud_alpha == 1.0f) { return; }
-		if (!becomingVisible && hud_alpha == 0.0f) { return; }
-		logger::debug("startAlphaTransition() called with in={} and goal={}; hud_alpha={};"sv,
-			becomingVisible,
-			a_value,
-			hud_alpha);
+		if (becomingVisible && gHudAlpha == 1.0f) { return; }
+		if (!becomingVisible && gHudAlpha == 0.0f) { return; }
+		logger::debug(
+			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomingVisible, goal, gHudAlpha);
 
-		goal_alpha = std::clamp(a_value, 0.0f, 1.0f);
-		fade_in    = becomingVisible;
+		gGoalAlpha = std::clamp(goal, 0.0f, 1.0f);
+		doFadeIn   = becomingVisible;
 
 		// The game will report that the player has sheathed weapons when
 		// the player has merely equipped something new. So we give it some
 		// time to decide that the weapons are truly gone. This number is the
 		// how long we'll wait before actually fading.
-		if (!fade_in) { delayBeforeFadeout = FADEOUT_HYSTERESIS; }
+		if (!doFadeIn) { delayBeforeFadeout = FADEOUT_HYSTERESIS; }
 
 		auto settings   = user_settings();
 		float fade_time = static_cast<float>(settings->fade_time()) / 1000.0f;
 		if (doing_brief_peek)
 		{
-			fade_time += static_cast<float>(settings->equip_delay_ms()) / 250.0f;  // yes we're waiting longer
+			fade_time = fade_time / 2.0f;  // fastest fade-in in the west
 		}
-		transition_timer = fade_in ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
+		transition_timer = doFadeIn ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
 
 		// We must allow for the transition starting while the alpha is not pinned.
 		// Scale the transition time for how much of the shift remains.
-		if (fade_in) { fade_duration = 1.0f - hud_alpha * transition_timer; }
-		else { fade_duration = hud_alpha * transition_timer; }
+		if (doFadeIn) { fade_duration = gGoalAlpha - gHudAlpha * transition_timer; }
+		else { fade_duration = gHudAlpha * transition_timer; }
 		if (fade_duration < 0.001f)
 		{
-			hud_alpha = goal_alpha;
+			// Not enough time to bother fading. Just snap to the goal.
+			gHudAlpha = gGoalAlpha;
 			return;
 		}
 
@@ -723,18 +724,18 @@ namespace ui
 		{
 			if (doing_brief_peek)
 			{
-				if (hud_alpha < 1.0f) { return; }
+				if (gHudAlpha < 1.0f) { return; }
 				else { doing_brief_peek = false; }
 			}
 
-			if ((hud_alpha > 0.0f && !is_transitioning) || (is_transitioning && fade_in))
+			if ((gHudAlpha > 0.0f && !is_transitioning) || (is_transitioning && doFadeIn))
 			{
 				startAlphaTransition(false, 0.0f);
 			}
 		}
 		else if (helpers::hudShouldAutoFadeIn())
 		{
-			if ((hud_alpha < 1.0f && !is_transitioning) || (is_transitioning && !fade_in))
+			if ((gHudAlpha < 1.0f && !is_transitioning) || (is_transitioning && !doFadeIn))
 			{
 				startAlphaTransition(true, 1.0f);
 			}
@@ -759,32 +760,32 @@ namespace ui
 	{
 		// This fading code is triggered by the toggle hud shortcut even if autofade
 		// is off. This is maybe the only place where bug #44 might be caused.
-		if (fade_in && is_transitioning)
+		if (doFadeIn && is_transitioning)
 		{
-			if (hud_alpha >= 1.0f)
+			if (gHudAlpha >= 1.0f)
 			{
-				hud_alpha        = 1.0f;
+				gHudAlpha        = 1.0f;
 				transition_timer = 0.0f;
 				is_transitioning = false;
 				return;
 			}
 			if (transition_timer > 0.0f) { transition_timer -= timeDelta; }
-			hud_alpha = ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
+			gHudAlpha = ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
 		}
-		else if (!fade_in && is_transitioning)
+		else if (!doFadeIn && is_transitioning)
 		{
 			if (delayBeforeFadeout > 0.0f) { delayBeforeFadeout -= timeDelta; }
 			else
 			{
-				if (hud_alpha <= 0.0f)
+				if (gHudAlpha <= 0.0f)
 				{
-					hud_alpha        = 0.0f;
+					gHudAlpha        = 0.0f;
 					transition_timer = 0.0f;
 					is_transitioning = false;
 				}
 				delayBeforeFadeout = 0.0f;
 				if (transition_timer > 0.0f) { transition_timer -= timeDelta; }
-				hud_alpha = 1.0f - ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
+				gHudAlpha = 1.0f - ui_renderer::easeInCubic(1.0f - (transition_timer / fade_duration));
 			}
 		}
 	}
@@ -796,7 +797,8 @@ namespace ui
 		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + fontfile;
 		auto file_path   = std::filesystem::path(path);
 
-		logger::trace("about to try to load font; size={}; globalScale={}; path={}"sv, hud.font_size, hud.global_scale, path);
+		logger::trace(
+			"about to try to load font; size={}; globalScale={}; path={}"sv, hud.font_size, hud.global_scale, path);
 		tried_font_load = true;
 		if (std::filesystem::is_regular_file(file_path) &&
 			((file_path.extension() == ".ttf") || (file_path.extension() == ".otf")))
