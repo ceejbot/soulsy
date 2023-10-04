@@ -888,30 +888,40 @@ impl Controller {
         }
     }
 
-    pub fn handle_item_unequipped(&mut self, form_spec: &String, right: bool, left: bool) -> bool {
+    pub fn handle_item_unequipped(&mut self, form_spec: &String, _right: bool, _left: bool) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
         // log::debug!("item UNequipped; right={right}; left={left}; form_spec={form_spec};");
-
         let right_vis = self.visible.get(&HudElement::Right);
         let left_vis = self.visible.get(&HudElement::Left);
-        if right {
-            if let Some(visible) = right_vis {
-                if visible.form_string() == *form_spec {
-                    return true;
-                    // let empty = HudItem::default();
-                    // return self.update_slot(HudElement::Right, &empty);
-                }
-            }
-        } else if left {
-            if let Some(visible) = left_vis {
-                if visible.form_string() == *form_spec {
-                    return true;
-                    // let empty = HudItem::default();
-                    // return self.update_slot(HudElement::Left, &empty);
-                }
-            }
+        let empty = HudItem::default();
+        let item = self.cache.get(form_spec);
+
+        match item.kind() {
+            BaseType::Ammo(_) => return self.update_slot(HudElement::Ammo, &empty),
+            BaseType::Light => return self.update_slot(HudElement::Left, &empty),
+            BaseType::Power => return self.update_slot(HudElement::Power, &empty),
+            BaseType::Shout(_) => return self.update_slot(HudElement::Power, &empty),
+            _ => {}
         }
 
+        // Remaining relevant types
+        if !matches!(
+            item.kind(),
+            BaseType::Weapon(_) | BaseType::Spell(_) | BaseType::Scroll(_)
+        ) {
+            return false;
+        }
+
+        if let Some(visible) = right_vis {
+            if visible.form_string() == *form_spec {
+                return self.update_slot(HudElement::Right, &empty);
+            }
+        }
+        if let Some(visible) = left_vis {
+            if visible.form_string() == *form_spec {
+                return self.update_slot(HudElement::Left, &empty);
+            }
+        }
         false
     }
 

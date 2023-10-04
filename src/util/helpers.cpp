@@ -175,6 +175,10 @@ namespace helpers
 
 	RE::TESForm* formSpecToFormItem(const std::string& a_str)
 	{
+		if (a_str.empty()) {
+			// logger::debug("formSpecToFormItem() got empty string; this can never return an item.");
+			return nullptr;
+		}
 		if (!a_str.find(util::delimiter)) { return nullptr; }
 		RE::TESForm* form;
 
@@ -215,10 +219,14 @@ namespace helpers
 
 	rust::Box<HudItem> formSpecToHudItem(const std::string& spec)
 	{
+		if (spec.empty()) {
+			// logger::debug("Empty string passed to formSpecToHudItem(); returning empty item.");
+			return empty_huditem();
+		}
 		auto* form_item = formSpecToFormItem(spec);
 		if (!form_item)
 		{
-			logger::debug("form item not found for form spec='{}';", spec);
+			logger::debug("form item not found for form spec='{}'; Item could be from a removed mod.", spec);
 			return empty_huditem();
 		}
 		return equippable::hudItemFromForm(form_item);
