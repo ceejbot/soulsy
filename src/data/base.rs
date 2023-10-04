@@ -21,7 +21,7 @@ pub enum BaseType {
     Armor(ArmorType),
     Food(FoodType),
     HandToHand,
-    Light,
+    Light(LightType),
     Potion(PotionType),
     PotionProxy(Proxy),
     Power,
@@ -57,6 +57,30 @@ impl HasIcon for Proxy {
 
     fn icon_fallback(&self) -> String {
         Icon::PotionDefault.icon_file()
+    }
+}
+
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq, Default)]
+pub enum LightType {
+    #[default]
+    Torch,
+    Lantern
+}
+
+impl HasIcon for LightType {
+    fn color(&self) -> Color {
+        InvColor::Sun.color()
+    }
+
+    fn icon_file(&self) -> String {
+        match self {
+            LightType::Torch => Icon::Torch.icon_file(),
+            LightType::Lantern => Icon::Lantern.icon_file(),
+        }
+    }
+
+    fn icon_fallback(&self) -> String {
+        Icon::Torch.icon_file()
     }
 }
 
@@ -98,12 +122,13 @@ impl BaseType {
             }
             ItemCategory::Food => Self::Food(FoodType::Fruit), // for now
             ItemCategory::HandToHand => Self::HandToHand,
-            ItemCategory::Light => Self::Light, // TODO
+            ItemCategory::Lantern => Self::Light(LightType::Lantern),
             ItemCategory::Potion => Self::Potion(PotionType::Default),
             ItemCategory::Power => Self::Power,
             ItemCategory::Scroll => Self::Scroll(SpellType::default()),
             ItemCategory::Shout => Self::Shout(ShoutType::new(keywords)),
             ItemCategory::Spell => Self::Spell(SpellType::default()),
+            ItemCategory::Torch => Self::Light(LightType::Torch),
             ItemCategory::Weapon => {
                 Self::Weapon(WeaponType::classify(name, keywords.clone(), twohanded))
             }
@@ -132,7 +157,7 @@ impl HasIcon for BaseType {
             BaseType::Armor(t) => t.color(),
             BaseType::Food(t) => t.color(),
             BaseType::HandToHand => Color::default(),
-            BaseType::Light => InvColor::Sun.color(),
+            BaseType::Light(t) => t.color(),
             BaseType::Potion(t) => t.color(),
             BaseType::PotionProxy(t) => t.color(),
             BaseType::Power => Color::default(),
@@ -150,7 +175,7 @@ impl HasIcon for BaseType {
             BaseType::Armor(t) => t.icon_file(),
             BaseType::Food(_) => Icon::Food.icon_file(), // TODO
             BaseType::HandToHand => Icon::HandToHand.icon_file(),
-            BaseType::Light => Icon::Torch.icon_file(),
+            BaseType::Light(t) => t.icon_file(),
             BaseType::Potion(t) => t.icon_file(),
             BaseType::PotionProxy(t) => t.icon_file(),
             BaseType::Power => Icon::Power.icon_file(),
@@ -168,7 +193,7 @@ impl HasIcon for BaseType {
             BaseType::Armor(t) => t.icon_fallback(),
             BaseType::Food(_) => Icon::IconDefault.icon_file(),
             BaseType::HandToHand => Icon::HandToHand.icon_file(),
-            BaseType::Light => Icon::Torch.icon_file(),
+            BaseType::Light(t) => t.icon_file(),
             BaseType::Potion(t) => t.icon_fallback(),
             BaseType::PotionProxy(t) => t.icon_fallback(),
             BaseType::Power => Icon::Shout.icon_file(),
@@ -188,7 +213,7 @@ impl IsHudItem for BaseType {
             BaseType::Armor(_) => true,
             BaseType::Food(_) => true,
             BaseType::HandToHand => false,
-            BaseType::Light => true,
+            BaseType::Light(_) => true,
             BaseType::Potion(_) => true,
             BaseType::PotionProxy(_) => true,
             BaseType::Power => false,
@@ -230,7 +255,7 @@ impl IsHudItem for BaseType {
             BaseType::Armor(t) => t.is_utility(),
             BaseType::Food(_) => true,
             BaseType::HandToHand => false,
-            BaseType::Light => false,
+            BaseType::Light(_) => false,
             BaseType::Potion(_) => true,
             BaseType::PotionProxy(_) => true,
             BaseType::Power => false,
@@ -268,7 +293,7 @@ impl IsHudItem for BaseType {
             BaseType::Armor(t) => !t.is_utility(),
             BaseType::Food(_) => false,
             BaseType::HandToHand => true,
-            BaseType::Light => true,
+            BaseType::Light(_) => true,
             BaseType::Potion(_) => false,
             BaseType::PotionProxy(_) => false,
             BaseType::Power => false,
@@ -286,7 +311,7 @@ impl IsHudItem for BaseType {
             BaseType::Armor(_) => false,
             BaseType::Food(_) => false,
             BaseType::HandToHand => true,
-            BaseType::Light => false,
+            BaseType::Light(_) => false,
             BaseType::Potion(_) => false,
             BaseType::PotionProxy(_) => false,
             BaseType::Power => false,
@@ -375,7 +400,7 @@ mod tests {
         let item = BaseType::Armor(armor);
         assert_eq!(item.is_utility(), true);
 
-        assert_eq!(BaseType::Light.is_utility(), false);
+        assert_eq!(BaseType::Light(LightType::Lantern).is_utility(), false);
 
         let potion = BaseType::Potion(PotionType::Health);
         assert_eq!(potion.is_utility(), true);
@@ -386,7 +411,7 @@ mod tests {
 
     #[test]
     fn left_hand_items() {
-        assert_eq!(BaseType::Light.left_hand_ok(), true);
+        assert_eq!(BaseType::Light(LightType::Lantern).left_hand_ok(), true);
         let shield = BaseType::Armor(ArmorType::new(Icon::ArmorShieldHeavy, InvColor::Ash));
         assert_eq!(shield.left_hand_ok(), true);
         let dagger = BaseType::Weapon(WeaponType::new(
@@ -419,7 +444,7 @@ mod tests {
 
     #[test]
     fn right_hand_items() {
-        assert_eq!(BaseType::Light.right_hand_ok(), false);
+        assert_eq!(BaseType::Light(LightType::Lantern).right_hand_ok(), false);
 
         let shield = BaseType::Armor(ArmorType::new(Icon::ArmorShieldHeavy, InvColor::Ash));
         assert_eq!(shield.right_hand_ok(), false);

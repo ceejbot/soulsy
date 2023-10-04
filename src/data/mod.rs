@@ -101,7 +101,8 @@ pub fn simple_from_formdata(
     let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let classification = match kind {
         ItemCategory::HandToHand => BaseType::HandToHand,
-        ItemCategory::Light => BaseType::Light,
+        ItemCategory::Lantern => BaseType::Light(base::LightType::Lantern),
+        ItemCategory::Torch => BaseType::Light(base::LightType::Torch),
         ItemCategory::Power => BaseType::Power,
         ItemCategory::Food => BaseType::Food(base::FoodType::Fruit),
         ItemCategory::Shout => BaseType::Shout(ShoutType::default()),

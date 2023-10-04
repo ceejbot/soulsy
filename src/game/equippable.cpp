@@ -92,8 +92,28 @@ namespace equippable
 
 		if (item_form->Is(RE::FormType::Light))
 		{
-			logger::info("making HudItem for torch: '{}'"sv, item_form->GetName());
-			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Light, std::move(chonker), form_string);
+			// This form type does not have keywords. Don't ask me why it's inconsistent.
+			logger::info("making HudItem for light: '{}';"sv, item_form->GetName());
+			// This is somewhat fragile because if OCF changes the string this starts failing.
+			// But at least we'll fall back to torches.
+			auto* ocfflist = RE::TESForm::LookupByEditorID("OCF_FL_LIGH_HeldLantern");
+			if (ocfflist && ocfflist->Is(RE::FormType::FormList))
+			{
+				const auto* flist = ocfflist->As<RE::BGSListForm>();
+				if (flist && flist->HasForm(item_form))
+				{
+					rust::Box<HudItem> item =
+						simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
+					return item;
+				}
+			}
+			const auto name = std::string(item_form->GetName());
+			if (name.find("Lantern") != std::string::npos) {
+					rust::Box<HudItem> item =
+						simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
+					return item;
+			}
+			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Torch, std::move(chonker), form_string);
 			return item;
 		}
 

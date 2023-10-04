@@ -898,20 +898,13 @@ impl Controller {
 
         match item.kind() {
             BaseType::Ammo(_) => return self.update_slot(HudElement::Ammo, &empty),
-            BaseType::Light => return self.update_slot(HudElement::Left, &empty),
+            BaseType::Light(_) => return self.update_slot(HudElement::Left, &empty),
             BaseType::Power => return self.update_slot(HudElement::Power, &empty),
             BaseType::Shout(_) => return self.update_slot(HudElement::Power, &empty),
             _ => {}
         }
 
-        // Remaining relevant types
-        if !matches!(
-            item.kind(),
-            BaseType::Weapon(_) | BaseType::Spell(_) | BaseType::Scroll(_)
-        ) {
-            return false;
-        }
-
+        // This works for scrolls, spells, weapons, torches, and shields.
         if let Some(visible) = right_vis {
             if visible.form_string() == *form_spec {
                 return self.update_slot(HudElement::Right, &empty);
