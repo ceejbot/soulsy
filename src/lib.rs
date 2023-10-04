@@ -493,6 +493,5 @@ pub mod plugin {
         fn magickaPotionCount() -> u32;
         /// Get a count for items with this form spec.
         fn itemCount(form_spec: &CxxString) -> u32;
-
     }
 }

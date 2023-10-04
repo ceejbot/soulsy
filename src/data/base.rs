@@ -65,7 +65,7 @@ impl HasIcon for Proxy {
 pub enum LightType {
     #[default]
     Torch,
-    Lantern
+    Lantern,
 }
 
 impl HasIcon for LightType {
@@ -382,7 +382,7 @@ mod tests {
         let potion = BaseType::Potion(PotionType::Health);
         assert_eq!(potion.is_utility(), true);
 
-        let food = BaseType::Food(FoodType::Vegetable);
+        let food = BaseType::Food(FoodType::default());
         assert_eq!(food.is_utility(), true);
     }
 
