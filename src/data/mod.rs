@@ -6,6 +6,7 @@ pub mod ammo;
 pub mod armor;
 pub mod base;
 pub mod color;
+pub mod food;
 pub mod game_enums;
 pub mod huditem;
 pub mod icons;
@@ -104,7 +105,7 @@ pub fn simple_from_formdata(
         ItemCategory::Lantern => BaseType::Light(base::LightType::Lantern),
         ItemCategory::Torch => BaseType::Light(base::LightType::Torch),
         ItemCategory::Power => BaseType::Power,
-        ItemCategory::Food => BaseType::Food(base::FoodType::Fruit),
+        ItemCategory::Food => BaseType::Food(super::food::FoodType::default()),
         ItemCategory::Shout => BaseType::Shout(ShoutType::default()),
         _ => BaseType::Empty,
     };

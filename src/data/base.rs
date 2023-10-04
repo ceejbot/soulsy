@@ -5,6 +5,7 @@ use strum::Display;
 use super::ammo::AmmoType;
 use super::armor::ArmorType;
 use super::color::InvColor;
+use super::food::FoodType;
 use super::icons::Icon;
 use super::potion::PotionType;
 use super::shout::ShoutType;
@@ -84,30 +85,6 @@ impl HasIcon for LightType {
     }
 }
 
-#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
-pub enum FoodType {
-    // TODO
-    Soup,
-    Meat,
-    Vegetable,
-    Fruit,
-    Water,
-}
-
-impl HasIcon for FoodType {
-    fn color(&self) -> Color {
-        Color::default()
-    }
-
-    fn icon_file(&self) -> String {
-        Icon::Food.icon_file()
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::Food.icon_file()
-    }
-}
-
 impl BaseType {
     pub fn classify(
         name: &str,
@@ -120,7 +97,7 @@ impl BaseType {
             ItemCategory::Armor => {
                 Self::Armor(ArmorType::classify(name, keywords.clone(), twohanded))
             }
-            ItemCategory::Food => Self::Food(FoodType::Fruit), // for now
+            ItemCategory::Food => Self::Food(FoodType::classify(name, keywords.clone(), twohanded)),
             ItemCategory::HandToHand => Self::HandToHand,
             ItemCategory::Lantern => Self::Light(LightType::Lantern),
             ItemCategory::Potion => Self::Potion(PotionType::Default),
@@ -173,7 +150,7 @@ impl HasIcon for BaseType {
             BaseType::Empty => Icon::IconDefault.icon_file(),
             BaseType::Ammo(_) => Icon::Arrow.icon_file(),
             BaseType::Armor(t) => t.icon_file(),
-            BaseType::Food(_) => Icon::Food.icon_file(), // TODO
+            BaseType::Food(t) => t.icon_file(), // TODO
             BaseType::HandToHand => Icon::HandToHand.icon_file(),
             BaseType::Light(t) => t.icon_file(),
             BaseType::Potion(t) => t.icon_file(),
@@ -191,7 +168,7 @@ impl HasIcon for BaseType {
             BaseType::Empty => Icon::IconDefault.icon_file(),
             BaseType::Ammo(_) => Icon::Arrow.icon_file(),
             BaseType::Armor(t) => t.icon_fallback(),
-            BaseType::Food(_) => Icon::IconDefault.icon_file(),
+            BaseType::Food(t) => t.icon_fallback(),
             BaseType::HandToHand => Icon::HandToHand.icon_file(),
             BaseType::Light(t) => t.icon_file(),
             BaseType::Potion(t) => t.icon_fallback(),

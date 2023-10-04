@@ -108,10 +108,10 @@ namespace equippable
 				}
 			}
 			const auto name = std::string(item_form->GetName());
-			if (name.find("Lantern") != std::string::npos) {
-					rust::Box<HudItem> item =
-						simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
-					return item;
+			if (name.find("Lantern") != std::string::npos)
+			{
+				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
+				return item;
 			}
 			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Torch, std::move(chonker), form_string);
 			return item;
@@ -243,8 +243,12 @@ namespace equippable
 			{
 				// TODO soup, water, meat, veggies
 				// categorize drinks vs food
+
 				logger::info("making HudItem for food: '{}'"sv, item_form->GetName());
-				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Food, std::move(chonker), form_string);
+				alchemy_potion->ForEachKeyword(KeywordAccumulator::collect);
+				auto& keywords          = KeywordAccumulator::mKeywords;
+				rust::Box<HudItem> item = hud_item_from_keywords(
+					ItemCategory::Food, *keywords, std::move(chonker), form_string, count, false);
 				return item;
 			}
 			else
