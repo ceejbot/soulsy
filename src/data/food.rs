@@ -44,12 +44,14 @@ impl HasKeywords for FoodType {
         let tags = strings_to_keywords(&keywords);
         let maybe_icon = tags.iter().find_map(|subtype| {
             match subtype {
-                FoodKeywords::OCF_AlchDrink_Coffee => Some(Icon::DrinkWater),
+                FoodKeywords::OCF_AlchDrink_Coffee => Some(Icon::DrinkTea), // heresy
                 FoodKeywords::OCF_AlchDrink_Juice => Some(Icon::DrinkWater),
                 FoodKeywords::OCF_AlchDrink_Milk => Some(Icon::DrinkWater),
                 FoodKeywords::OCF_AlchDrink_Tea => Some(Icon::DrinkTea),
                 FoodKeywords::OCF_AlchDrink_Water => Some(Icon::DrinkWater),
                 FoodKeywords::OCF_AlchDrinkAlcohol => Some(Icon::DrinkWine),
+                FoodKeywords::_SH_WineBottleKeyword => Some(Icon::DrinkWine),
+                FoodKeywords::_SH_MeadBottleKeyword => Some(Icon::DrinkBeer),
                 FoodKeywords::OCF_AlchFood_Baked => Some(Icon::FoodBread),
                 FoodKeywords::OCF_AlchFood_Bread => Some(Icon::FoodBread),
                 FoodKeywords::OCF_AlchFood_Cheese => Some(Icon::FoodCheese),
@@ -91,6 +93,18 @@ fn strings_to_keywords(tags: &[String]) -> Vec<FoodKeywords> {
 
 #[derive(Debug, EnumString, Hash)]
 enum FoodKeywords {
+    OCF_VesselBottle,
+    OCF_VesselBottlePotion,
+    OCF_VesselBottleSkooma,
+    OCF_VesselBowl,
+    OCF_VesselCup,
+    OCF_VesselFlagon,
+    OCF_VesselFlask,
+    OCF_VesselJug,
+    OCF_VesselSack,
+    OCF_VesselTankard,
+    OCF_VesselVial,
+    OCF_VesselWaterskin,
     OCF_AlchDrink_Coffee,
     OCF_AlchDrink_Juice,
     OCF_AlchDrink_Milk,
@@ -110,4 +124,6 @@ enum FoodKeywords {
     OCF_AlchFood_Vegetable,
     MAG_FoodTypePie,
     MAG_FoodTypeWine,
+    _SH_MeadBottleKeyword,
+    _SH_WineBottleKeyword,
 }
