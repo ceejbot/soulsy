@@ -10,36 +10,25 @@ namespace equippable
 	bool requiresTwoHands(RE::TESForm*& item_form)
 	{
 		if (!item_form) { return false; }
-
-		auto two_handed = false;
 		if (item_form->Is(RE::FormType::Spell))
 		{
-			if (const auto* spell = item_form->As<RE::SpellItem>(); spell->IsTwoHanded()) { return true; }
+			const auto* spell = item_form->As<RE::SpellItem>();
+			return spell && spell->IsTwoHanded();
 		}
 
 		if (item_form->IsWeapon())
 		{
-			if (const auto* weapon = item_form->As<RE::TESObjectWEAP>();
-				weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow() || weapon->IsCrossbow())
-			{
-				return true;
-			}
+			const auto* weapon = item_form->As<RE::TESObjectWEAP>();
+			return weapon && (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow() || weapon->IsCrossbow());
 		}
-		else if (item_form->Is(RE::FormType::Scroll))
-		{
-			auto* scroll = item_form->As<RE::ScrollItem>();
-			return scroll->IsTwoHanded();
-		}
-
 
 		if (item_form->Is(RE::FormType::Scroll))
 		{
 			auto* scroll = item_form->As<RE::ScrollItem>();
-			return scroll->IsTwoHanded();
+			return scroll && scroll->IsTwoHanded();
 		}
 
-		//logger::trace("form {}, two handed {}"sv, item_form->GetName(), two_handed);
-		return two_handed;
+		return false;
 	}
 
 	RE::ActorValue getPotionEffect(RE::TESForm* a_form, bool a_check)
@@ -92,10 +81,11 @@ namespace equippable
 
 		if (item_form->Is(RE::FormType::Light))
 		{
-			// This form type does not have keywords. Don't ask me why it's inconsistent.
+			// This form type does not have keywords. This presents a problem.
 			logger::info("making HudItem for light: '{}';"sv, item_form->GetName());
 			// This is somewhat fragile because if OCF changes the string this starts failing.
-			// But at least we'll fall back to torches.
+			// At least we'll fall back to torches. Also, I'm not sure that this is at all
+			// the way to ask the question.
 			auto* ocfflist = RE::TESForm::LookupByEditorID("OCF_FL_LIGH_HeldLantern");
 			if (ocfflist && ocfflist->Is(RE::FormType::FormList))
 			{
@@ -108,7 +98,7 @@ namespace equippable
 				}
 			}
 			const auto name = std::string(item_form->GetName());
-			if (name.find("Lantern") != std::string::npos)
+			if (name.find("Lantern") != std::string::npos) // yes, very limited in effectiveness
 			{
 				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
 				return item;
@@ -232,8 +222,6 @@ namespace equippable
 
 		if (item_form->Is(RE::FormType::AlchemyItem))
 		{
-			logger::info("making HudItem for alchemy item: '{}'"sv, item_form->GetName());
-
 			auto count           = player::getInventoryCountByForm(item_form);
 			auto* alchemy_potion = item_form->As<RE::AlchemyItem>();
 			const auto* effect   = alchemy_potion->GetCostliestEffectItem()->baseEffect;
@@ -241,9 +229,6 @@ namespace equippable
 
 			if (alchemy_potion->IsFood())
 			{
-				// TODO soup, water, meat, veggies
-				// categorize drinks vs food
-
 				logger::info("making HudItem for food: '{}'"sv, item_form->GetName());
 				alchemy_potion->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords          = KeywordAccumulator::mKeywords;
@@ -253,7 +238,7 @@ namespace equippable
 			}
 			else
 			{
-				// TODO xfer more data
+				logger::info("making HudItem for potion: '{}'"sv, item_form->GetName());
 				rust::Box<HudItem> item = potion_from_formdata(alchemy_potion->IsPoison(),
 					static_cast<int32_t>(actor_value),
 					count,
