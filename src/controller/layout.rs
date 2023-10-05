@@ -25,17 +25,17 @@ static LAYOUT: Lazy<Mutex<HudLayout>> = Lazy::new(|| Mutex::new(HudLayout::init(
 /// Lazy parsing of the compile-time include of the default layout, as a fallback.
 static DEFAULT_LAYOUT: Lazy<HudLayout> = Lazy::new(HudLayout::default);
 
-#[cfg(target_os = "windows")]
+#[cfg(not(test))]
 use crate::plugin::{resolutionHeight, resolutionWidth};
 
 // mocked screen resolution numbers, because these functions are provided by
 // C++ and require imgui etc.
-#[cfg(any(target_os = "macos", target_os = "unix"))]
+#[cfg(test)]
 fn resolutionWidth() -> f32 {
     3440.0
 }
 
-#[cfg(any(target_os = "macos", target_os = "unix"))]
+#[cfg(test)]
 fn resolutionHeight() -> f32 {
     1440.0
 }
