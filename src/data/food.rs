@@ -63,7 +63,8 @@ impl HasKeywords for FoodType {
                 FoodKeywords::OCF_AlchFood_Stew => Some(Icon::FoodStew),
                 FoodKeywords::OCF_AlchFood_Treat => Some(Icon::FoodBread),
                 FoodKeywords::OCF_AlchFood_Vegetable => Some(Icon::FoodCarrot),
-                _ => None,
+                FoodKeywords::MAG_FoodTypePie => Some(Icon::FoodPie),
+                FoodKeywords::MAG_FoodTypeWine => Some(Icon::DrinkWine),
             }
         });
 
@@ -86,11 +87,11 @@ fn pickContainerIcon(containers: &[ContainerKeywords]) -> Option<Icon> {
         ContainerKeywords::OCF_VesselBottleSkooma => Some(Icon::PotionSkooma),
         ContainerKeywords::OCF_VesselBowl => Some(Icon::FoodStew),
         ContainerKeywords::OCF_VesselCup => Some(Icon::DrinkTea),
-        ContainerKeywords::OCF_VesselFlagon => todo!(),
-        ContainerKeywords::OCF_VesselFlask => todo!(),
+        ContainerKeywords::OCF_VesselFlagon => Some(Icon::DrinkMead),
+        ContainerKeywords::OCF_VesselFlask => Some(Icon::DrinkWater),
         ContainerKeywords::OCF_VesselJug => Some(Icon::DrinkWater),
-        ContainerKeywords::OCF_VesselTankard => todo!(),
-        ContainerKeywords::OCF_VesselVial => todo!(),
+        ContainerKeywords::OCF_VesselTankard => Some(Icon::DrinkMead),
+        ContainerKeywords::OCF_VesselVial => Some(Icon::PotionSkooma),
         ContainerKeywords::OCF_VesselWaterskin => Some(Icon::DrinkWater),
     })
 }
