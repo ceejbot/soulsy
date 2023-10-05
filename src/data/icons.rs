@@ -44,7 +44,6 @@ pub enum Icon {
     FoodFish,
     FoodMeat,
     FoodPie,
-    FoodSoup,
     FoodStew,
     Food,
     HandToHand,
@@ -204,7 +203,6 @@ impl Icon {
             Icon::FoodFish => "food_fish.svg".to_string(),
             Icon::FoodMeat => "food_meat.svg".to_string(),
             Icon::FoodPie => "food_pie.svg".to_string(),
-            Icon::FoodSoup => "food_soup.svg".to_string(),
             Icon::FoodStew => "food_stew.svg".to_string(),
             Icon::Food => "food.svg".to_string(),
             Icon::HandToHand => "hand_to_hand.svg".to_string(),
@@ -373,7 +371,6 @@ impl Icon {
             Icon::FoodFish => Icon::Food,
             Icon::FoodMeat => Icon::Food,
             Icon::FoodPie => Icon::Food,
-            Icon::FoodSoup => Icon::Food,
             Icon::FoodStew => Icon::Food,
             Icon::Food => Icon::Food,
 
