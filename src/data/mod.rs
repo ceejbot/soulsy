@@ -138,6 +138,9 @@ pub fn make_unarmed_proxy() -> Box<HudItem> {
 }
 
 pub fn make_magicka_proxy() -> HudItem {
+    #[cfg(test)]
+    let count = 10;
+    #[cfg(not(test))]
     let count = magickaPotionCount();
     HudItem::preclassified(
         "Best Magicka".as_bytes().to_vec(),
@@ -148,6 +151,9 @@ pub fn make_magicka_proxy() -> HudItem {
 }
 
 pub fn make_health_proxy() -> HudItem {
+    #[cfg(test)]
+    let count = 8;
+    #[cfg(not(test))]
     let count = healthPotionCount();
     HudItem::preclassified(
         "Best Health".as_bytes().to_vec(),
@@ -158,6 +164,9 @@ pub fn make_health_proxy() -> HudItem {
 }
 
 pub fn make_stamina_proxy() -> HudItem {
+    #[cfg(test)]
+    let count = 11;
+    #[cfg(not(test))]
     let count = staminaPotionCount();
     HudItem::preclassified(
         "Best Stamina".as_bytes().to_vec(),

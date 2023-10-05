@@ -65,7 +65,7 @@ where
 {
     fn ids(&self) -> Vec<String>;
     fn top(&self) -> Option<T>;
-    fn set_top(&mut self, top: &String);
+    fn set_top(&mut self, top: &str);
     fn advance(&mut self, amount: usize) -> Option<T>;
     fn peek_next(&self) -> Option<T>;
     fn includes(&self, item: &T) -> bool;
@@ -87,7 +87,7 @@ where
         self.first().cloned()
     }
 
-    fn set_top(&mut self, top: &String) {
+    fn set_top(&mut self, top: &str) {
         if let Some(idx) = self.iter().position(|xs| xs.identifier() == *top) {
             self.rotate_left(idx);
         }
@@ -236,5 +236,59 @@ impl UpdateableItemCycle for Vec<EquipSet> {
 
     fn get_by_id(&self, id: String) -> Option<&EquipSet> {
         self.iter().find(|xs| (**xs).identifier() == id)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn basic_cycle_behavior() {
+        impl CycleEntry for &str {
+            fn identifier(&self) -> String {
+                self.to_string()
+            }
+        }
+
+        let mut testcycle = Vec::<&str>::new();
+        assert!(testcycle.add(&"one"));
+        assert!(testcycle.add(&"two"));
+        assert!(testcycle.add(&"three"));
+        assert_eq!(testcycle.top().expect("should have a top entry"), "one");
+        let advanced = testcycle.advance(1).expect("advancing should work");
+        assert_eq!(advanced, "two");
+        let next = testcycle
+            .peek_next()
+            .expect("peeking should return an item");
+        assert_eq!(next, "three");
+        testcycle.set_top("one");
+        assert_eq!(testcycle.top().expect("top should now be one"), "one");
+        assert!(testcycle.includes(&"two"));
+        assert!(testcycle.delete(&"two"));
+        assert!(!testcycle.includes(&"two"));
+
+        assert!(testcycle.add(&"four"));
+        assert!(!testcycle.add(&"four"));
+        assert!(testcycle.add(&"five"));
+        assert_eq!(testcycle.len(), 4);
+        assert!(testcycle.filter_id("four"));
+        assert!(!testcycle.filter_id("four"));
+        assert_eq!(testcycle.len(), 3);
+    }
+
+    #[test]
+    fn hud_item_cycles() {
+        use crate::data::huditem::HudItem;
+        use crate::data::item_cache::ItemCache;
+        let mut cache = ItemCache::new(std::num::NonZeroUsize::new(100).unwrap());
+        let mut cycle = Vec::<HudItem>::new();
+        let item = cache.get(&"form-one".to_string());
+        assert!(cycle.add(&item));
+
+        // filter_kind(&mut self, unwanted: &BaseType, cache: &mut ItemCache);
+        // advance_skipping(&mut self, skip: &HudItem) -> Option<String>;
+        // advance_skipping_twohanders(&mut self, cache: &mut ItemCache) -> Option<String>;
+        // names(&self, cache: &mut ItemCache) -> Vec<String>;
     }
 }

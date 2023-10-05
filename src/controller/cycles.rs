@@ -124,7 +124,7 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, which: &CycleSlot, form_spec: &String) {
+    pub fn set_top(&mut self, which: &CycleSlot, form_spec: &str) {
         self.get_cycle_mut(which).set_top(form_spec);
     }
 

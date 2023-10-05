@@ -10,6 +10,7 @@ use lru::LruCache;
 
 use super::huditem::HudItem;
 use crate::data::{make_health_proxy, make_magicka_proxy, make_stamina_proxy};
+#[cfg(not(test))]
 use crate::plugin::formSpecToHudItem;
 
 #[derive(Debug)]
@@ -58,8 +59,7 @@ impl ItemCache {
         } else if form_string == "unarmed_proxy" {
             HudItem::make_unarmed_proxy()
         } else {
-            cxx::let_cxx_string!(form_spec = form_string);
-            *formSpecToHudItem(&form_spec)
+            fetch_game_item(form_string)
         };
 
         self.record(item.clone());
@@ -100,5 +100,46 @@ impl ItemCache {
         };
         item.set_count(new_count);
         Some(item)
+    }
+}
+
+#[cfg(not(test))]
+fn fetch_game_item(form_string: &String) -> HudItem {
+    cxx::let_cxx_string!(form_spec = form_string);
+    *formSpecToHudItem(&form_spec)
+}
+
+#[cfg(test)]
+fn fetch_game_item(form_string: &String) -> HudItem {
+    // This is a test implementation that makes a random item.
+
+    use super::color::random_color;
+    use super::icons::random_icon;
+    use super::weapon::{WeaponEquipType, WeaponType};
+
+    let name = petname::petname(2, " ");
+    let item = HudItem::preclassified(
+        name.as_bytes().to_vec(),
+        form_string.clone(),
+        2,
+        super::BaseType::Weapon(WeaponType::new(
+            random_icon(),
+            random_color(),
+            WeaponEquipType::EitherHand,
+        )),
+    );
+    item
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_constructor_works() {
+        let spec = "test-spec".to_string();
+        let item = fetch_game_item(&spec);
+        assert!(item.name_is_utf8());
+        assert_eq!(item.form_string(), spec);
     }
 }
