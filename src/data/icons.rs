@@ -500,8 +500,9 @@ impl Icon {
 
 #[cfg(test)]
 pub fn random_icon() -> Icon {
-    use rand::prelude::*;
     use std::str::FromStr;
+
+    use rand::prelude::*;
     use strum::VariantNames;
     if let Some(variant) = Icon::VARIANTS.choose(&mut rand::thread_rng()) {
         Icon::from_str(variant).unwrap_or(Icon::WeaponSwordTwoHanded)

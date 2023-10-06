@@ -293,11 +293,6 @@ pub mod plugin {
         /// Get the hud's anchor point, computed on the fly from the
         /// current screen size and layout data.
         fn anchor_point(self: &HudLayout) -> Point;
-        /// Clear all cycles on player request.
-        fn clear_cycles();
-        /// Get the names of the entries in the given cycle as a string.
-        fn get_cycle_names(which: i32) -> Vec<String>;
-        fn get_cycle_formids(which: i32) -> Vec<String>;
 
         /// NEW cycle entry type. This is opaque.
         type HudItem;
@@ -389,8 +384,19 @@ pub mod plugin {
         fn handle_inventory_changed(form_spec: &String, delta: i32);
         /// Favoriting & unfavoriting.
         fn handle_favorite_event(_button: &ButtonEvent, is_favorite: bool, _item: Box<HudItem>);
+        /// Clear all cycles on player request.
+        fn clear_cycles();
+        /// Get the names of the entries in the given cycle as a string.
+        fn get_cycle_names(which: i32) -> Vec<String>;
+        fn get_cycle_formids(which: i32) -> Vec<String>;
+        /// Get equip set names in order by id.
+        fn get_equipset_names() -> Vec<String>;
+        /// Get equip set ids.
+        fn get_equipset_ids() -> Vec<u32>;
+        /// Create a new equipment set.
+        fn handle_create_equipset(name: String) -> bool;
         /// Save an equipment set.
-        fn handle_update_equipset(id: u32, name: String) -> bool;
+        fn handle_update_equipset(id: u32) -> bool;
         /// Rename an equipment set.
         fn handle_rename_equipset(id: u32, name: String) -> bool;
         /// Remove an equipment set.

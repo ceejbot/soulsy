@@ -5,8 +5,8 @@ use crate::data::item_cache::ItemCache;
 /// A single equipment set.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct EquipSet {
-    /// A unique id for this equipset. Assumed to be a string representation of a number, e.g. "2".
-    id: String,
+    /// A unique id for this equipset.
+    id: u32,
     /// A human-set name for this equipset.
     name: String,
     /// A list of formspecs for items to be equipped when this equipset is selected.
@@ -15,12 +15,12 @@ pub struct EquipSet {
 
 impl EquipSet {
     /// Create an equipset.
-    pub fn new(id: String, name: String, items: Vec<String>) -> Self {
+    pub fn new(id: u32, name: String, items: Vec<String>) -> Self {
         Self { id, name, items }
     }
 
     /// Create an equipset from a list of huditems.
-    pub fn new_from_items(id: String, name: String, huditems: Vec<HudItem>) -> Self {
+    pub fn new_from_items(id: u32, name: String, huditems: Vec<HudItem>) -> Self {
         let items = huditems.iter().map(|xs| xs.form_string()).collect();
         Self { id, name, items }
     }
@@ -32,6 +32,11 @@ impl EquipSet {
 
     pub fn set_name(&mut self, name: &str) {
         self.name = name.to_string()
+    }
+
+    /// String identifiers did not work out very well here.
+    pub fn id(&self) -> u32 {
+        self.id
     }
 }
 
@@ -48,7 +53,7 @@ impl CycleEntry for HudItem {
 
 impl CycleEntry for EquipSet {
     fn identifier(&self) -> String {
-        self.id.clone()
+        self.id.to_string()
     }
 }
 
@@ -195,35 +200,53 @@ impl HudItemCycle for Vec<String> {
 }
 
 /// A trait for additional behavior needed by cycles of EquipSets.
-/// Possibly not really generalizable to more than just that.
+/// It's a trait so we can add the behavior to vec of equipset.
 pub trait UpdateableItemCycle {
     type T;
-    fn update_by_id(&mut self, id: String, item: Self::T) -> bool;
-    fn rename_by_id(&mut self, id: String, name: String) -> bool;
-    fn get_by_id(&self, id: String) -> Option<&Self::T>;
+    fn find_next_id(&self) -> u32;
+    fn update_set(&mut self, id: u32, items: Vec<String>) -> bool;
+    fn rename_by_id(&mut self, id: u32, name: String) -> bool;
+    fn get_by_id(&self, id: u32) -> Option<&Self::T>;
 }
 
 impl UpdateableItemCycle for Vec<EquipSet> {
     type T = EquipSet;
 
-    fn update_by_id(&mut self, id: String, item: EquipSet) -> bool {
-        let name = item.name();
-        // let id = item.identifier();
+    fn find_next_id(&self) -> u32 {
+        // This searches for a hole in the list and fills it in,
+        // otherwise it finds the last item and increments.
+        let mut sorted = self.clone();
+        sorted.sort_by_key(|xs| xs.id());
+        let mut next: u32 = 0;
+        let found = sorted.iter().find_map(|xs| {
+            if xs.id == next {
+                next += 1;
+                None
+            } else {
+                Some(next)
+            }
+        });
+        if let Some(hole) = found {
+            hole
+        } else {
+            next
+        }
+    }
 
-        if let Ok(idx) = self.binary_search_by(|xs| xs.identifier().cmp(&id)) {
+    fn update_set(&mut self, id: u32, items: Vec<String>) -> bool {
+        if let Ok(idx) = self.binary_search_by(|xs| xs.id.cmp(&id)) {
             let Some(to_update) = self.get_mut(idx) else {
                 return false;
             };
-            to_update.set_name(name.as_str());
-            to_update.items = item.items;
+            to_update.items = items;
             true
         } else {
             false
         }
     }
 
-    fn rename_by_id(&mut self, id: String, name: String) -> bool {
-        if let Ok(idx) = self.binary_search_by(|xs| xs.identifier().cmp(&id)) {
+    fn rename_by_id(&mut self, id: u32, name: String) -> bool {
+        if let Ok(idx) = self.binary_search_by(|xs| xs.id.cmp(&id)) {
             let Some(to_update) = self.get_mut(idx) else {
                 return false;
             };
@@ -234,8 +257,8 @@ impl UpdateableItemCycle for Vec<EquipSet> {
         }
     }
 
-    fn get_by_id(&self, id: String) -> Option<&EquipSet> {
-        self.iter().find(|xs| (**xs).identifier() == id)
+    fn get_by_id(&self, id: u32) -> Option<&EquipSet> {
+        self.iter().find(|xs| xs.id == id)
     }
 }
 
@@ -281,7 +304,7 @@ mod tests {
     fn hud_item_cycles() {
         use crate::data::huditem::HudItem;
         use crate::data::item_cache::ItemCache;
-        let mut cache = ItemCache::new(std::num::NonZeroUsize::new(100).unwrap());
+        let mut cache = ItemCache::new();
         let mut cycle = Vec::<HudItem>::new();
         let item = cache.get(&"form-one".to_string());
         assert!(cycle.add(&item));
@@ -290,5 +313,25 @@ mod tests {
         // advance_skipping(&mut self, skip: &HudItem) -> Option<String>;
         // advance_skipping_twohanders(&mut self, cache: &mut ItemCache) -> Option<String>;
         // names(&self, cache: &mut ItemCache) -> Vec<String>;
+    }
+
+    #[test]
+    fn finding_the_next_id() {
+        let mut cycle = Vec::<EquipSet>::new();
+        let id = cycle.find_next_id();
+        assert_eq!(id, 0);
+        let zero = EquipSet::new(id, id.to_string(), Vec::new());
+        assert!(cycle.add(&zero));
+        let id = cycle.find_next_id();
+        assert_eq!(id, 1);
+        let one = EquipSet::new(id, id.to_string(), Vec::new());
+        assert!(cycle.add(&one));
+        let id = cycle.find_next_id();
+        assert_eq!(id, 2);
+        let two = EquipSet::new(id, id.to_string(), Vec::new());
+        assert!(cycle.add(&two));
+        assert!(cycle.delete(&one));
+        let id = cycle.find_next_id();
+        assert_eq!(id, 1);
     }
 }

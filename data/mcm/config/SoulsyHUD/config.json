@@ -428,10 +428,95 @@
                     "type": "header"
                 },
                 {
-                    "id": "saveEquipSetField",
+                    "id": "iEquipSetCycleKey:Controls",
+                    "text": "$SoulsyHUD_Controls_EquipSetCycleKey_Text",
+                    "help": "$SoulsyHUD_Controls_EquipSetCycleKey_Help",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "equipsetNameField",
+                    "text": "$SoulsyHUD_EquipSetName_Text",
+                    "help": "$SoulsyHUD_EquipSetName_Help",
+                    "type": "input",
+                    "valueOptions": {
+                        "sourceType": "PropertyValueString",
+                        "propertyName": "pNewEquipSetName",
+                        "defaultValue": "$SoulsyHUD_DefaultSetName"
+                    }
+                },
+                {
                     "text": "$SoulsyHUD_NewEquipSet_Text",
                     "help": "$SoulsyHUD_NewEquipSet_Help",
-                    "type": "input"
+                    "type": "text",
+                    "valueOptions": {
+                        "value": "save"
+                    },
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "CreateEquipSet"
+                    }
+                },
+                {
+                    "id": "equipSetList",
+                    "text": "$SoulsyHUD_EquipSetList_Text",
+                    "help": "$SoulsyHUD_EquipSetList_Help",
+                    "type": "menu",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_empty_list",
+                            " "
+                        ],
+                        "sourceType": "PropertyValueInt",
+                        "propertyName": "pSelectedEquipSet",
+                        "defaultValue": 0
+                    }
+                },
+                {
+                    "id": "selectedSetName",
+                    "text": "$SoulsyHUD_SelectedEquipSetName_Text",
+                    "help": "$SoulsyHUD_SelectedEquipSetName_Help",
+                    "type": "input",
+                    "valueOptions": {
+                        "sourceType": "PropertyValueString",
+                        "propertyName": "pSelectedSetName"
+                    }
+                },
+                {
+                    "id": "renameEquipSet",
+                    "text": "$SoulsyHUD_RenameSet_Text",
+                    "help": "$SoulsyHUD_RenameSet_Help",
+                    "type": "text",
+                    "valueOptions": {
+                        "sourceType": "PropertyValueInt",
+                        "propertyName": "pSelectedEquipSet"
+                    },
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "RenameEquipSet",
+                        "params": [
+                            "{value}"
+                        ]
+                    }
+                },
+                {
+                    "id": "updateEquipSet",
+                    "text": "$SoulsyHUD_UpdateSet_Text",
+                    "help": "$SoulsyHUD_UpdateSet_Help",
+                    "type": "text",
+                    "valueOptions": {
+                        "sourceType": "PropertyValueInt",
+                        "propertyName": "pSelectedEquipSet"
+                    },
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "UpdateEquipSet",
+                        "params": [
+                            "{value}"
+                        ]
+                    }
                 }
             ]
         },

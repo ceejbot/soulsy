@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::num::NonZeroUsize;
 use std::sync::Mutex;
 
 use cxx::let_cxx_string;
@@ -48,10 +47,7 @@ impl Controller {
         let cycles = CycleData::default();
         Controller {
             cycles,
-            cache: ItemCache::new(
-                NonZeroUsize::new(100)
-                    .expect("cats and dogs living together! 100 is not non-zero!"),
-            ),
+            cache: ItemCache::new(),
             visible: HashMap::new(),
             two_hander_equipped: false,
             left_hand_cached: "".to_string(),
@@ -1474,24 +1470,6 @@ impl Controller {
                 press_start: None,
             }
         }
-    }
-
-    /// Add the equipset with this id OR update its items with what the player
-    /// has equipped currently.
-    pub fn handle_update_equipset(&mut self, id: u32, name: String) -> bool {
-        let items = getEquippedItems();
-        let set = EquipSet::new(id.to_string(), name, items);
-        self.cycles.replace_equipset(set)
-    }
-
-    /// Rename the equipset with the given ID.
-    pub fn handle_rename_equipset(&mut self, id: u32, name: String) -> bool {
-        self.cycles.rename_equipset(id.to_string(), name)
-    }
-
-    /// Remove the equipset with the given ID.
-    pub fn handle_remove_equipset(&mut self, id: u32) -> bool {
-        self.cycles.remove_equipset(id.to_string())
     }
 
     /// Advance the equipment set and start the timer.

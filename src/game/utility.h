@@ -7,6 +7,9 @@ namespace game
 	void equipAmmoByForm(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
 	void unequipCurrentAmmo();
 
+	// Equip this armor. Does nothing if it's already equipped.
+	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player);
+	// Equip if unequipped, un-equip if equipped already.
 	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player);
 	// reurns true if anything was unequipped.
 	bool unequipArmor(RE::TESBoundObject*& a_obj,

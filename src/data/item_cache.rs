@@ -18,9 +18,17 @@ pub struct ItemCache {
     lru: LruCache<String, HudItem>,
 }
 
+impl Default for ItemCache {
+    fn default() -> Self {
+        ItemCache::new()
+    }
+}
+
 impl ItemCache {
     /// Create a new item cache with the given capacity.
-    pub fn new(capacity: NonZeroUsize) -> Self {
+    pub fn new() -> Self {
+        let capacity =
+            NonZeroUsize::new(100).expect("cats and dogs living together! 100 is not non-zero!");
         let lru = LruCache::new(capacity);
         Self { lru }
     }
@@ -35,7 +43,9 @@ impl ItemCache {
     /// we have cached with what the save state is. We merely enjoy the
     /// eternal sunshine of the spotless mind.
     pub fn clear(&mut self) {
+        self.introspect();
         self.lru.clear();
+        log::debug!("item cache cleared.");
     }
 
     /// Retrieve the named item from the cache. As a side effect, will create a
@@ -104,15 +114,15 @@ impl ItemCache {
 }
 
 #[cfg(not(test))]
-fn fetch_game_item(form_string: &String) -> HudItem {
+pub fn fetch_game_item(form_string: &str) -> HudItem {
     cxx::let_cxx_string!(form_spec = form_string);
     *formSpecToHudItem(&form_spec)
 }
 
+// This implementation is used by tests to generate random items without
+// attempting to communicate with a running game.
 #[cfg(test)]
-fn fetch_game_item(form_string: &String) -> HudItem {
-    // This is a test implementation that makes a random item.
-
+pub fn fetch_game_item(form_string: &str) -> HudItem {
     use super::color::random_color;
     use super::icons::random_icon;
     use super::weapon::{WeaponEquipType, WeaponType};
@@ -120,7 +130,7 @@ fn fetch_game_item(form_string: &String) -> HudItem {
     let name = petname::petname(2, " ");
     let item = HudItem::preclassified(
         name.as_bytes().to_vec(),
-        form_string.clone(),
+        form_string.to_owned(),
         2,
         super::BaseType::Weapon(WeaponType::new(
             random_icon(),

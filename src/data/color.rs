@@ -1,7 +1,8 @@
 //! OCF color keywords associated with specific colors.
 
-use crate::plugin::Color;
 use strum::{Display, EnumIter, EnumVariantNames, IntoEnumIterator};
+
+use crate::plugin::Color;
 
 impl Color {
     pub fn rgb(r: u8, g: u8, b: u8) -> Color {

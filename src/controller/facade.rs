@@ -77,16 +77,31 @@ pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
     control::get().handle_key_event(key, button)
 }
 
-pub fn handle_update_equipset(id: u32, name: String) -> bool {
-    control::get().handle_update_equipset(id, name)
+pub fn get_equipset_names() -> Vec<String> {
+    control::get().cycles.equipset_names()
 }
 
+pub fn get_equipset_ids() -> Vec<u32> {
+    control::get().cycles.equipset_ids()
+}
+
+pub fn handle_create_equipset(name: String) -> bool {
+    let items = getEquippedItems();
+    control::get().cycles.add_equipset(name, items)
+}
+
+pub fn handle_update_equipset(id: u32) -> bool {
+    control::get().cycles.update_equipset(id)
+}
+
+/// Rename the equipset with the given ID.
 pub fn handle_rename_equipset(id: u32, name: String) -> bool {
-    control::get().handle_rename_equipset(id, name)
+    control::get().cycles.rename_equipset(id, name)
 }
 
+/// Remove the equipset with the given ID.
 pub fn handle_remove_equipset(id: u32) -> bool {
-    control::get().handle_remove_equipset(id)
+    control::get().cycles.remove_equipset(id.to_string())
 }
 
 pub fn show_ui() -> bool {

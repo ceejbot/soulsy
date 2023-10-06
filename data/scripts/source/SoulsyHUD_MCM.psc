@@ -21,22 +21,98 @@ string[] function GetCycleFormIDs(int which) native
 string[] function GetCycleNames(int which) native
 function ClearCycles() native
 
-bool function HandleSaveEquipSet(string name, int setnum) native
+string property pNewEquipSetName = "New Equipset" auto
+string property pSelectedSetName = "" auto
+int property pSelectedEquipSet = 0 auto
+
+bool function HandleCreateEquipSet(string name) native
+bool function HandleRenameEquipSet(int id, string name) native
+bool function HandleUpdateEquipSet(int id) native
+bool function HandleRemoveEquipSet(int id) native
+string[] function GetEquipSetNames() native
+int[] function GetEquipSetIDs() native
 
 ; equip sets
-function SaveEquipSet(string name, int setnum)
-    bool result = HandleSaveEquipSet(name, setnum
+function CreateEquipSet(int which)
+    if HandleCreateEquipSet(pNewEquipSetName)
+        ShowMessage("Equip set created")
+        ShowEquipsetMenu()
+    else
+        ShowMessage("equip set not created; look at the logs")
+    endif
 endFunction
 
+function selectedSetID
+	int[] ids = GetEquipSetIDs()
+	if ids.Length > pSelectedEquipSet
+		return ids[pSelectedEquipSet]
+	else
+		return -1
+	endif
+endFunction
+
+function RenameEquipSet(int which)
+	int idToChange = selectedSetID()
+	if idToChange == -1
+		; TODO honk() or otherwise signal error
+		return
+	endif
+    if HandleRenameEquipSet(idToChange, pSelectedSetName)
+        ShowMessage("Equip set renamed")
+        ShowEquipsetMenu()
+    else
+        ShowMessage("equip set not renamed; look at the logs")
+    endif
+endFunction
+
+function UpdateEquipSet()
+	int idToChange = selectedSetID()
+	if idToChange == -1
+		; TODO honk() or otherwise signal error
+		return
+	endif
+    if HandleUpdateEquipSet(idToChange)
+        ShowMessage("Equip set updated with what you're wearing")
+    else
+        ShowMessage("equip set not updated; look at the logs")
+    endif
+endFunction
+
+function RemoveEquipSet()
+	int idToChange = selectedSetID()
+	if idToChange == -1
+		; TODO honk() or otherwise signal error
+		return
+	endif
+    if HandleRemoveEquipSet(idToChange)
+        ShowMessage("Equip set removed")
+        ShowEquipsetMenu()
+    else
+        ShowMessage("equip set not removed; look at the logs")
+    endif
+endFunction
+
+function ShowEquipsetMenu()
+    string[] names = GetEquipSetNames()
+    if (names.Length == 0)
+        names = new string[2]
+        names[0] = "$SoulsyHUD_empty_list"
+        names[1] = ""
+    endif
+
+    SetMenuOptions("equipSetList", a_options = names)
+endFunction
+
+; Regular cycle entries, for the preview page
 function ShowCycleEntries(int which)
     pCycleToShow = which
-    string[] values = GetCycleNames(which)
-    if (values.Length == 0)
-        values = new string[2]
-        values[0] = "$SoulsyHUD_empty_cycle"
-        values[1] = ""
+    string[] options = GetCycleNames(which)
+    if (options.Length == 0)
+        options = new string[2]
+        options[0] = "$SoulsyHUD_empty_list"
+        options[1] = ""
     endif
-    SetMenuOptions("cycleDisplay", a_options = values)
+    SetMenuOptions("cycleDisplay", a_options = options)
 endFunction
 
 function ClearCyclesPapyrus()
@@ -80,6 +156,7 @@ Event OnSettingChange(String changedID)
     endif
 
     ForcePageReset()
+    ShowEquipsetMenu()
 EndEvent
 
 Event OnConfigOpen()
@@ -101,4 +178,5 @@ Event OnConfigOpen()
     ForcePageReset()
 
     ShowCycleEntries(pCycleToShow)
+    ShowEquipsetMenu()
 EndEvent

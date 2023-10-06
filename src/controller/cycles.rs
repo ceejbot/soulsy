@@ -11,8 +11,8 @@ use super::user_settings;
 use crate::data::item_cache::ItemCache;
 use crate::data::{BaseType, HudItem, IsHudItem};
 use crate::plugin::{
-    hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
-    startAlphaTransition,
+    getEquippedItems, hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount,
+    staminaPotionCount, startAlphaTransition,
 };
 
 /// Manage the player's configured item cycles. Track changes, persist data in
@@ -322,16 +322,39 @@ impl CycleData {
         self.equipsets.advance(amount)
     }
 
-    pub fn replace_equipset(&mut self, set: EquipSet) -> bool {
-        self.equipsets.update_by_id(set.identifier(), set)
+    pub fn add_equipset(&mut self, name: String, items: Vec<String>) -> bool {
+        let id = self.equipsets.find_next_id();
+        let set = EquipSet::new(id, name, items);
+        self.equipsets.add(&set)
+    }
+
+    pub fn update_equipset(&mut self, id: u32) -> bool {
+        let items = getEquippedItems();
+        self.equipsets.update_set(id, items)
     }
 
     pub fn remove_equipset(&mut self, id: String) -> bool {
         self.equipsets.filter_id(id.as_str())
     }
 
-    pub fn rename_equipset(&mut self, id: String, name: String) -> bool {
+    pub fn rename_equipset(&mut self, id: u32, name: String) -> bool {
         self.equipsets.rename_by_id(id, name)
+    }
+
+    pub fn equipset_names(&self) -> Vec<String> {
+        let mut sorted = self.equipsets.clone();
+        sorted.sort_by_key(|xs| xs.id());
+        sorted.iter().map(|xs| xs.name()).collect()
+    }
+
+    pub fn equipset_ids(&self) -> Vec<u32> {
+        let mut ids = self
+            .equipsets
+            .iter()
+            .map(|xs| xs.id())
+            .collect::<Vec<u32>>();
+        ids.sort();
+        ids
     }
 
     // bincode serialization to cosave
@@ -353,6 +376,7 @@ impl CycleData {
     }
 
     pub fn deserialize(bytes: &CxxVector<u8>, version: u32) -> Option<CycleData> {
+        let bytes: Vec<u8> = bytes.iter().copied().collect();
         match version {
             0 => cosave_v0::deserialize(bytes),
             1 => cosave_v1::deserialize(bytes),
@@ -389,17 +413,15 @@ impl Display for CycleData {
 
 pub mod cosave_v2 {
     use bincode::{Decode, Encode};
-    use cxx::CxxVector;
 
     use crate::controller::cycleentries::*;
     use crate::controller::cycles::CycleData;
     use crate::data::base::BaseType;
-    use crate::plugin::formSpecToHudItem;
+    use crate::data::item_cache::fetch_game_item;
 
     pub const VERSION: u32 = 2;
 
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        let bytes: Vec<u8> = bytes.iter().copied().collect();
+    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
         let config = bincode::config::standard();
         log::debug!(
             "reading cosave format version {VERSION}; data len={};",
@@ -429,7 +451,7 @@ pub mod cosave_v2 {
         power: Vec<String>,
         utility: Vec<String>,
         // Vec of tuples of (id, name, Vec<formspec>)
-        equipsets: Vec<(String, String, Vec<String>)>,
+        equipsets: Vec<(u32, String, Vec<String>)>,
         hud_visible: bool,
     }
 
@@ -443,7 +465,7 @@ pub mod cosave_v2 {
                 equipsets: value
                     .equipsets
                     .iter()
-                    .map(|xs| (xs.identifier(), xs.name(), xs.items.to_vec()))
+                    .map(|xs| (xs.id(), xs.name(), xs.items.to_vec()))
                     .collect(),
                 hud_visible: value.hud_visible,
             }
@@ -452,18 +474,17 @@ pub mod cosave_v2 {
 
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
-            fn filter_func(xs: &String) -> Option<String> {
-                match xs.as_str() {
-                    "health_proxy" => Some(xs.clone()),
-                    "magicka_proxy" => Some(xs.clone()),
-                    "stamina_proxy" => Some(xs.clone()),
-                    "unarmed_proxy" => Some(xs.clone()),
+            fn filter_func(xs: &str) -> Option<String> {
+                match xs {
+                    "health_proxy" => Some(xs.to_owned()),
+                    "magicka_proxy" => Some(xs.to_owned()),
+                    "stamina_proxy" => Some(xs.to_owned()),
+                    "unarmed_proxy" => Some(xs.to_owned()),
                     "" => None,
                     _ => {
-                        cxx::let_cxx_string!(form_spec = xs);
                         // Noting here that we do not go through the cache at all
                         // while loading these items. We probably should. TODO
-                        let found = *formSpecToHudItem(&form_spec);
+                        let found = fetch_game_item(xs);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
@@ -474,15 +495,31 @@ pub mod cosave_v2 {
             }
 
             Self {
-                left: value.left.iter().filter_map(filter_func).collect(),
-                right: value.right.iter().filter_map(filter_func).collect(),
-                power: value.power.iter().filter_map(filter_func).collect(),
-                utility: value.utility.iter().filter_map(filter_func).collect(),
+                left: value
+                    .left
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                right: value
+                    .right
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                power: value
+                    .power
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                utility: value
+                    .utility
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
                 hud_visible: value.hud_visible,
                 equipsets: value
                     .equipsets
                     .iter()
-                    .map(|xs| EquipSet::new(xs.0.clone(), xs.1.clone(), xs.2.to_vec()))
+                    .map(|xs| EquipSet::new(xs.0, xs.1.clone(), xs.2.to_vec()))
                     .collect(),
                 loaded: true,
             }
@@ -492,16 +529,14 @@ pub mod cosave_v2 {
 
 pub mod cosave_v1 {
     use bincode::{Decode, Encode};
-    use cxx::CxxVector;
 
     use crate::controller::cycles::CycleData;
     use crate::data::base::BaseType;
-    use crate::plugin::formSpecToHudItem;
+    use crate::data::item_cache::fetch_game_item;
 
     pub const VERSION: u32 = 1;
 
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        let bytes: Vec<u8> = bytes.iter().copied().collect();
+    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
         let config = bincode::config::standard();
         log::debug!(
             "reading cosave format version {VERSION}; data len={};",
@@ -521,10 +556,7 @@ pub mod cosave_v1 {
         }
     }
 
-    /// The serialization format is a list of form strings. Two drivers for
-    /// this choice: 1) It's compact. 2) It can be deserialized into any
-    /// representation of a TES form item we want, thus making it not care about
-    /// implementation details of the hud item cache.
+    /// Same comment as above: form spec strings are flexible.
     #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
     pub struct CycleSerialized {
         left: Vec<String>,
@@ -548,18 +580,17 @@ pub mod cosave_v1 {
 
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
-            fn filter_func(xs: &String) -> Option<String> {
-                match xs.as_str() {
-                    "health_proxy" => Some(xs.clone()),
-                    "magicka_proxy" => Some(xs.clone()),
-                    "stamina_proxy" => Some(xs.clone()),
-                    "unarmed_proxy" => Some(xs.clone()),
+            fn filter_func(xs: &str) -> Option<String> {
+                match xs {
+                    "health_proxy" => Some(xs.to_owned()),
+                    "magicka_proxy" => Some(xs.to_owned()),
+                    "stamina_proxy" => Some(xs.to_owned()),
+                    "unarmed_proxy" => Some(xs.to_owned()),
                     "" => None,
                     _ => {
-                        cxx::let_cxx_string!(form_spec = xs);
                         // Noting here that we do not go through the cache at all
                         // while loading these items. We probably should. TODO
-                        let found = *formSpecToHudItem(&form_spec);
+                        let found = fetch_game_item(xs);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
@@ -570,10 +601,26 @@ pub mod cosave_v1 {
             }
 
             Self {
-                left: value.left.iter().filter_map(filter_func).collect(),
-                right: value.right.iter().filter_map(filter_func).collect(),
-                power: value.power.iter().filter_map(filter_func).collect(),
-                utility: value.utility.iter().filter_map(filter_func).collect(),
+                left: value
+                    .left
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                right: value
+                    .right
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                power: value
+                    .power
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                utility: value
+                    .utility
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
                 hud_visible: value.hud_visible,
                 equipsets: Vec::new(),
                 loaded: true,
@@ -584,16 +631,14 @@ pub mod cosave_v1 {
 
 pub mod cosave_v0 {
     use bincode::{Decode, Encode};
-    use cxx::CxxVector;
 
     use crate::controller::cycles::CycleData;
     use crate::data::base::BaseType;
-    use crate::plugin::formSpecToHudItem;
+    use crate::data::item_cache::fetch_game_item;
 
     const VERSION: u8 = 0;
 
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        let bytes: Vec<u8> = bytes.iter().copied().collect();
+    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
         let config = bincode::config::standard();
         log::debug!(
             "reading cosave format version {VERSION}; data len={};",
@@ -642,8 +687,7 @@ pub mod cosave_v0 {
                     "unarmed_proxy" => Some(formstr.clone()),
                     "" => None,
                     _ => {
-                        cxx::let_cxx_string!(form_spec = formstr);
-                        let found = *formSpecToHudItem(&form_spec);
+                        let found = fetch_game_item(&formstr);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
@@ -663,5 +707,64 @@ pub mod cosave_v0 {
                 loaded: true,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn version_2() {
+        let mut cache = ItemCache::default();
+        let mut cycle = CycleData::default();
+
+        let one = cache.get(&"fake-one".to_string());
+        let two = cache.get(&"fake-two".to_string());
+        let three = cache.get(&"fake-three".to_string());
+        cycle.add_item(CycleSlot::Left, &one);
+        cycle.add_item(CycleSlot::Left, &two);
+        cycle.add_item(CycleSlot::Left, &three);
+
+        cycle.add_equipset("set-one".to_string(), Vec::new());
+        cycle.add_equipset("set-two".to_string(), Vec::new());
+
+        let value = cosave_v2::CycleSerialized::from(&cycle);
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        let decoded = cosave_v2::deserialize(bytes).expect("data should be decodeable");
+        assert_eq!(decoded.loaded, !cycle.loaded);
+        assert_eq!(decoded.left.len(), cycle.left.len());
+        assert_eq!(decoded.equipsets.len(), cycle.equipsets.len());
+        let set1 = decoded
+            .get_top_equipset()
+            .expect("expected actual equipsets");
+        assert_eq!(set1.id(), 0);
+    }
+
+    #[test]
+    fn version_1() {
+        let mut cache = ItemCache::default();
+        let mut cycle = CycleData::default();
+
+        let one = cache.get(&"fake-one".to_string());
+        let two = cache.get(&"fake-two".to_string());
+        let three = cache.get(&"fake-three".to_string());
+        cycle.add_item(CycleSlot::Left, &one);
+        cycle.add_item(CycleSlot::Left, &two);
+        cycle.add_item(CycleSlot::Left, &three);
+
+        let value = cosave_v1::CycleSerialized::from(&cycle);
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        let decoded = cosave_v1::deserialize(bytes).expect("data should be decodeable");
+        assert_eq!(decoded.loaded, !cycle.loaded);
+        assert_eq!(decoded.left.len(), cycle.left.len());
+    }
+
+    #[test]
+    fn version_0() {
+        // lowest priority to write tests for;
+        // only used to load from very old saves
     }
 }
