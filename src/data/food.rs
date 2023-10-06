@@ -6,19 +6,10 @@ use super::{HasIcon, HasKeywords};
 use crate::plugin::Color;
 
 /// Food variations that get their own icons.
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Default)]
 pub struct FoodType {
     icon: Icon,
     color: InvColor,
-}
-
-impl Default for FoodType {
-    fn default() -> Self {
-        Self {
-            icon: Icon::default(),
-            color: InvColor::default(),
-        }
-    }
 }
 
 /// Food variations that get their own icons.
@@ -79,21 +70,24 @@ impl HasKeywords for FoodType {
 }
 
 fn pickContainerIcon(containers: &[ContainerKeywords]) -> Option<Icon> {
-    containers.iter().find_map(|xs| match xs {
-        ContainerKeywords::_SH_WineBottleKeyword => Some(Icon::DrinkWine),
-        ContainerKeywords::_SH_MeadBottleKeyword => Some(Icon::DrinkMead),
-        ContainerKeywords::OCF_VesselBottle => Some(Icon::DrinkMead),
-        ContainerKeywords::OCF_VesselBottlePotion => Some(Icon::PotionDefault),
-        ContainerKeywords::OCF_VesselBottleSkooma => Some(Icon::PotionSkooma),
-        ContainerKeywords::OCF_VesselBowl => Some(Icon::FoodStew),
-        ContainerKeywords::OCF_VesselCup => Some(Icon::DrinkTea),
-        ContainerKeywords::OCF_VesselFlagon => Some(Icon::DrinkMead),
-        ContainerKeywords::OCF_VesselFlask => Some(Icon::DrinkWater),
-        ContainerKeywords::OCF_VesselJug => Some(Icon::DrinkWater),
-        ContainerKeywords::OCF_VesselTankard => Some(Icon::DrinkMead),
-        ContainerKeywords::OCF_VesselVial => Some(Icon::PotionSkooma),
-        ContainerKeywords::OCF_VesselWaterskin => Some(Icon::DrinkWater),
-    })
+    containers
+        .iter()
+        .map(|xs| match xs {
+            ContainerKeywords::_SH_WineBottleKeyword => Icon::DrinkWine,
+            ContainerKeywords::_SH_MeadBottleKeyword => Icon::DrinkMead,
+            ContainerKeywords::OCF_VesselBottle => Icon::DrinkMead,
+            ContainerKeywords::OCF_VesselBottlePotion => Icon::PotionDefault,
+            ContainerKeywords::OCF_VesselBottleSkooma => Icon::PotionSkooma,
+            ContainerKeywords::OCF_VesselBowl => Icon::FoodStew,
+            ContainerKeywords::OCF_VesselCup => Icon::DrinkTea,
+            ContainerKeywords::OCF_VesselFlagon => Icon::DrinkMead,
+            ContainerKeywords::OCF_VesselFlask => Icon::DrinkWater,
+            ContainerKeywords::OCF_VesselJug => Icon::DrinkWater,
+            ContainerKeywords::OCF_VesselTankard => Icon::DrinkMead,
+            ContainerKeywords::OCF_VesselVial => Icon::PotionSkooma,
+            ContainerKeywords::OCF_VesselWaterskin => Icon::DrinkWater,
+        })
+        .next()
 }
 
 fn strings_to_keywords<T: for<'a> TryFrom<&'a str>>(tags: &[String]) -> Vec<T> {

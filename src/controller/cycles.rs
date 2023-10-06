@@ -75,12 +75,8 @@ impl CycleData {
             CycleSlot::Right => &self.right,
             CycleSlot::Utility => &self.utility,
         };
-        cycle
-            .iter()
-            .map(|xs| xs.clone())
-            .collect::<Vec<_>>()
+        cycle.to_vec()
     }
-
 
     /// Advance the given cycle by one. Returns a copy of the newly-top item.
     ///
