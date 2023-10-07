@@ -8,11 +8,12 @@ use super::control::MenuEventResponse;
 use super::cycleentries::*;
 use super::keys::CycleSlot;
 use super::user_settings;
+use crate::data::icons::Icon;
 use crate::data::item_cache::ItemCache;
 use crate::data::{BaseType, HudItem, IsHudItem};
 use crate::plugin::{
-    getEquippedItems, hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount,
-    staminaPotionCount, startAlphaTransition,
+    hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
+    startAlphaTransition, EquippedData,
 };
 
 /// Manage the player's configured item cycles. Track changes, persist data in
@@ -308,6 +309,12 @@ impl CycleData {
                 }
             }
         });
+        log::info!("Equipment sets:");
+        self.equipsets.iter().for_each(|xs| {
+            log::info!("{}: {}", xs.id(), xs.name());
+            log::info!("    {}", xs.items.join(", "));
+            log::info!("    empty slots: {}", xs.empty_slots().iter().map(|xs| xs.to_string()).collect::<Vec<_>>().join(", "));
+        });
         //log::info!("hud_visible: {}", self.hud_visible);
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
     }
@@ -322,15 +329,14 @@ impl CycleData {
         self.equipsets.advance(amount)
     }
 
-    pub fn add_equipset(&mut self, name: String, items: Vec<String>) -> bool {
+    pub fn add_equipset(&mut self, name: String, data: EquippedData) -> bool {
         let id = self.equipsets.find_next_id();
-        let set = EquipSet::new(id, name, items);
+        let set = EquipSet::new(id, name, data.items, data.empty_slots, "ArmorHeavy".to_string());
         self.equipsets.add(&set)
     }
 
-    pub fn update_equipset(&mut self, id: u32) -> bool {
-        let items = getEquippedItems();
-        self.equipsets.update_set(id, items)
+    pub fn update_equipset(&mut self, id: u32, data: EquippedData) -> bool {
+        self.equipsets.update_set(id, data.items, data.empty_slots)
     }
 
     pub fn remove_equipset(&mut self, id: String) -> bool {
@@ -355,6 +361,14 @@ impl CycleData {
             .collect::<Vec<u32>>();
         ids.sort();
         ids
+    }
+
+    pub fn equipset_by_id(&self, id: u32) -> Option<EquipSet> {
+        self.equipsets.get_by_id(id).cloned()
+    }
+
+    pub fn set_icon_by_id(&mut self, id: u32, icon: Icon) -> bool {
+        self.equipsets.set_icon_by_id(id, icon)
     }
 
     // bincode serialization to cosave
@@ -409,7 +423,7 @@ impl Display for CycleData {
     }
 }
 
-// cosave modules.
+// cosave version modules.
 
 pub mod cosave_v2 {
     use bincode::{Decode, Encode};
@@ -444,14 +458,15 @@ pub mod cosave_v2 {
     /// The serialization format is a list of form strings. Two drivers for
     /// this choice: 1) It's compact. 2) It can be deserialized into any
     /// Rust type we want, thus making it not care about implementation details.
+    /// So the struct uses only built-in rust types, no crate types.
     #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
     pub struct CycleSerialized {
         left: Vec<String>,
         right: Vec<String>,
         power: Vec<String>,
         utility: Vec<String>,
-        // Vec of tuples of (id, name, Vec<formspec>)
-        equipsets: Vec<(u32, String, Vec<String>)>,
+        // Vec of tuples of (id, name, Vec<formspec>, Vec<empty_slot>, icon_as_string)
+        equipsets: Vec<(u32, String, Vec<String>, Vec<u8>, String)>,
         hud_visible: bool,
     }
 
@@ -465,7 +480,15 @@ pub mod cosave_v2 {
                 equipsets: value
                     .equipsets
                     .iter()
-                    .map(|xs| (xs.id(), xs.name(), xs.items.to_vec()))
+                    .map(|xs| {
+                        (
+                            xs.id(),
+                            xs.name(),
+                            xs.items.to_vec(),
+                            xs.empty.to_vec(),
+                            xs.icon.to_string(),
+                        )
+                    })
                     .collect(),
                 hud_visible: value.hud_visible,
             }
@@ -519,7 +542,7 @@ pub mod cosave_v2 {
                 equipsets: value
                     .equipsets
                     .iter()
-                    .map(|xs| EquipSet::new(xs.0, xs.1.clone(), xs.2.to_vec()))
+                    .map(|xs| EquipSet::new(xs.0, xs.1.clone(), xs.2.to_vec(), xs.3.to_vec(), xs.4.clone()))
                     .collect(),
                 loaded: true,
             }
@@ -713,6 +736,7 @@ pub mod cosave_v0 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::plugin::EquippedData;
 
     #[test]
     fn version_2() {
@@ -726,8 +750,12 @@ mod tests {
         cycle.add_item(CycleSlot::Left, &two);
         cycle.add_item(CycleSlot::Left, &three);
 
-        cycle.add_equipset("set-one".to_string(), Vec::new());
-        cycle.add_equipset("set-two".to_string(), Vec::new());
+        let data = EquippedData {
+            items: Vec::new(),
+            empty_slots: Vec::new(),
+        };
+        cycle.add_equipset("set-one".to_string(), data.clone());
+        cycle.add_equipset("set-two".to_string(), data.clone());
 
         let value = cosave_v2::CycleSerialized::from(&cycle);
         let config = bincode::config::standard();

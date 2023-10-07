@@ -318,25 +318,25 @@ impl SpellType {
     pub fn two_handed(&self) -> bool {
         self.data.twohanded
     }
+
+    pub fn icon_fallback(&self) -> Icon {
+        match self.data.school {
+            School::Alteration => Icon::Alteration,
+            School::Conjuration => Icon::Conjuration,
+            School::Destruction => Icon::Destruction,
+            School::Illusion => Icon::Illusion,
+            School::Restoration => Icon::Restoration,
+            School::None => self.icon.fallback(),
+        }
+    }
 }
 
 impl HasIcon for SpellType {
-    fn icon_file(&self) -> String {
-        self.icon.icon_file()
+    fn icon(&self) -> &Icon {
+        &self.icon
     }
 
     fn color(&self) -> Color {
         self.color.color()
-    }
-
-    fn icon_fallback(&self) -> String {
-        match self.data.school {
-            School::Alteration => Icon::Alteration.icon_file(),
-            School::Conjuration => Icon::Conjuration.icon_file(),
-            School::Destruction => Icon::Destruction.icon_file(),
-            School::Illusion => Icon::Illusion.icon_file(),
-            School::Restoration => Icon::Restoration.icon_file(),
-            School::None => self.icon.fallback().icon_file(),
-        }
     }
 }

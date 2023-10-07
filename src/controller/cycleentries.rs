@@ -1,5 +1,6 @@
 use crate::data::base::BaseType;
 use crate::data::huditem::HudItem;
+use crate::data::icons::Icon;
 use crate::data::item_cache::ItemCache;
 
 /// A single equipment set.
@@ -11,18 +12,45 @@ pub struct EquipSet {
     name: String,
     /// A list of formspecs for items to be equipped when this equipset is selected.
     pub items: Vec<String>,
+    /// A list of empty slots.
+    pub empty: Vec<u8>,
+    /// Which icon to use.
+    pub icon: Icon,
 }
 
 impl EquipSet {
     /// Create an equipset.
-    pub fn new(id: u32, name: String, items: Vec<String>) -> Self {
-        Self { id, name, items }
+    pub fn new(
+        id: u32,
+        name: String,
+        items: Vec<String>,
+        empty: Vec<u8>,
+        icon_name: String,
+    ) -> Self {
+        let icon = Icon::try_from(icon_name.as_str()).unwrap_or(Icon::ArmorHeavy);
+        log::info!("got icon {icon:?} from name {icon_name}");
+        Self {
+            id,
+            name,
+            items,
+            empty,
+            icon,
+        }
     }
 
     /// Create an equipset from a list of huditems.
-    pub fn new_from_items(id: u32, name: String, huditems: Vec<HudItem>) -> Self {
-        let items = huditems.iter().map(|xs| xs.form_string()).collect();
-        Self { id, name, items }
+    pub fn new_from_items(id: u32, name: String, huditems: Vec<HudItem>, empty: Vec<u8>) -> Self {
+        let items: Vec<String> = huditems.iter().map(|xs| xs.form_string()).collect();
+        let icon = huditems
+            .first()
+            .map_or(Icon::ArmorHeavy, |xs| xs.icon().clone());
+        Self {
+            id,
+            name,
+            items,
+            empty,
+            icon,
+        }
     }
 
     /// Get this equipset's name.
@@ -37,6 +65,18 @@ impl EquipSet {
     /// String identifiers did not work out very well here.
     pub fn id(&self) -> u32 {
         self.id
+    }
+
+    pub fn items(&self) -> &[String] {
+        self.items.as_slice()
+    }
+
+    pub fn empty_slots(&self) -> &[u8] {
+        self.empty.as_slice()
+    }
+
+    pub fn icon(&self) -> &Icon {
+        &self.icon
     }
 }
 
@@ -204,7 +244,8 @@ impl HudItemCycle for Vec<String> {
 pub trait UpdateableItemCycle {
     type T;
     fn find_next_id(&self) -> u32;
-    fn update_set(&mut self, id: u32, items: Vec<String>) -> bool;
+    fn update_set(&mut self, id: u32, items: Vec<String>, empty: Vec<u8>) -> bool;
+    fn set_icon_by_id(&mut self, id: u32, icon: Icon) -> bool;
     fn rename_by_id(&mut self, id: u32, name: String) -> bool;
     fn get_by_id(&self, id: u32) -> Option<&Self::T>;
 }
@@ -233,12 +274,13 @@ impl UpdateableItemCycle for Vec<EquipSet> {
         }
     }
 
-    fn update_set(&mut self, id: u32, items: Vec<String>) -> bool {
+    fn update_set(&mut self, id: u32, items: Vec<String>, empty: Vec<u8>) -> bool {
         if let Ok(idx) = self.binary_search_by(|xs| xs.id.cmp(&id)) {
             let Some(to_update) = self.get_mut(idx) else {
                 return false;
             };
             to_update.items = items;
+            to_update.empty = empty;
             true
         } else {
             false
@@ -251,6 +293,18 @@ impl UpdateableItemCycle for Vec<EquipSet> {
                 return false;
             };
             to_update.set_name(name.as_str());
+            true
+        } else {
+            false
+        }
+    }
+
+    fn set_icon_by_id(&mut self, id: u32, icon: Icon) -> bool {
+        if let Ok(idx) = self.binary_search_by(|xs| xs.id.cmp(&id)) {
+            let Some(to_update) = self.get_mut(idx) else {
+                return false;
+            };
+            to_update.icon = icon;
             true
         } else {
             false
@@ -320,15 +374,36 @@ mod tests {
         let mut cycle = Vec::<EquipSet>::new();
         let id = cycle.find_next_id();
         assert_eq!(id, 0);
-        let zero = EquipSet::new(id, id.to_string(), Vec::new());
+        let zero = EquipSet::new(
+            id,
+            id.to_string(),
+            Vec::new(),
+            Vec::new(),
+            Icon::SpellSun.to_string(),
+        );
+        assert_eq!(zero.icon, Icon::SpellSun);
         assert!(cycle.add(&zero));
         let id = cycle.find_next_id();
         assert_eq!(id, 1);
-        let one = EquipSet::new(id, id.to_string(), Vec::new());
+        let one = EquipSet::new(
+            id,
+            id.to_string(),
+            Vec::new(),
+            Vec::new(),
+            Icon::ArmorBackpack.to_string(),
+        );
+        assert_eq!(one.icon, Icon::ArmorBackpack);
         assert!(cycle.add(&one));
         let id = cycle.find_next_id();
         assert_eq!(id, 2);
-        let two = EquipSet::new(id, id.to_string(), Vec::new());
+        let two = EquipSet::new(
+            id,
+            id.to_string(),
+            Vec::new(),
+            Vec::new(),
+            "NotAnIcon".to_string(),
+        );
+        assert_eq!(two.icon, Icon::ArmorHeavy);
         assert!(cycle.add(&two));
         assert!(cycle.delete(&one));
         let id = cycle.find_next_id();

@@ -352,6 +352,7 @@ impl Display for HudElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
             HudElement::Ammo => write!(f, "Ammo"),
+            HudElement::EquipSet => write!(f, "Equipset"),
             HudElement::Left => write!(f, "Left"),
             HudElement::Power => write!(f, "Power"),
             HudElement::Right => write!(f, "Right"),

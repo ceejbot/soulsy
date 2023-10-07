@@ -2,6 +2,7 @@ use std::ffi::CString;
 use std::fmt::Display;
 
 use super::base::BaseType;
+use super::icons::Icon;
 use super::{HasIcon, IsHudItem};
 use crate::plugin::{Color, ItemCategory};
 
@@ -21,7 +22,6 @@ pub struct HudItem {
     kind: BaseType,
     /// Cached count from inventory data. Relies on hooks to be updated.
     count: u32,
-    icon_file: Option<String>, // runtime cache
 }
 
 impl HudItem {
@@ -35,9 +35,8 @@ impl HudItem {
     ) -> Self {
         let (name_is_utf8, name) = name_from_bytes(&name_bytes);
 
-        log::debug!("calling BaseType::classify() with keywords={keywords:?};");
+        // log::debug!("calling BaseType::classify() with keywords={keywords:?};");
         let kind: BaseType = BaseType::classify(name.as_str(), category, keywords, twohanded);
-        let icon_file = kind.icon_file();
         Self {
             name_bytes,
             name,
@@ -45,7 +44,6 @@ impl HudItem {
             form_string,
             count,
             kind,
-            icon_file: Some(icon_file),
         }
     }
 
@@ -56,8 +54,6 @@ impl HudItem {
         kind: BaseType,
     ) -> Self {
         let (name_is_utf8, name) = name_from_bytes(&name_bytes);
-        let icon_file = kind.icon_file();
-
         Self {
             name_bytes,
             name,
@@ -65,7 +61,17 @@ impl HudItem {
             form_string,
             count,
             kind,
-            icon_file: Some(icon_file),
+        }
+    }
+
+    pub fn for_equip_set(name: String, id: u32, icon: Icon) -> Self {
+        Self {
+            name_bytes: name.as_bytes().to_vec(),
+            name,
+            name_is_utf8: true,
+            form_string: format!("equipset_{id}"),
+            count: 1,
+            kind: BaseType::Equipset(icon),
         }
     }
 
@@ -78,16 +84,16 @@ impl HudItem {
         )
     }
 
+    pub fn icon(&self) -> &Icon {
+        self.kind().icon()
+    }
+
     pub fn icon_file(&self) -> String {
-        if let Some(icon) = self.icon_file.clone() {
-            icon
-        } else {
-            self.kind().icon_file()
-        }
+        self.kind().icon().icon_file()
     }
 
     pub fn icon_fallback(&self) -> String {
-        self.kind().icon_fallback()
+        self.kind().icon_fallback().icon_file()
     }
 
     pub fn color(&self) -> Color {

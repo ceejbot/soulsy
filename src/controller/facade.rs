@@ -1,6 +1,7 @@
 //! This module bundles up the public-facing interface of the controller for ease
-//! of import into the bridge. It should have as little logic as is compatible
-//! with keeping opaque Rust types from having to be exposed to C++.
+//! of import into the bridge. It's the Rust equivalent of the helpers class over
+//! on the C++ side. It can include any logic that doesn't demand the controller.
+//! In particular, it includes a lot of support for papyrus functions.
 
 use std::ffi::OsString;
 use std::fs::File;
@@ -75,37 +76,6 @@ pub fn initialize_hud() {
 /// Function for C++ to call to send a relevant button event to us.
 pub fn handle_key_event(key: u32, button: &ButtonEvent) -> KeyEventResponse {
     control::get().handle_key_event(key, button)
-}
-
-pub fn get_equipset_names() -> Vec<String> {
-    control::get().cycles.equipset_names()
-}
-
-pub fn get_equipset_ids() -> Vec<u32> {
-    control::get().cycles.equipset_ids()
-}
-
-pub fn handle_create_equipset(name: String) -> bool {
-    let items = getEquippedItems();
-    control::get().cycles.add_equipset(name, items)
-}
-
-pub fn handle_update_equipset(id: u32) -> bool {
-    control::get().cycles.update_equipset(id)
-}
-
-/// Rename the equipset with the given ID.
-pub fn handle_rename_equipset(id: u32, name: String) -> bool {
-    control::get().cycles.rename_equipset(id, name)
-}
-
-/// Remove the equipset with the given ID.
-pub fn handle_remove_equipset(id: u32) -> bool {
-    control::get().cycles.remove_equipset(id.to_string())
-}
-
-pub fn show_ui() -> bool {
-    control::get().cycles.hud_visible()
 }
 
 /// Function for C++ to call to send a relevant menu button-event to us.
@@ -204,4 +174,83 @@ pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32) {
 
 pub fn clear_cache() {
     control::get().cache.clear();
+}
+
+/// This is straight-up papyrus support. We choose to return -1 to signal
+/// failure because our use case is as array indexes in papyrus.
+pub fn string_to_int(number: String) -> i32 {
+    if let Ok(parsed) = number.parse::<i32>() {
+        parsed
+    } else {
+        -1
+    }
+}
+
+/// Equipment set functions for papyrus start here.
+pub fn equipset_index_to_id(idx: String) -> i32 {
+    // really I could get away with u8 here. just so long as it's smaller than an i32
+    let Ok(parsed) = idx.parse::<u16>() else {
+        return -1;
+    };
+    let ids = control::get().cycles.equipset_ids();
+    if parsed as usize >= ids.len() {
+        return -1;
+    }
+    if let Some(id) = ids.get(parsed as usize) {
+        *id as i32
+    } else {
+        -1
+    }
+}
+
+pub fn get_equipset_names() -> Vec<String> {
+    control::get().cycles.equipset_names()
+}
+
+pub fn get_equipset_ids() -> Vec<String> {
+    control::get()
+        .cycles
+        .equipset_ids()
+        .iter()
+        .map(|xs| xs.to_string())
+        .collect()
+}
+
+pub fn handle_create_equipset(name: String) -> bool {
+    let data = getEquippedItems();
+    control::get().cycles.add_equipset(name, *data)
+}
+
+pub fn handle_update_equipset(id: u32) -> bool {
+    let data = getEquippedItems();
+    control::get().cycles.update_equipset(id, *data)
+}
+
+/// Rename the equipset with the given ID.
+pub fn handle_rename_equipset(id: u32, name: String) -> bool {
+    control::get().cycles.rename_equipset(id, name)
+}
+
+/// Remove the equipset with the given ID.
+pub fn handle_remove_equipset(id: u32) -> bool {
+    control::get().cycles.remove_equipset(id.to_string())
+}
+
+/// Create the equipped data struct.
+pub fn equipped_data(items: Vec<String>, empty_slots: Vec<u8>) -> Box<EquippedData> {
+    Box::new(EquippedData { items, empty_slots })
+}
+
+pub fn get_equipset_item_names(id: u32) -> Vec<String> {
+    // this needs the cache
+    control::get().get_equipset_item_names(id)
+}
+
+/// Use the icon from the named item for the equipment set with the given id.
+pub fn set_equipset_icon(id: u32, itemname: String) -> bool {
+    control::get().set_equipset_icon(id, itemname)
+}
+
+pub fn show_ui() -> bool {
+    control::get().cycles.hud_visible()
 }

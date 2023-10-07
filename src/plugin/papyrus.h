@@ -12,15 +12,15 @@ namespace papyrus
 	RE::BSFixedString get_resolution_height(RE::TESQuest*);
 
 
-	bool handleCreateEquipSet(RE::StaticFunctionTag*, RE::BSFixedString name);
-	bool handleRenameEquipSet(RE::StaticFunctionTag*, uint32_t setnum, RE::BSFixedString name);
-	bool handleUpdateEquipSet(RE::StaticFunctionTag*, uint32_t setnum);
-	bool handleRemoveEquipSet(RE::StaticFunctionTag*, uint32_t setnum);
+	bool handleCreateEquipSet(RE::TESQuest*, RE::BSFixedString name);
+	bool handleRenameEquipSet(RE::TESQuest*, uint32_t setnum, RE::BSFixedString name);
+	bool handleUpdateEquipSet(RE::TESQuest*, uint32_t setnum);
+	bool handleRemoveEquipSet(RE::TESQuest*, uint32_t setnum);
 	RE::BSTArray<RE::BSFixedString> getEquipSetNames(RE::TESQuest*);
-	RE::BSTArray<uint32_t> getEquipSetIDs(RE::TESQuest*);
-
-	bool buildIsPreAE(RE::TESQuest*);
-	void setIsPreAEBuild(bool input);
+	RE::BSTArray<RE::BSFixedString> getEquipSetIDs(RE::TESQuest*);
+	int stringToInt(RE::TESQuest*, RE::BSFixedString number);
+	RE::BSTArray<RE::BSFixedString> getEquipSetItemNames(RE::TESQuest*, uint32_t id);
+	bool setItemAsEquipSetIcon(RE::TESQuest*, uint32_t id, RE::BSFixedString fixed);
 
 	bool Register(RE::BSScript::IVirtualMachine* a_vm);
 	void registerPapyrusFunctions();

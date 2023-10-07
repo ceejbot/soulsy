@@ -150,33 +150,11 @@ build-layouts:
         echo "Built ${name}.7z"
     done
 
-    # hexagons bestagons
-    dest="releases/SoulsyHUD-hexagons-1/SKSE/plugins"
-    mkdir -p $dest/resources/{backgrounds,fonts}
-    cp -p layouts/hexagons/SoulsyHUD_hexagons_lr.toml "$dest/SoulsyHUD_Layout.toml"
-    cp -p layouts/hexagons/hexagons_lr.svg "$dest/resources/backgrounds/hud_bg.svg"
-    font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
-    cp -p "layouts/$font" "$dest/resources/fonts/"
-
-    dest="releases/SoulsyHUD-hexagons-2/SKSE/plugins"
-    mkdir -p $dest/resources/{backgrounds,fonts}
-    cp -p layouts/hexagons/SoulsyHUD_hexagons_tb.toml "$dest/SoulsyHUD_Layout.toml"
-    cp -p layouts/hexagons/hexagons_tb.svg "$dest/resources/backgrounds/hud_bg.svg"
-    font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
-    cp -p "layouts/${font}" "$dest/resources/fonts/"
-
-    # build the curvy layout archives
-    dest="releases/SoulsyHUD_curvy_top/SKSE/plugins"
-    mkdir -p "$dest/resources/backgrounds/"
-    cp -p layouts/curvy/SoulsyHUD_curvy_left_top.toml "$dest/SoulsyHUD_Layout.toml"
-    cp -p layouts/curvy/left-top-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
-    cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
-
-    dest="releases/SoulsyHUD_curvy_bottom/SKSE/plugins"
-    mkdir -p "$dest/resources/backgrounds/"
-    cp -p layouts/curvy/SoulsyHUD_curvy_left_bottom.toml "$dest/SoulsyHUD_Layout.toml"
-    cp -p layouts/curvy/left-bottom-hud-bg.svg "$dest/resources/backgrounds/hud_bg.svg"
-    cp -p layouts/curvy/slot_bg.svg "$dest/resources/backgrounds/"
+    # Build the equip-sets-aware layout
+    dest="releases/SoulsyHUD_layout_square/SKSE/plugins"
+    mkdir -p "$dest/resources/backgrounds"
+    cp -p layouts/square/SoulsyHUD_layout.toml $dest
+    cp -p layouts/square/*.svg "$dest/resources/backgrounds/"
 
     # build the Soulsy icon pack
     dest="releases/SoulsyHUD_icon_pack/SKSE/plugins/resources/icons"
@@ -188,9 +166,9 @@ build-layouts:
     mkdir -p "$dest"
     cp -rp layouts/thicc-icon-pack/*.svg "$dest/"
 
-    layouts="SoulsyHUD_icon_pack THICC_icon_pack SoulsyHUD_curvy_bottom SoulsyHUD_curvy_top SoulsyHUD-hexagons-1 SoulsyHUD-hexagons-2"
+    archive_dirs="SoulsyHUD_icon_pack THICC_icon_pack SoulsyHUD_layout_square"
     cd releases
-    for i in $layouts; do
+    for i in $archive_dirs; do
          ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"
         rm -rf "$i"
         echo "Built $i.7z"

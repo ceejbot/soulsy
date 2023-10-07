@@ -61,12 +61,8 @@ impl HasIcon for AmmoType {
         }
     }
 
-    fn icon_file(&self) -> String {
-        Icon::Arrow.icon_file()
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::Arrow.icon_file()
+    fn icon(&self) -> &Icon {
+        &Icon::Arrow
     }
 }
 

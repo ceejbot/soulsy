@@ -371,24 +371,46 @@ namespace player
 	void chooseHealthPotion() { game::consumeBestOption(RE::ActorValue::kHealth); }
 	void chooseMagickaPotion() { game::consumeBestOption(RE::ActorValue::kMagicka); }
 
-	rust::Vec<rust::String> getEquippedItems()
+	rust::Box<EquippedData> getEquippedItems()
 	{
 		auto specs = new rust::Vec<rust::String>();
+		auto empty = new rust::Vec<uint8_t>();
 
 		auto* the_player = RE::PlayerCharacter::GetSingleton();
-		if (!the_player) return std::move(*specs);
-
-		for (uint32_t slot = 0; slot < 32; slot++)
+		if (!the_player)
 		{
-			// TESObjectARMO* Actor::GetWornArmor(BGSBipedObjectForm::BipedObjectSlot a_slot, bool a_noInit)
-			auto* item = the_player->GetWornArmor(static_cast<RE::BGSBipedObjectForm::BipedObjectSlot>(slot));
-			if (!item) continue;
-			std::string formSpec = helpers::makeFormSpecString(item);
-			logger::info("found item in slot {}: {} {}", slot, item->GetName(), formSpec);
-			specs->push_back(formSpec);
+			auto data = equipped_data(*specs, *empty);
+			return std::move(data);
 		}
 
-		return std::move(*specs);
+		for (uint8_t shift = 0; shift < 32; shift++)
+		{
+			auto slot  = static_cast<RE::BGSBipedObjectForm::BipedObjectSlot>(1 << shift);
+			auto* item = the_player->GetWornArmor(slot);
+			if (item)
+			{
+				std::string formSpec = helpers::makeFormSpecString(item);
+				specs->push_back(formSpec);
+			}
+			else { empty->push_back(shift); };
+		}
+
+		auto data = equipped_data(*specs, *empty);
+		return std::move(data);
+	}
+
+	void unequipSlotByShift(uint8_t shift)
+	{
+		auto slot        = static_cast<RE::BGSBipedObjectForm::BipedObjectSlot>(1 << shift);
+		auto* the_player = RE::PlayerCharacter::GetSingleton();
+
+		auto* item = the_player->GetWornArmor(slot);
+		if (item)
+		{
+			auto* equip_manager = RE::ActorEquipManager::GetSingleton();
+			auto* task          = SKSE::GetTaskInterface();
+			task->AddTask([=]() { equip_manager->UnequipObject(the_player, item, nullptr); });
+		}
 	}
 
 }  // player

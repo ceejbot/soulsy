@@ -111,6 +111,8 @@ pub struct UserSettings {
     cycle_ammo: bool,
     /// True if icons should be drawn in living color.
     colorize_icons: bool,
+    /// Equip sets unequip. bEquipSetsUnequip
+    equip_sets_unequip: bool,
     /// The identifier for the mod in SKSE cosaves. Defaults to SOLS.
     skse_identifier: String,
 }
@@ -148,6 +150,7 @@ impl Default for UserSettings {
             slow_time_factor: 0.25,
             cycle_ammo: true,
             colorize_icons: true,
+            equip_sets_unequip: true,
             skse_identifier: "SOLS".to_string(),
         }
     }
@@ -192,7 +195,6 @@ impl UserSettings {
         self.right = read_from_ini(self.right, "uRightCycleKey", controls);
         self.power = read_from_ini(self.power, "uPowerCycleKey", controls);
         self.utility = read_from_ini(self.utility, "uUtilityCycleKey", controls);
-        self.equipset = read_from_ini(self.equipset, "iEquipSetCycleKey", controls);
         self.how_to_cycle = read_from_ini(self.how_to_cycle, "uHowToCycle", controls);
         self.cycle_modifier = read_from_ini(self.cycle_modifier, "iCycleModifierKey", controls);
         self.long_press_matches =
@@ -243,6 +245,10 @@ impl UserSettings {
         self.colorize_icons = read_from_ini(self.colorize_icons, "bColorizeIcons", options);
         self.skse_identifier =
             read_from_ini(self.skse_identifier.clone(), "sSKSEIdentifier", options);
+
+        self.equipset = read_from_ini(self.equipset, "iEquipSetCycleKey", controls);
+        self.equip_sets_unequip =
+            read_from_ini(self.equip_sets_unequip, "bEquipSetsUnequip", options);
 
         Ok(())
     }
@@ -339,6 +345,9 @@ impl UserSettings {
     }
     pub fn equipset(&self) -> i32 {
         self.equipset
+    }
+    pub fn equip_sets_unequip(&self) -> bool {
+        self.equip_sets_unequip
     }
 
     pub fn how_to_activate(&self) -> &ActivationMethod {

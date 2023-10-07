@@ -30,6 +30,7 @@ pub enum BaseType {
     Shout(ShoutType),
     Spell(SpellType),
     Weapon(WeaponType),
+    Equipset(Icon),
 }
 
 #[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
@@ -48,16 +49,12 @@ impl HasIcon for Proxy {
         }
     }
 
-    fn icon_file(&self) -> String {
+    fn icon(&self) -> &Icon {
         match self {
-            Proxy::Health => Icon::PotionHealth.icon_file(),
-            Proxy::Magicka => Icon::PotionMagicka.icon_file(),
-            Proxy::Stamina => Icon::PotionStamina.icon_file(),
+            Proxy::Health => &Icon::PotionHealth,
+            Proxy::Magicka => &Icon::PotionMagicka,
+            Proxy::Stamina => &Icon::PotionStamina,
         }
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::PotionDefault.icon_file()
     }
 }
 
@@ -73,15 +70,11 @@ impl HasIcon for LightType {
         InvColor::Sun.color()
     }
 
-    fn icon_file(&self) -> String {
+    fn icon(&self) -> &Icon {
         match self {
-            LightType::Torch => Icon::Torch.icon_file(),
-            LightType::Lantern => Icon::Lantern.icon_file(),
+            LightType::Torch => &Icon::Torch,
+            LightType::Lantern => &Icon::Lantern,
         }
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::Torch.icon_file()
     }
 }
 
@@ -112,6 +105,25 @@ impl BaseType {
             _ => BaseType::Empty,
         }
     }
+
+    pub fn icon_fallback(&self) -> Icon {
+        match self {
+            BaseType::Empty => Icon::IconDefault,
+            BaseType::Ammo(_) => Icon::Arrow,
+            BaseType::Armor(_) => Icon::ArmorHeavy,
+            BaseType::Food(_) => Icon::Food,
+            BaseType::HandToHand => Icon::HandToHand,
+            BaseType::Light(_) => Icon::Torch,
+            BaseType::Potion(_) => Icon::PotionDefault,
+            BaseType::PotionProxy(_) => Icon::PotionDefault,
+            BaseType::Power => Icon::Power,
+            BaseType::Scroll(_) => Icon::Scroll,
+            BaseType::Shout(_) => Icon::Shout,
+            BaseType::Spell(t) => t.icon_fallback(), // will fall back to magic school icon
+            BaseType::Weapon(_) => Icon::WeaponSwordOneHanded,
+            BaseType::Equipset(_) => Icon::ArmorHeavy,
+        }
+    }
 }
 
 pub fn color_from_keywords(keywords: &[String]) -> InvColor {
@@ -132,6 +144,7 @@ impl HasIcon for BaseType {
             BaseType::Empty => Color::default(),
             BaseType::Ammo(t) => t.color(),
             BaseType::Armor(t) => t.color(),
+            BaseType::Equipset(_) => Color::default(),
             BaseType::Food(t) => t.color(),
             BaseType::HandToHand => Color::default(),
             BaseType::Light(t) => t.color(),
@@ -145,39 +158,22 @@ impl HasIcon for BaseType {
         }
     }
 
-    fn icon_file(&self) -> String {
+    fn icon(&self) -> &Icon {
         match self {
-            BaseType::Empty => Icon::IconDefault.icon_file(),
-            BaseType::Ammo(_) => Icon::Arrow.icon_file(),
-            BaseType::Armor(t) => t.icon_file(),
-            BaseType::Food(t) => t.icon_file(), // TODO
-            BaseType::HandToHand => Icon::HandToHand.icon_file(),
-            BaseType::Light(t) => t.icon_file(),
-            BaseType::Potion(t) => t.icon_file(),
-            BaseType::PotionProxy(t) => t.icon_file(),
-            BaseType::Power => Icon::Power.icon_file(),
-            BaseType::Scroll(_) => Icon::Scroll.icon_file(),
-            BaseType::Shout(t) => t.icon_file(),
-            BaseType::Spell(t) => t.icon_file(),
-            BaseType::Weapon(t) => t.icon_file(),
-        }
-    }
-
-    fn icon_fallback(&self) -> String {
-        match self {
-            BaseType::Empty => Icon::IconDefault.icon_file(),
-            BaseType::Ammo(_) => Icon::Arrow.icon_file(),
-            BaseType::Armor(t) => t.icon_fallback(),
-            BaseType::Food(t) => t.icon_fallback(),
-            BaseType::HandToHand => Icon::HandToHand.icon_file(),
-            BaseType::Light(t) => t.icon_file(),
-            BaseType::Potion(t) => t.icon_fallback(),
-            BaseType::PotionProxy(t) => t.icon_fallback(),
-            BaseType::Power => Icon::Shout.icon_file(),
-            BaseType::Scroll(_) => Icon::Scroll.icon_file(),
-            BaseType::Shout(t) => t.icon_fallback(),
-            BaseType::Spell(t) => t.icon_fallback(),
-            BaseType::Weapon(t) => t.icon_fallback(),
+            BaseType::Empty => &Icon::IconDefault,
+            BaseType::Ammo(t) => t.icon(),
+            BaseType::Armor(t) => t.icon(),
+            BaseType::Equipset(t) => t,
+            BaseType::Food(t) => t.icon(),
+            BaseType::HandToHand => &Icon::HandToHand,
+            BaseType::Light(t) => t.icon(),
+            BaseType::Potion(t) => t.icon(),
+            BaseType::PotionProxy(t) => t.icon(),
+            BaseType::Power => &Icon::Power,
+            BaseType::Scroll(_) => &Icon::Scroll,
+            BaseType::Shout(t) => t.icon(),
+            BaseType::Spell(t) => t.icon(),
+            BaseType::Weapon(t) => t.icon(),
         }
     }
 }
@@ -188,6 +184,7 @@ impl IsHudItem for BaseType {
             BaseType::Empty => false,
             BaseType::Ammo(_) => true,
             BaseType::Armor(_) => true,
+            BaseType::Equipset(_) => false,
             BaseType::Food(_) => true,
             BaseType::HandToHand => false,
             BaseType::Light(_) => true,
@@ -230,6 +227,7 @@ impl IsHudItem for BaseType {
             BaseType::Empty => false,
             BaseType::Ammo(_) => false,
             BaseType::Armor(t) => t.is_utility(),
+            BaseType::Equipset(_) => false,
             BaseType::Food(_) => true,
             BaseType::HandToHand => false,
             BaseType::Light(_) => false,
@@ -268,6 +266,7 @@ impl IsHudItem for BaseType {
             BaseType::Empty => false,
             BaseType::Ammo(_) => false,
             BaseType::Armor(t) => !t.is_utility(),
+            BaseType::Equipset(_) => false,
             BaseType::Food(_) => false,
             BaseType::HandToHand => true,
             BaseType::Light(_) => true,
@@ -286,6 +285,7 @@ impl IsHudItem for BaseType {
             BaseType::Empty => false,
             BaseType::Ammo(_) => false,
             BaseType::Armor(_) => false,
+            BaseType::Equipset(_) => false,
             BaseType::Food(_) => false,
             BaseType::HandToHand => true,
             BaseType::Light(_) => false,

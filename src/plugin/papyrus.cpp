@@ -29,6 +29,9 @@ namespace papyrus
 		a_vm->RegisterFunction("HandleRemoveEquipSet", MCM_NAME, handleRemoveEquipSet);
 		a_vm->RegisterFunction("GetEquipSetNames", MCM_NAME, getEquipSetNames);
 		a_vm->RegisterFunction("GetEquipSetIDs", MCM_NAME, getEquipSetIDs);
+		a_vm->RegisterFunction("GetEquipSetItemNames", MCM_NAME, getEquipSetItemNames);
+		a_vm->RegisterFunction("SetItemAsEquipSetIcon", MCM_NAME, setItemAsEquipSetIcon);
+		a_vm->RegisterFunction("StringToInt", MCM_NAME, stringToInt);
 
 		a_vm->RegisterFunction("GetCycleNames", MCM_NAME, getCycleNames);
 		a_vm->RegisterFunction("GetCycleFormIDs", MCM_NAME, getCycleFormIDs);
@@ -53,36 +56,59 @@ namespace papyrus
 		return array;
 	}
 
-	RE::BSTArray<uint32_t> getEquipSetIDs(RE::TESQuest*)
+	RE::BSTArray<RE::BSFixedString> getEquipSetIDs(RE::TESQuest*)
 	{
-		auto ids = get_equipset_ids();
-		auto array = RE::BSTArray<uint32_t>();
-		for (auto id : ids) { array.push_back(id); }
+		auto ids   = get_equipset_ids();
+		auto array = RE::BSTArray<RE::BSFixedString>();
+		for (auto id : ids) { array.push_back(std::string(id)); }
 
 		return array;
 	}
 
-	bool handleCreateEquipSet(RE::StaticFunctionTag*, RE::BSFixedString fixed)
+	int stringToInt(RE::TESQuest*, RE::BSFixedString number)
+	{
+		auto numstr = std::string(number);
+		return string_to_int(numstr);
+	}
+
+	int equipSetIndexToID(RE::TESQuest*, RE::BSFixedString idx)
+	{
+		// Menus return string values. That value is an index into the name array.
+		// We would like to turn that into an integer equip set ID.
+		auto indexstr = std::string(idx);
+		return equipset_index_to_id(indexstr);
+	}
+
+	RE::BSTArray<RE::BSFixedString> getEquipSetItemNames(RE::TESQuest*, uint32_t id)
+	{
+		auto names = get_equipset_item_names(id);
+		auto array = RE::BSTArray<RE::BSFixedString>();
+		for (auto name : names) { array.push_back(std::string(name)); }
+
+		return array;
+	}
+
+	bool setItemAsEquipSetIcon(RE::TESQuest*, uint32_t id, RE::BSFixedString fixed)
+	{
+		return set_equipset_icon(id, std::string(fixed));
+	}
+
+	bool handleCreateEquipSet(RE::TESQuest*, RE::BSFixedString fixed)
 	{
 		auto name = std::string(fixed);
 		return handle_create_equipset(name);
 	}
 
-	bool handleRenameEquipSet(RE::StaticFunctionTag*, uint32_t setnum, RE::BSFixedString fixed)
+	bool handleRenameEquipSet(RE::TESQuest*, uint32_t id, RE::BSFixedString fixed)
 	{
 		auto name = std::string(fixed);
-		return handle_rename_equipset(setnum, name);
+		logger::debug("handleRenameEquipSet(): id={}; new name='{}';", id, name);
+		return handle_rename_equipset(id, name);
 	}
 
-	bool handleUpdateEquipSet(RE::StaticFunctionTag*, uint32_t setnum)
-	{
-		return handle_update_equipset(setnum);
-	}
+	bool handleUpdateEquipSet(RE::TESQuest*, uint32_t id) { return handle_update_equipset(id); }
 
-	bool handleRemoveEquipSet(RE::StaticFunctionTag*, uint32_t setnum)
-	{
-		return handle_remove_equipset(setnum);
-	}
+	bool handleRemoveEquipSet(RE::TESQuest*, uint32_t id) { return handle_remove_equipset(id); }
 
 	RE::BSTArray<RE::BSFixedString> getCycleNames(RE::TESQuest*, int inWhich)
 	{

@@ -19,12 +19,8 @@ impl HasIcon for FoodType {
         self.color.color()
     }
 
-    fn icon_file(&self) -> String {
-        self.icon.icon_file()
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::Food.icon_file()
+    fn icon(&self) -> &Icon {
+        &self.icon
     }
 }
 

@@ -428,6 +428,11 @@ namespace ui
 			}
 
 			rust::Box<HudItem> entry = entry_to_show_in_slot(slotLayout.element);
+			if ((slotLayout.element == HudElement::EquipSet) && entry->name().empty())
+			{
+				// Do nothing for empty equipsets. Might reconsider this decision.
+				continue;
+			}
 
 			auto entry_name = std::string("");
 			// We use the data cached in the entry if at all possible

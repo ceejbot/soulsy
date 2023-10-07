@@ -421,16 +421,6 @@ impl Controller {
             UnarmedMethod::AddToCycles => false,
         };
 
-        let cycle_requested = !unequip_requested
-            && match settings.how_to_cycle() {
-                ActivationMethod::Hotkey => true,
-                ActivationMethod::LongPress => tracked.is_long_press(),
-                ActivationMethod::Modifier => {
-                    let cyclemod = self.get_tracked_key(&Hotkey::CycleModifier);
-                    cyclemod.is_pressed()
-                }
-            };
-
         if unequip_requested {
             RequestedAction::Unequip
         } else if is_long_press && settings.long_press_matches() {
@@ -1112,7 +1102,7 @@ impl Controller {
     /// Called by the HUD rendering loop in the ImGui code.
     pub fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<HudItem> {
         let Some(candidate) = self.visible.get(&slot) else {
-            log::debug!("surprising: nothing in slot {slot:?}");
+            // log::debug!("nothing to draw in slot {slot:?}");
             return Box::<HudItem>::default();
         };
 
@@ -1492,13 +1482,61 @@ impl Controller {
     }
 
     /// Called when equipment timer expires: equip that equip set!
-    fn equip_selected_set(&self) {
-        let equipset = self.cycles.get_top_equipset();
-        equipset.iter().for_each(|item| {
+    fn equip_selected_set(&mut self) {
+        let Some(equipset) = self.cycles.get_top_equipset() else {
+            return;
+        };
+        log::debug!(
+            "enter equip_selected_set(); top set = '{}'",
+            equipset.name()
+        );
+        if settings().equip_sets_unequip() {
+            equipset.empty_slots().iter().for_each(|shift| {
+                unequipSlotByShift(*shift);
+            });
+        }
+        equipset.items().iter().for_each(|item| {
             let_cxx_string!(form_spec = item.identifier());
             equipArmor(&form_spec);
         });
-        todo!()
+
+        let set = HudItem::for_equip_set(equipset.name(), equipset.id(), equipset.icon.clone());
+        self.update_slot(HudElement::EquipSet, &set);
+    }
+
+    pub fn get_equipset_item_names(&mut self, id: u32) -> Vec<String> {
+        if let Some(set) = self.cycles.equipset_by_id(id) {
+            set.items
+                .iter()
+                .map(|xs| {
+                    let item = self.cache.get(xs);
+                    item.name()
+                })
+                .collect()
+        } else {
+            Vec::new()
+        }
+    }
+
+    /// The named item should be in the given equip set.
+    pub fn set_equipset_icon(&mut self, id: u32, itemname: String) -> bool {
+        let Some(set) = self.cycles.equipset_by_id(id) else {
+            return false;
+        };
+
+        let found: Option<HudItem> = set.items.iter().find_map(|xs| {
+            let item = self.cache.get(xs);
+            if item.name() == itemname {
+                Some(item)
+            } else {
+                None
+            }
+        });
+        let Some(source) = found else {
+            return false;
+        };
+        let icon = source.icon().clone();
+        self.cycles.set_icon_by_id(id, icon)
     }
 }
 

@@ -1,8 +1,6 @@
 ScriptName SoulsyHUD_MCM Extends MCM_ConfigBase
 import SKI_ConfigBase
 
-import SKI_ConfigBase
-
 bool property pEnableActivateModifier = false auto
 bool property pEnableActivateHotkey = false auto
 bool property pCycleNeedsModifier = false auto
@@ -21,86 +19,123 @@ string[] function GetCycleFormIDs(int which) native
 string[] function GetCycleNames(int which) native
 function ClearCycles() native
 
-string property pNewEquipSetName = "New Equipset" auto
-string property pSelectedSetName = "" auto
+string property pEquipSetMenuSelection = "" auto
 int property pSelectedEquipSet = 0 auto
+int property pSelectedEquipSetId = 0 auto
+string property pIconSourceSelection = "" auto
+int property pIconSourceInt = 0 auto
 
 bool function HandleCreateEquipSet(string name) native
 bool function HandleRenameEquipSet(int id, string name) native
 bool function HandleUpdateEquipSet(int id) native
 bool function HandleRemoveEquipSet(int id) native
 string[] function GetEquipSetNames() native
-int[] function GetEquipSetIDs() native
+string[] function GetEquipSetIDs() native
+int function StringToInt(string number) native
+string[] function GetEquipSetItemNames(int id) native
+bool function SetItemAsEquipSetIcon(int id, string name) native
 
 ; equip sets
-function CreateEquipSet(int which)
-    if HandleCreateEquipSet(pNewEquipSetName)
-        ShowMessage("Equip set created")
-        ShowEquipsetMenu()
+function CreateEquipSet()
+    string newname = GetModSettingString("sLastUsedSetName:Equipsets")
+    if HandleCreateEquipSet(newname)
+        ShowMessage("$SoulsyHUD_SetCreated_Msg")
+        UpdateEquipSetMenu()
     else
-        ShowMessage("equip set not created; look at the logs")
+        ShowMessage("$SoulsyHUD_CreateFail_Msg")
     endif
 endFunction
 
-function selectedSetID
-	int[] ids = GetEquipSetIDs()
+function UpdateEquipSetMenu()
+    ; string[] names = GetEquipSetNames()
+    string[] ids = GetEquipSetIDs()
+    if (ids.Length == 0)
+        ids = new string[2]
+        ids[0] = "$SoulsyHUD_NoEquipSets"
+        ids[1] = " "
+        ;names = new string[2]
+        ;names[0] = "$SoulsyHUD_NoEquipSets"
+        ;names[1] = ""
+    endif
+
+    SetMenuOptions("pEquipSetMenuSelection", ids);, a_shortNames = names)
+endFunction
+
+int function selectedSetID()
+    string[] ids = GetEquipSetIds()
 	if ids.Length > pSelectedEquipSet
-		return ids[pSelectedEquipSet]
+		return StringToInt(ids[pSelectedEquipSet])
 	else
 		return -1
 	endif
+
 endFunction
 
-function RenameEquipSet(int which)
-	int idToChange = selectedSetID()
-	if idToChange == -1
+string function selectedSetName()
+    string[] names = GetEquipSetNames()
+	if names.Length > pSelectedEquipSet
+		return names[pSelectedEquipSet]
+	else
+		return " "
+	endif
+endFunction
+
+function UpdateEquipSetItemMenu()
+	string[] items = GetEquipSetItemNames(pSelectedEquipSetId)
+    if (items.Length == 0)
+        items = new string[2]
+        items[0] = "$SoulsyHUD_NoEquipSets"
+        items[1] = " "
+    endif
+
+    SetMenuOptions("pIconSourceSelection", items)
+endFunction
+
+function UseSelectionAsIcon()
+	if SetItemAsEquipSetIcon(pSelectedEquipSetId, pIconSourceSelection)
+		ShowMessage("$SoulsyHUD_IconSet_Msg")
+	else
+		ShowMessage("$SoulsyHUD_IconSetFailed_Msg")
+	endif
+endFunction
+
+function RenameEquipSet()
+	if pSelectedEquipSetId == -1
 		; TODO honk() or otherwise signal error
 		return
 	endif
-    if HandleRenameEquipSet(idToChange, pSelectedSetName)
-        ShowMessage("Equip set renamed")
-        ShowEquipsetMenu()
+    string newname = GetModSettingString("sLastEditedSetName:Equipsets")
+    if HandleRenameEquipSet(pSelectedEquipSetId, newname)
+        ShowMessage("$SoulsyHUD_SetRenamed_Msg")
+        UpdateEquipSetMenu()
     else
-        ShowMessage("equip set not renamed; look at the logs")
+        ShowMessage("$SoulsyHUD_RenameFail_Msg")
     endif
 endFunction
 
 function UpdateEquipSet()
-	int idToChange = selectedSetID()
-	if idToChange == -1
+	if pSelectedEquipSetId == -1
 		; TODO honk() or otherwise signal error
 		return
 	endif
-    if HandleUpdateEquipSet(idToChange)
-        ShowMessage("Equip set updated with what you're wearing")
+    if HandleUpdateEquipSet(pSelectedEquipSetId)
+        ShowMessage("$SoulsyHUD_SetUpdated_Msg")
     else
-        ShowMessage("equip set not updated; look at the logs")
+        ShowMessage("$SoulsyHUD_UpdateFail_Msg")
     endif
 endFunction
 
 function RemoveEquipSet()
-	int idToChange = selectedSetID()
-	if idToChange == -1
+	if pSelectedEquipSetId == -1
 		; TODO honk() or otherwise signal error
 		return
 	endif
-    if HandleRemoveEquipSet(idToChange)
-        ShowMessage("Equip set removed")
-        ShowEquipsetMenu()
+    if HandleRemoveEquipSet(pSelectedEquipSetId)
+        ShowMessage("$SoulsyHUD_SetRemoved_Msg")
+        UpdateEquipSetMenu()
     else
-        ShowMessage("equip set not removed; look at the logs")
+        ShowMessage("$SoulsyHUD_RemoveFail_Msg")
     endif
-endFunction
-
-function ShowEquipsetMenu()
-    string[] names = GetEquipSetNames()
-    if (names.Length == 0)
-        names = new string[2]
-        names[0] = "$SoulsyHUD_empty_list"
-        names[1] = ""
-    endif
-
-    SetMenuOptions("equipSetList", a_options = names)
 endFunction
 
 ; Regular cycle entries, for the preview page
@@ -109,7 +144,7 @@ function ShowCycleEntries(int which)
     string[] options = GetCycleNames(which)
     if (options.Length == 0)
         options = new string[2]
-        options[0] = "$SoulsyHUD_empty_list"
+        options[0] = "$SoulsyHUD_NoCycleItems"
         options[1] = ""
     endif
     SetMenuOptions("cycleDisplay", a_options = options)
@@ -147,6 +182,11 @@ Event OnSettingChange(String changedID)
         endif
     elseif (changedId == "bAutoFade:Options")
         pAutoFadeGroupControl =  GetModSettingBool("bAutoFade:Options")
+    elseif (changedId == "pEquipSetMenuSelection")
+        pSelectedEquipSet = StringToInt(pEquipSetMenuSelection)
+        pSelectedEquipSetId = selectedSetID()
+        string selectedName = selectedSetName()
+        SetModSettingString("sLastEditedSetName:Equipsets", selectedName)
     endif
 
     int equipDelay = GetModSettingInt("uEquipDelay:Options")
@@ -156,7 +196,8 @@ Event OnSettingChange(String changedID)
     endif
 
     ForcePageReset()
-    ShowEquipsetMenu()
+    UpdateEquipSetMenu()
+    UpdateEquipSetItemMenu()
 EndEvent
 
 Event OnConfigOpen()
@@ -178,5 +219,7 @@ Event OnConfigOpen()
     ForcePageReset()
 
     ShowCycleEntries(pCycleToShow)
-    ShowEquipsetMenu()
+    UpdateEquipSetMenu()
+    UpdateEquipSetItemMenu()
+    RefreshMenu()
 EndEvent

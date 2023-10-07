@@ -242,6 +242,12 @@ pub mod plugin {
         stop_timer: Action,
     }
 
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    struct EquippedData {
+        items: Vec<String>,
+        empty_slots: Vec<u8>,
+    }
+
     extern "Rust" {
         /// Tell the rust side where to log.
         fn initialize_rust_logging(logdir: &CxxVector<u16>);
@@ -392,7 +398,9 @@ pub mod plugin {
         /// Get equip set names in order by id.
         fn get_equipset_names() -> Vec<String>;
         /// Get equip set ids.
-        fn get_equipset_ids() -> Vec<u32>;
+        fn get_equipset_ids() -> Vec<String>;
+        /// Turn a string representation of an index into the above array into the id as int.
+        fn equipset_index_to_id(idx: String) -> i32;
         /// Create a new equipment set.
         fn handle_create_equipset(name: String) -> bool;
         /// Save an equipment set.
@@ -401,6 +409,11 @@ pub mod plugin {
         fn handle_rename_equipset(id: u32, name: String) -> bool;
         /// Remove an equipment set.
         fn handle_remove_equipset(id: u32) -> bool;
+        /// For papyrus: parse a string as an int.
+        fn string_to_int(number: String) -> i32;
+        fn equipped_data(items: Vec<String>, empty: Vec<u8>) -> Box<EquippedData>;
+        fn get_equipset_item_names(id: u32) -> Vec<String>;
+        fn set_equipset_icon(id: u32, itemname: String) -> bool;
     }
 
     #[namespace = "RE"]
@@ -490,10 +503,12 @@ pub mod plugin {
         fn getAmmoInventory() -> Vec<String>;
 
         /// Get a list of form specs for all equipped armor.
-        fn getEquippedItems() -> Vec<String>;
+        fn getEquippedItems() -> Box<EquippedData>;
 
         /// Unequip the relevant slot.
         fn unequipSlot(which: Action);
+        /// Unequip a slot identified by biped object slot.
+        fn unequipSlotByShift(shift: u8);
 
         /// Equip the shout matching the form spec.
         fn equipShout(form_spec: &CxxString);

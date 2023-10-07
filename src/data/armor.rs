@@ -29,12 +29,8 @@ impl HasIcon for ArmorType {
         self.color.color()
     }
 
-    fn icon_file(&self) -> String {
-        self.icon.icon_file()
-    }
-
-    fn icon_fallback(&self) -> String {
-        self.icon.fallback().icon_file()
+    fn icon(&self) -> &Icon {
+        &self.icon
     }
 }
 

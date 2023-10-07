@@ -24,6 +24,7 @@ use self::ammo::AmmoType;
 pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
+use self::icons::Icon;
 use self::potion::PotionType;
 use self::shout::ShoutType;
 use self::spell::SpellType;
@@ -180,8 +181,7 @@ pub fn make_stamina_proxy() -> HudItem {
 
 pub trait HasIcon {
     fn color(&self) -> Color;
-    fn icon_file(&self) -> String;
-    fn icon_fallback(&self) -> String;
+    fn icon(&self) -> &Icon;
 }
 
 pub trait HasKeywords {

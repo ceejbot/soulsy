@@ -5,6 +5,7 @@
 #include "rust/cxx.h"
 
 struct HudItem;
+struct EquippedData;
 enum class Action : ::std::uint8_t;
 
 namespace player
@@ -26,7 +27,7 @@ namespace player
 	rust::Vec<rust::String> getAmmoInventory();
 	bool compare(RE::TESAmmo* left, RE::TESAmmo* right);
 
-	rust::Vec<rust::String> getEquippedItems();
+	rust::Box<EquippedData> getEquippedItems();
 
 	rust::Vec<uint16_t> playerName();
 
@@ -41,6 +42,7 @@ namespace player
 	void reequipHand(Action which, const std::string& form_spec);
 	void toggleArmor(const std::string& form_spec);
 	void equipArmor(const std::string& form_spec);
+	void unequipSlotByShift(uint8_t shift);
 	void equipMagic(const std::string& form_spec, Action slot);
 	void equipWeapon(const std::string& form_spec, Action slot);
 	void equipAmmo(const std::string& form_spec);

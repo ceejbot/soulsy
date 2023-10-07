@@ -189,12 +189,8 @@ impl HasIcon for WeaponType {
         self.color.color()
     }
 
-    fn icon_file(&self) -> String {
-        self.icon.icon_file()
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::WeaponSwordOneHanded.icon_file()
+    fn icon(&self) -> &Icon {
+        &self.icon
     }
 }
 
