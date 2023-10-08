@@ -8,7 +8,8 @@ bool property pCycleNeedsModifier = false auto
 bool property pMenuNeedsModifier = false auto
 bool property pEnableUnequipModifier = false auto
 bool property pAutoFadeGroupControl = false auto
-bool property pBuildIsPreAE = false auto
+bool property pEnableLongPressMatchOption = true auto
+
 int property pCycleToShow = 0 auto
 int property pCycleItemShown  = 0 auto
 
@@ -17,7 +18,7 @@ string function GetResolutionWidth() native
 string function GetResolutionHeight() native
 string[] function GetCycleFormIDs(int which) native
 string[] function GetCycleNames(int which) native
-function ClearCycles() native 
+function ClearCycles() native
 
 function ShowCycleEntries(int which)
     pCycleToShow = which
@@ -28,11 +29,11 @@ function ShowCycleEntries(int which)
         values[1] = ""
     endif
     SetMenuOptions("cycleDisplay", a_options = values)
-endFunction 
+endFunction
 
 function ClearCyclesPapyrus()
     bool doit = ShowMessage("$SoulsyHUD_AreYouSure_Message", a_withCancel = true)
-    if (doit) 
+    if (doit)
         ClearCycles()
         ShowMessage("$SoulsyHUD_CyclesCleared_Message")
         pCycleItemShown = 0
@@ -57,6 +58,9 @@ Event OnSettingChange(String changedID)
     elseif (changedID == "uHowToUnequip:Controls")
         int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
         pEnableUnequipModifier = (unequipEnum == 2)
+        if unequipEnum == 1
+            SetModSettingBool("bLongPressMatches:Controls", false)
+        endif
     elseif (changedId == "bAutoFade:Options")
         pAutoFadeGroupControl =  GetModSettingBool("bAutoFade:Options")
     endif
@@ -84,6 +88,7 @@ Event OnConfigOpen()
 
     int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
     pEnableUnequipModifier = (unequipEnum == 2)
+    pEnableLongPressMatchOption = (unequipEnum != 1)
 
     ForcePageReset()
 

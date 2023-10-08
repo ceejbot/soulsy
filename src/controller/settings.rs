@@ -82,6 +82,9 @@ pub struct UserSettings {
     /// An optional modifier key for unequipping a specific slot. iUnequipModifierKey
     unequip_modifier: i32,
 
+    /// Matching left and right hands. bLongPressMatches
+    long_press_matches: bool,
+
     /// Show/hide shortcut key. uShowHideKey
     showhide: u32,
     /// A hotkey for re-reading the layout from toml and redrawing. uRefreshKey
@@ -125,6 +128,7 @@ impl Default for UserSettings {
             group_potions: false,
             how_to_cycle: ActivationMethod::Hotkey,
             cycle_modifier: -1,
+            long_press_matches: false,
             how_to_toggle: ActivationMethod::Hotkey,
             menu_modifier: -1,
             link_to_favorites: false,
@@ -185,11 +189,7 @@ impl UserSettings {
         self.utility = read_from_ini(self.utility, "uUtilityCycleKey", controls);
         self.how_to_cycle = read_from_ini(self.how_to_cycle, "uHowToCycle", controls);
         self.cycle_modifier = read_from_ini(self.cycle_modifier, "iCycleModifierKey", controls);
-        let old_mod_required = read_from_ini(false, "uCycleModifierRequired", controls);
-        if old_mod_required && self.cycle_modifier != -1 {
-            log::warn!("Using your old config option to require a mod key for cycling.");
-            self.how_to_cycle = ActivationMethod::Modifier;
-        }
+        self.long_press_matches = read_from_ini(self.long_press_matches, "bLongPressMatches", controls);
 
         self.how_to_toggle = read_from_ini(self.how_to_toggle, "uHowToggleInMenus", controls);
         self.menu_modifier = read_from_ini(self.menu_modifier, "iMenuModifierKey", controls);
@@ -207,16 +207,6 @@ impl UserSettings {
         self.unarmed_handling = read_from_ini(self.unarmed_handling, "uHowToUnequip", controls);
         self.unequip_modifier =
             read_from_ini(self.unequip_modifier, "iUnequipModifierKey", controls);
-        let old_include_unarmed = read_from_ini(false, "bIncludeUnarmed", options);
-        if old_include_unarmed && matches!(self.unarmed_handling, UnarmedMethod::None) {
-            log::warn!("Using your old config option and adding unarmed to cycles.");
-            self.unarmed_handling = UnarmedMethod::AddToCycles;
-        } else if self.unequip_modifier != -1
-            && matches!(self.unarmed_handling, UnarmedMethod::None)
-        {
-            log::warn!("Using your old config option and requiring a modifier key for un-equipping a hand.");
-            self.unarmed_handling = UnarmedMethod::AddToCycles;
-        }
 
         self.equip_delay_ms = clamp(
             read_from_ini(self.equip_delay_ms, "uEquipDelay", options),
@@ -261,9 +251,6 @@ impl UserSettings {
     pub fn unarmed_handling(&self) -> &UnarmedMethod {
         &self.unarmed_handling
     }
-    pub fn is_unequip_modifier(&self, key: u32) -> bool {
-        self.unequip_modifier as u32 == key
-    }
     pub fn unequip_modifier(&self) -> i32 {
         self.unequip_modifier
     }
@@ -287,12 +274,9 @@ impl UserSettings {
     pub fn cycle_modifier(&self) -> i32 {
         self.cycle_modifier
     }
-    pub fn is_cycle_modifier(&self, key: u32) -> bool {
-        self.cycle_modifier as u32 == key
-    }
 
-    pub fn is_cycle_button(&self, key: u32) -> bool {
-        key == self.left || key == self.right || key == self.power || key == self.utility
+    pub fn long_press_matches(&self) -> bool {
+        self.long_press_matches
     }
 
     pub fn hotkey_for(&self, action: HudElement) -> u32 {

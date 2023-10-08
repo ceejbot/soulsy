@@ -254,8 +254,6 @@ pub mod plugin {
         fn equip_delay_ms(self: &UserSettings) -> u32;
         /// Get whether the HUD should control its own visibility.
         fn autofade(self: &UserSettings) -> bool;
-        /// Check if this button is relevant to the HUD.
-        fn is_cycle_button(self: &UserSettings, key: u32) -> bool;
         /// Get the hotkey for a specific action.
         fn hotkey_for(self: &UserSettings, action: HudElement) -> u32;
         /// Get which kind of controller to draw shortcuts for: PS5 or Xbox.
