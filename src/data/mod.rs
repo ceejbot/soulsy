@@ -201,10 +201,8 @@ pub trait IsHudItem {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::{
-        icons::Icon,
-        weapon::{WeaponEquipType, WeaponType},
-    };
+    use crate::data::icons::Icon;
+    use crate::data::weapon::{WeaponEquipType, WeaponType};
 
     #[test]
     fn can_classify_huditem() {

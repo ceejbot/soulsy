@@ -189,7 +189,8 @@ impl UserSettings {
         self.utility = read_from_ini(self.utility, "uUtilityCycleKey", controls);
         self.how_to_cycle = read_from_ini(self.how_to_cycle, "uHowToCycle", controls);
         self.cycle_modifier = read_from_ini(self.cycle_modifier, "iCycleModifierKey", controls);
-        self.long_press_matches = read_from_ini(self.long_press_matches, "bLongPressMatches", controls);
+        self.long_press_matches =
+            read_from_ini(self.long_press_matches, "bLongPressMatches", controls);
 
         self.how_to_toggle = read_from_ini(self.how_to_toggle, "uHowToggleInMenus", controls);
         self.menu_modifier = read_from_ini(self.menu_modifier, "iMenuModifierKey", controls);
@@ -208,20 +209,20 @@ impl UserSettings {
         self.unequip_modifier =
             read_from_ini(self.unequip_modifier, "iUnequipModifierKey", controls);
 
-        self.equip_delay_ms = clamp(
+        self.equip_delay_ms = u32::clamp(
             read_from_ini(self.equip_delay_ms, "uEquipDelay", options),
             0,
             2500,
         );
-        self.long_press_ms = clamp(
+        self.long_press_ms = u32::clamp(
             read_from_ini(self.equip_delay_ms, "uLongPressMillis", options),
             self.equip_delay_ms + 100,
             2500,
         );
 
         self.autofade = read_from_ini(self.autofade, "bAutoFade", options);
-        self.fade_time = clamp(read_from_ini(self.fade_time, "uFadeTime", options), 0, 2500);
-        self.controller_kind = clamp(
+        self.fade_time = u32::clamp(read_from_ini(self.fade_time, "uFadeTime", options), 0, 2500);
+        self.controller_kind = u32::clamp(
             read_from_ini(self.controller_kind, "uControllerKind", options),
             0,
             1,
@@ -312,6 +313,7 @@ impl UserSettings {
     pub fn activate(&self) -> u32 {
         self.activate
     }
+
     pub fn group_potions(&self) -> bool {
         self.group_potions
     }
@@ -338,7 +340,7 @@ impl UserSettings {
         self.fade_time
     }
     pub fn controller_kind(&self) -> u32 {
-        clamp(self.controller_kind, 0, 2)
+        u32::clamp(self.controller_kind, 0, 2)
     }
     pub fn cycling_slows_time(&self) -> bool {
         self.cycling_slows_time
@@ -362,16 +364,6 @@ impl UserSettings {
             .try_into()
             .expect("You must provide exactly four characters as the mod identifier string.");
         u32::from_le_bytes(slice)
-    }
-}
-
-fn clamp(num: u32, min: u32, max: u32) -> u32 {
-    if num > max {
-        max
-    } else if num < min {
-        min
-    } else {
-        num
     }
 }
 
