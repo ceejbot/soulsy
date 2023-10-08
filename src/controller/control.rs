@@ -447,17 +447,10 @@ impl Controller {
         }
     }
 
-    fn handle_cycle_left(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
-        // log::trace!("Left hand advance requested");
-
-        // Left hand logic:
-        // Do we have a bow equipped, and if so, is the "handle ammo" boolean set?
-        // In that case, we switch ammo. Ammo is ordered least damaging -> most damaging.
-        // Otherwise, it's the same as the right hand.
-
+    fn requested_hand_action(&self, hotkey: &HotkeyKind) -> HandAction {
         let settings = user_settings();
         let tracked = self.get_tracked_key(hotkey);
-        let cycle_ammo = settings.cycle_ammo();
+        let is_long_press = tracked.is_long_press();
 
         let unequip_requested = match settings.unarmed_handling() {
             UnarmedMethod::None => false,
@@ -469,87 +462,91 @@ impl Controller {
             UnarmedMethod::AddToCycles => false,
         };
 
-        let cycle_requested = !unequip_requested
-            && match settings.how_to_cycle() {
-                ActivationMethod::Hotkey => true,
-                ActivationMethod::LongPress => tracked.is_long_press(),
-                ActivationMethod::Modifier => {
-                    let cyclemod = self.get_tracked_key(&HotkeyKind::CycleModifier);
-                    cyclemod.is_pressed()
-                }
-            };
-
         if unequip_requested {
-            log::info!("unequipping left hand by request");
-            let empty_item = HudItem::make_unarmed_proxy();
-            unequipSlot(Action::Left);
-            self.update_slot(HudElement::from(&CycleSlot::Left), &empty_item);
-            self.cycles
-                .set_top(&CycleSlot::Left, &empty_item.form_string());
-            KeyEventResponse {
-                handled: true,
-                start_timer: Action::None,
-                stop_timer: Action::Left,
+            HandAction::Unequip
+        } else if is_long_press && settings.long_press_matches() {
+            HandAction::Match
+        } else if match settings.how_to_cycle() {
+            ActivationMethod::Hotkey => true,
+            ActivationMethod::LongPress => is_long_press,
+            ActivationMethod::Modifier => {
+                let cyclemod = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                cyclemod.is_pressed()
             }
-        } else if cycle_requested {
-            if hasRangedEquipped() && cycle_ammo {
-                self.advance_ammo()
-            } else {
-                self.advance_hand_cycle(&CycleSlot::Left)
-            }
+        } {
+            HandAction::Advance
         } else {
-            log::trace!("you need a modifier key down to advance the left hand");
-            KeyEventResponse::default()
+            HandAction::None
         }
     }
 
     fn handle_cycle_right(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
-        log::debug!("Right hand advance requested");
+        let requested_action = self.requested_hand_action(hotkey);
+        // The left hand needs these two steps separated. See next function.
+        self.do_hand_action(requested_action, Action::Right, CycleSlot::Right)
+    }
 
-        // We have two states to check
+    fn handle_cycle_left(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
         let settings = user_settings();
-        let tracked = self.get_tracked_key(hotkey);
+        let cycle_ammo = settings.cycle_ammo();
+        let requested_action = self.requested_hand_action(hotkey);
 
-        let unequip_requested = match settings.unarmed_handling() {
-            UnarmedMethod::None => false,
-            UnarmedMethod::LongPress => tracked.is_long_press(),
-            UnarmedMethod::Modifier => {
-                let unequipmod = self.get_tracked_key(&HotkeyKind::UnequipModifier);
-                unequipmod.is_pressed()
-            }
-            UnarmedMethod::AddToCycles => false,
-        };
+        // Here's our different left-hand decision.
+        // Do we have a bow equipped, and if so, is the "handle ammo" boolean set?
+        // In that case, we switch ammo. Ammo is ordered least damaging -> most damaging.
+        if matches!(requested_action, HandAction::Advance) && hasRangedEquipped() && cycle_ammo {
+            self.advance_ammo()
+        } else {
+            self.do_hand_action(requested_action, Action::Left, CycleSlot::Left)
+        }
+    }
 
-        let cycle_requested = !unequip_requested
-            && match settings.how_to_cycle() {
-                ActivationMethod::Hotkey => true,
-                ActivationMethod::LongPress => tracked.is_long_press(),
-                ActivationMethod::Modifier => {
-                    let cyclemod = self.get_tracked_key(&HotkeyKind::CycleModifier);
-                    cyclemod.is_pressed()
+    fn do_hand_action(
+        &mut self,
+        requested: HandAction,
+        hand: Action,
+        slot: CycleSlot,
+    ) -> KeyEventResponse {
+        match requested {
+            HandAction::Unequip => {
+                log::info!("unequipping {hand:?} hand by request");
+                let empty_item = HudItem::make_unarmed_proxy();
+                unequipSlot(hand);
+                self.update_slot(HudElement::from(&slot), &empty_item);
+                self.cycles.set_top(&slot, &empty_item.form_string());
+                KeyEventResponse {
+                    handled: true,
+                    start_timer: Action::None,
+                    stop_timer: hand,
                 }
-            };
+            }
+            HandAction::Advance => self.advance_hand_cycle(&slot),
+            HandAction::Match => self.match_hands(hand),
+            HandAction::None => KeyEventResponse::default(),
+        }
+    }
 
-        // ETOOMANYENUMS
-        // The root problem is that shared enums are not sum types, and I want sum types.
-        let action = Action::from(hotkey);
+    fn match_hands(&mut self, action: Action) -> KeyEventResponse {
+        let equipped = if matches!(action, Action::Left) {
+            specEquippedLeft()
+        } else {
+            specEquippedRight()
+        };
+        let item = self.cache.get(&equipped);
 
-        if unequip_requested {
-            log::info!("unequipping right hand by request");
-            let empty_item = HudItem::make_unarmed_proxy();
-            unequipSlot(action);
-            self.update_slot(HudElement::from(&CycleSlot::Right), &empty_item);
-            self.cycles
-                .set_top(&CycleSlot::Right, &empty_item.form_string());
+        if item.kind().left_hand_ok() && item.kind().right_hand_ok() {
+            log::info!(
+                "Attempting to equip '{}' in both hands by request.",
+                item.name()
+            );
+            self.equip_item(&item, action);
             KeyEventResponse {
                 handled: true,
                 start_timer: Action::None,
                 stop_timer: action,
             }
-        } else if cycle_requested {
-            self.advance_hand_cycle(&CycleSlot::Right)
         } else {
-            log::trace!("you need a modifier key down to advance the right hand");
+            log::info!("Can't equip '{}' item in both hands!", item.name());
             KeyEventResponse::default()
         }
     }
@@ -888,7 +885,12 @@ impl Controller {
         }
     }
 
-    pub fn handle_item_unequipped(&mut self, form_spec: &String, _right: bool, _left: bool) -> bool {
+    pub fn handle_item_unequipped(
+        &mut self,
+        form_spec: &String,
+        _right: bool,
+        _left: bool,
+    ) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
         // log::debug!("item UNequipped; right={right}; left={left}; form_spec={form_spec};");
         let right_vis = self.visible.get(&HudElement::Right);
@@ -1500,3 +1502,10 @@ const FMT_ITEM_UTILITIES_CYCLE: &str = "$SoulsyHUD_fmt_UtilitiesCycle";
 const FMT_ITEM_LEFT_CYCLE: &str = "$SoulsyHUD_fmt_LeftHandCycle";
 const FMT_ITEM_RIGHT_CYCLE: &str = "$SoulsyHUD_fmt_RightHandCycle";
 const FMT_ITEM_BOTH_HANDS: &str = "$SoulsyHUD_fmt_BothHands";
+
+enum HandAction {
+    Unequip,
+    Advance,
+    Match,
+    None,
+}
