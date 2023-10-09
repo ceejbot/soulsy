@@ -510,10 +510,10 @@ impl Controller {
         match requested {
             HandAction::Unequip => {
                 log::info!("unequipping {hand:?} hand by request");
-                let empty_item = HudItem::make_unarmed_proxy();
+                let unarmed = HudItem::make_unarmed_proxy();
                 unequipSlot(hand);
-                self.update_slot(HudElement::from(&slot), &empty_item);
-                self.cycles.set_top(&slot, &empty_item.form_string());
+                self.update_slot(HudElement::from(&slot), &unarmed);
+                self.cycles.set_top(&slot, &unarmed.form_string());
                 KeyEventResponse {
                     handled: true,
                     start_timer: Action::None,
@@ -527,26 +527,31 @@ impl Controller {
     }
 
     fn match_hands(&mut self, action: Action) -> KeyEventResponse {
-        let equipped = if matches!(action, Action::Left) {
-            specEquippedLeft()
+        let (equipped, other_hand) = if matches!(action, Action::Left) {
+            (specEquippedLeft(), Action::Right)
         } else {
-            specEquippedRight()
+            (specEquippedRight(), Action::Left)
         };
         let item = self.cache.get(&equipped);
 
         if item.kind().left_hand_ok() && item.kind().right_hand_ok() {
             log::info!(
-                "Attempting to equip '{}' in both hands by request.",
+                "Attempting to dual-wield '{}' by request.",
                 item.name()
             );
-            self.equip_item(&item, action);
+            if item.form_string().as_str() == "unarmed_proxy" {
+                unequipSlot(other_hand);
+                self.update_slot(HudElement::from(other_hand), &item);
+            } else {
+                self.equip_item(&item, other_hand);
+            }
             KeyEventResponse {
                 handled: true,
                 start_timer: Action::None,
                 stop_timer: action,
             }
         } else {
-            log::info!("Can't equip '{}' item in both hands!", item.name());
+            log::info!("Can't dual-wield '{}' item!", item.name());
             KeyEventResponse::default()
         }
     }
@@ -804,8 +809,8 @@ impl Controller {
         // We equip whatever the HUD is showing right now.
         let kind = item.kind();
         if matches!(kind, BaseType::HandToHand) {
-            log::info!("melee time! unequipping slot {which:?}");
-            if which == Action::Left {
+            log::info!("Melee time! Unequipping slot {which:?}");
+            if matches!(which, Action::Left) {
                 // TODO wasteful but better than a magic string?
                 self.left_hand_cached = HudItem::make_unarmed_proxy().form_string();
             } else {
@@ -888,11 +893,11 @@ impl Controller {
     pub fn handle_item_unequipped(
         &mut self,
         form_spec: &String,
-        _right: bool,
-        _left: bool,
+        right: bool,
+        left: bool,
     ) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
-        // log::debug!("item UNequipped; right={right}; left={left}; form_spec={form_spec};");
+        log::debug!("item UNequipped; right={right}; left={left}; form_spec={form_spec};");
         let right_vis = self.visible.get(&HudElement::Right);
         let left_vis = self.visible.get(&HudElement::Left);
         let empty = HudItem::default();
@@ -908,12 +913,12 @@ impl Controller {
 
         // This works for scrolls, spells, weapons, torches, and shields.
         if let Some(visible) = right_vis {
-            if visible.form_string() == *form_spec {
+            if right && visible.form_string() == *form_spec {
                 return self.update_slot(HudElement::Right, &empty);
             }
         }
         if let Some(visible) = left_vis {
-            if visible.form_string() == *form_spec {
+            if left && (visible.form_string() == *form_spec) {
                 return self.update_slot(HudElement::Left, &empty);
             }
         }
@@ -938,13 +943,13 @@ impl Controller {
         }
         let item = self.cache.get(form_spec);
         let prefix = if right && left {
-            "item equipped in both hands"
+            "Item equipped in both hands"
         } else if right {
-            "item equipped in right hand"
+            "Item equipped in right hand"
         } else if left {
-            "item equipped in left hand"
+            "Item equipped in left hand"
         } else {
-            "item equipped"
+            "Item equipped"
         };
         log::info!("{prefix}: name='{}'; form_spec='{form_spec}';", item.name());
 

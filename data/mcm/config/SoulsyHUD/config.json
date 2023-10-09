@@ -335,20 +335,10 @@
           }
         },
         {
-          "type": "hiddenToggle",
-          "text": "hidden toggle for show/hide setting groups",
-          "groupControl": 7,
-          "valueOptions": {
-            "sourceType": "PropertyValueBool",
-            "propertyName": "pAutoFadeGroupControl"
-          }
-        },
-        {
           "id": "uFadeTime:Options",
           "text": "$SoulsyHUD_Options_FadeTime_Text",
           "help": "$SoulsyHUD_Options_FadeTime_Help",
           "type": "slider",
-          "groupCondition": 7,
           "groupBehavior": "skip",
           "valueOptions": {
             "min": 500,
@@ -362,9 +352,6 @@
           "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
           "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
           "type": "keymap",
-          "groupCondition": {
-            "NOT": 7
-          },
           "groupBehavior": "skip",
           "valueOptions": {
             "sourceType": "ModSettingInt"

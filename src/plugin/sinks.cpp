@@ -46,6 +46,11 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 
 	worn_left  = left_eq ? left_eq->GetFormID() == form->GetFormID() : false;
 	worn_right = right_eq ? right_eq->GetFormID() == form->GetFormID() : false;
+	if (!event->equipped) {
+		// We want to know what we've already unequipped.
+		worn_right = !worn_right;
+		worn_left = !worn_left;
+	}
 
 	std::string form_spec = helpers::makeFormSpecString(form);
 	handle_item_equipped(event->equipped, form_spec, worn_right, worn_left);
