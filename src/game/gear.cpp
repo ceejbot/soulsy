@@ -173,7 +173,7 @@ namespace game
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, slot); });
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, nullptr, 1, slot); });
 		}
 	}
 

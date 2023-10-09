@@ -892,16 +892,17 @@ impl Controller {
 
     pub fn handle_item_unequipped(
         &mut self,
-        form_spec: &String,
-        right: bool,
-        left: bool,
+        unequipped_spec: &String,
+        equipped_right: &String,
+        equipped_left: &String,
     ) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
-        log::debug!("item UNequipped; right={right}; left={left}; form_spec={form_spec};");
+        // We ONLY ever empty a visible slot here.
+        log::debug!("item UNequipped; right={equipped_right}; left={equipped_left}; unequipped_spec={unequipped_spec};");
         let right_vis = self.visible.get(&HudElement::Right);
         let left_vis = self.visible.get(&HudElement::Left);
         let empty = HudItem::default();
-        let item = self.cache.get(form_spec);
+        let item = self.cache.get(unequipped_spec);
 
         match item.kind() {
             BaseType::Ammo(_) => return self.update_slot(HudElement::Ammo, &empty),
@@ -913,12 +914,12 @@ impl Controller {
 
         // This works for scrolls, spells, weapons, torches, and shields.
         if let Some(visible) = right_vis {
-            if right && visible.form_string() == *form_spec {
+            if (equipped_right != unequipped_spec) && *unequipped_spec == visible.form_string() {
                 return self.update_slot(HudElement::Right, &empty);
             }
         }
         if let Some(visible) = left_vis {
-            if left && (visible.form_string() == *form_spec) {
+            if (equipped_left != unequipped_spec) && *unequipped_spec == visible.form_string() {
                 return self.update_slot(HudElement::Left, &empty);
             }
         }
@@ -935,13 +936,15 @@ impl Controller {
         &mut self,
         equipped: bool,
         form_spec: &String,
-        right: bool,
-        left: bool,
+        equipped_right: &String,
+        equipped_left: &String,
     ) -> bool {
         if !equipped {
-            return self.handle_item_unequipped(form_spec, right, left);
+            return self.handle_item_unequipped(form_spec, equipped_right, equipped_left);
         }
         let item = self.cache.get(form_spec);
+        let right = form_spec == equipped_right;
+        let left = form_spec == equipped_left;
         let prefix = if right && left {
             "Item equipped in both hands"
         } else if right {
@@ -1027,7 +1030,7 @@ impl Controller {
         let rightie = specEquippedRight();
         let leftie = specEquippedLeft();
         log::trace!(
-            "form strings: item={}; equipped-right={}; requipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
+            "form strings: item={}; equipped-right={}; equipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
             item.form_string(),
             rightie,
             leftie,

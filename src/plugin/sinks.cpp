@@ -35,23 +35,12 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	auto* form = RE::TESForm::LookupByID(event->baseObject);
 	if (!form) { return event_result::kContinue; }
 
-	bool worn_right = false;
-	bool worn_left  = false;
-
-	// auto item = equippable::hudItemFromForm(form);
-
 	auto* player         = RE::PlayerCharacter::GetSingleton();
-	const auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-	const auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+	auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+	auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 
-	worn_left  = left_eq ? left_eq->GetFormID() == form->GetFormID() : false;
-	worn_right = right_eq ? right_eq->GetFormID() == form->GetFormID() : false;
-	if (!event->equipped) {
-		// We want to know what we've already unequipped.
-		worn_right = !worn_right;
-		worn_left = !worn_left;
-	}
-
+	std::string worn_right = helpers::makeFormSpecString(right_eq);
+	std::string worn_left = helpers::makeFormSpecString(left_eq);
 	std::string form_spec = helpers::makeFormSpecString(form);
 	handle_item_equipped(event->equipped, form_spec, worn_right, worn_left);
 

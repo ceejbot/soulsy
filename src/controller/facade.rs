@@ -105,7 +105,7 @@ pub fn update_hud() -> bool {
 }
 
 /// We know for sure the player just equipped this item.
-pub fn handle_item_equipped(equipped: bool, form_spec: &String, right: bool, left: bool) -> bool {
+pub fn handle_item_equipped(equipped: bool, form_spec: &String, right: &String, left: &String) -> bool {
     control::get().handle_item_equipped(equipped, form_spec, right, left)
 }
 

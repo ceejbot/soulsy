@@ -369,8 +369,8 @@ pub mod plugin {
         fn handle_item_equipped(
             equipped: bool,
             form_spec: &String,
-            right: bool,
-            left: bool,
+            worn_right: &String,
+            worn_left: &String,
         ) -> bool;
         /// Handle inventory-count changed events from the game.
         fn handle_inventory_changed(form_spec: &String, delta: i32);
