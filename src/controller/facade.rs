@@ -12,7 +12,7 @@ use cxx::CxxVector;
 use simplelog::*;
 
 use super::cycles::*;
-use super::settings::{user_settings, UserSettings};
+use super::settings::{settings, UserSettings};
 use crate::data::*;
 use crate::plugin::*;
 use crate::{control, hud_layout};
@@ -20,7 +20,7 @@ use crate::{control, hud_layout};
 // ---------- logging
 
 pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
-    let settings = user_settings();
+    let settings = settings();
     let log_level = if settings.debug() {
         LevelFilter::Trace
     } else {
@@ -41,11 +41,17 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
     }
 }
 
+// ---------- boxed user settings
+
+pub fn user_settings() -> Box<UserSettings> {
+    Box::new(settings())
+}
+
 // ---------- the controller itself
 
 /// Let's get this party started.
 pub fn initialize_hud() {
-    let settings = user_settings();
+    let settings = settings();
     log::info!("Reading and applying settings. Your settings are:");
     let mut ctrl = control::get();
     log::info!("{settings:?}");
@@ -105,7 +111,12 @@ pub fn update_hud() -> bool {
 }
 
 /// We know for sure the player just equipped this item.
-pub fn handle_item_equipped(equipped: bool, form_spec: &String, right: &String, left: &String) -> bool {
+pub fn handle_item_equipped(
+    equipped: bool,
+    form_spec: &String,
+    right: &String,
+    left: &String,
+) -> bool {
     control::get().handle_item_equipped(equipped, form_spec, right, left)
 }
 

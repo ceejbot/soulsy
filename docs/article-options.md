@@ -47,7 +47,7 @@ The HUD can help you switch to unarmed combat, or unequip your hands or shout, i
 - Modifier + cycle key unequips that slot. This also works for shouts & powers.
 - No unarmed support. (the default)
 
-If you select long-press here, you cannot long press to advance a cycle. If you pick the modifier key, make sure it's different from any cycle advance modifier key. As a keyboard user, I like long-press for this.
+If you select long-press here, you cannot long press to advance a cycle. If you pick the modifier key, make sure it's different from any cycle advance modifier key. As a keyboard user, I like a modifier for this.
 
 ![image](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1691440273-1546011560.jpeg)
 
@@ -55,6 +55,7 @@ If you select long-press here, you cannot long press to advance a cycle. If you 
 
 If you haven't already used long-press for cycling or for unequipping, you can enable a third option for using it. You can long-press the left or right cycle key to dual-wield whatever is in that hand, if it can be dual-wielded. For example, if you have a spell in your right hand, you can long-press the right cycle key to equip the same spell in your left hand. Or if you have a dagger in your left hand, long-press left to equip the same kind of dagger in your right. This fails if you don't have at least two of the weapon in your inventory, or if it's a weapon or spell that can't go into either hand.
 
+As a keyboard user, this is my preferred meaning for long-pressing a key.
 
 ## Utilities and consumables cycle
 
@@ -66,48 +67,48 @@ You have several choices for how you *activate* your readied utility item, simil
 
 ![ways to activate the readied consumable](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1691440340-550590049.jpeg)
 
-You can also change how the HUD treats potion consumables. Enable *Group potions* to add one potion for each of health, magicka, and stamina to the utilities cycle. When you activate the single potion, the HUD will pick the best potion that will restore the stat without wasting too much. Leave this disabled if you'd prefer to manage choosing potions yourself.
-
+You can also change how the HUD treats potion consumables. Enable *Group potions* to add one potion for each of health, magicka, and stamina to the utilities cycle. When you activate the single potion, the HUD will pick the best potion that will restore the stat without wasting too much. Leave this disabled if you'd prefer to manage choosing potions yourself. If you enable it, you'll see three grouped potions in the utilities cycle: Best Health, Best Magicka, and Best Stamina.
 
 ## Gameplay feel
+
+The next section lets you control how the HUD feels during gameplay.
 
 ![image](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1691440314-502106306.jpeg)
 
 
 ### Equip delay
 
-SoulsyHUD does not equip items immediately as you change cycles, because the animations played while equipping might take time you'd rather not spend. Instead it starts a timer for a fraction of a second, and keeps the timer going while you're tapping a cycle key. When you stop tapping, the timer fires and the item is equipped. You can set how long the HUD waits for you to stop tapping. Very short times make the HUD feel snappier, but you might also equip items you don't want to. Experiment with this to find out what time works for you.
+SoulsyHUD does not equip items immediately as you change cycles, because the animations played while equipping might take time you'd rather not spend. Instead it starts a timer for a fraction of a second, and keeps the timer going while you're tapping a cycle key. When you stop tapping, the timer fires and the item is equipped. You can set how long the HUD waits for you to stop tapping. Very short times make the HUD feel snappier, but you might also equip items you don't want to. Very long times give you a chance to think as you go. Experiment with this to find out what time works for you.
 
 The values here are in milliseconds. Delays from 500ms to 750ms work well for many players.
 
-## Slow-motion
+### Slow-motion
 
 You can optionally turn on slo-mo mode for cycling while in combat. This slows the game down by the factor you select while you're trying to figure out which item you want to equip. The game returns to normal speed once you're done tapping buttons. This is another way on top of the equip delay to give yourself a little time to think about what you're equipping if you're in a stressful situation.
 
-
+This option defaults to off, but many players will want to enable it.
 
 ## Showing and hiding the HUD
 
 You have two main choices here: whether you want to use a hotkey for toggling visibility, or whether you want the HUD to control its own visibility. If you choose auto-fade, the HUD will fade in when your weapons are drawn or you are in combat, and fade out when you're not. You can tweak the fade out time to your preference. The HUD always fades in twice as fast as it fades out.
 
-## Controller button display
+The HUD will also always show itself briefly when you tap a cycle key, to give you feedback about what changed.
 
-If you're using a controller to play, you can pick which kind of controller to show images for in the HUD's hotkeys display.
+## Display options
 
+Display docs here.
 
+### Controller button display
 
+If you're using a controller to play, you can pick which kind of controller to show images for in the HUD's hotkeys display. All keyboard keys are shown with a generic hint, so keyboard-only users won't need to pick an option here.s
 
+### Colorize icons
 
-The behavior options you can set are whether it should fade out if you're not in combat (or don't have your weapons drawn), how long it takes to fade out, how many items you can have in a cycle, and how quickly it reacts to tapping a cycle key. Slowing down the equip delay makes the equipping an item take longer, but it gives you more time between taps. I recommend trying a half-second or a bit more for this setting.
+SoulsyHUD can draw icons using colors if you find colors useful. For example, it'll draw fire damage spells with a red color, frost damage spells with a blue color, and shock spells with a yellow color. It will also use any color keywords added to items by Object Categorization Framework. If you find color useful or pleasant to look at, enable this option. If you disable the option, all icons will be drawn with the color your layout requests, which is usually white.
 
-All time delays are expressed in milliseconds, so you can get finicky here if you want to.
+## Equipment sets
 
-Soulsy offers you two ways to include unarmed combat in your cycles. First, there's an option to add unarmed directly to cycles, similar to the way iEquip handles it. Second, you can set a modifier key for switching to unarmed: press the modifier plus your left, right, or powers cycle key to unequip whatever you have equipped in that slot. 
-
-You can also set a modifier key to require with the activate-utility key. This option allows you to set cycle utility and activate utility to the same button if you're short on buttons.
-
-Finally, if you're really strapped, you can set up a modifier key required when you advance a cycle. For instance, if your D-pad keys are already in use, you could bind a shoulder key to this, then do shoulder + dpad to cycle.
-
+Equipset docs here.
 
 ## Previewing cycles
 

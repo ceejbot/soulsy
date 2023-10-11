@@ -8,7 +8,7 @@ use strfmt::strfmt;
 
 use super::cycles::*;
 use super::keys::*;
-use super::settings::{user_settings, ActivationMethod, UnarmedMethod};
+use super::settings::{settings, ActivationMethod, UnarmedMethod};
 use crate::data::item_cache::ItemCache;
 use crate::data::potion::PotionType;
 use crate::data::*;
@@ -92,7 +92,7 @@ impl Controller {
     }
 
     pub fn apply_settings(&mut self) {
-        let settings = user_settings();
+        let settings = settings();
 
         match settings.unarmed_handling() {
             UnarmedMethod::AddToCycles => {
@@ -200,7 +200,7 @@ impl Controller {
 
         // update count of magicka, health, or stamina potions if we're grouped
         // TODO magic strings
-        if kind.is_potion() && user_settings().group_potions() {
+        if kind.is_potion() && settings().group_potions() {
             if matches!(kind, BaseType::Potion(PotionType::Health)) {
                 let count = healthPotionCount();
                 self.cache.update_count("health_proxy", delta);
@@ -296,8 +296,8 @@ impl Controller {
             };
         }
 
-        let settings = user_settings();
-        if user_settings().autofade() {
+        let settings = settings();
+        if settings.autofade() {
             show_briefly();
         }
 
@@ -322,7 +322,7 @@ impl Controller {
                 }
             }
             HotkeyKind::ShowHide => {
-                if !user_settings().autofade() {
+                if !settings.autofade() {
                     self.cycles.toggle_hud();
                 }
                 KeyEventResponse {
@@ -336,7 +336,7 @@ impl Controller {
 
     // Just implementing these without worrying about generalizations yet.
     fn handle_cycle_power(&mut self) -> KeyEventResponse {
-        let settings = user_settings();
+        let settings = settings();
         let cycle_method = settings.how_to_cycle();
         match cycle_method {
             ActivationMethod::Hotkey => self.advance_simple_cycle(&CycleSlot::Power),
@@ -364,7 +364,7 @@ impl Controller {
     }
 
     fn handle_cycle_utility(&mut self) -> KeyEventResponse {
-        let settings = user_settings();
+        let settings = settings();
         let cycle_method = settings.how_to_cycle();
         let activation_method = settings.how_to_activate();
         let hotkey = self.get_tracked_key(&HotkeyKind::Utility);
@@ -448,7 +448,7 @@ impl Controller {
     }
 
     fn requested_hand_action(&self, hotkey: &HotkeyKind) -> HandAction {
-        let settings = user_settings();
+        let settings = settings();
         let tracked = self.get_tracked_key(hotkey);
         let is_long_press = tracked.is_long_press();
 
@@ -487,7 +487,7 @@ impl Controller {
     }
 
     fn handle_cycle_left(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
-        let settings = user_settings();
+        let settings = settings();
         let cycle_ammo = settings.cycle_ammo();
         let requested_action = self.requested_hand_action(hotkey);
 
@@ -535,10 +535,7 @@ impl Controller {
         let item = self.cache.get(&equipped);
 
         if item.kind().left_hand_ok() && item.kind().right_hand_ok() {
-            log::info!(
-                "Attempting to dual-wield '{}' by request.",
-                item.name()
-            );
+            log::info!("Attempting to dual-wield '{}' by request.", item.name());
             if item.form_string().as_str() == "unarmed_proxy" {
                 unequipSlot(other_hand);
                 self.update_slot(HudElement::from(other_hand), &item);
@@ -787,9 +784,33 @@ impl Controller {
     /// We do not act here on cascading changes. Instead, we let the equipped-change
     /// callback decide what to do when, e.g., a two-handed item is equipped.
     pub fn timer_expired(&mut self, which: Action) {
+        let tracked = self.get_tracked_key(&HotkeyKind::from(&which));
+
+        // Has a long press action timer fired? If so, we do the long press action
+        // for this key. We know there's one because we would not have started a
+        // timer if there wasn't.
+        match which {
+            Action::LongPressLeft => {
+                self.handle_cycle_left(&tracked.key);
+                return;
+            }
+            Action::LongPressPower => {
+                self.handle_cycle_power();
+                return;
+            }
+            Action::LongPressRight => {
+                self.handle_cycle_right(&tracked.key);
+                return;
+            }
+            Action::LongPressUtility => {
+                self.handle_cycle_utility();
+                return;
+            }
+            _ => {}
+        }
+
         let hud = HudElement::from(which);
-        let hotkey = self.get_tracked_key(&HotkeyKind::from(&which));
-        if hotkey.is_pressed() {
+        if tracked.is_pressed() {
             // Here's the reasoning. The player might be mid-long-press, in
             // which case we do not want to interrupt by equipping. The player
             // might be mid-short-tap, in which case the timer will get started
@@ -1216,7 +1237,7 @@ impl Controller {
         is_favorite: bool,
         item: HudItem,
     ) {
-        let settings = user_settings();
+        let settings = settings();
         if !settings.link_to_favorites() {
             return;
         }
@@ -1345,7 +1366,7 @@ impl Controller {
             return false;
         }
 
-        let settings = user_settings();
+        let settings = settings();
         let menu_method = settings.how_to_toggle();
 
         match menu_method {
@@ -1424,6 +1445,12 @@ impl Controller {
                 press_start: None,
             };
             tracked.update(button);
+            if tracked.needs_timer() {
+                // start timer with key as extra data
+                if let Ok(action) = Action::try_from(&tracked.key) {
+                    startTimer(action);
+                }
+            }
             self.tracked_keys.insert(hotkey.clone(), tracked);
         }
     }
@@ -1454,7 +1481,7 @@ impl Default for KeyEventResponse {
 impl From<u32> for Action {
     /// Turn the key code into an enum for easier processing.
     fn from(value: u32) -> Self {
-        let settings = user_settings();
+        let settings = settings();
 
         if value == settings.left() {
             Action::Left

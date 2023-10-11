@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 use anyhow::anyhow;
 use strum::Display;
 
-use crate::controller::user_settings;
+use super::settings::settings;
 use crate::plugin::{Action, ButtonEvent, HudElement};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Display)]
@@ -81,7 +81,7 @@ impl From<&Action> for HotkeyKind {
 
 impl From<u32> for HotkeyKind {
     fn from(v: u32) -> Self {
-        let settings = user_settings();
+        let settings = settings();
         if v == settings.power() {
             HotkeyKind::Power
         } else if v == settings.utility() {
@@ -170,11 +170,14 @@ impl TrackedKey {
     pub fn is_long_press(&self) -> bool {
         if let Some(start) = self.press_start {
             let elapsed_time = start.elapsed();
-            let settings = user_settings();
-            elapsed_time > Duration::from_millis(settings.long_press_ms().into())
+            elapsed_time > Duration::from_millis(settings().long_press_ms().into())
         } else {
             false
         }
+    }
+
+    pub fn needs_timer(&self) -> bool {
+        matches!(self.state, KeyState::Down) && settings().start_long_press_timer(&self.key)
     }
 
     pub fn is_up(&self) -> bool {

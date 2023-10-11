@@ -7,6 +7,8 @@ use strum::Display;
 
 use crate::plugin::HudElement;
 
+use super::keys::HotkeyKind;
+
 /// This is the path to players's modified settings.
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
 
@@ -17,12 +19,11 @@ static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
 static SETTINGS: Lazy<Mutex<UserSettings>> =
     Lazy::new(|| Mutex::new(UserSettings::new_from_file()));
 
-/// We hand a read-only copy to C++ for use.
-pub fn user_settings() -> Box<UserSettings> {
+pub fn settings() -> UserSettings {
     let settings = SETTINGS
         .lock()
         .expect("Unrecoverable runtime problem: cannot acquire settings lock.");
-    Box::new(settings.clone())
+    settings.clone()
 }
 
 /// Wrapper for C++ convenience; logs errors but does no more
@@ -41,7 +42,8 @@ pub fn refresh_user_settings() {
 ///
 /// These settings are read from an ini file managed by SkyUI's MCM, which provides
 /// a UX for changing values. We are responsible for reading it, but do not need to
-/// write it.
+/// write it. We only ever hand out clones of this object to enforce the idea that
+/// it's read-only.
 #[derive(Debug, Clone)]
 pub struct UserSettings {
     /// Whether to log at debug level or not.
@@ -254,6 +256,33 @@ impl UserSettings {
     }
     pub fn unequip_modifier(&self) -> i32 {
         self.unequip_modifier
+    }
+
+    pub fn start_long_press_timer(&self, key: &HotkeyKind) -> bool {
+        let is_hand_cycle = matches!(key, HotkeyKind::Left | HotkeyKind::Right);
+        let can_be_unequipped = matches!(
+            key,
+            HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right
+        );
+
+        // These three should be mutually exclusive, so order shouldn't matter.
+        // "should" ha ha ha
+        if self.long_press_matches() && is_hand_cycle {
+            return true;
+        }
+        if matches!(self.how_to_activate, ActivationMethod::LongPress)
+            && matches!(
+                key,
+                HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right | HotkeyKind::Utility
+            )
+        {
+            return true;
+        }
+        if matches!(self.unarmed_handling, UnarmedMethod::LongPress) && can_be_unequipped {
+            return true;
+        }
+
+        false
     }
 
     pub fn how_to_toggle(&self) -> &ActivationMethod {

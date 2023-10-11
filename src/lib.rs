@@ -194,6 +194,14 @@ pub mod plugin {
         ShowHide,
         /// Refresh the layout by re-reading the toml file.
         RefreshLayout,
+        /// Long press tracking for timers. The next 4 are menu timers.
+        LongPressLeft,
+        /// Long press the right cycle key.
+        LongPressRight,
+        /// Long press the powers/shouts key.
+        LongPressPower,
+        /// Long press the powers/shouts key.
+        LongPressUtility,
     }
 
     #[derive(Debug, Clone, Hash)]
@@ -431,6 +439,7 @@ pub mod plugin {
 
         fn resolutionWidth() -> f32;
         fn resolutionHeight() -> f32;
+        fn startTimer(which: Action);
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
