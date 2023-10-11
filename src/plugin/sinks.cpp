@@ -89,13 +89,13 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		if (response.stop_timer != Action::None)
 		{
 			logger::trace("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
-			ui::ui_renderer::stopTimer(response.stop_timer);
+			ui::stopTimer(response.stop_timer);
 		}
 
 		if (response.start_timer != Action::None)
 		{
 			logger::trace("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
-			ui::ui_renderer::startTimer(response.start_timer);
+			ui::startTimer(response.start_timer);
 		}
 
 	}  // end event handling for loop

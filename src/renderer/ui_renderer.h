@@ -23,6 +23,9 @@ namespace ui
 	float resolutionWidth();
 	float resolutionHeight();
 
+	void startTimer(Action which);
+	void stopTimer(Action which);
+
 	class ui_renderer
 	{
 		struct wnd_proc_hook
@@ -112,8 +115,6 @@ namespace ui
 
 		static void load_all_images();
 
-		static void startTimer(Action which);
-		static void stopTimer(Action which);
 		static void advanceTimers(float delta);
 		static void advanceTransition(float delta);
 		static void makeFadeDecision();

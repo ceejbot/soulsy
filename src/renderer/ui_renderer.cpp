@@ -867,7 +867,7 @@ namespace ui
 		if (cycle_timers.size() == 0) { helpers::exitSlowMotion(); }
 	}
 
-	void ui_renderer::startTimer(Action which)
+	void startTimer(Action which)
 	{
 		// We replace any existing timer for this slot.
 		auto settings = user_settings();
@@ -883,7 +883,7 @@ namespace ui
 	}
 
 	// remove timer from the map if it exists
-	void ui_renderer::stopTimer(Action which)
+	void stopTimer(Action which)
 	{
 		cycle_timers.erase(static_cast<uint8_t>(which));
 		if (cycle_timers.size() == 0) { helpers::exitSlowMotion(); }

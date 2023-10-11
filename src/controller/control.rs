@@ -1446,9 +1446,14 @@ impl Controller {
             };
             tracked.update(button);
             if tracked.needs_timer() {
-                // start timer with key as extra data
-                if let Ok(action) = Action::try_from(&tracked.key) {
-                    startTimer(action);
+                // long press timers
+                log::info!("starting a long press timer...");
+                match tracked.key {
+                    HotkeyKind::Left => startTimer(Action::LongPressLeft),
+                    HotkeyKind::Right => startTimer(Action::LongPressRight),
+                    HotkeyKind::Power => startTimer(Action::LongPressPower),
+                    HotkeyKind::Utility => startTimer(Action::LongPressUtility),
+                    _ => {},
                 }
             }
             self.tracked_keys.insert(hotkey.clone(), tracked);
