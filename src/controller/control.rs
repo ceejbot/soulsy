@@ -791,18 +791,22 @@ impl Controller {
         // timer if there wasn't.
         match which {
             Action::LongPressLeft => {
+                log::info!("long press left fired");
                 self.handle_cycle_left(&tracked.key);
                 return;
             }
             Action::LongPressPower => {
+                log::info!("long press power fired");
                 self.handle_cycle_power();
                 return;
             }
             Action::LongPressRight => {
+                log::info!("long press right fired");
                 self.handle_cycle_right(&tracked.key);
                 return;
             }
             Action::LongPressUtility => {
+                log::info!("long press utility fired");
                 self.handle_cycle_utility();
                 return;
             }
@@ -1448,12 +1452,13 @@ impl Controller {
             if tracked.needs_timer() {
                 // long press timers
                 log::info!("starting a long press timer...");
+                let duration = settings().long_press_ms();
                 match tracked.key {
-                    HotkeyKind::Left => startTimer(Action::LongPressLeft),
-                    HotkeyKind::Right => startTimer(Action::LongPressRight),
-                    HotkeyKind::Power => startTimer(Action::LongPressPower),
-                    HotkeyKind::Utility => startTimer(Action::LongPressUtility),
-                    _ => {},
+                    HotkeyKind::Left => startTimer(Action::LongPressLeft, duration),
+                    HotkeyKind::Right => startTimer(Action::LongPressRight, duration),
+                    HotkeyKind::Power => startTimer(Action::LongPressPower, duration),
+                    HotkeyKind::Utility => startTimer(Action::LongPressUtility, duration),
+                    _ => {}
                 }
             }
             self.tracked_keys.insert(hotkey.clone(), tracked);

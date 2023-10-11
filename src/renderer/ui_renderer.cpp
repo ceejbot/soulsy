@@ -706,12 +706,12 @@ namespace ui
 
 		// We must allow for the transition starting while the alpha is not pinned.
 		// Scale the transition time for how much of the shift remains.
-		auto alphaGap = std::fabs(gGoalAlpha - gHudAlpha);
+		auto alphaGap     = std::fabs(gGoalAlpha - gHudAlpha);
 		gFadeDurRemaining = alphaGap * gFullFadeDuration;
 		if (gFadeDurRemaining < 0.005f)
 		{
 			// Not enough time to bother fading. Just snap to the goal.
-			gHudAlpha = gGoalAlpha;
+			gHudAlpha         = gGoalAlpha;
 			gFadeDurRemaining = 0.0f;
 			return;
 		}
@@ -867,15 +867,14 @@ namespace ui
 		if (cycle_timers.size() == 0) { helpers::exitSlowMotion(); }
 	}
 
-	void startTimer(Action which)
+	void startTimer(Action which, uint32_t duration)
 	{
 		// We replace any existing timer for this slot.
-		auto settings = user_settings();
-		auto duration = settings->equip_delay_ms();  // this is in ms, so we'll divide...
+		// All incoming durations are in milliseconds, but our time deltas
+		// are floats where whole numbers are seconds. So we divide.s
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
-		logger::info("started equip delay timer; which={}; delay={};"sv,
-			static_cast<uint8_t>(which),
-			static_cast<float>(duration) / 1000.0f);
+		logger::info("started equip delay timer; which={}; duration={} ms;"sv, static_cast<uint8_t>(which), duration);
+		// TODO do not start slomo for long-presses???
 		if (settings->cycling_slows_time() && RE::PlayerCharacter::GetSingleton()->IsInCombat())
 		{
 			helpers::enterSlowMotion();

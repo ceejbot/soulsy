@@ -35,13 +35,13 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	auto* form = RE::TESForm::LookupByID(event->baseObject);
 	if (!form) { return event_result::kContinue; }
 
-	auto* player         = RE::PlayerCharacter::GetSingleton();
+	auto* player   = RE::PlayerCharacter::GetSingleton();
 	auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 	auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 
 	std::string worn_right = helpers::makeFormSpecString(right_eq);
-	std::string worn_left = helpers::makeFormSpecString(left_eq);
-	std::string form_spec = helpers::makeFormSpecString(form);
+	std::string worn_left  = helpers::makeFormSpecString(left_eq);
+	std::string form_spec  = helpers::makeFormSpecString(form);
 	handle_item_equipped(event->equipped, form_spec, worn_right, worn_left);
 
 	return event_result::kContinue;
@@ -95,7 +95,9 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		if (response.start_timer != Action::None)
 		{
 			logger::trace("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
-			ui::startTimer(response.start_timer);
+			auto settings = user_settings();
+			auto duration = settings->equip_delay_ms();
+			ui::startTimer(response.start_timer, duration);
 		}
 
 	}  // end event handling for loop

@@ -23,7 +23,7 @@ namespace ui
 	float resolutionWidth();
 	float resolutionHeight();
 
-	void startTimer(Action which);
+	void startTimer(Action which, uint32_t duration);
 	void stopTimer(Action which);
 
 	class ui_renderer

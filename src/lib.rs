@@ -439,7 +439,7 @@ pub mod plugin {
 
         fn resolutionWidth() -> f32;
         fn resolutionHeight() -> f32;
-        fn startTimer(which: Action);
+        fn startTimer(which: Action, duration: u32);
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
