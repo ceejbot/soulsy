@@ -281,10 +281,10 @@ impl Controller {
         // log::trace!("incoming key={}; state={};", hotkey, state);
 
         // We want all updates so we can track long presses.
-        self.update_tracked_key(&hotkey, button);
+        let keep_handling = self.update_tracked_key(&hotkey, button);
 
         // For mod keys, we're done.
-        if hotkey.is_modifier_key() {
+        if hotkey.is_modifier_key() || !keep_handling {
             return KeyEventResponse::default();
         }
 
@@ -1438,10 +1438,24 @@ impl Controller {
         }
     }
 
-    // watching the keys
-    fn update_tracked_key(&mut self, hotkey: &HotkeyKind, button: &ButtonEvent) {
-        if let Some(tracked) = self.tracked_keys.get_mut(hotkey) {
-            tracked.update(button);
+    // Update the state of a tracked key so we can handle modifier keys and long-presses.
+    // Returns whether the calling level should continue handling this key.
+    fn update_tracked_key(&mut self, hotkey: &HotkeyKind, button: &ButtonEvent) -> bool {
+        let mut retval = true;
+        let tracking_long_presses = settings().start_long_press_timer(hotkey);
+        let tracked = if let Some(previous) = self.tracked_keys.get_mut(hotkey) {
+            // We have seen this key before.
+            // Did this key just have a long-press event? if so, ignore a key-up.
+            // We ask this question before we update the tracking data.
+            if matches!(previous.state, KeyState::Pressed)
+                && previous.is_long_press()
+                && tracking_long_presses
+            {
+                retval = false;
+            }
+
+            previous.update(button);
+            previous.clone()
         } else {
             let mut tracked = TrackedKey {
                 key: hotkey.clone(),
@@ -1449,9 +1463,14 @@ impl Controller {
                 press_start: None,
             };
             tracked.update(button);
-            if tracked.needs_timer() {
-                // long press timers
-                log::info!("starting a long press timer...");
+            self.tracked_keys.insert(hotkey.clone(), tracked.clone());
+            tracked
+        };
+
+        // long press timers
+        if tracking_long_presses {
+            if matches!(tracked.state, KeyState::Down) {
+                log::info!("starting a long-press timer...");
                 let duration = settings().long_press_ms();
                 match tracked.key {
                     HotkeyKind::Left => startTimer(Action::LongPressLeft, duration),
@@ -1460,9 +1479,18 @@ impl Controller {
                     HotkeyKind::Utility => startTimer(Action::LongPressUtility, duration),
                     _ => {}
                 }
+            } else if matches!(tracked.state, KeyState::Up) {
+                log::info!("canceling any long-press timers");
+                match tracked.key {
+                    HotkeyKind::Left => stopTimer(Action::LongPressLeft),
+                    HotkeyKind::Right => stopTimer(Action::LongPressRight),
+                    HotkeyKind::Power => stopTimer(Action::LongPressPower),
+                    HotkeyKind::Utility => stopTimer(Action::LongPressUtility),
+                    _ => {}
+                }
             }
-            self.tracked_keys.insert(hotkey.clone(), tracked);
         }
+        retval
     }
 
     fn get_tracked_key(&self, hotkey: &HotkeyKind) -> TrackedKey {

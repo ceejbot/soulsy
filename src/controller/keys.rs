@@ -176,10 +176,6 @@ impl TrackedKey {
         }
     }
 
-    pub fn needs_timer(&self) -> bool {
-        matches!(self.state, KeyState::Down) && settings().start_long_press_timer(&self.key)
-    }
-
     pub fn is_up(&self) -> bool {
         matches!(self.state, KeyState::Up)
     }
