@@ -6,8 +6,9 @@ use std::time::{Duration, Instant};
 use anyhow::anyhow;
 use strum::Display;
 
-use super::settings::settings;
-use crate::plugin::{Action, ButtonEvent, HudElement};
+use super::control::RequestedAction;
+use super::settings::{settings, ActivationMethod, UnarmedMethod};
+use crate::plugin::{hasRangedEquipped, Action, ButtonEvent, HudElement};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Display)]
 pub enum CycleSlot {
@@ -50,6 +51,49 @@ impl HotkeyKind {
                 | HotkeyKind::MenuModifier
                 | HotkeyKind::UnequipModifier
         )
+    }
+
+    pub fn long_press_action(&self) -> RequestedAction {
+        let settings = settings();
+        let advance = matches!(settings.how_to_cycle(), ActivationMethod::LongPress);
+        let unequip = matches!(settings.unarmed_handling(), UnarmedMethod::LongPress);
+
+        if matches!(self, HotkeyKind::Power) {
+            if unequip {
+                RequestedAction::Unequip
+            } else if advance {
+                RequestedAction::Advance
+            } else {
+                RequestedAction::None
+            }
+        } else if matches!(self, HotkeyKind::Utility) {
+            let consume = matches!(settings.how_to_activate(), ActivationMethod::LongPress);
+            if consume {
+                RequestedAction::Consume
+            } else if advance {
+                RequestedAction::Advance
+            } else {
+                RequestedAction::None
+            }
+        } else if matches!(self, HotkeyKind::Left | HotkeyKind::Right) {
+            let dual_wield = settings.long_press_matches();
+            if unequip {
+                RequestedAction::Unequip
+            } else if dual_wield {
+                RequestedAction::Match
+            } else if advance {
+                if matches!(self, HotkeyKind::Left) && settings.cycle_ammo() && hasRangedEquipped()
+                {
+                    RequestedAction::AdvanceAmmo
+                } else {
+                    RequestedAction::Advance
+                }
+            } else {
+                RequestedAction::None
+            }
+        } else {
+            RequestedAction::None
+        }
     }
 }
 

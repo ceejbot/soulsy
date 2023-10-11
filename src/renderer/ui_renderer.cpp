@@ -871,7 +871,8 @@ namespace ui
 	{
 		// We replace any existing timer for this slot.
 		// All incoming durations are in milliseconds, but our time deltas
-		// are floats where whole numbers are seconds. So we divide.s
+		// are floats where whole numbers are seconds. So we divide.
+		const auto settings = user_settings();
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
 		logger::info("started equip delay timer; which={}; duration={} ms;"sv, static_cast<uint8_t>(which), duration);
 		// TODO do not start slomo for long-presses???
