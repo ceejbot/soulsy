@@ -38,6 +38,7 @@ pub struct Controller {
     left_hand_cached: String,
     /// We cache a right-hand form spec string similarly.
     right_hand_cached: String,
+    /// We need to track keystate to implement modifier keys.
     tracked_keys: HashMap<Hotkey, TrackedKey>,
 }
 
@@ -67,7 +68,7 @@ impl Controller {
         self.cycles.clear();
     }
 
-    // needs to be mut because the cache might be changed
+    // needs to be mut because the cache might have items added to it when we fetch
     pub fn cycle_names(&mut self, which: i32) -> Vec<String> {
         match which {
             0 => self.cycles.names(&CycleSlot::Power, &mut self.cache),
@@ -803,6 +804,7 @@ impl Controller {
         self.equip_item(item, which);
     }
 
+    /// Handle a long-press timer firing.
     fn handle_long_press(&mut self, which: Action) {
         match which {
             Action::LongPressLeft => {
@@ -830,20 +832,17 @@ impl Controller {
                 }
                 _ => {}
             },
-            Action::LongPressUtility => {
-                log::info!("long press utility fired");
-                match Hotkey::Utility.long_press_action() {
-                    RequestedAction::Advance => {
-                        self.handle_cycle_utility();
-                        stopTimer(Action::Utility);
-                    }
-                    RequestedAction::Consume => {
-                        self.use_utility_item();
-                        stopTimer(Action::Utility);
-                    }
-                    _ => {}
+            Action::LongPressUtility => match Hotkey::Utility.long_press_action() {
+                RequestedAction::Advance => {
+                    self.handle_cycle_utility();
+                    stopTimer(Action::Utility);
                 }
-            }
+                RequestedAction::Consume => {
+                    self.use_utility_item();
+                    stopTimer(Action::Utility);
+                }
+                _ => {}
+            },
             _ => {}
         }
     }
@@ -1189,14 +1188,17 @@ impl Controller {
         }
     }
 
+    /// The player has toggled a favorite. If our settings instruct us to link favorites
+    /// to cycle entries, we do so now. We do our best to assign items to the cycles where
+    /// they make the most sense. 90% of the work is contructing a useful feedback message
+    /// for the player about what we did.
     pub fn handle_favorite_event(
         &mut self,
         _button: &ButtonEvent,
         is_favorite: bool,
         item: HudItem,
     ) {
-        let settings = settings();
-        if !settings.link_to_favorites() {
+        if !settings().link_to_favorites() {
             return;
         }
 
@@ -1324,9 +1326,10 @@ impl Controller {
             return false;
         }
 
-        let settings = settings();
-        let menu_method = settings.how_to_toggle();
+        let options = settings();
+        let menu_method = options.how_to_toggle();
 
+        // TODO: this entry into the controller does NOT start long-press timers.
         match menu_method {
             ActivationMethod::Hotkey => true,
             ActivationMethod::LongPress => {

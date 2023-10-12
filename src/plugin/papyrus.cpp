@@ -31,6 +31,8 @@ namespace papyrus
 		a_vm->RegisterFunction("GetEquipSetIDs", MCM_NAME, getEquipSetIDs);
 		a_vm->RegisterFunction("GetEquipSetItemNames", MCM_NAME, getEquipSetItemNames);
 		a_vm->RegisterFunction("SetItemAsEquipSetIcon", MCM_NAME, setItemAsEquipSetIcon);
+		a_vm->RegisterFunction("FindSelectedSetID", MCM_NAME, findSelectedSetByName);
+
 		a_vm->RegisterFunction("StringToInt", MCM_NAME, stringToInt);
 
 		a_vm->RegisterFunction("GetCycleNames", MCM_NAME, getCycleNames);
@@ -77,6 +79,11 @@ namespace papyrus
 		// We would like to turn that into an integer equip set ID.
 		auto indexstr = std::string(idx);
 		return equipset_index_to_id(indexstr);
+	}
+
+	int findSelectedSetByName(RE::TESQuest*, RE::BSFixedString name)
+	{
+		return look_up_equipset_by_name(std::string(name));
 	}
 
 	RE::BSTArray<RE::BSFixedString> getEquipSetItemNames(RE::TESQuest*, uint32_t id)

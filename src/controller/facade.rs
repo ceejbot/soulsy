@@ -251,6 +251,12 @@ pub fn set_equipset_icon(id: u32, itemname: String) -> bool {
     control::get().set_equipset_icon(id, itemname)
 }
 
+/// Look up an equipset by name, returning its id. Since uniqueness is not
+/// really enforced for names, this returns the first one found.
+pub fn look_up_equipset_by_name(name: String) -> u32 {
+    control::get().cycles.equipset_by_name(name)
+}
+
 pub fn show_ui() -> bool {
     control::get().cycles.hud_visible()
 }

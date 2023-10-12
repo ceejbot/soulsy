@@ -32,6 +32,7 @@ bool function HandleRemoveEquipSet(int id) native
 string[] function GetEquipSetNames() native
 string[] function GetEquipSetIDs() native
 int function StringToInt(string number) native
+int function FindSelectedSetID(string name) native
 string[] function GetEquipSetItemNames(int id) native
 bool function SetItemAsEquipSetIcon(int id, string name) native
 
@@ -47,41 +48,21 @@ function CreateEquipSet()
 endFunction
 
 function UpdateEquipSetMenu()
-    ; string[] names = GetEquipSetNames()
-    string[] ids = GetEquipSetIDs()
-    if (ids.Length == 0)
-        ids = new string[2]
-        ids[0] = "$SoulsyHUD_NoEquipSets"
-        ids[1] = " "
-        ;names = new string[2]
-        ;names[0] = "$SoulsyHUD_NoEquipSets"
-        ;names[1] = ""
-    endif
-    SetMenuOptions("pEquipSetMenuSelection", ids);, a_shortNames = names)
-
-    pSelectedEquipSet = StringToInt(pEquipSetMenuSelection)
-    pSelectedEquipSetId = selectedSetID()
-    string selectedName = selectedSetName()
-    SetModSettingString("sLastEditedSetName:Equipsets", selectedName)
-endFunction
-
-int function selectedSetID()
-    string[] ids = GetEquipSetIds()
-	if ids.Length > pSelectedEquipSet
-		return StringToInt(ids[pSelectedEquipSet])
-	else
-		return -1
-	endif
-
-endFunction
-
-string function selectedSetName()
     string[] names = GetEquipSetNames()
-	if names.Length > pSelectedEquipSet
-		return names[pSelectedEquipSet]
-	else
-		return " "
-	endif
+    ;string[] ids = GetEquipSetIDs()
+    if (names.Length == 0)
+        ;ids = new string[2]
+        ;ids[0] = "$SoulsyHUD_NoEquipSets"
+        ;ids[1] = " "
+        names = new string[2]
+        names[0] = "$SoulsyHUD_NoEquipSets"
+        names[1] = ""
+    endif
+    ; MCMHelper crashes every time if you pass two arrays here. Alas.
+    SetMenuOptions("pEquipSetMenuSelection", names);
+
+    pSelectedEquipSetId = FindSelectedSetID(pEquipSetMenuSelection)
+    SetModSettingString("sLastEditedSetName:Equipsets", pEquipSetMenuSelection)
 endFunction
 
 function UpdateEquipSetItemMenu()
@@ -187,10 +168,8 @@ Event OnSettingChange(String changedID)
     elseif (changedId == "bAutoFade:Options")
         pAutoFadeGroupControl =  GetModSettingBool("bAutoFade:Options")
     elseif (changedId == "pEquipSetMenuSelection")
-        pSelectedEquipSet = StringToInt(pEquipSetMenuSelection)
-        pSelectedEquipSetId = selectedSetID()
-        string selectedName = selectedSetName()
-        SetModSettingString("sLastEditedSetName:Equipsets", selectedName)
+        pSelectedEquipSetId = FindSelectedSetID(pEquipSetMenuSelection)
+    	SetModSettingString("sLastEditedSetName:Equipsets", pEquipSetMenuSelection)
         UpdateEquipSetItemMenu()
     endif
 

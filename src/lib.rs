@@ -206,7 +206,6 @@ pub mod plugin {
         LongPressUtility,
         /// The equipset cycle hotkey.
         Equipment,
-
     }
 
     #[derive(Debug, Clone, Hash)]
@@ -414,6 +413,7 @@ pub mod plugin {
         fn equipped_data(items: Vec<String>, empty: Vec<u8>) -> Box<EquippedData>;
         fn get_equipset_item_names(id: u32) -> Vec<String>;
         fn set_equipset_icon(id: u32, itemname: String) -> bool;
+        fn look_up_equipset_by_name(name: String) -> u32;
     }
 
     #[namespace = "RE"]

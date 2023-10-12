@@ -311,10 +311,14 @@ impl CycleData {
         });
         log::info!("Equipment sets:");
         self.equipsets.iter().for_each(|xs| {
-            let names: Vec<String> = xs.items().iter().map(|xs| {
-                let item = cache.get(xs);
-                item.name()
-            }).collect();
+            let names: Vec<String> = xs
+                .items()
+                .iter()
+                .map(|xs| {
+                    let item = cache.get(xs);
+                    item.name()
+                })
+                .collect();
             log::info!("{}: {}", xs.id(), xs.name());
             log::info!("    {}", names.join(", "));
             log::info!("    {} empty slots", xs.empty_slots().len());
@@ -335,7 +339,13 @@ impl CycleData {
 
     pub fn add_equipset(&mut self, name: String, data: EquippedData) -> bool {
         let id = self.equipsets.find_next_id();
-        let set = EquipSet::new(id, name, data.items, data.empty_slots, "ArmorHeavy".to_string());
+        let set = EquipSet::new(
+            id,
+            name,
+            data.items,
+            data.empty_slots,
+            "ArmorHeavy".to_string(),
+        );
         self.equipsets.add(&set)
     }
 
@@ -369,6 +379,14 @@ impl CycleData {
 
     pub fn equipset_by_id(&self, id: u32) -> Option<EquipSet> {
         self.equipsets.get_by_id(id).cloned()
+    }
+
+    pub fn equipset_by_name(&mut self, name: String) -> u32 {
+        if let Some(set) = self.equipsets.iter().find(|xs| xs.name() == name) {
+            set.id()
+        } else {
+            0
+        }
     }
 
     pub fn set_icon_by_id(&mut self, id: u32, icon: Icon) -> bool {
@@ -546,7 +564,15 @@ pub mod cosave_v2 {
                 equipsets: value
                     .equipsets
                     .iter()
-                    .map(|xs| EquipSet::new(xs.0, xs.1.clone(), xs.2.to_vec(), xs.3.to_vec(), xs.4.clone()))
+                    .map(|xs| {
+                        EquipSet::new(
+                            xs.0,
+                            xs.1.clone(),
+                            xs.2.to_vec(),
+                            xs.3.to_vec(),
+                            xs.4.clone(),
+                        )
+                    })
                     .collect(),
                 loaded: true,
             }
