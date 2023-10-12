@@ -84,13 +84,12 @@ pub mod plugin {
         size: Point,
         /// The color to draw the HUD bg image with; if zero will not be drawn.
         bg_color: Color,
-        /// Swap the ammo slot in and the left hand slot out when ranged weapon
-        /// equipped.
+        /// Show ranged weapons in the left hand and ammo where the right hand is.
         #[serde(default)]
-        hide_ammo_when_irrelevant: bool,
-        /// Hide the left hand slot when a ranged weapon is equipped.
+        bow_left_ammo_right: bool,
+        /// Hide the right hand slot when a ranged weapon is equipped.
         #[serde(default)]
-        hide_left_when_irrelevant: bool,
+        hide_right_when_irrelevant: bool,
         /// One slot layout for each element. This wants to be map, not a vec,
         /// but the map types are not shareable.
         layouts: Vec<SlotLayout>,

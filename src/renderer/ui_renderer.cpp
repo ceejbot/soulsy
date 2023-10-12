@@ -385,10 +385,13 @@ namespace ui
 
 	void ui_renderer::drawAllSlots()
 	{
+		// This is the hot path in the mod. Be thrifty.
 		auto topLayout          = hud_layout();
 		auto anchor             = topLayout.anchor_point();
 		auto hudsize            = topLayout.size;
 		bool rangedEquipped     = player::hasRangedEquipped();
+		bool drawRight          = topLayout.bow_left_ammo_right ? !rangedEquipped : true;
+		bool drawAmmo           = topLayout.bow_left_ammo_right ? rangedEquipped : true;
 		const auto settings     = user_settings();
 		const auto screenWidth  = resolutionWidth();
 		const auto screenHeight = resolutionHeight();
@@ -418,14 +421,8 @@ namespace ui
 
 		for (auto slotLayout : topLayout.layouts)
 		{
-			if ((slotLayout.element == HudElement::Left) && topLayout.hide_left_when_irrelevant && rangedEquipped)
-			{
-				continue;
-			}
-			if ((slotLayout.element == HudElement::Ammo) && topLayout.hide_ammo_when_irrelevant && !rangedEquipped)
-			{
-				continue;
-			}
+			if ((slotLayout.element == HudElement::Right) && !drawRight) { continue; }
+			if ((slotLayout.element == HudElement::Ammo) && !drawAmmo) { continue; }
 
 			rust::Box<HudItem> entry = entry_to_show_in_slot(slotLayout.element);
 

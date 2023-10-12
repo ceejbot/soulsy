@@ -980,7 +980,7 @@ impl Controller {
         // the other decision happen as well. If the equip event was NOT driven
         // by the HUD, we have some more work to do.
 
-        log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+        log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander already equipped={}; item ranged={}; left_cached='{}'; right_cached='{}';",
             equipped,
             right,
             left,
@@ -988,6 +988,7 @@ impl Controller {
             item.kind(),
             item.two_handed(),
             self.two_hander_equipped,
+            item.kind().is_ranged(),
             self.left_hand_cached,
             self.right_hand_cached
         );

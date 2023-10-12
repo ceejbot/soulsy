@@ -112,6 +112,13 @@ impl BaseType {
             _ => BaseType::Empty,
         }
     }
+
+    pub fn is_ranged(&self) -> bool {
+        match self {
+            BaseType::Weapon(t) => t.is_ranged(),
+            _ => false,
+        }
+    }
 }
 
 pub fn color_from_keywords(keywords: &[String]) -> InvColor {

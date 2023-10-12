@@ -32,6 +32,13 @@ impl WeaponType {
         }
     }
 
+    pub fn is_ranged(&self) -> bool {
+        matches!(
+            self.icon,
+            Icon::WeaponBowShort | Icon::WeaponBow | Icon::WeaponCrossbow
+        )
+    }
+
     pub fn left_hand_ok(&self) -> bool {
         matches!(
             self.equiptype,
