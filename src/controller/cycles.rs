@@ -311,9 +311,13 @@ impl CycleData {
         });
         log::info!("Equipment sets:");
         self.equipsets.iter().for_each(|xs| {
+            let names: Vec<String> = xs.items().iter().map(|xs| {
+                let item = cache.get(xs);
+                item.name()
+            }).collect();
             log::info!("{}: {}", xs.id(), xs.name());
-            log::info!("    {}", xs.items.join(", "));
-            log::info!("    empty slots: {}", xs.empty_slots().iter().map(|xs| xs.to_string()).collect::<Vec<_>>().join(", "));
+            log::info!("    {}", names.join(", "));
+            log::info!("    {} empty slots", xs.empty_slots().len());
         });
         //log::info!("hud_visible: {}", self.hud_visible);
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");

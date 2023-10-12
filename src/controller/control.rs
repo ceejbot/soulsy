@@ -734,9 +734,6 @@ impl Controller {
         // Has a long press action timer fired? If so, we do the long press action
         // for this key. We know there's one because we would not have started a
         // timer if there wasn't.
-
-        log::debug!("timer_expired({which:?}");
-
         if matches!(
             which,
             Action::LongPressLeft
@@ -983,20 +980,20 @@ impl Controller {
         // the other decision happen as well. If the equip event was NOT driven
         // by the HUD, we have some more work to do.
 
-        log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
-            equipped,
-            right,
-            left,
-            item.name(),
-            item.kind(),
-            item.two_handed(),
-            self.two_hander_equipped,
-            self.left_hand_cached,
-            self.right_hand_cached
-        );
+        // log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+        //     equipped,
+        //     right,
+        //     left,
+        //     item.name(),
+        //     item.kind(),
+        //     item.two_handed(),
+        //     self.two_hander_equipped,
+        //     self.left_hand_cached,
+        //     self.right_hand_cached
+        // );
 
         if item.two_handed() {
-            log::trace!("we have a two-hander. we should exit after this block.");
+            // log::trace!("we have a two-hander. we should exit after this block.");
             let changed = self.update_slot(HudElement::Right, &item);
             if changed {
                 // Change was out of band. We need to react.
@@ -1011,15 +1008,15 @@ impl Controller {
 
         let rightie = specEquippedRight();
         let leftie = specEquippedLeft();
-        log::trace!(
-            "form strings: item={}; equipped-right={}; equipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
-            item.form_string(),
-            rightie,
-            leftie,
-            self.two_hander_equipped,
-            item.two_handed(),
-            item.name(),
-        );
+        // log::trace!(
+        //     "form strings: item={}; equipped-right={}; equipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
+        //     item.form_string(),
+        //     rightie,
+        //     leftie,
+        //     self.two_hander_equipped,
+        //     item.two_handed(),
+        //     item.name(),
+        // );
         let leftvis = self
             .visible
             .get(&HudElement::Left)
@@ -1427,7 +1424,6 @@ impl Controller {
         // long press timers
         if tracking_long_presses {
             if matches!(tracked.state, KeyState::Down) {
-                log::info!("starting a long-press timer...");
                 let duration = settings().long_press_ms();
                 match tracked.key {
                     Hotkey::Left => startTimer(Action::LongPressLeft, duration),
@@ -1437,7 +1433,6 @@ impl Controller {
                     _ => {}
                 }
             } else if matches!(tracked.state, KeyState::Up) {
-                log::info!("canceling any long-press timers");
                 match tracked.key {
                     Hotkey::Left => stopTimer(Action::LongPressLeft),
                     Hotkey::Right => stopTimer(Action::LongPressRight),

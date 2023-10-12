@@ -57,8 +57,12 @@ function UpdateEquipSetMenu()
         ;names[0] = "$SoulsyHUD_NoEquipSets"
         ;names[1] = ""
     endif
-
     SetMenuOptions("pEquipSetMenuSelection", ids);, a_shortNames = names)
+
+    pSelectedEquipSet = StringToInt(pEquipSetMenuSelection)
+    pSelectedEquipSetId = selectedSetID()
+    string selectedName = selectedSetName()
+    SetModSettingString("sLastEditedSetName:Equipsets", selectedName)
 endFunction
 
 int function selectedSetID()
@@ -187,6 +191,7 @@ Event OnSettingChange(String changedID)
         pSelectedEquipSetId = selectedSetID()
         string selectedName = selectedSetName()
         SetModSettingString("sLastEditedSetName:Equipsets", selectedName)
+        UpdateEquipSetItemMenu()
     endif
 
     int equipDelay = GetModSettingInt("uEquipDelay:Options")
@@ -196,8 +201,6 @@ Event OnSettingChange(String changedID)
     endif
 
     ForcePageReset()
-    UpdateEquipSetMenu()
-    UpdateEquipSetItemMenu()
 EndEvent
 
 Event OnConfigOpen()
@@ -219,7 +222,9 @@ Event OnConfigOpen()
     ForcePageReset()
 
     ShowCycleEntries(pCycleToShow)
+
     UpdateEquipSetMenu()
     UpdateEquipSetItemMenu()
+
     RefreshMenu()
 EndEvent
