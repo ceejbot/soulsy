@@ -137,6 +137,39 @@ impl ShoutType {
     pub fn variant(&self) -> &ShoutVariant {
         &self.variant
     }
+
+    pub fn translation(&self) -> &str {
+        match self.variant {
+            ShoutVariant::AnimalAllegiance => "Raan-mir-tah!",
+            ShoutVariant::AuraWhisper => "Laas-ya-nir.",
+            ShoutVariant::BattleFury => "Mid-vur-shaan!",
+            ShoutVariant::BecomeEthereal => "Feim-zii-gron!",
+            ShoutVariant::BendWill => "Gol-hah-dov!",
+            ShoutVariant::CallDragon => "Oh-ah-viing!",
+            ShoutVariant::CallOfValor => "Hun-kaal-zoor!",
+            ShoutVariant::ClearSkies => "Lok-vah-koor!",
+            ShoutVariant::Cyclone => "Ven-gaar-nos!",
+            ShoutVariant::Disarm => "Zun-haal-viik!",
+            ShoutVariant::Dismay => "Faas-ru-maar!",
+            ShoutVariant::DragonAspect => "Mul-qah-diiv!",
+            ShoutVariant::Dragonrend => "Joor-zah-frul!",
+            ShoutVariant::DrainVitality => "Gaan-lah-haas!",
+            ShoutVariant::ElementalFury => "Su-grah-dun!",
+            ShoutVariant::FireBreath => "Yol-toor-shul!",
+            ShoutVariant::FrostBreath => "Fo-krah-diin!!",
+            ShoutVariant::IceForm => "Iiz-slen-nus!",
+            ShoutVariant::KynesPeace => "Kaan-drem-ov!",
+            ShoutVariant::MarkedForDeath => "Krii-lun-aus!",
+            ShoutVariant::Slowtime => "Tiid-klo-ui!",
+            ShoutVariant::SoulTear => "Rii-vaaz-zol!",
+            ShoutVariant::StormCall => "Strun-bah-qo!",
+            ShoutVariant::SummonDurnehviir => "Dur-neh-viir!",
+            ShoutVariant::ThrowVoice => "Zul-mey-gut!",
+            ShoutVariant::UnrelentingForce => "Fus-ro-dah!",
+            ShoutVariant::WhirlwindSprint => "Wuld-nah-kest!!",
+            ShoutVariant::Unclassified => "This shout is new to me!",
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
