@@ -477,6 +477,8 @@ pub mod cosave_v2 {
         }
     }
 
+    type SerializedEquipSet = Vec<(u32, String, Vec<String>, Vec<u8>, String)>;
+
     /// The serialization format is a list of form strings. Two drivers for
     /// this choice: 1) It's compact. 2) It can be deserialized into any
     /// Rust type we want, thus making it not care about implementation details.
@@ -488,7 +490,7 @@ pub mod cosave_v2 {
         power: Vec<String>,
         utility: Vec<String>,
         // Vec of tuples of (id, name, Vec<formspec>, Vec<empty_slot>, icon_as_string)
-        equipsets: Vec<(u32, String, Vec<String>, Vec<u8>, String)>,
+        equipsets: SerializedEquipSet,
         hud_visible: bool,
     }
 
