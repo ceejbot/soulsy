@@ -83,8 +83,7 @@ impl Hotkey {
             } else if dual_wield {
                 RequestedAction::Match
             } else if advance {
-                if matches!(self, Hotkey::Left) && settings.cycle_ammo() && hasRangedEquipped()
-                {
+                if matches!(self, Hotkey::Left) && settings.cycle_ammo() && hasRangedEquipped() {
                     RequestedAction::AdvanceAmmo
                 } else {
                     RequestedAction::Advance

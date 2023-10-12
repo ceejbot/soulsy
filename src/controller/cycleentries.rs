@@ -275,40 +275,41 @@ impl UpdateableItemCycle for Vec<EquipSet> {
     }
 
     fn update_set(&mut self, id: u32, items: Vec<String>, empty: Vec<u8>) -> bool {
-        if let Ok(idx) = self.binary_search_by(|xs| xs.id.cmp(&id)) {
-            let Some(to_update) = self.get_mut(idx) else {
-                return false;
-            };
-            to_update.items = items;
-            to_update.empty = empty;
-            true
-        } else {
-            false
-        }
+        let Some(idx) = self.iter().position(|xs| xs.id == id) else {
+            log::info!("search for id {id} failed");
+            return false;
+        };
+        let Some(to_update) = self.get_mut(idx) else {
+            return false;
+        };
+        log::info!("Updating the items in equipment set '{}'.", to_update.name());
+        to_update.items = items;
+        to_update.empty = empty;
+        true
     }
 
     fn rename_by_id(&mut self, id: u32, name: String) -> bool {
-        if let Ok(idx) = self.binary_search_by(|xs| xs.id.cmp(&id)) {
-            let Some(to_update) = self.get_mut(idx) else {
-                return false;
-            };
-            to_update.set_name(name.as_str());
-            true
-        } else {
-            false
-        }
+        let Some(idx) = self.iter().position(|xs| xs.id == id) else {
+            return false;
+        };
+        let Some(to_update) = self.get_mut(idx) else {
+            return false;
+        };
+        log::info!("Renaming equipment set '{}' to '{}'.", to_update.name(), name);
+        to_update.set_name(name.as_str());
+        true
     }
 
     fn set_icon_by_id(&mut self, id: u32, icon: Icon) -> bool {
-        if let Ok(idx) = self.binary_search_by(|xs| xs.id.cmp(&id)) {
-            let Some(to_update) = self.get_mut(idx) else {
-                return false;
-            };
-            to_update.icon = icon;
-            true
-        } else {
-            false
-        }
+        let Some(idx) = self.iter().position(|xs| xs.id == id) else {
+            return false;
+        };
+        let Some(to_update) = self.get_mut(idx) else {
+            return false;
+        };
+        log::info!("Setting the icon for equipment set {} to {icon}.", to_update.name());
+        to_update.icon = icon;
+        true
     }
 
     fn get_by_id(&self, id: u32) -> Option<&EquipSet> {

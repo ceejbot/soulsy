@@ -5,9 +5,8 @@ use ini::Ini;
 use once_cell::sync::Lazy;
 use strum::Display;
 
-use crate::plugin::HudElement;
-
 use super::keys::Hotkey;
+use crate::plugin::HudElement;
 
 /// This is the path to players's modified settings.
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
@@ -30,10 +29,10 @@ pub fn settings() -> UserSettings {
 pub fn refresh_user_settings() {
     match UserSettings::refresh() {
         Ok(_) => {
-            log::info!("refreshed user settings after MCM edits");
+            log::info!("Refreshed user settings after MCM edits.");
         }
         Err(e) => {
-            log::warn!("failed to refresh user settings; using defaults; {e:?}");
+            log::warn!("Failed to refresh user settings; using defaults; {e:?}");
         }
     }
 }
@@ -270,10 +269,7 @@ impl UserSettings {
 
     pub fn start_long_press_timer(&self, key: &Hotkey) -> bool {
         let is_hand_cycle = matches!(key, Hotkey::Left | Hotkey::Right);
-        let can_be_unequipped = matches!(
-            key,
-            Hotkey::Left | Hotkey::Power | Hotkey::Right
-        );
+        let can_be_unequipped = matches!(key, Hotkey::Left | Hotkey::Power | Hotkey::Right);
 
         // These three should be mutually exclusive, so order shouldn't matter.
         // "should" ha ha ha

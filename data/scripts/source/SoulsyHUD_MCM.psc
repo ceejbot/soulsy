@@ -74,6 +74,7 @@ function UpdateEquipSetItemMenu()
     endif
 
     SetMenuOptions("pIconSourceSelection", items)
+    pIconSourceSelection = items[0]
 endFunction
 
 function UseSelectionAsIcon()

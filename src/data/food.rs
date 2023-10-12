@@ -26,7 +26,6 @@ impl HasIcon for FoodType {
 
 impl HasKeywords for FoodType {
     fn classify(_name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
-        log::info!("{keywords:?}");
         let color = super::base::color_from_keywords(&keywords);
         let tags = strings_to_keywords::<FoodKeywords>(&keywords);
         let containers = strings_to_keywords::<ContainerKeywords>(&keywords);
