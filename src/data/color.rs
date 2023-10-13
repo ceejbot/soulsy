@@ -1,6 +1,6 @@
 //! OCF color keywords associated with specific colors.
 
-use strum::{Display, EnumIter, IntoEnumIterator};
+use strum::{Display, EnumIter, EnumVariantNames, IntoEnumIterator};
 
 use crate::plugin::Color;
 
@@ -10,7 +10,7 @@ impl Color {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Display, EnumIter)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Display, EnumIter, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]
 pub enum InvColor {
     Aedric,
@@ -109,5 +109,16 @@ mod tests {
         assert_eq!(color, InvColor::Sun);
         let color = InvColor::try_from("OCF_InvColorDaedric").expect("aedric is a valid color");
         assert_eq!(color, InvColor::Daedric);
+    }
+}
+
+#[cfg(test)]
+pub fn random_color() -> InvColor {
+    use rand::prelude::*;
+    use strum::VariantNames;
+    if let Some(variant) = InvColor::VARIANTS.choose(&mut rand::thread_rng()) {
+        InvColor::try_from(*variant).unwrap_or(InvColor::Aedric)
+    } else {
+        InvColor::Shock
     }
 }

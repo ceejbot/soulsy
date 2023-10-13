@@ -23,6 +23,7 @@ pub mod plugin {
         Left,
         Right,
         Ammo,
+        EquipSet,
         None, // not drawn
     }
 
@@ -195,6 +196,7 @@ pub mod plugin {
         /// Refresh the layout by re-reading the toml file.
         RefreshLayout,
         /// Long press tracking for timers. The next 4 are menu timers.
+        /// The equipset cycle hotkey.
         LongPressLeft,
         /// Long press the right cycle key.
         LongPressRight,
@@ -202,6 +204,8 @@ pub mod plugin {
         LongPressPower,
         /// Long press the powers/shouts key.
         LongPressUtility,
+        /// The equipset cycle hotkey.
+        Equipment,
     }
 
     #[derive(Debug, Clone, Hash)]
@@ -235,6 +239,12 @@ pub mod plugin {
         start_timer: Action,
         /// Do we need to stop a timer?
         stop_timer: Action,
+    }
+
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    struct EquippedData {
+        items: Vec<String>,
+        empty_slots: Vec<u8>,
     }
 
     extern "Rust" {
@@ -288,11 +298,6 @@ pub mod plugin {
         /// Get the hud's anchor point, computed on the fly from the
         /// current screen size and layout data.
         fn anchor_point(self: &HudLayout) -> Point;
-        /// Clear all cycles on player request.
-        fn clear_cycles();
-        /// Get the names of the entries in the given cycle as a string.
-        fn get_cycle_names(which: i32) -> Vec<String>;
-        fn get_cycle_formids(which: i32) -> Vec<String>;
 
         /// NEW cycle entry type. This is opaque.
         type HudItem;
@@ -384,6 +389,31 @@ pub mod plugin {
         fn handle_inventory_changed(form_spec: &String, delta: i32);
         /// Favoriting & unfavoriting.
         fn handle_favorite_event(_button: &ButtonEvent, is_favorite: bool, _item: Box<HudItem>);
+        /// Clear all cycles on player request.
+        fn clear_cycles();
+        /// Get the names of the entries in the given cycle as a string.
+        fn get_cycle_names(which: i32) -> Vec<String>;
+        fn get_cycle_formids(which: i32) -> Vec<String>;
+        /// Get equip set names in order by id.
+        fn get_equipset_names() -> Vec<String>;
+        /// Get equip set ids.
+        fn get_equipset_ids() -> Vec<String>;
+        /// Turn a string representation of an index into the above array into the id as int.
+        fn equipset_index_to_id(idx: String) -> i32;
+        /// Create a new equipment set.
+        fn handle_create_equipset(name: String) -> bool;
+        /// Save an equipment set.
+        fn handle_update_equipset(id: u32) -> bool;
+        /// Rename an equipment set.
+        fn handle_rename_equipset(id: u32, name: String) -> bool;
+        /// Remove an equipment set.
+        fn handle_remove_equipset(id: u32) -> bool;
+        /// For papyrus: parse a string as an int.
+        fn string_to_int(number: String) -> i32;
+        fn equipped_data(items: Vec<String>, empty: Vec<u8>) -> Box<EquippedData>;
+        fn get_equipset_item_names(id: u32) -> Vec<String>;
+        fn set_equipset_icon(id: u32, itemname: String) -> bool;
+        fn look_up_equipset_by_name(name: String) -> u32;
     }
 
     #[namespace = "RE"]
@@ -472,8 +502,13 @@ pub mod plugin {
         fn hasRangedEquipped() -> bool;
         fn getAmmoInventory() -> Vec<String>;
 
+        /// Get a list of form specs for all equipped armor.
+        fn getEquippedItems() -> Box<EquippedData>;
+
         /// Unequip the relevant slot.
         fn unequipSlot(which: Action);
+        /// Unequip a slot identified by biped object slot.
+        fn unequipSlotByShift(shift: u8);
 
         /// Equip the shout matching the form spec.
         fn equipShout(form_spec: &CxxString);
@@ -483,9 +518,11 @@ pub mod plugin {
         fn equipWeapon(form_spec: &CxxString, which: Action);
         /// Re-equip an item in the left hand. This forces an un-equip first.
         fn reequipHand(which: Action, form_spec: &CxxString);
-        /// Equip the armor matching the form spec.
+        /// Toggle the armor matching the form spec.
+        fn toggleArmor(form_spec: &CxxString);
+        /// Equip the armor; do not toggle.
         fn equipArmor(form_spec: &CxxString);
-        /// Equip the amoo matching the form spec.
+        /// Equip the ammo matching the form spec.
         fn equipAmmo(form_spec: &CxxString);
         /// Potions great and small.
         fn consumePotion(form_spec: &CxxString);

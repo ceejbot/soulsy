@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::num::NonZeroUsize;
 use std::sync::Mutex;
 
 use cxx::let_cxx_string;
@@ -9,6 +8,7 @@ use strfmt::strfmt;
 use super::cycles::*;
 use super::keys::*;
 use super::settings::{settings, ActivationMethod, UnarmedMethod};
+use crate::cycleentries::*;
 use crate::data::item_cache::ItemCache;
 use crate::data::potion::PotionType;
 use crate::data::*;
@@ -38,7 +38,8 @@ pub struct Controller {
     left_hand_cached: String,
     /// We cache a right-hand form spec string similarly.
     right_hand_cached: String,
-    tracked_keys: HashMap<HotkeyKind, TrackedKey>,
+    /// We need to track keystate to implement modifier keys.
+    tracked_keys: HashMap<Hotkey, TrackedKey>,
 }
 
 impl Controller {
@@ -47,10 +48,7 @@ impl Controller {
         let cycles = CycleData::default();
         Controller {
             cycles,
-            cache: ItemCache::new(
-                NonZeroUsize::new(100)
-                    .expect("cats and dogs living together! 100 is not non-zero!"),
-            ),
+            cache: ItemCache::new(),
             visible: HashMap::new(),
             two_hander_equipped: false,
             left_hand_cached: "".to_string(),
@@ -70,7 +68,7 @@ impl Controller {
         self.cycles.clear();
     }
 
-    // needs to be mut because the cache might be changed
+    // needs to be mut because the cache might have items added to it when we fetch
     pub fn cycle_names(&mut self, which: i32) -> Vec<String> {
         match which {
             0 => self.cycles.names(&CycleSlot::Power, &mut self.cache),
@@ -98,8 +96,8 @@ impl Controller {
             UnarmedMethod::AddToCycles => {
                 let h2h = HudItem::make_unarmed_proxy();
                 self.cache.record(h2h.clone());
-                self.cycles.include_item(CycleSlot::Left, &h2h);
-                self.cycles.include_item(CycleSlot::Right, &h2h);
+                self.cycles.add_item(CycleSlot::Left, &h2h);
+                self.cycles.add_item(CycleSlot::Right, &h2h);
             }
             _ => {
                 // remove any item with h2h type from cycles
@@ -118,7 +116,7 @@ impl Controller {
             );
             let proxy = make_stamina_proxy();
             self.cache.record(proxy.clone());
-            self.cycles.include_item(CycleSlot::Utility, &proxy);
+            self.cycles.add_item(CycleSlot::Utility, &proxy);
 
             self.cycles.filter_kind(
                 &CycleSlot::Utility,
@@ -127,7 +125,7 @@ impl Controller {
             );
             let proxy = make_health_proxy();
             self.cache.record(proxy.clone());
-            self.cycles.include_item(CycleSlot::Utility, &proxy);
+            self.cycles.add_item(CycleSlot::Utility, &proxy);
 
             self.cycles.filter_kind(
                 &CycleSlot::Utility,
@@ -136,7 +134,7 @@ impl Controller {
             );
             let proxy = make_magicka_proxy();
             self.cache.record(proxy.clone());
-            self.cycles.include_item(CycleSlot::Utility, &proxy);
+            self.cycles.add_item(CycleSlot::Utility, &proxy);
         } else {
             let proxy = make_stamina_proxy();
             self.cycles.remove_item(CycleSlot::Utility, &proxy);
@@ -272,9 +270,9 @@ impl Controller {
     /// Returns an enum indicating what we did in response, so that the C++ layer can
     /// start a tick timer for cycle delay.
     pub fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
-        let hotkey = HotkeyKind::from(key);
+        let hotkey = Hotkey::from(key);
         let state = KeyState::from(button);
-        if matches!(hotkey, HotkeyKind::None) {
+        if matches!(hotkey, Hotkey::None) {
             return KeyEventResponse::default();
         }
 
@@ -293,30 +291,31 @@ impl Controller {
             return KeyEventResponse::handled();
         }
 
-        let settings = settings();
-        if settings.autofade() {
+        let le_options = settings();
+        if le_options.autofade() {
             show_briefly();
         }
 
         match hotkey {
-            HotkeyKind::Power => self.handle_cycle_power(),
-            HotkeyKind::Utility => self.handle_cycle_utility(),
-            HotkeyKind::Left => self.handle_cycle_left(&hotkey),
-            HotkeyKind::Right => self.handle_cycle_right(&hotkey),
-            HotkeyKind::Activate => {
-                let activation_method = settings.how_to_activate();
+            Hotkey::Power => self.handle_cycle_power(),
+            Hotkey::Utility => self.handle_cycle_utility(),
+            Hotkey::Left => self.handle_cycle_left(&hotkey),
+            Hotkey::Right => self.handle_cycle_right(&hotkey),
+            Hotkey::Equipment => self.handle_equipset_cycle(&hotkey),
+            Hotkey::Activate => {
+                let activation_method = le_options.how_to_activate();
                 if matches!(activation_method, ActivationMethod::Hotkey) {
                     self.use_utility_item()
                 } else {
                     KeyEventResponse::default()
                 }
             }
-            HotkeyKind::Refresh => {
+            Hotkey::Refresh => {
                 HudLayout::refresh();
                 KeyEventResponse::handled()
             }
-            HotkeyKind::ShowHide => {
-                if !settings.autofade() {
+            Hotkey::ShowHide => {
+                if !le_options.autofade() {
                     self.cycles.toggle_hud();
                 }
                 KeyEventResponse::handled()
@@ -333,7 +332,7 @@ impl Controller {
         if matches!(cycle_method, ActivationMethod::Hotkey) {
             self.advance_simple_cycle(&CycleSlot::Power)
         } else if matches!(cycle_method, ActivationMethod::Modifier) {
-            let hotkey = self.get_tracked_key(&HotkeyKind::CycleModifier);
+            let hotkey = self.get_tracked_key(&Hotkey::CycleModifier);
             if hotkey.is_pressed() {
                 self.advance_simple_cycle(&CycleSlot::Power)
             } else {
@@ -349,7 +348,7 @@ impl Controller {
         let settings = settings();
 
         if matches!(settings.how_to_activate(), ActivationMethod::Modifier) {
-            let modifier = self.get_tracked_key(&HotkeyKind::ActivateModifier);
+            let modifier = self.get_tracked_key(&Hotkey::ActivateModifier);
             if modifier.is_pressed() {
                 log::debug!("activating utilities/consumables");
                 return self.use_utility_item();
@@ -362,7 +361,7 @@ impl Controller {
             return self.advance_simple_cycle(&CycleSlot::Utility);
         }
         if matches!(cycle_method, ActivationMethod::Modifier) {
-            let modifier = self.get_tracked_key(&HotkeyKind::CycleModifier);
+            let modifier = self.get_tracked_key(&Hotkey::CycleModifier);
             if modifier.is_pressed() {
                 log::debug!("cycling utilities/consumables");
                 return self.advance_simple_cycle(&CycleSlot::Utility);
@@ -408,7 +407,7 @@ impl Controller {
         }
     }
 
-    fn requested_keyup_action(&self, hotkey: &HotkeyKind) -> RequestedAction {
+    fn requested_keyup_action(&self, hotkey: &Hotkey) -> RequestedAction {
         let settings = settings();
         let tracked = self.get_tracked_key(hotkey);
         let is_long_press = tracked.is_long_press();
@@ -417,7 +416,7 @@ impl Controller {
             UnarmedMethod::None => false,
             UnarmedMethod::LongPress => tracked.is_long_press(),
             UnarmedMethod::Modifier => {
-                let unequipmod = self.get_tracked_key(&HotkeyKind::UnequipModifier);
+                let unequipmod = self.get_tracked_key(&Hotkey::UnequipModifier);
                 unequipmod.is_pressed()
             }
             UnarmedMethod::AddToCycles => false,
@@ -431,7 +430,7 @@ impl Controller {
             ActivationMethod::Hotkey => true,
             ActivationMethod::LongPress => is_long_press,
             ActivationMethod::Modifier => {
-                let cyclemod = self.get_tracked_key(&HotkeyKind::CycleModifier);
+                let cyclemod = self.get_tracked_key(&Hotkey::CycleModifier);
                 cyclemod.is_pressed()
             }
         } {
@@ -441,13 +440,13 @@ impl Controller {
         }
     }
 
-    fn handle_cycle_right(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
+    fn handle_cycle_right(&mut self, hotkey: &Hotkey) -> KeyEventResponse {
         let requested_action = self.requested_keyup_action(hotkey);
         // The left hand needs these two steps separated. See next function.
         self.do_hand_action(requested_action, Action::Right, CycleSlot::Right)
     }
 
-    fn handle_cycle_left(&mut self, hotkey: &HotkeyKind) -> KeyEventResponse {
+    fn handle_cycle_left(&mut self, hotkey: &Hotkey) -> KeyEventResponse {
         let settings = settings();
         let cycle_ammo = settings.cycle_ammo();
         let requested_action = self.requested_keyup_action(hotkey);
@@ -736,9 +735,6 @@ impl Controller {
         // Has a long press action timer fired? If so, we do the long press action
         // for this key. We know there's one because we would not have started a
         // timer if there wasn't.
-
-        log::debug!("timer_expired({which:?}");
-
         if matches!(
             which,
             Action::LongPressLeft
@@ -750,7 +746,7 @@ impl Controller {
             return;
         }
 
-        let tracked = self.get_tracked_key(&HotkeyKind::from(&which));
+        let tracked = self.get_tracked_key(&Hotkey::from(&which));
         if tracked.is_pressed() {
             // Here's the reasoning. The player might be mid-long-press, in
             // which case we do not want to interrupt by equipping. The player
@@ -760,6 +756,11 @@ impl Controller {
         }
 
         let hud = HudElement::from(which);
+        if matches!(which, Action::Equipment) {
+            self.equip_selected_set();
+            return;
+        }
+
         let Some(item) = &self.visible.get(&hud) else {
             log::warn!(
                 "visible item in hud slot was None, which should not happen; slot={:?};",
@@ -772,7 +773,7 @@ impl Controller {
         // We equip whatever the HUD is showing right now.
         let kind = item.kind();
         if matches!(kind, BaseType::HandToHand) {
-            log::info!("Melee time! Unequipping slot {which:?}");
+            log::info!("Melee time! Unequipping slot {which:?} so you can go punch a dragon.");
             if matches!(which, Action::Left) {
                 // TODO wasteful but better than a magic string?
                 self.left_hand_cached = HudItem::make_unarmed_proxy().form_string();
@@ -803,23 +804,24 @@ impl Controller {
         self.equip_item(item, which);
     }
 
+    /// Handle a long-press timer firing.
     fn handle_long_press(&mut self, which: Action) {
         match which {
             Action::LongPressLeft => {
-                let do_this = HotkeyKind::Left.long_press_action();
+                let do_this = Hotkey::Left.long_press_action();
                 if !matches!(do_this, RequestedAction::None) {
                     self.do_hand_action(do_this, Action::Left, CycleSlot::Left);
                     stopTimer(Action::Left);
                 }
             }
             Action::LongPressRight => {
-                let do_this = HotkeyKind::Right.long_press_action();
+                let do_this = Hotkey::Right.long_press_action();
                 if !matches!(do_this, RequestedAction::None) {
                     self.do_hand_action(do_this, Action::Right, CycleSlot::Right);
                     stopTimer(Action::Right);
                 }
             }
-            Action::LongPressPower => match HotkeyKind::Power.long_press_action() {
+            Action::LongPressPower => match Hotkey::Power.long_press_action() {
                 RequestedAction::Advance => {
                     self.advance_simple_cycle(&CycleSlot::Power);
                     stopTimer(Action::Power);
@@ -830,20 +832,17 @@ impl Controller {
                 }
                 _ => {}
             },
-            Action::LongPressUtility => {
-                log::info!("long press utility fired");
-                match HotkeyKind::Utility.long_press_action() {
-                    RequestedAction::Advance => {
-                        self.handle_cycle_utility();
-                        stopTimer(Action::Utility);
-                    }
-                    RequestedAction::Consume => {
-                        self.use_utility_item();
-                        stopTimer(Action::Utility);
-                    }
-                    _ => {}
+            Action::LongPressUtility => match Hotkey::Utility.long_press_action() {
+                RequestedAction::Advance => {
+                    self.handle_cycle_utility();
+                    stopTimer(Action::Utility);
                 }
-            }
+                RequestedAction::Consume => {
+                    self.use_utility_item();
+                    stopTimer(Action::Utility);
+                }
+                _ => {}
+            },
             _ => {}
         }
     }
@@ -861,11 +860,11 @@ impl Controller {
         if kind.is_magic() || kind.left_hand_ok() || kind.right_hand_ok() {
             equipWeapon(&form_spec, which);
         } else if kind.is_armor() {
-            equipArmor(&form_spec);
+            toggleArmor(&form_spec);
         } else if matches!(kind, BaseType::Ammo(_)) {
             equipAmmo(&form_spec);
         } else {
-            log::info!("we did nothing with item {}", item);
+            log::info!("We did nothing with item {}. Probably a missing feature!", item);
         }
     }
 
@@ -980,20 +979,20 @@ impl Controller {
         // the other decision happen as well. If the equip event was NOT driven
         // by the HUD, we have some more work to do.
 
-        log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
-            equipped,
-            right,
-            left,
-            item.name(),
-            item.kind(),
-            item.two_handed(),
-            self.two_hander_equipped,
-            self.left_hand_cached,
-            self.right_hand_cached
-        );
+        // log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
+        //     equipped,
+        //     right,
+        //     left,
+        //     item.name(),
+        //     item.kind(),
+        //     item.two_handed(),
+        //     self.two_hander_equipped,
+        //     self.left_hand_cached,
+        //     self.right_hand_cached
+        // );
 
         if item.two_handed() {
-            log::trace!("we have a two-hander. we should exit after this block.");
+            // log::trace!("we have a two-hander. we should exit after this block.");
             let changed = self.update_slot(HudElement::Right, &item);
             if changed {
                 // Change was out of band. We need to react.
@@ -1008,15 +1007,15 @@ impl Controller {
 
         let rightie = specEquippedRight();
         let leftie = specEquippedLeft();
-        log::trace!(
-            "form strings: item={}; equipped-right={}; equipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
-            item.form_string(),
-            rightie,
-            leftie,
-            self.two_hander_equipped,
-            item.two_handed(),
-            item.name(),
-        );
+        // log::trace!(
+        //     "form strings: item={}; equipped-right={}; equipped-left={}; two-hander-equipped={}; two-handed={}; name='{}';",
+        //     item.form_string(),
+        //     rightie,
+        //     leftie,
+        //     self.two_hander_equipped,
+        //     item.two_handed(),
+        //     item.name(),
+        // );
         let leftvis = self
             .visible
             .get(&HudElement::Left)
@@ -1099,7 +1098,7 @@ impl Controller {
     /// Called by the HUD rendering loop in the ImGui code.
     pub fn entry_to_show_in_slot(&self, slot: HudElement) -> Box<HudItem> {
         let Some(candidate) = self.visible.get(&slot) else {
-            log::debug!("surprising: nothing in slot {slot:?}");
+            // log::debug!("nothing to draw in slot {slot:?}");
             return Box::<HudItem>::default();
         };
 
@@ -1189,14 +1188,17 @@ impl Controller {
         }
     }
 
+    /// The player has toggled a favorite. If our settings instruct us to link favorites
+    /// to cycle entries, we do so now. We do our best to assign items to the cycles where
+    /// they make the most sense. 90% of the work is contructing a useful feedback message
+    /// for the player about what we did.
     pub fn handle_favorite_event(
         &mut self,
         _button: &ButtonEvent,
         is_favorite: bool,
         item: HudItem,
     ) {
-        let settings = settings();
-        if !settings.link_to_favorites() {
+        if !settings().link_to_favorites() {
             return;
         }
 
@@ -1314,8 +1316,8 @@ impl Controller {
         // Much simpler than the cycle loop. We care if the cycle modifier key
         // is down (if one is set), and we care if the cycle button itself has
         // been pressed.
-        let hotkey = HotkeyKind::from(key);
-        if matches!(hotkey, HotkeyKind::None) {
+        let hotkey = Hotkey::from(key);
+        if matches!(hotkey, Hotkey::None) {
             return false;
         }
 
@@ -1324,9 +1326,10 @@ impl Controller {
             return false;
         }
 
-        let settings = settings();
-        let menu_method = settings.how_to_toggle();
+        let options = settings();
+        let menu_method = options.how_to_toggle();
 
+        // TODO: this entry into the controller does NOT start long-press timers.
         match menu_method {
             ActivationMethod::Hotkey => true,
             ActivationMethod::LongPress => {
@@ -1335,7 +1338,7 @@ impl Controller {
                 self.get_tracked_key(&hotkey).is_long_press()
             }
             ActivationMethod::Modifier => {
-                let modkey = self.get_tracked_key(&HotkeyKind::MenuModifier);
+                let modkey = self.get_tracked_key(&Hotkey::MenuModifier);
                 log::debug!(
                     "checking for menu modifier key pressed in menu; {modkey:?} => {}",
                     modkey.is_pressed()
@@ -1388,13 +1391,13 @@ impl Controller {
             cxx::let_cxx_string!(msg = message);
             notifyPlayer(&msg);
         } else {
-            log::debug!("no notification sent to player because message couldn't be formatted");
+            log::debug!("No notification sent to player because message couldn't be formatted");
         }
     }
 
     // Update the state of a tracked key so we can handle modifier keys and long-presses.
     // Returns whether the calling level should continue handling this key.
-    fn update_tracked_key(&mut self, hotkey: &HotkeyKind, button: &ButtonEvent) -> bool {
+    fn update_tracked_key(&mut self, hotkey: &Hotkey, button: &ButtonEvent) -> bool {
         let mut retval = true;
         let tracking_long_presses = settings().start_long_press_timer(hotkey);
         let tracked = if let Some(previous) = self.tracked_keys.get_mut(hotkey) {
@@ -1424,22 +1427,20 @@ impl Controller {
         // long press timers
         if tracking_long_presses {
             if matches!(tracked.state, KeyState::Down) {
-                log::info!("starting a long-press timer...");
                 let duration = settings().long_press_ms();
                 match tracked.key {
-                    HotkeyKind::Left => startTimer(Action::LongPressLeft, duration),
-                    HotkeyKind::Right => startTimer(Action::LongPressRight, duration),
-                    HotkeyKind::Power => startTimer(Action::LongPressPower, duration),
-                    HotkeyKind::Utility => startTimer(Action::LongPressUtility, duration),
+                    Hotkey::Left => startTimer(Action::LongPressLeft, duration),
+                    Hotkey::Right => startTimer(Action::LongPressRight, duration),
+                    Hotkey::Power => startTimer(Action::LongPressPower, duration),
+                    Hotkey::Utility => startTimer(Action::LongPressUtility, duration),
                     _ => {}
                 }
             } else if matches!(tracked.state, KeyState::Up) {
-                log::info!("canceling any long-press timers");
                 match tracked.key {
-                    HotkeyKind::Left => stopTimer(Action::LongPressLeft),
-                    HotkeyKind::Right => stopTimer(Action::LongPressRight),
-                    HotkeyKind::Power => stopTimer(Action::LongPressPower),
-                    HotkeyKind::Utility => stopTimer(Action::LongPressUtility),
+                    Hotkey::Left => stopTimer(Action::LongPressLeft),
+                    Hotkey::Right => stopTimer(Action::LongPressRight),
+                    Hotkey::Power => stopTimer(Action::LongPressPower),
+                    Hotkey::Utility => stopTimer(Action::LongPressUtility),
                     _ => {}
                 }
             }
@@ -1447,16 +1448,93 @@ impl Controller {
         retval
     }
 
-    fn get_tracked_key(&self, hotkey: &HotkeyKind) -> TrackedKey {
+    fn get_tracked_key(&self, hotkey: &Hotkey) -> TrackedKey {
         if let Some(tracked) = self.tracked_keys.get(hotkey) {
             tracked.clone()
         } else {
             TrackedKey {
-                key: HotkeyKind::None,
+                key: Hotkey::None,
                 state: KeyState::Up,
                 press_start: None,
             }
         }
+    }
+
+    /// Advance the equipment set and start the timer.
+    fn handle_equipset_cycle(&mut self, _hotkey: &Hotkey) -> KeyEventResponse {
+        // For now, no user interface drawn for equip sets. We just equip them.
+        let candidate = self.cycles.advance_equipset(1);
+        if let Some(_next) = candidate {
+            // self.update_slot(hud, &item);
+            KeyEventResponse {
+                handled: true,
+                start_timer: Action::Equipment,
+                stop_timer: Action::None,
+            }
+        } else {
+            KeyEventResponse {
+                handled: true,
+                ..Default::default()
+            }
+        }
+    }
+
+    /// Called when equipment timer expires: equip that equip set!
+    fn equip_selected_set(&mut self) {
+        let Some(equipset) = self.cycles.get_top_equipset() else {
+            return;
+        };
+        log::debug!(
+            "enter equip_selected_set(); top set = '{}'",
+            equipset.name()
+        );
+        if settings().equip_sets_unequip() {
+            equipset.empty_slots().iter().for_each(|shift| {
+                unequipSlotByShift(*shift);
+            });
+        }
+        equipset.items().iter().for_each(|item| {
+            let_cxx_string!(form_spec = item.identifier());
+            equipArmor(&form_spec);
+        });
+
+        let set = HudItem::for_equip_set(equipset.name(), equipset.id(), equipset.icon.clone());
+        self.update_slot(HudElement::EquipSet, &set);
+    }
+
+    pub fn get_equipset_item_names(&mut self, id: u32) -> Vec<String> {
+        if let Some(set) = self.cycles.equipset_by_id(id) {
+            set.items
+                .iter()
+                .map(|xs| {
+                    let item = self.cache.get(xs);
+                    item.name()
+                })
+                .collect()
+        } else {
+            Vec::new()
+        }
+    }
+
+    /// The named item should be in the given equip set.
+    pub fn set_equipset_icon(&mut self, id: u32, itemname: String) -> bool {
+        let Some(set) = self.cycles.equipset_by_id(id) else {
+            return false;
+        };
+
+        let found: Option<HudItem> = set.items.iter().find_map(|xs| {
+            let item = self.cache.get(xs);
+            if item.name() == itemname {
+                Some(item)
+            } else {
+                None
+            }
+        });
+        let Some(source) = found else {
+            return false;
+        };
+        let icon = source.icon().clone();
+        self.cycles.set_icon_by_id(id, icon)
     }
 }
 
@@ -1499,6 +1577,8 @@ impl From<u32> for Action {
             Action::ShowHide
         } else if value == settings.refresh_layout() {
             Action::RefreshLayout
+        } else if value == settings.equipset() as u32 {
+            Action::Equipment
         } else {
             Action::None
         }

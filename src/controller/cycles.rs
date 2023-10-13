@@ -5,13 +5,15 @@ use std::fmt::Display;
 use cxx::CxxVector;
 
 use super::control::MenuEventResponse;
+use super::cycleentries::*;
 use super::keys::CycleSlot;
 use super::user_settings;
+use crate::data::icons::Icon;
 use crate::data::item_cache::ItemCache;
 use crate::data::{BaseType, HudItem, IsHudItem};
 use crate::plugin::{
     hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
-    startAlphaTransition,
+    startAlphaTransition, EquippedData,
 };
 
 /// Manage the player's configured item cycles. Track changes, persist data in
@@ -21,15 +23,17 @@ use crate::plugin::{
 pub struct CycleData {
     /// Vec of item formspecs. A formspec looks like "mod.esp|0xdeadbeef":
     /// mod esp file and form id delimited by |.
-    left: Vec<String>,
+    pub left: Vec<String>,
     /// Right hand cycle formspecs.
     right: Vec<String>,
     /// Shouts and powers cycle formspecs.
     power: Vec<String>,
     /// Utility items and consumables formspecs.
     utility: Vec<String>,
+    /// Equipment sets.
+    equipsets: Vec<EquipSet>,
     /// Was the hud visible when we saved?
-    hud_visible: bool,
+    pub hud_visible: bool,
     /// Was this cycle loaded from a cosave or are we operating on defaults?
     pub loaded: bool,
 }
@@ -41,6 +45,7 @@ impl Default for CycleData {
             right: Default::default(),
             power: Default::default(),
             utility: Default::default(),
+            equipsets: Default::default(),
             hud_visible: true,
             loaded: false,
         }
@@ -48,24 +53,37 @@ impl Default for CycleData {
 }
 
 impl CycleData {
+    /// Clear all cycles, including the equipsets.
     pub fn clear(&mut self) {
         self.power.clear();
         self.utility.clear();
         self.left.clear();
         self.right.clear();
+        self.equipsets.clear();
     }
 
-    pub fn names(&self, which: &CycleSlot, cache: &mut ItemCache) -> Vec<String> {
-        let cycle = match which {
+    /// Internal use only. Get a mutable reference to the named cycle.
+    fn get_cycle_mut(&mut self, which: &CycleSlot) -> &mut Vec<String> {
+        match which {
+            CycleSlot::Power => &mut self.power,
+            CycleSlot::Left => &mut self.left,
+            CycleSlot::Right => &mut self.right,
+            CycleSlot::Utility => &mut self.utility,
+        }
+    }
+
+    /// Internal use only. Get the cycle for the given slot for reads.
+    fn get_cycle(&self, which: &CycleSlot) -> &Vec<String> {
+        match which {
             CycleSlot::Power => &self.power,
             CycleSlot::Left => &self.left,
             CycleSlot::Right => &self.right,
             CycleSlot::Utility => &self.utility,
-        };
-        cycle
-            .iter()
-            .filter_map(|xs| cache.get_or_none(xs.as_str()).map(|xs| xs.name()))
-            .collect::<Vec<_>>()
+        }
+    }
+
+    pub fn names(&self, which: &CycleSlot, cache: &mut ItemCache) -> Vec<String> {
+        self.get_cycle(which).names(cache)
     }
 
     pub fn formids(&self, which: &CycleSlot) -> Vec<String> {
@@ -83,72 +101,23 @@ impl CycleData {
     /// Called when the player presses a hotkey bound to one of the cycle slots.
     /// This does not equip or try to use the item in any way. It's pure management.
     pub fn advance(&mut self, which: &CycleSlot, amount: usize) -> Option<String> {
-        let cycle = match which {
-            CycleSlot::Power => &mut self.power,
-            CycleSlot::Left => &mut self.left,
-            CycleSlot::Right => &mut self.right,
-            CycleSlot::Utility => &mut self.utility,
-        };
-        if cycle.is_empty() {
-            return None;
-        }
-        cycle.rotate_left(amount);
-        cycle.first().cloned()
+        self.get_cycle_mut(which).advance(amount)
     }
 
+    /// Advance the given cycle, skipping over the passed-in item if necessary.
     pub fn advance_skipping(&mut self, which: &CycleSlot, skip: HudItem) -> Option<String> {
-        let cycle = match which {
-            CycleSlot::Power => &mut self.power,
-            CycleSlot::Left => &mut self.left,
-            CycleSlot::Right => &mut self.right,
-            CycleSlot::Utility => &mut self.utility,
-        };
-        if cycle.is_empty() {
-            return None;
-        }
-
-        cycle.rotate_left(1);
-        let candidate = cycle.iter().find(|xs| *xs != &skip.form_string());
-        if let Some(v) = candidate {
-            let result = v.clone();
-            self.set_top(which, &result);
-            Some(result)
-        } else {
-            log::trace!("advance skip found nothing?????");
-            None
-        }
+        self.get_cycle_mut(which).advance_skipping(&skip)
     }
 
+    /// Advance the right-hand cycle skipping over all two-handed items to the next one-hander.
     pub fn advance_skipping_twohanders(&mut self, cache: &mut ItemCache) -> Option<String> {
-        // This can only be called for the right hand.
-        if self.right.is_empty() {
-            return None;
-        }
-
-        // This requires cache lookups.
-        self.right.rotate_left(1);
-        let candidate = self.right.iter().find(|xs| {
-            let item = cache.get(xs);
-            !item.two_handed()
-        });
-        if let Some(v) = candidate {
-            let result = v.clone();
-            self.set_top(&CycleSlot::Right, &result);
-            Some(result)
-        } else {
-            log::trace!("no one-handers in the right cycle");
-            None
-        }
+        // This is only relevant for the right hand.
+        self.right.advance_skipping_twohanders(cache)
     }
 
     /// Get the length of the given cycle.
     pub fn cycle_len(&self, which: &CycleSlot) -> usize {
-        match which {
-            CycleSlot::Power => self.power.len(),
-            CycleSlot::Left => self.left.len(),
-            CycleSlot::Right => self.right.len(),
-            CycleSlot::Utility => self.utility.len(),
-        }
+        self.get_cycle(which).len()
     }
 
     /// Attempt to set the current item in a cycle to the given form spec (mod.esp|formid).
@@ -156,45 +125,18 @@ impl CycleData {
     /// Responds with the entry for the item that ends up being the current for that
     /// cycle, and None if the cycle is empty. If the item is not found, we do not
     /// change the state of the cycle in any way.
-    pub fn set_top(&mut self, which: &CycleSlot, form_spec: &String) {
-        let cycle = match which {
-            CycleSlot::Power => &mut self.power,
-            CycleSlot::Left => &mut self.left,
-            CycleSlot::Right => &mut self.right,
-            CycleSlot::Utility => &mut self.utility,
-        };
-
-        if let Some(idx) = cycle.iter().position(|xs| xs == form_spec) {
-            cycle.rotate_left(idx);
-        }
+    pub fn set_top(&mut self, which: &CycleSlot, form_spec: &str) {
+        self.get_cycle_mut(which).set_top(form_spec);
     }
 
     /// What's next in the given cycle?
     pub fn get_top(&self, which: &CycleSlot) -> Option<String> {
-        let cycle = match which {
-            CycleSlot::Power => &self.power,
-            CycleSlot::Left => &self.left,
-            CycleSlot::Right => &self.right,
-            CycleSlot::Utility => &self.utility,
-        };
-
-        cycle.first().cloned()
+        self.get_cycle(which).top().map(|xs| xs.identifier())
     }
 
     /// Peek at the next item without advancing.
     pub fn peek_next(&self, which: &CycleSlot) -> Option<String> {
-        let cycle = match which {
-            CycleSlot::Power => &self.power,
-            CycleSlot::Left => &self.left,
-            CycleSlot::Right => &self.right,
-            CycleSlot::Utility => &self.utility,
-        };
-
-        if cycle.len() == 1 {
-            cycle.first().cloned()
-        } else {
-            cycle.get(1).cloned()
-        }
+        self.get_cycle(which).peek_next().map(|xs| xs.identifier())
     }
 
     /// Toggle the presence of the given item in the given cycle.
@@ -236,102 +178,52 @@ impl CycleData {
 
         // We have at most 20 items, so we do this blithely.
         let settings = user_settings();
-        if let Some(idx) = cycle.iter().position(|xs| *xs == item.form_string()) {
-            cycle.remove(idx);
+        let spec = item.form_string();
+        if cycle.includes(&spec) {
+            cycle.delete(&spec);
             MenuEventResponse::ItemRemoved
         } else if cycle.len() >= settings.maxlen() as usize {
             return MenuEventResponse::TooManyItems;
         } else {
-            cycle.push(item.form_string());
+            cycle.add(&spec);
             MenuEventResponse::ItemAdded
         }
     }
 
     pub fn remove_zero_count_items(&mut self, form_spec: &str, kind: &BaseType, count: u32) {
         // If count is zero, remove from any cycles it's in.
-        // If count is zero and item is equipped, advance the relevant cycle.
+        // If count is zero and item is equipped, advance the relevant cycle. <-- not happening erk
         if count > 0 {
             return;
         }
 
         if kind.is_utility() {
-            self.utility.retain(|xs| xs != form_spec);
+            self.utility.filter_id(form_spec);
         }
         if kind.left_hand_ok() {
-            self.left.retain(|xs| xs != form_spec);
+            self.utility.filter_id(form_spec);
         }
         if kind.right_hand_ok() {
-            self.right.retain(|xs| xs != form_spec);
+            self.utility.filter_id(form_spec);
         }
     }
 
+    /// Check if the given cycle includes the example item or not.
     pub fn includes(&self, which: &CycleSlot, item: &HudItem) -> bool {
-        let cycle = match which {
-            CycleSlot::Power => &self.power,
-            CycleSlot::Left => &self.left,
-            CycleSlot::Right => &self.right,
-            CycleSlot::Utility => &self.utility,
-        };
-        cycle.iter().any(|xs| *xs == item.form_string())
+        self.get_cycle(which).includes(&item.form_string())
     }
 
-    pub fn include_item(&mut self, which: CycleSlot, item: &HudItem) -> bool {
-        let cycle = match which {
-            CycleSlot::Power => &mut self.power,
-            CycleSlot::Left => &mut self.left,
-            CycleSlot::Right => &mut self.right,
-            CycleSlot::Utility => &mut self.utility,
-        };
-        let form = item.form_string();
-        if cycle.iter().any(|xs| xs == &form) {
-            false // we've already got one
-        } else {
-            cycle.push(form);
-            true
-        }
-    }
-
+    /// Make sure the given cycle includes this item, adding it if it does not.
     pub fn add_item(&mut self, which: CycleSlot, item: &HudItem) -> bool {
-        let cycle = match which {
-            CycleSlot::Power => &mut self.power,
-            CycleSlot::Left => &mut self.left,
-            CycleSlot::Right => &mut self.right,
-            CycleSlot::Utility => &mut self.utility,
-        };
-        let form = item.form_string();
-        if cycle.iter().any(|xs| xs == &form) {
-            false
-        } else {
-            cycle.push(form);
-            true
-        }
+        self.get_cycle_mut(&which).add(&item.form_string())
     }
 
     pub fn remove_item(&mut self, which: CycleSlot, item: &HudItem) -> bool {
-        let cycle = match which {
-            CycleSlot::Power => &mut self.power,
-            CycleSlot::Left => &mut self.left,
-            CycleSlot::Right => &mut self.right,
-            CycleSlot::Utility => &mut self.utility,
-        };
-
-        let form = item.form_string();
-        let orig_len = cycle.len();
-        cycle.retain(|xs| *xs != form);
-        orig_len != cycle.len()
+        self.get_cycle_mut(&which).delete(&item.form_string())
     }
 
     pub fn filter_kind(&mut self, which: &CycleSlot, unwanted: &BaseType, cache: &mut ItemCache) {
-        let cycle = match which {
-            CycleSlot::Power => &mut self.power,
-            CycleSlot::Left => &mut self.left,
-            CycleSlot::Right => &mut self.right,
-            CycleSlot::Utility => &mut self.utility,
-        };
-        cycle.retain(|xs| {
-            let found = cache.get(xs);
-            found.kind() != unwanted
-        });
+        self.get_cycle_mut(which).filter_kind(unwanted, cache);
     }
 
     pub fn set_hud_visible(&mut self, visible: bool) {
@@ -378,7 +270,7 @@ impl CycleData {
                 .iter()
                 .filter_map(|incoming| {
                     let spec = incoming.clone();
-                    let item = cache.get(&spec);
+                    let item = cache.get(&spec.identifier()); // works if vec of HudItem or vec<string>
 
                     cxx::let_cxx_string!(form_spec = spec.clone());
                     if hasItemOrSpell(&form_spec) {
@@ -417,30 +309,120 @@ impl CycleData {
                 }
             }
         });
+        log::info!("Equipment sets:");
+        self.equipsets.iter().for_each(|xs| {
+            let names: Vec<String> = xs
+                .items()
+                .iter()
+                .map(|xs| {
+                    let item = cache.get(xs);
+                    item.name()
+                })
+                .collect();
+            log::info!("{}: {}", xs.id(), xs.name());
+            log::info!("    {}", names.join(", "));
+            log::info!("    {} empty slots", xs.empty_slots().len());
+        });
         //log::info!("hud_visible: {}", self.hud_visible);
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
+    }
+
+    // equipset cycling
+
+    pub fn get_top_equipset(&self) -> Option<EquipSet> {
+        self.equipsets.top()
+    }
+
+    pub fn advance_equipset(&mut self, amount: usize) -> Option<EquipSet> {
+        self.equipsets.advance(amount)
+    }
+
+    pub fn add_equipset(&mut self, name: String, data: EquippedData) -> bool {
+        let id = self.equipsets.find_next_id();
+        let set = EquipSet::new(
+            id,
+            name,
+            data.items,
+            data.empty_slots,
+            "ArmorHeavy".to_string(),
+        );
+        self.equipsets.add(&set)
+    }
+
+    pub fn update_equipset(&mut self, id: u32, data: EquippedData) -> bool {
+        self.equipsets.update_set(id, data.items, data.empty_slots)
+    }
+
+    pub fn remove_equipset(&mut self, id: String) -> bool {
+        self.equipsets.filter_id(id.as_str())
+    }
+
+    pub fn rename_equipset(&mut self, id: u32, name: String) -> bool {
+        self.equipsets.rename_by_id(id, name)
+    }
+
+    pub fn equipset_names(&self) -> Vec<String> {
+        let mut sorted = self.equipsets.clone();
+        sorted.sort_by_key(|xs| xs.id());
+        sorted.iter().map(|xs| xs.name()).collect()
+    }
+
+    pub fn equipset_ids(&self) -> Vec<u32> {
+        let mut ids = self
+            .equipsets
+            .iter()
+            .map(|xs| xs.id())
+            .collect::<Vec<u32>>();
+        ids.sort();
+        ids
+    }
+
+    pub fn equipset_by_id(&self, id: u32) -> Option<EquipSet> {
+        self.equipsets.get_by_id(id).cloned()
+    }
+
+    pub fn equipset_by_name(&mut self, name: String) -> u32 {
+        if let Some(set) = self.equipsets.iter().find(|xs| xs.name() == name) {
+            set.id()
+        } else {
+            0
+        }
+    }
+
+    pub fn set_icon_by_id(&mut self, id: u32, icon: Icon) -> bool {
+        self.equipsets.set_icon_by_id(id, icon)
     }
 
     // bincode serialization to cosave
 
     pub fn serialize_version() -> u32 {
-        archive_v1::VERSION
+        cosave_v2::VERSION
     }
 
-    // bincode serialization to cosave
-
     pub fn serialize(&self) -> Vec<u8> {
-        archive_v1::serialize(self)
+        let value = cosave_v2::CycleSerialized::from(self);
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        log::debug!(
+            "writing cosave format version {}; data len={};",
+            CycleData::serialize_version(),
+            bytes.len()
+        );
+        bytes
     }
 
     pub fn deserialize(bytes: &CxxVector<u8>, version: u32) -> Option<CycleData> {
-        if version == 0 {
-            archive_v0::deserialize(bytes)
-        } else if version == 1 {
-            archive_v1::deserialize(bytes)
-        } else {
-            log::info!("The cosave data is format version {version}, which this version of the plugin has never heard of.");
-            None
+        let bytes: Vec<u8> = bytes.iter().copied().collect();
+        match version {
+            0 => cosave_v0::deserialize(bytes),
+            1 => cosave_v1::deserialize(bytes),
+            2 => cosave_v2::deserialize(bytes),
+            _ => {
+                log::warn!(
+                    "Cosave data is version {version}, which this plugin version cannot decode."
+                );
+                None
+            }
         }
     }
 }
@@ -449,42 +431,167 @@ impl Display for CycleData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "\npower: {};\nutility: {};\nleft: {};\nright: {};",
-            vec_to_debug_string(&self.power),
-            vec_to_debug_string(&self.utility),
-            vec_to_debug_string(&self.left),
-            vec_to_debug_string(&self.right)
+            "\npower: [{}];\nutility: [{}];\nleft: [{}];\nright: [{}];\nequipsets: [{}]",
+            self.power.join(", "),
+            self.utility.join(", "),
+            self.left.join(", "),
+            self.right.join(", "),
+            self.equipsets
+                .iter()
+                .map(|xs| xs.name())
+                .collect::<Vec<_>>()
+                .join(",")
         )
     }
 }
 
-fn vec_to_debug_string(input: &[String]) -> String {
-    format!("[{}]", input.join(", "))
+// cosave version modules.
+
+pub mod cosave_v2 {
+    use bincode::{Decode, Encode};
+
+    use crate::controller::cycleentries::*;
+    use crate::controller::cycles::CycleData;
+    use crate::data::base::BaseType;
+    use crate::data::item_cache::fetch_game_item;
+
+    pub const VERSION: u32 = 2;
+
+    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
+        let config = bincode::config::standard();
+        log::debug!(
+            "reading cosave format version {VERSION}; data len={};",
+            bytes.len()
+        );
+
+        match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
+            Ok((value, _len)) => {
+                log::info!("Cycles successfully read from cosave data version {VERSION}.");
+                Some(value.into())
+            }
+            Err(e) => {
+                log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
+                log::error!("{e:?}");
+                None
+            }
+        }
+    }
+
+    type SerializedEquipSet = Vec<(u32, String, Vec<String>, Vec<u8>, String)>;
+
+    /// The serialization format is a list of form strings. Two drivers for
+    /// this choice: 1) It's compact. 2) It can be deserialized into any
+    /// Rust type we want, thus making it not care about implementation details.
+    /// So the struct uses only built-in rust types, no crate types.
+    #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
+    pub struct CycleSerialized {
+        left: Vec<String>,
+        right: Vec<String>,
+        power: Vec<String>,
+        utility: Vec<String>,
+        // Vec of tuples of (id, name, Vec<formspec>, Vec<empty_slot>, icon_as_string)
+        equipsets: SerializedEquipSet,
+        hud_visible: bool,
+    }
+
+    impl From<&CycleData> for CycleSerialized {
+        fn from(value: &CycleData) -> Self {
+            Self {
+                left: value.left.ids(),
+                right: value.right.ids(),
+                power: value.power.ids(),
+                utility: value.utility.ids(),
+                equipsets: value
+                    .equipsets
+                    .iter()
+                    .map(|xs| {
+                        (
+                            xs.id(),
+                            xs.name(),
+                            xs.items.to_vec(),
+                            xs.empty.to_vec(),
+                            xs.icon.to_string(),
+                        )
+                    })
+                    .collect(),
+                hud_visible: value.hud_visible,
+            }
+        }
+    }
+
+    impl From<CycleSerialized> for CycleData {
+        fn from(value: CycleSerialized) -> Self {
+            fn filter_func(xs: &str) -> Option<String> {
+                match xs {
+                    "health_proxy" => Some(xs.to_owned()),
+                    "magicka_proxy" => Some(xs.to_owned()),
+                    "stamina_proxy" => Some(xs.to_owned()),
+                    "unarmed_proxy" => Some(xs.to_owned()),
+                    "" => None,
+                    _ => {
+                        // Noting here that we do not go through the cache at all
+                        // while loading these items. We probably should. TODO
+                        let found = fetch_game_item(xs);
+                        if matches!(found.kind(), BaseType::Empty) {
+                            None
+                        } else {
+                            Some(found.form_string())
+                        }
+                    }
+                }
+            }
+
+            Self {
+                left: value
+                    .left
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                right: value
+                    .right
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                power: value
+                    .power
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                utility: value
+                    .utility
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                hud_visible: value.hud_visible,
+                equipsets: value
+                    .equipsets
+                    .iter()
+                    .map(|xs| {
+                        EquipSet::new(
+                            xs.0,
+                            xs.1.clone(),
+                            xs.2.to_vec(),
+                            xs.3.to_vec(),
+                            xs.4.clone(),
+                        )
+                    })
+                    .collect(),
+                loaded: true,
+            }
+        }
+    }
 }
 
-pub mod archive_v1 {
+pub mod cosave_v1 {
     use bincode::{Decode, Encode};
-    use cxx::CxxVector;
 
-    use super::CycleData;
+    use crate::controller::cycles::CycleData;
     use crate::data::base::BaseType;
-    use crate::plugin::formSpecToHudItem;
+    use crate::data::item_cache::fetch_game_item;
 
     pub const VERSION: u32 = 1;
 
-    pub fn serialize(cycle: &CycleData) -> Vec<u8> {
-        let value = CycleSerialized::from(cycle);
-        let config = bincode::config::standard();
-        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
-        log::debug!(
-            "writing cosave format version {VERSION}; data len={};",
-            bytes.len()
-        );
-        bytes
-    }
-
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        let bytes: Vec<u8> = bytes.iter().copied().collect();
+    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
         let config = bincode::config::standard();
         log::debug!(
             "reading cosave format version {VERSION}; data len={};",
@@ -504,10 +611,7 @@ pub mod archive_v1 {
         }
     }
 
-    /// The serialization format is a list of form strings. Two drivers for
-    /// this choice: 1) It's compact. 2) It can be deserialized into any
-    /// representation of a TES form item we want, thus making it not care about
-    /// implementation details of the hud item cache.
+    /// Same comment as above: form spec strings are flexible.
     #[derive(Decode, Encode, Hash, Debug, Clone, PartialEq, Eq)]
     pub struct CycleSerialized {
         left: Vec<String>,
@@ -531,23 +635,20 @@ pub mod archive_v1 {
 
     impl From<CycleSerialized> for CycleData {
         fn from(value: CycleSerialized) -> Self {
-            fn filter_func(xs: &String) -> Option<String> {
-                log::debug!("    processing formspec={xs};");
-                match xs.as_str() {
-                    "health_proxy" => Some(xs.clone()),
-                    "magicka_proxy" => Some(xs.clone()),
-                    "stamina_proxy" => Some(xs.clone()),
-                    "unarmed_proxy" => Some(xs.clone()),
+            fn filter_func(xs: &str) -> Option<String> {
+                match xs {
+                    "health_proxy" => Some(xs.to_owned()),
+                    "magicka_proxy" => Some(xs.to_owned()),
+                    "stamina_proxy" => Some(xs.to_owned()),
+                    "unarmed_proxy" => Some(xs.to_owned()),
                     "" => None,
                     _ => {
-                        cxx::let_cxx_string!(form_spec = xs);
                         // Noting here that we do not go through the cache at all
                         // while loading these items. We probably should. TODO
-                        let found = *formSpecToHudItem(&form_spec);
+                        let found = fetch_game_item(xs);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
-                            log::debug!("        found='{}';", found.name());
                             Some(found.form_string())
                         }
                     }
@@ -555,29 +656,44 @@ pub mod archive_v1 {
             }
 
             Self {
-                left: value.left.iter().filter_map(filter_func).collect(),
-                right: value.right.iter().filter_map(filter_func).collect(),
-                power: value.power.iter().filter_map(filter_func).collect(),
-                utility: value.utility.iter().filter_map(filter_func).collect(),
+                left: value
+                    .left
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                right: value
+                    .right
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                power: value
+                    .power
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
+                utility: value
+                    .utility
+                    .iter()
+                    .filter_map(|xs| filter_func(xs.as_str()))
+                    .collect(),
                 hud_visible: value.hud_visible,
+                equipsets: Vec::new(),
                 loaded: true,
             }
         }
     }
 }
 
-pub mod archive_v0 {
+pub mod cosave_v0 {
     use bincode::{Decode, Encode};
-    use cxx::CxxVector;
 
-    use super::CycleData;
+    use crate::controller::cycles::CycleData;
     use crate::data::base::BaseType;
-    use crate::plugin::formSpecToHudItem;
+    use crate::data::item_cache::fetch_game_item;
 
     const VERSION: u8 = 0;
 
-    pub fn deserialize(bytes: &CxxVector<u8>) -> Option<CycleData> {
-        let bytes: Vec<u8> = bytes.iter().copied().collect();
+    pub fn deserialize(bytes: Vec<u8>) -> Option<CycleData> {
         let config = bincode::config::standard();
         log::debug!(
             "reading cosave format version {VERSION}; data len={};",
@@ -626,8 +742,7 @@ pub mod archive_v0 {
                     "unarmed_proxy" => Some(formstr.clone()),
                     "" => None,
                     _ => {
-                        cxx::let_cxx_string!(form_spec = formstr);
-                        let found = *formSpecToHudItem(&form_spec);
+                        let found = fetch_game_item(&formstr);
                         if matches!(found.kind(), BaseType::Empty) {
                             None
                         } else {
@@ -642,9 +757,74 @@ pub mod archive_v0 {
                 right: value.right.iter().filter_map(filter_func).collect(),
                 power: value.power.iter().filter_map(filter_func).collect(),
                 utility: value.utility.iter().filter_map(filter_func).collect(),
+                equipsets: Vec::new(),
                 hud_visible: value.hud_visible,
                 loaded: true,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::plugin::EquippedData;
+
+    #[test]
+    fn version_2() {
+        let mut cache = ItemCache::default();
+        let mut cycle = CycleData::default();
+
+        let one = cache.get(&"fake-one".to_string());
+        let two = cache.get(&"fake-two".to_string());
+        let three = cache.get(&"fake-three".to_string());
+        cycle.add_item(CycleSlot::Left, &one);
+        cycle.add_item(CycleSlot::Left, &two);
+        cycle.add_item(CycleSlot::Left, &three);
+
+        let data = EquippedData {
+            items: Vec::new(),
+            empty_slots: Vec::new(),
+        };
+        cycle.add_equipset("set-one".to_string(), data.clone());
+        cycle.add_equipset("set-two".to_string(), data.clone());
+
+        let value = cosave_v2::CycleSerialized::from(&cycle);
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        let decoded = cosave_v2::deserialize(bytes).expect("data should be decodeable");
+        assert_eq!(decoded.loaded, !cycle.loaded);
+        assert_eq!(decoded.left.len(), cycle.left.len());
+        assert_eq!(decoded.equipsets.len(), cycle.equipsets.len());
+        let set1 = decoded
+            .get_top_equipset()
+            .expect("expected actual equipsets");
+        assert_eq!(set1.id(), 0);
+    }
+
+    #[test]
+    fn version_1() {
+        let mut cache = ItemCache::default();
+        let mut cycle = CycleData::default();
+
+        let one = cache.get(&"fake-one".to_string());
+        let two = cache.get(&"fake-two".to_string());
+        let three = cache.get(&"fake-three".to_string());
+        cycle.add_item(CycleSlot::Left, &one);
+        cycle.add_item(CycleSlot::Left, &two);
+        cycle.add_item(CycleSlot::Left, &three);
+
+        let value = cosave_v1::CycleSerialized::from(&cycle);
+        let config = bincode::config::standard();
+        let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
+        let decoded = cosave_v1::deserialize(bytes).expect("data should be decodeable");
+        assert_eq!(decoded.loaded, !cycle.loaded);
+        assert_eq!(decoded.left.len(), cycle.left.len());
+    }
+
+    #[test]
+    fn version_0() {
+        // lowest priority to write tests for;
+        // only used to load from very old saves
     }
 }

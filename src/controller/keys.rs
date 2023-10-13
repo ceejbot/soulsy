@@ -19,11 +19,12 @@ pub enum CycleSlot {
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Default, Display)]
-pub enum HotkeyKind {
+pub enum Hotkey {
     Power,
     Utility,
     Left,
     Right,
+    Equipment,
     Activate,
     Refresh,
     ShowHide,
@@ -35,21 +36,21 @@ pub enum HotkeyKind {
     None,
 }
 
-impl HotkeyKind {
+impl Hotkey {
     pub fn is_cycle_key(&self) -> bool {
         matches!(
             *self,
-            HotkeyKind::Left | HotkeyKind::Power | HotkeyKind::Right | HotkeyKind::Utility
+            Hotkey::Left | Hotkey::Power | Hotkey::Right | Hotkey::Utility | Hotkey::Equipment
         )
     }
 
     pub fn is_modifier_key(&self) -> bool {
         matches!(
             *self,
-            HotkeyKind::ActivateModifier
-                | HotkeyKind::CycleModifier
-                | HotkeyKind::MenuModifier
-                | HotkeyKind::UnequipModifier
+            Hotkey::ActivateModifier
+                | Hotkey::CycleModifier
+                | Hotkey::MenuModifier
+                | Hotkey::UnequipModifier
         )
     }
 
@@ -58,7 +59,7 @@ impl HotkeyKind {
         let advance = matches!(settings.how_to_cycle(), ActivationMethod::LongPress);
         let unequip = matches!(settings.unarmed_handling(), UnarmedMethod::LongPress);
 
-        if matches!(self, HotkeyKind::Power) {
+        if matches!(self, Hotkey::Power) {
             if unequip {
                 RequestedAction::Unequip
             } else if advance {
@@ -66,7 +67,7 @@ impl HotkeyKind {
             } else {
                 RequestedAction::None
             }
-        } else if matches!(self, HotkeyKind::Utility) {
+        } else if matches!(self, Hotkey::Utility) {
             let consume = matches!(settings.how_to_activate(), ActivationMethod::LongPress);
             if consume {
                 RequestedAction::Consume
@@ -75,15 +76,14 @@ impl HotkeyKind {
             } else {
                 RequestedAction::None
             }
-        } else if matches!(self, HotkeyKind::Left | HotkeyKind::Right) {
+        } else if matches!(self, Hotkey::Left | Hotkey::Right) {
             let dual_wield = settings.long_press_matches();
             if unequip {
                 RequestedAction::Unequip
             } else if dual_wield {
                 RequestedAction::Match
             } else if advance {
-                if matches!(self, HotkeyKind::Left) && settings.cycle_ammo() && hasRangedEquipped()
-                {
+                if matches!(self, Hotkey::Left) && settings.cycle_ammo() && hasRangedEquipped() {
                     RequestedAction::AdvanceAmmo
                 } else {
                     RequestedAction::Advance
@@ -97,67 +97,70 @@ impl HotkeyKind {
     }
 }
 
-impl From<&CycleSlot> for HotkeyKind {
+impl From<&CycleSlot> for Hotkey {
     fn from(value: &CycleSlot) -> Self {
         match *value {
-            CycleSlot::Left => HotkeyKind::Left,
-            CycleSlot::Power => HotkeyKind::Power,
-            CycleSlot::Right => HotkeyKind::Right,
-            CycleSlot::Utility => HotkeyKind::Utility,
+            CycleSlot::Left => Hotkey::Left,
+            CycleSlot::Power => Hotkey::Power,
+            CycleSlot::Right => Hotkey::Right,
+            CycleSlot::Utility => Hotkey::Utility,
         }
     }
 }
 
-impl From<&Action> for HotkeyKind {
+impl From<&Action> for Hotkey {
     fn from(value: &Action) -> Self {
         match *value {
-            Action::Activate => HotkeyKind::Activate,
-            Action::Left => HotkeyKind::Left,
-            Action::Power => HotkeyKind::Power,
-            Action::Right => HotkeyKind::Right,
-            Action::ShowHide => HotkeyKind::ShowHide,
-            Action::Utility => HotkeyKind::Utility,
-            Action::RefreshLayout => HotkeyKind::Refresh,
-            _ => HotkeyKind::None,
+            Action::Activate => Hotkey::Activate,
+            Action::Left => Hotkey::Left,
+            Action::Power => Hotkey::Power,
+            Action::Right => Hotkey::Right,
+            Action::Equipment => Hotkey::Equipment,
+            Action::ShowHide => Hotkey::ShowHide,
+            Action::Utility => Hotkey::Utility,
+            Action::RefreshLayout => Hotkey::Refresh,
+            _ => Hotkey::None,
         }
     }
 }
 
-impl From<u32> for HotkeyKind {
+impl From<u32> for Hotkey {
     fn from(v: u32) -> Self {
         let settings = settings();
         if v == settings.power() {
-            HotkeyKind::Power
+            Hotkey::Power
         } else if v == settings.utility() {
-            HotkeyKind::Utility
+            Hotkey::Utility
         } else if v == settings.left() {
-            HotkeyKind::Left
+            Hotkey::Left
         } else if v == settings.right() {
-            HotkeyKind::Right
+            Hotkey::Right
+        } else if v == settings.equipset() as u32 {
+            Hotkey::Equipment
         } else if v == settings.refresh_layout() {
-            HotkeyKind::Refresh
+            Hotkey::Refresh
         } else if v == settings.showhide() {
-            HotkeyKind::ShowHide
+            Hotkey::ShowHide
         } else if v == settings.activate() {
-            HotkeyKind::Activate
+            Hotkey::Activate
         } else if settings.activate_modifier().is_positive()
             && v == settings.activate_modifier().unsigned_abs()
         {
-            HotkeyKind::ActivateModifier
+            Hotkey::ActivateModifier
         } else if settings.cycle_modifier().is_positive()
             && v == settings.cycle_modifier().unsigned_abs()
         {
-            HotkeyKind::CycleModifier
+            Hotkey::CycleModifier
         } else if settings.unequip_modifier().is_positive()
             && v == settings.unequip_modifier().unsigned_abs()
         {
-            HotkeyKind::UnequipModifier
+            Hotkey::UnequipModifier
         } else if settings.menu_modifier().is_positive()
             && v == settings.menu_modifier().unsigned_abs()
         {
-            HotkeyKind::MenuModifier
+            Hotkey::MenuModifier
         } else {
-            HotkeyKind::None
+            Hotkey::None
         }
     }
 }
@@ -184,14 +187,14 @@ impl From<&ButtonEvent> for KeyState {
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct TrackedKey {
-    pub key: HotkeyKind,
+    pub key: Hotkey,
     pub state: KeyState,
     pub press_start: Option<Instant>,
 }
 
 impl TrackedKey {
     pub fn ignore(&self) -> bool {
-        matches!(self.key, HotkeyKind::None)
+        matches!(self.key, Hotkey::None)
     }
 
     pub fn update(&mut self, event: &ButtonEvent) {
@@ -232,7 +235,7 @@ impl TrackedKey {
 impl Default for TrackedKey {
     fn default() -> Self {
         Self {
-            key: HotkeyKind::None,
+            key: Hotkey::None,
             state: KeyState::Up,
             press_start: None,
         }
@@ -245,29 +248,29 @@ impl Display for TrackedKey {
     }
 }
 
-impl From<&HotkeyKind> for Action {
-    fn from(value: &HotkeyKind) -> Self {
+impl From<&Hotkey> for Action {
+    fn from(value: &Hotkey) -> Self {
         match value {
-            HotkeyKind::Power => Action::Power,
-            HotkeyKind::Utility => Action::Utility,
-            HotkeyKind::Left => Action::Left,
-            HotkeyKind::Right => Action::Right,
-            HotkeyKind::Activate => Action::Activate,
-            HotkeyKind::Refresh => Action::RefreshLayout,
-            HotkeyKind::ShowHide => Action::ShowHide,
+            Hotkey::Power => Action::Power,
+            Hotkey::Utility => Action::Utility,
+            Hotkey::Left => Action::Left,
+            Hotkey::Right => Action::Right,
+            Hotkey::Activate => Action::Activate,
+            Hotkey::Refresh => Action::RefreshLayout,
+            Hotkey::ShowHide => Action::ShowHide,
             _ => Action::None,
         }
     }
 }
 
 /// Soon I'll have moved this around to the point where I can remove enums.
-impl From<&HotkeyKind> for HudElement {
-    fn from(value: &HotkeyKind) -> Self {
+impl From<&Hotkey> for HudElement {
+    fn from(value: &Hotkey) -> Self {
         match value {
-            HotkeyKind::Power => HudElement::Power,
-            HotkeyKind::Utility => HudElement::Utility,
-            HotkeyKind::Left => HudElement::Left,
-            HotkeyKind::Right => HudElement::Right,
+            Hotkey::Power => HudElement::Power,
+            Hotkey::Utility => HudElement::Utility,
+            Hotkey::Left => HudElement::Left,
+            Hotkey::Right => HudElement::Right,
             _ => HudElement::None,
         }
     }
@@ -289,15 +292,15 @@ impl TryFrom<Action> for CycleSlot {
     }
 }
 
-impl TryFrom<HotkeyKind> for CycleSlot {
+impl TryFrom<Hotkey> for CycleSlot {
     type Error = anyhow::Error;
 
-    fn try_from(value: HotkeyKind) -> Result<Self, Self::Error> {
+    fn try_from(value: Hotkey) -> Result<Self, Self::Error> {
         match value {
-            HotkeyKind::Power => Ok(CycleSlot::Power),
-            HotkeyKind::Utility => Ok(CycleSlot::Utility),
-            HotkeyKind::Left => Ok(CycleSlot::Left),
-            HotkeyKind::Right => Ok(CycleSlot::Right),
+            Hotkey::Power => Ok(CycleSlot::Power),
+            Hotkey::Utility => Ok(CycleSlot::Utility),
+            Hotkey::Left => Ok(CycleSlot::Left),
+            Hotkey::Right => Ok(CycleSlot::Right),
             _ => Err(anyhow!("this hotkey is not a cycle key; key={value}")),
         }
     }

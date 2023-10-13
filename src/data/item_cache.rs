@@ -10,6 +10,7 @@ use lru::LruCache;
 
 use super::huditem::HudItem;
 use crate::data::{make_health_proxy, make_magicka_proxy, make_stamina_proxy};
+#[cfg(not(test))]
 use crate::plugin::formSpecToHudItem;
 
 #[derive(Debug)]
@@ -17,9 +18,17 @@ pub struct ItemCache {
     lru: LruCache<String, HudItem>,
 }
 
+impl Default for ItemCache {
+    fn default() -> Self {
+        ItemCache::new()
+    }
+}
+
 impl ItemCache {
     /// Create a new item cache with the given capacity.
-    pub fn new(capacity: NonZeroUsize) -> Self {
+    pub fn new() -> Self {
+        let capacity =
+            NonZeroUsize::new(100).expect("cats and dogs living together! 100 is not non-zero!");
         let lru = LruCache::new(capacity);
         Self { lru }
     }
@@ -34,7 +43,9 @@ impl ItemCache {
     /// we have cached with what the save state is. We merely enjoy the
     /// eternal sunshine of the spotless mind.
     pub fn clear(&mut self) {
+        self.introspect();
         self.lru.clear();
+        log::debug!("item cache cleared.");
     }
 
     /// Retrieve the named item from the cache. As a side effect, will create a
@@ -58,8 +69,7 @@ impl ItemCache {
         } else if form_string == "unarmed_proxy" {
             HudItem::make_unarmed_proxy()
         } else {
-            cxx::let_cxx_string!(form_spec = form_string);
-            *formSpecToHudItem(&form_spec)
+            fetch_game_item(form_string)
         };
 
         self.record(item.clone());
@@ -100,5 +110,46 @@ impl ItemCache {
         };
         item.set_count(new_count);
         Some(item)
+    }
+}
+
+#[cfg(not(test))]
+pub fn fetch_game_item(form_string: &str) -> HudItem {
+    cxx::let_cxx_string!(form_spec = form_string);
+    *formSpecToHudItem(&form_spec)
+}
+
+// This implementation is used by tests to generate random items without
+// attempting to communicate with a running game.
+#[cfg(test)]
+pub fn fetch_game_item(form_string: &str) -> HudItem {
+    use super::color::random_color;
+    use super::icons::random_icon;
+    use super::weapon::{WeaponEquipType, WeaponType};
+
+    let name = petname::petname(2, " ");
+    let item = HudItem::preclassified(
+        name.as_bytes().to_vec(),
+        form_string.to_owned(),
+        2,
+        super::BaseType::Weapon(WeaponType::new(
+            random_icon(),
+            random_color(),
+            WeaponEquipType::EitherHand,
+        )),
+    );
+    item
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_constructor_works() {
+        let spec = "test-spec".to_string();
+        let item = fetch_game_item(&spec);
+        assert!(item.name_is_utf8());
+        assert_eq!(item.form_string(), spec);
     }
 }

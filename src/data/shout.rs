@@ -26,12 +26,8 @@ impl HasIcon for ShoutType {
         self.color.color()
     }
 
-    fn icon_file(&self) -> String {
-        self.icon.icon_file()
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::Shout.icon_file()
+    fn icon(&self) -> &Icon {
+        &self.icon
     }
 }
 

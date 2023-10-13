@@ -62,37 +62,23 @@ impl HasIcon for PotionType {
         }
     }
 
-    fn icon_file(&self) -> String {
+    fn icon(&self) -> &Icon {
         match self {
-            PotionType::Poison => Icon::PotionPoison.icon_file(),
+            PotionType::Poison => &Icon::PotionPoison,
             PotionType::Resist(t) => match t {
-                MagicCategory::Disease => Icon::PotionResist.icon_file(),
-                MagicCategory::Fire => Icon::PotionResistFire.icon_file(),
-                MagicCategory::Frost => Icon::PotionResistFrost.icon_file(),
-                MagicCategory::Magic => Icon::PotionResist.icon_file(),
-                MagicCategory::Poison => Icon::PotionResist.icon_file(),
-                MagicCategory::Shock => Icon::PotionResistShock.icon_file(),
-                MagicCategory::Sun => Icon::PotionResistFire.icon_file(),
-                _ => Icon::PotionResist.icon_file(),
+                MagicCategory::Disease => &Icon::PotionResist,
+                MagicCategory::Fire => &Icon::PotionResistFire,
+                MagicCategory::Frost => &Icon::PotionResistFrost,
+                MagicCategory::Magic => &Icon::PotionResist,
+                MagicCategory::Poison => &Icon::PotionResist,
+                MagicCategory::Shock => &Icon::PotionResistShock,
+                MagicCategory::Sun => &Icon::PotionResistFire,
+                _ => &Icon::PotionResist,
             },
-            PotionType::Health => Icon::PotionHealth.icon_file(),
-            PotionType::Magicka => Icon::PotionMagicka.icon_file(),
-            PotionType::Stamina => Icon::PotionStamina.icon_file(),
-            _ => Icon::PotionDefault.icon_file(),
+            PotionType::Health => &Icon::PotionHealth,
+            PotionType::Magicka => &Icon::PotionMagicka,
+            PotionType::Stamina => &Icon::PotionStamina,
+            _ => &Icon::PotionDefault,
         }
     }
-
-    fn icon_fallback(&self) -> String {
-        Icon::PotionDefault.icon_file()
-    }
 }
-
-/*
-
-// alchemy keywords
-MagicAlchBeneficial,
-MagicAlchDamageHealth,
-// lots of these; TODO
-
-
-*/

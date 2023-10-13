@@ -1,10 +1,12 @@
-use strum::{EnumIter, IntoEnumIterator};
+use strum::{Display, EnumIter, EnumString, EnumVariantNames, IntoEnumIterator};
 
 pub fn icon_files() -> Vec<String> {
     Icon::iter().map(|xs| xs.icon_file()).collect()
 }
 
-#[derive(Debug, Clone, Default, Hash, PartialEq, Eq, EnumIter)]
+#[derive(
+    Debug, Clone, Default, Hash, PartialEq, Eq, EnumIter, EnumString, EnumVariantNames, Display,
+)]
 pub enum Icon {
     Alteration,
     ArmorAmulet,
@@ -495,5 +497,18 @@ impl Icon {
             Icon::WeaponWhip => Icon::WeaponWhip,   // core set
             Icon::WeaponWoodAxe => Icon::WeaponAxeOneHanded,
         }
+    }
+}
+
+#[cfg(test)]
+pub fn random_icon() -> Icon {
+    use std::str::FromStr;
+
+    use rand::prelude::*;
+    use strum::VariantNames;
+    if let Some(variant) = Icon::VARIANTS.choose(&mut rand::thread_rng()) {
+        Icon::from_str(variant).unwrap_or(Icon::WeaponSwordTwoHanded)
+    } else {
+        Icon::WeaponSwordOneHanded
     }
 }

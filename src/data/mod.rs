@@ -24,6 +24,7 @@ use self::ammo::AmmoType;
 pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
+use self::icons::Icon;
 use self::potion::PotionType;
 use self::shout::ShoutType;
 use self::spell::SpellType;
@@ -138,6 +139,9 @@ pub fn make_unarmed_proxy() -> Box<HudItem> {
 }
 
 pub fn make_magicka_proxy() -> HudItem {
+    #[cfg(test)]
+    let count = 10;
+    #[cfg(not(test))]
     let count = magickaPotionCount();
     HudItem::preclassified(
         "Best Magicka".as_bytes().to_vec(),
@@ -148,6 +152,9 @@ pub fn make_magicka_proxy() -> HudItem {
 }
 
 pub fn make_health_proxy() -> HudItem {
+    #[cfg(test)]
+    let count = 8;
+    #[cfg(not(test))]
     let count = healthPotionCount();
     HudItem::preclassified(
         "Best Health".as_bytes().to_vec(),
@@ -158,6 +165,9 @@ pub fn make_health_proxy() -> HudItem {
 }
 
 pub fn make_stamina_proxy() -> HudItem {
+    #[cfg(test)]
+    let count = 11;
+    #[cfg(not(test))]
     let count = staminaPotionCount();
     HudItem::preclassified(
         "Best Stamina".as_bytes().to_vec(),
@@ -171,8 +181,7 @@ pub fn make_stamina_proxy() -> HudItem {
 
 pub trait HasIcon {
     fn color(&self) -> Color;
-    fn icon_file(&self) -> String;
-    fn icon_fallback(&self) -> String;
+    fn icon(&self) -> &Icon;
 }
 
 pub trait HasKeywords {

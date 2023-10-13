@@ -428,6 +428,11 @@ namespace ui
 			}
 
 			rust::Box<HudItem> entry = entry_to_show_in_slot(slotLayout.element);
+			if ((slotLayout.element == HudElement::EquipSet) && entry->name().empty())
+			{
+				// Do nothing for empty equipsets. Might reconsider this decision.
+				continue;
+			}
 
 			auto entry_name = std::string("");
 			// We use the data cached in the entry if at all possible
@@ -874,7 +879,7 @@ namespace ui
 		// are floats where whole numbers are seconds. So we divide.
 		const auto settings = user_settings();
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
-		logger::info("started equip delay timer; which={}; duration={} ms;"sv, static_cast<uint8_t>(which), duration);
+		logger::debug("Started equip delay timer; which={}; duration={} ms;"sv, static_cast<uint8_t>(which), duration);
 		// TODO do not start slomo for long-presses???
 		if (settings->cycling_slows_time() && RE::PlayerCharacter::GetSingleton()->IsInCombat())
 		{

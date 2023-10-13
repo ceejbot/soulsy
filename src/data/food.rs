@@ -19,18 +19,13 @@ impl HasIcon for FoodType {
         self.color.color()
     }
 
-    fn icon_file(&self) -> String {
-        self.icon.icon_file()
-    }
-
-    fn icon_fallback(&self) -> String {
-        Icon::Food.icon_file()
+    fn icon(&self) -> &Icon {
+        &self.icon
     }
 }
 
 impl HasKeywords for FoodType {
     fn classify(_name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
-        log::info!("{keywords:?}");
         let color = super::base::color_from_keywords(&keywords);
         let tags = strings_to_keywords::<FoodKeywords>(&keywords);
         let containers = strings_to_keywords::<ContainerKeywords>(&keywords);

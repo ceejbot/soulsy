@@ -1,479 +1,597 @@
 {
-  "modName": "SoulsyHUD",
-  "displayName": "SoulsyHUD",
-  "minMcmVersion": 11,
-  "cursorFillMode": "topToBottom",
-  "pages": [
-    {
-      "pageDisplayName": "$SoulsyHUD_Settings_Page",
-      "cursorFillMode": "topToBottom",
-      "content": [
+    "modName": "SoulsyHUD",
+    "displayName": "SoulsyHUD",
+    "minMcmVersion": 11,
+    "cursorFillMode": "topToBottom",
+    "pages": [
         {
-          "text": "$SoulsyHUD_Controls_KeysHeader",
-          "type": "header"
-        },
-        {
-          "id": "uPowerCycleKey:Controls",
-          "text": "$SoulsyHUD_Controls_PowerCycleKey_Text",
-          "help": "$SoulsyHUD_Controls_PowerCycleKey_Help",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uLeftCycleKey:Controls",
-          "text": "$SoulsyHUD_Controls_LeftCycleKey_Text",
-          "help": "$SoulsyHUD_Controls_LeftCycleKey_Help",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uRightCycleKey:Controls",
-          "text": "$SoulsyHUD_Controls_RightCycleKey_Text",
-          "help": "$SoulsyHUD_Controls_RightCycleKey_Help",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "text": "$SoulsyHUD_Controls_ModifiersHeader",
-          "type": "header"
-        },
-        {
-          "id": "uHowToCycle:Controls",
-          "text": "$SoulsyHUD_Controls_Advance_Text",
-          "help": "$SoulsyHUD_Controls_Advance_Help",
-          "type": "enum",
-          "valueOptions": {
-            "options": [
-              "$SoulsyHUD_Cycle_Enum_Hotkey",
-              "$SoulsyHUD_Cycle_Enum_LongPress",
-              "$SoulsyHUD_Cycle_Enum_Mod"
-            ],
-            "sourceType": "ModSettingInt",
-            "defaultValue": 0
-          }
-        },
-        {
-          "type": "hiddenToggle",
-          "text": "hidden toggle for cycle modifier hotkey",
-          "groupControl": 1,
-          "valueOptions": {
-            "sourceType": "PropertyValueBool",
-            "propertyName": "pCycleNeedsModifier"
-          }
-        },
-        {
-          "id": "iCycleModifierKey:Controls",
-          "text": "$SoulsyHUD_Controls_CycleModifierKey_Text",
-          "help": "$SoulsyHUD_Controls_CycleModifierKey_Help",
-          "groupCondition": 1,
-          "groupBehavior": "skip",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uHowToggleInMenus:Controls",
-          "text": "$SoulsyHUD_Controls_Menus_Text",
-          "help": "$SoulsyHUD_Controls_Menus_Help",
-          "type": "enum",
-          "valueOptions": {
-            "options": [
-              "$SoulsyHUD_Menu_Enum_Hotkey",
-              "$SoulsyHUD_Menu_Enum_LongPress",
-              "$SoulsyHUD_Menu_Enum_Mod"
-            ],
-            "sourceType": "ModSettingInt",
-            "defaultValue": 0
-          }
-        },
-        {
-          "type": "hiddenToggle",
-          "text": "menu modifier hotkey",
-          "groupControl": 2,
-          "valueOptions": {
-            "sourceType": "PropertyValueBool",
-            "propertyName": "pMenuNeedsModifier"
-          }
-        },
-        {
-          "id": "iMenuModifierKey:Controls",
-          "text": "$SoulsyHUD_Controls_MenuModifierKey_Text",
-          "help": "$SoulsyHUD_Controls_MenuModifierKey_Help",
-          "ignoreConflicts": true,
-          "groupCondition": 2,
-          "groupBehavior": "skip",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "bLinkToFavorites:Options",
-          "text": "$SoulsyHUD_Options_Favoriting_Text",
-          "help": "$SoulsyHUD_Options_Favoriting_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingBool"
-          }
-        },
-        {
-          "id": "uHowToUnequip:Controls",
-          "text": "$SoulsyHUD_Controls_Unarmed_Text",
-          "help": "$SoulsyHUD_Controls_Unarmed_Help",
-          "type": "enum",
-          "valueOptions": {
-            "options": [
-              "$SoulsyHUD_Unarmed_Enum_None",
-              "$SoulsyHUD_Unarmed_Enum_LongPress",
-              "$SoulsyHUD_Unarmed_Enum_Mod",
-              "$SoulsyHUD_Unarmed_Enum_Add"
-            ],
-            "sourceType": "ModSettingInt",
-            "defaultValue": 0
-          }
-        },
-        {
-          "type": "hiddenToggle",
-          "text": "hidden toggle for unequip modifier hotkey",
-          "groupControl": 3,
-          "valueOptions": {
-            "sourceType": "PropertyValueBool",
-            "propertyName": "pEnableUnequipModifier"
-          }
-        },
-        {
-          "id": "iUnequipModifierKey:Controls",
-          "text": "$SoulsyHUD_Controls_UnequipModifierKey_Text",
-          "help": "$SoulsyHUD_Controls_UnequipModifierKey_Help",
-          "groupCondition": 3,
-          "groupBehavior": "skip",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "type": "hiddenToggle",
-          "text": "hidden toggle for long-press-to-match setting",
-          "groupControl": 4,
-          "valueOptions": {
-            "sourceType": "PropertyValueBool",
-            "propertyName": "pEnableLongPressMatchOption"
-          }
-        },
-        {
-          "id": "bLongPressMatches:Controls",
-          "text": "$SoulsyHUD_LongPressToMatch_Text",
-          "help": "$SoulsyHUD_LongPressToMatch_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingBool"
-          },
-          "groupCondition": 4,
-          "groupBehavior": "skip"
-        },
-        {
-          "text": "$SoulsyHUD_Controls_Consumables_Header",
-          "type": "header",
-          "position": 1
-        },
-        {
-          "id": "bGroupPotions:Options",
-          "text": "$SoulsyHUD_Controls_GroupPotions_Text",
-          "help": "$SoulsyHUD_Controls_GroupPotions_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uUtilityCycleKey:Controls",
-          "text": "$SoulsyHUD_Controls_UtilityCycleKey_Text",
-          "help": "$SoulsyHUD_Controls_UtilityCycleKey_Help",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uHowToActivate:Controls",
-          "text": "$SoulsyHUD_Activate_When_Text",
-          "help": "$SoulsyHUD_Activate_When_Help",
-          "type": "enum",
-          "valueOptions": {
-            "options": [
-              "$SoulsyHUD_Activate_Enum_Hotkey",
-              "$SoulsyHUD_Activate_Enum_LongPress",
-              "$SoulsyHUD_Activate_Enum_Mod"
-            ],
-            "sourceType": "ModSettingInt",
-            "defaultValue": 0
-          }
-        },
-        {
-          "type": "hiddenToggle",
-          "text": "hidden toggle for utility activate modifier",
-          "groupControl": 5,
-          "valueOptions": {
-            "sourceType": "PropertyValueBool",
-            "propertyName": "pEnableActivateModifier"
-          }
-        },
-        {
-          "id": "iUtilityActivateModifier:Controls",
-          "text": "$SoulsyHUD_Controls_ActivateModifier_Text",
-          "help": "$SoulsyHUD_Controls_ActivateModifier_Help",
-          "groupCondition": 5,
-          "groupBehavior": "skip",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "type": "hiddenToggle",
-          "text": "hidden toggle for utility hotkey",
-          "groupControl": 6,
-          "valueOptions": {
-            "sourceType": "PropertyValueBool",
-            "propertyName": "pEnableActivateHotkey"
-          }
-        },
-        {
-          "id": "uUtilityActivateKey:Controls",
-          "text": "$SoulsyHUD_Controls_ActivateKey_Text",
-          "help": "$SoulsyHUD_Controls_ActivateKey_Help",
-          "groupCondition": 6,
-          "groupBehavior": "skip",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "bCycleAmmo:Options",
-          "text": "$SoulsyHUD_Options_CycleAmmo_Text",
-          "help": "$SoulsyHUD_Options_CycleAmmo_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "text": "$SoulsyHUD_Gameplay_FeelHeader",
-          "type": "header"
-        },
-        {
-          "id": "uEquipDelay:Options",
-          "text": "$SoulsyHUD_Options_EquipDelay_Text",
-          "help": "$SoulsyHUD_Options_EquipDelay_Help",
-          "type": "slider",
-          "valueOptions": {
-            "min": 0,
-            "max": 2500,
-            "step": 50,
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uLongPressMillis:Options",
-          "text": "$SoulsyHUD_Options_LongPress_Text",
-          "help": "$SoulsyHUD_Options_LongPress_Help",
-          "type": "slider",
-          "valueOptions": {
-            "min": 750,
-            "max": 2500,
-            "step": 50,
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "bCyclingSlowsTime:Options",
-          "text": "$SoulsyHUD_Options_SlowTime_Text",
-          "help": "$SoulsyHUD_Options_SlowTime_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uSlowTimeFactor:Options",
-          "text": "$SoulsyHUD_Options_HowSlow_Text",
-          "help": "$SoulsyHUD_Options_HowSlow_Help",
-          "type": "slider",
-          "valueOptions": {
-            "min": 10,
-            "max": 90,
-            "step": 1,
-            "sourceType": "ModSettingInt"
-          }
-        }
-      ]
-    },
-    {
-      "pageDisplayName": "$SoulsyHUD_Display_Page",
-      "cursorFillMode": "topToBottom",
-      "content": [
-        {
-          "text": "$SoulsyHUD_Display_Header",
-          "type": "header"
-        },
-        {
-          "id": "bAutoFade:Options",
-          "text": "$SoulsyHUD_Options_Fade_Text",
-          "help": "$SoulsyHUD_Options_Fade_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uFadeTime:Options",
-          "text": "$SoulsyHUD_Options_FadeTime_Text",
-          "help": "$SoulsyHUD_Options_FadeTime_Help",
-          "type": "slider",
-          "groupBehavior": "skip",
-          "valueOptions": {
-            "min": 500,
-            "max": 5000,
-            "step": 100,
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uShowHideKey:Controls",
-          "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
-          "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
-          "type": "keymap",
-          "groupBehavior": "skip",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "bColorizeIcons:Options",
-          "text": "$SoulsyHUD_Options_Colorize_Text",
-          "help": "$SoulsyHUD_Options_Colorize_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "uControllerKind:Options",
-          "text": "$SoulsyHUD_Options_Controller_Text",
-          "type": "enum",
-          "help": "$SoulsyHUD_Options_Controller_Help",
-          "valueOptions": {
-            "options": [
-              "$SoulsyHUD_Controls_PS",
-              "$SoulsyHUD_Controls_Xbox"
-            ],
-            "sourceType": "ModSettingInt",
-            "defaultValue": 0
-          }
-        },
-        {
-          "id": "uRefreshKey:Controls",
-          "text": "$SoulsyHUD_Controls_RefreshKey_Text",
-          "help": "$SoulsyHUD_Controls_RefreshKey_Help",
-          "type": "keymap",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "id": "sSKSEIdentifier:Options",
-          "text": "$SoulsyHUD_ModIdString_Text",
-          "help": "$SoulsyHUD_ModIdString_Help",
-          "type": "input",
-          "valueOptions": {
-            "sourceType": "ModSettingString"
-          }
-        },
-        {
-          "id": "bDebugMode:Options",
-          "text": "$SoulsyHUD_Options_Debug_Text",
-          "help": "$SoulsyHUD_Options_Debug_Help",
-          "type": "toggle",
-          "valueOptions": {
-            "sourceType": "ModSettingInt"
-          }
-        },
-        {
-          "text": "$SoulsyHUD_Maintenance_Header",
-          "type": "header",
-          "position": 1
-        },
-        {
-          "text": "$SoulsyHUD_Clear_Text",
-          "help": "$SoulsyHUD_Clear_Help",
-          "type": "text",
-          "valueOptions": {
-            "value": "clear"
-          },
-          "action": {
-            "type": "CallFunction",
-            "function": "ClearCyclesPapyrus"
-          }
-        }
-      ]
-    },
-    {
-      "pageDisplayName": "$SoulsyHUD_CycleContents_Page",
-      "cursorFillMode": "topToBottom",
-      "content": [
-        {
-          "text": "$SoulsyHUD_CycleContents_Header",
-          "type": "header"
-        },
-        {
-          "id": "pCycleToShow",
-          "text": "$SoulsyHUD_ChooseCycle_Text",
-          "help": "$SoulsyHUD_ChooseCycle_Help",
-          "type": "enum",
-          "valueOptions": {
-            "options": [
-              "$SoulsyHUD_CycleEnum_Powers",
-              "$SoulsyHUD_CycleEnum_Utilities",
-              "$SoulsyHUD_CycleEnum_LeftHand",
-              "$SoulsyHUD_CycleEnum_RightHand"
-            ],
-            "sourceType": "PropertyValueInt",
-            "propertyName": "pCycleToShow",
-            "defaultValue": 0
-          },
-          "action": {
-            "type": "CallFunction",
-            "function": "ShowCycleEntries",
-            "params": [
-              "{value}"
+            "pageDisplayName": "$SoulsyHUD_Settings_Page",
+            "cursorFillMode": "topToBottom",
+            "content": [
+                {
+                    "text": "$SoulsyHUD_Controls_KeysHeader",
+                    "type": "header"
+                },
+                {
+                    "id": "uPowerCycleKey:Controls",
+                    "text": "$SoulsyHUD_Controls_PowerCycleKey_Text",
+                    "help": "$SoulsyHUD_Controls_PowerCycleKey_Help",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uLeftCycleKey:Controls",
+                    "text": "$SoulsyHUD_Controls_LeftCycleKey_Text",
+                    "help": "$SoulsyHUD_Controls_LeftCycleKey_Help",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uRightCycleKey:Controls",
+                    "text": "$SoulsyHUD_Controls_RightCycleKey_Text",
+                    "help": "$SoulsyHUD_Controls_RightCycleKey_Help",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "text": "$SoulsyHUD_Controls_ModifiersHeader",
+                    "type": "header"
+                },
+                {
+                    "id": "uHowToCycle:Controls",
+                    "text": "$SoulsyHUD_Controls_Advance_Text",
+                    "help": "$SoulsyHUD_Controls_Advance_Help",
+                    "type": "enum",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_Cycle_Enum_Hotkey",
+                            "$SoulsyHUD_Cycle_Enum_LongPress",
+                            "$SoulsyHUD_Cycle_Enum_Mod"
+                        ],
+                        "sourceType": "ModSettingInt",
+                        "defaultValue": 0
+                    }
+                },
+                {
+                    "type": "hiddenToggle",
+                    "text": "hidden toggle for cycle modifier hotkey",
+                    "groupControl": 3,
+                    "valueOptions": {
+                        "sourceType": "PropertyValueBool",
+                        "propertyName": "pCycleNeedsModifier"
+                    }
+                },
+                {
+                    "id": "iCycleModifierKey:Controls",
+                    "text": "$SoulsyHUD_Controls_CycleModifierKey_Text",
+                    "help": "$SoulsyHUD_Controls_CycleModifierKey_Help",
+                    "groupCondition": 3,
+                    "groupBehavior": "skip",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uHowToggleInMenus:Controls",
+                    "text": "$SoulsyHUD_Controls_Menus_Text",
+                    "help": "$SoulsyHUD_Controls_Menus_Help",
+                    "type": "enum",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_Menu_Enum_Hotkey",
+                            "$SoulsyHUD_Menu_Enum_LongPress",
+                            "$SoulsyHUD_Menu_Enum_Mod"
+                        ],
+                        "sourceType": "ModSettingInt",
+                        "defaultValue": 0
+                    }
+                },
+                {
+                    "type": "hiddenToggle",
+                    "text": "menu modifier hotkey",
+                    "groupControl": 4,
+                    "valueOptions": {
+                        "sourceType": "PropertyValueBool",
+                        "propertyName": "pMenuNeedsModifier"
+                    }
+                },
+                {
+                    "id": "iMenuModifierKey:Controls",
+                    "text": "$SoulsyHUD_Controls_MenuModifierKey_Text",
+                    "help": "$SoulsyHUD_Controls_MenuModifierKey_Help",
+                    "ignoreConflicts": true,
+                    "groupCondition": 4,
+                    "groupBehavior": "skip",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "bLinkToFavorites:Options",
+                    "text": "$SoulsyHUD_Options_Favoriting_Text",
+                    "help": "$SoulsyHUD_Options_Favoriting_Help",
+                    "type": "toggle",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "uHowToUnequip:Controls",
+                    "text": "$SoulsyHUD_Controls_Unarmed_Text",
+                    "help": "$SoulsyHUD_Controls_Unarmed_Help",
+                    "type": "enum",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_Unarmed_Enum_None",
+                            "$SoulsyHUD_Unarmed_Enum_LongPress",
+                            "$SoulsyHUD_Unarmed_Enum_Mod",
+                            "$SoulsyHUD_Unarmed_Enum_Add"
+                        ],
+                        "sourceType": "ModSettingInt",
+                        "defaultValue": 0
+                    }
+                },
+                {
+                    "type": "hiddenToggle",
+                    "text": "hidden toggle for unequip modifier hotkey",
+                    "groupControl": 5,
+                    "valueOptions": {
+                        "sourceType": "PropertyValueBool",
+                        "propertyName": "pEnableUnequipModifier"
+                    }
+                },
+                {
+                    "id": "iUnequipModifierKey:Controls",
+                    "text": "$SoulsyHUD_Controls_UnequipModifierKey_Text",
+                    "help": "$SoulsyHUD_Controls_UnequipModifierKey_Help",
+                    "groupCondition": 5,
+                    "groupBehavior": "skip",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "text": "$SoulsyHUD_Controls_Consumables_Header",
+                    "type": "header",
+                    "position": 1
+                },
+                {
+                    "id": "bGroupPotions:Options",
+                    "text": "$SoulsyHUD_Controls_GroupPotions_Text",
+                    "help": "$SoulsyHUD_Controls_GroupPotions_Help",
+                    "type": "toggle",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uUtilityCycleKey:Controls",
+                    "text": "$SoulsyHUD_Controls_UtilityCycleKey_Text",
+                    "help": "$SoulsyHUD_Controls_UtilityCycleKey_Help",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uHowToActivate:Controls",
+                    "text": "$SoulsyHUD_Activate_When_Text",
+                    "help": "$SoulsyHUD_Activate_When_Help",
+                    "type": "enum",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_Activate_Enum_Hotkey",
+                            "$SoulsyHUD_Activate_Enum_LongPress",
+                            "$SoulsyHUD_Activate_Enum_Mod"
+                        ],
+                        "sourceType": "ModSettingInt",
+                        "defaultValue": 0
+                    }
+                },
+                {
+                    "type": "hiddenToggle",
+                    "text": "hidden toggle for utility activate modifier",
+                    "groupControl": 1,
+                    "valueOptions": {
+                        "sourceType": "PropertyValueBool",
+                        "propertyName": "pEnableActivateModifier"
+                    }
+                },
+                {
+                    "id": "iUtilityActivateModifier:Controls",
+                    "text": "$SoulsyHUD_Controls_ActivateModifier_Text",
+                    "help": "$SoulsyHUD_Controls_ActivateModifier_Help",
+                    "groupCondition": 1,
+                    "groupBehavior": "skip",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "type": "hiddenToggle",
+                    "text": "hidden toggle for utility hotkey",
+                    "groupControl": 2,
+                    "valueOptions": {
+                        "sourceType": "PropertyValueBool",
+                        "propertyName": "pEnableActivateHotkey"
+                    }
+                },
+                {
+                    "id": "uUtilityActivateKey:Controls",
+                    "text": "$SoulsyHUD_Controls_ActivateKey_Text",
+                    "help": "$SoulsyHUD_Controls_ActivateKey_Help",
+                    "groupCondition": 2,
+                    "groupBehavior": "skip",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "bCycleAmmo:Options",
+                    "text": "$SoulsyHUD_Options_CycleAmmo_Text",
+                    "help": "$SoulsyHUD_Options_CycleAmmo_Help",
+                    "type": "toggle",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "text": "$SoulsyHUD_Gameplay_FeelHeader",
+                    "type": "header"
+                },
+                {
+                    "id": "uEquipDelay:Options",
+                    "text": "$SoulsyHUD_Options_EquipDelay_Text",
+                    "help": "$SoulsyHUD_Options_EquipDelay_Help",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 0,
+                        "max": 2500,
+                        "step": 50,
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uLongPressMillis:Options",
+                    "text": "$SoulsyHUD_Options_LongPress_Text",
+                    "help": "$SoulsyHUD_Options_LongPress_Help",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 750,
+                        "max": 2500,
+                        "step": 50,
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "bCyclingSlowsTime:Options",
+                    "text": "$SoulsyHUD_Options_SlowTime_Text",
+                    "help": "$SoulsyHUD_Options_SlowTime_Help",
+                    "type": "toggle",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uSlowTimeFactor:Options",
+                    "text": "$SoulsyHUD_Options_HowSlow_Text",
+                    "help": "$SoulsyHUD_Options_HowSlow_Help",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 10,
+                        "max": 90,
+                        "step": 1,
+                        "sourceType": "ModSettingInt"
+                    }
+                }
             ]
-          }
         },
         {
-          "id": "cycleDisplay",
-          "text": "$SoulsyHUD_ChosenCycle_Text",
-          "help": "$SoulsyHUD_ChosenCycle_Help",
-          "type": "menu",
-          "valueOptions": {
-            "options": [
-              " ",
-              " "
-            ],
-            "sourceType": "PropertyValueInt",
-            "propertyName": "pCycleItemShown",
-            "defaultValue": 0
-          }
+            "pageDisplayName": "$SoulsyHUD_Display_Page",
+            "cursorFillMode": "topToBottom",
+            "content": [
+                {
+                    "text": "$SoulsyHUD_Display_Header",
+                    "type": "header"
+                },
+                {
+                    "id": "bAutoFade:Options",
+                    "text": "$SoulsyHUD_Options_Fade_Text",
+                    "help": "$SoulsyHUD_Options_Fade_Help",
+                    "type": "toggle",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "type": "hiddenToggle",
+                    "text": "hidden toggle for show/hide setting groups",
+                    "groupControl": 6,
+                    "valueOptions": {
+                        "sourceType": "PropertyValueBool",
+                        "propertyName": "pAutoFadeGroupControl"
+                    }
+                },
+                {
+                    "id": "uFadeTime:Options",
+                    "text": "$SoulsyHUD_Options_FadeTime_Text",
+                    "help": "$SoulsyHUD_Options_FadeTime_Help",
+                    "type": "slider",
+                    "groupCondition": 6,
+                    "groupBehavior": "skip",
+                    "valueOptions": {
+                        "min": 500,
+                        "max": 5000,
+                        "step": 100,
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uShowHideKey:Controls",
+                    "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
+                    "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
+                    "type": "keymap",
+                    "groupCondition": {
+                        "NOT": 6
+                    },
+                    "groupBehavior": "skip",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "bColorizeIcons:Options",
+                    "text": "$SoulsyHUD_Options_Colorize_Text",
+                    "help": "$SoulsyHUD_Options_Colorize_Help",
+                    "type": "toggle",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "uControllerKind:Options",
+                    "text": "$SoulsyHUD_Options_Controller_Text",
+                    "type": "enum",
+                    "help": "$SoulsyHUD_Options_Controller_Help",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_Controls_PS",
+                            "$SoulsyHUD_Controls_Xbox"
+                        ],
+                        "sourceType": "ModSettingInt",
+                        "defaultValue": 0
+                    }
+                },
+                {
+                    "id": "uRefreshKey:Controls",
+                    "text": "$SoulsyHUD_Controls_RefreshKey_Text",
+                    "help": "$SoulsyHUD_Controls_RefreshKey_Help",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "sSKSEIdentifier:Options",
+                    "text": "$SoulsyHUD_ModIdString_Text",
+                    "help": "$SoulsyHUD_ModIdString_Help",
+                    "type": "input",
+                    "valueOptions": {
+                        "sourceType": "ModSettingString"
+                    }
+                },
+                {
+                    "id": "bDebugMode:Options",
+                    "text": "$SoulsyHUD_Options_Debug_Text",
+                    "help": "$SoulsyHUD_Options_Debug_Help",
+                    "type": "toggle",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "text": "$SoulsyHUD_Maintenance_Header",
+                    "type": "header",
+                    "position": 1
+                },
+                {
+                    "text": "$SoulsyHUD_Clear_Text",
+                    "help": "$SoulsyHUD_Clear_Help",
+                    "type": "text",
+                    "valueOptions": {
+                        "value": "clear"
+                    },
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "ClearCyclesPapyrus"
+                    }
+                }
+            ]
+        },
+        {
+            "pageDisplayName": "$SoulsyHUD_EquipSets_Page",
+            "cursorFillMode": "topToBottom",
+            "content": [
+                {
+                    "text": "$SoulsyHUD_EquipSets_Header",
+                    "type": "header"
+                },
+                {
+                    "id": "iEquipSetCycleKey:Controls",
+                    "text": "$SoulsyHUD_Controls_EquipSetCycleKey_Text",
+                    "help": "$SoulsyHUD_Controls_EquipSetCycleKey_Help",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "id": "bEquipSetsUnequip:Options",
+                    "text": "$SoulsyHUD_EquipSetsUnequip_Text",
+                    "help": "$SoulsyHUD_EquipSetsUnequip_Help",
+                    "type": "toggle",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "sLastUsedSetName:Equipsets",
+                    "text": "$SoulsyHUD_EquipSetName_Text",
+                    "help": "$SoulsyHUD_EquipSetName_Help",
+                    "type": "input",
+                    "valueOptions": {
+                        "sourceType": "ModSettingString"
+                    }
+                },
+                {
+                    "text": "$SoulsyHUD_NewEquipSet_Text",
+                    "help": "$SoulsyHUD_NewEquipSet_Help",
+                    "type": "text",
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "CreateEquipSet"
+                    }
+                },
+                {
+                    "id": "pEquipSetMenuSelection",
+                    "text": "$SoulsyHUD_EquipSetList_Text",
+                    "help": "$SoulsyHUD_EquipSetList_Help",
+                    "type": "menu",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_NoEquipSets",
+                            " "
+                        ],
+                        "sourceType": "PropertyValueString",
+                        "propertyName": "pEquipSetMenuSelection"
+                    }
+                },
+                {
+                    "id": "sLastEditedSetName:Equipsets",
+                    "text": "$SoulsyHUD_SelectedEquipSetName_Text",
+                    "help": "$SoulsyHUD_SelectedEquipSetName_Help",
+                    "type": "input"
+                },
+                {
+                    "id": "renameEquipSet",
+                    "text": "$SoulsyHUD_RenameSet_Text",
+                    "help": "$SoulsyHUD_RenameSet_Help",
+                    "type": "text",
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "RenameEquipSet"
+                    }
+                },
+                {
+                    "id": "updateEquipSet",
+                    "text": "$SoulsyHUD_UpdateSet_Text",
+                    "help": "$SoulsyHUD_UpdateSet_Help",
+                    "type": "text",
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "UpdateEquipSet"
+                    }
+                },
+                {
+                    "id": "removeEquipSet",
+                    "text": "$SoulsyHUD_RemoveSet_Text",
+                    "help": "$SoulsyHUD_RemoveSet_Help",
+                    "type": "text",
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "RemoveEquipSet"
+                    }
+                },
+                {
+                    "text": "$SoulsyHUD_SelectedSet_Header",
+                    "type": "header",
+                    "position": 1
+                },
+                {
+                    "id": "pIconSourceSelection",
+                    "text": "$SoulsyHUD_EquipSetItemList_Text",
+                    "help": "$SoulsyHUD_EquipSetItemList_Help",
+                    "type": "menu",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_NoItems",
+                            " "
+                        ],
+                        "sourceType": "PropertyValueString",
+                        "propertyName": "pIconSourceSelection"
+                    }
+                },
+                {
+                    "id": "useSelectedItemAsIcon",
+                    "text": "$SoulsyHUD_UseItemAsIcon_Text",
+                    "help": "$SoulsyHUD_UseItemAsIcon_Help",
+                    "type": "text",
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "UseSelectionAsIcon"
+                    }
+                }
+            ]
+        },
+        {
+            "pageDisplayName": "$SoulsyHUD_CycleContents_Page",
+            "cursorFillMode": "topToBottom",
+            "content": [
+                {
+                    "text": "$SoulsyHUD_CycleContents_Header",
+                    "type": "header"
+                },
+                {
+                    "id": "pCycleToShow",
+                    "text": "$SoulsyHUD_ChooseCycle_Text",
+                    "help": "$SoulsyHUD_ChooseCycle_Help",
+                    "type": "enum",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_CycleEnum_Powers",
+                            "$SoulsyHUD_CycleEnum_Utilities",
+                            "$SoulsyHUD_CycleEnum_LeftHand",
+                            "$SoulsyHUD_CycleEnum_RightHand"
+                        ],
+                        "sourceType": "PropertyValueInt",
+                        "propertyName": "pCycleToShow",
+                        "defaultValue": 0
+                    },
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "ShowCycleEntries",
+                        "params": [
+                            "{value}"
+                        ]
+                    }
+                },
+                {
+                    "id": "cycleDisplay",
+                    "text": "$SoulsyHUD_ChosenCycle_Text",
+                    "help": "$SoulsyHUD_ChosenCycle_Help",
+                    "type": "menu",
+                    "valueOptions": {
+                        "options": [
+                            " ",
+                            " "
+                        ],
+                        "sourceType": "PropertyValueInt",
+                        "propertyName": "pCycleItemShown",
+                        "defaultValue": 0
+                    }
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }
