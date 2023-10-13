@@ -864,7 +864,10 @@ impl Controller {
         } else if matches!(kind, BaseType::Ammo(_)) {
             equipAmmo(&form_spec);
         } else {
-            log::info!("We did nothing with item {}. Probably a missing feature!", item);
+            log::info!(
+                "We did nothing with item {}. Probably a missing feature!",
+                item
+            );
         }
     }
 

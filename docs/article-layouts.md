@@ -1,10 +1,10 @@
 # Theming SoulsyHUD
 
-Note: This article is [available on GitHub](https://github.com/ceejbot/soulsy/blob/latest/docs/article-layouts.md) with better formatting. You might find it easier to read there.
-
 Nearly every aspect of the HUD layout can be changed by editing the layout file. This article explains how to do that, starting with fast and easy edits to change the HUD location, then going into ways to make your own very different-looking layouts.
 
 The optional files have a variety of layouts intended to show how varied they can be.
+
+__Note:__ This article is [available on GitHub](https://github.com/ceejbot/soulsy/blob/latest/docs/article-layouts.md) with better formatting. You might find it easier to read there.
 
 ## Basics: how to edit a layout
 

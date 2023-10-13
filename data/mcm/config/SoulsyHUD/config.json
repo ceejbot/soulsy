@@ -416,6 +416,49 @@
                         "type": "CallFunction",
                         "function": "ClearCyclesPapyrus"
                     }
+                },
+                {
+                    "text": "$SoulsyHUD_CycleContents_Header",
+                    "type": "header"
+                },
+                {
+                    "id": "pCycleToShow",
+                    "text": "$SoulsyHUD_ChooseCycle_Text",
+                    "help": "$SoulsyHUD_ChooseCycle_Help",
+                    "type": "enum",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_CycleEnum_Powers",
+                            "$SoulsyHUD_CycleEnum_Utilities",
+                            "$SoulsyHUD_CycleEnum_LeftHand",
+                            "$SoulsyHUD_CycleEnum_RightHand"
+                        ],
+                        "sourceType": "PropertyValueInt",
+                        "propertyName": "pCycleToShow",
+                        "defaultValue": 0
+                    },
+                    "action": {
+                        "type": "CallFunction",
+                        "function": "ShowCycleEntries",
+                        "params": [
+                            "{value}"
+                        ]
+                    }
+                },
+                {
+                    "id": "cycleDisplay",
+                    "text": "$SoulsyHUD_ChosenCycle_Text",
+                    "help": "$SoulsyHUD_ChosenCycle_Help",
+                    "type": "menu",
+                    "valueOptions": {
+                        "options": [
+                            " ",
+                            " "
+                        ],
+                        "sourceType": "PropertyValueInt",
+                        "propertyName": "pCycleItemShown",
+                        "defaultValue": 0
+                    }
                 }
             ]
         },
@@ -462,6 +505,10 @@
                         "type": "CallFunction",
                         "function": "CreateEquipSet"
                     }
+                },
+                {
+                    "text": "$SoulsyHUD_UpdateASet_Header",
+                    "type": "header"
                 },
                 {
                     "id": "pEquipSetMenuSelection",
@@ -540,55 +587,6 @@
                     "action": {
                         "type": "CallFunction",
                         "function": "UseSelectionAsIcon"
-                    }
-                }
-            ]
-        },
-        {
-            "pageDisplayName": "$SoulsyHUD_CycleContents_Page",
-            "cursorFillMode": "topToBottom",
-            "content": [
-                {
-                    "text": "$SoulsyHUD_CycleContents_Header",
-                    "type": "header"
-                },
-                {
-                    "id": "pCycleToShow",
-                    "text": "$SoulsyHUD_ChooseCycle_Text",
-                    "help": "$SoulsyHUD_ChooseCycle_Help",
-                    "type": "enum",
-                    "valueOptions": {
-                        "options": [
-                            "$SoulsyHUD_CycleEnum_Powers",
-                            "$SoulsyHUD_CycleEnum_Utilities",
-                            "$SoulsyHUD_CycleEnum_LeftHand",
-                            "$SoulsyHUD_CycleEnum_RightHand"
-                        ],
-                        "sourceType": "PropertyValueInt",
-                        "propertyName": "pCycleToShow",
-                        "defaultValue": 0
-                    },
-                    "action": {
-                        "type": "CallFunction",
-                        "function": "ShowCycleEntries",
-                        "params": [
-                            "{value}"
-                        ]
-                    }
-                },
-                {
-                    "id": "cycleDisplay",
-                    "text": "$SoulsyHUD_ChosenCycle_Text",
-                    "help": "$SoulsyHUD_ChosenCycle_Help",
-                    "type": "menu",
-                    "valueOptions": {
-                        "options": [
-                            " ",
-                            " "
-                        ],
-                        "sourceType": "PropertyValueInt",
-                        "propertyName": "pCycleItemShown",
-                        "defaultValue": 0
                     }
                 }
             ]

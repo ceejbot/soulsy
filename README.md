@@ -1,16 +1,16 @@
 # Soulsy
 
-Soulsy is a minimal-features Souls-style hotkey HUD for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It started life as a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD), though it has since diverged significantly.
+Soulsy is a lightweight, fast Souls-style hotkey HUD mod for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It started life as a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD), though it has since diverged significantly.
 
 ![Screenshot of the hud](./docs/SoulsyHUD_preview.jpeg)
 
-Check out the remarkably terse [user docs](./docs/). Or take a peek at a [this tour of the HUD](https://youtu.be/4Y2lpa-GcCA). If you like it, you can download it for your favorite mod manager [from NexusMods](https://www.nexusmods.com/skyrimspecialedition/mods/96210/).
+The [NexusMods page](https://www.nexusmods.com/skyrimspecialedition/mods/96210/) has screenshots and videos of the HUD in use as well as player documentation. The documentation is more readable here in markdown. See [Configuring the HUD](./docs/article-options.md) and [Customizing Layouts](docs/article-layouts.md).
 
 ## Development goals
 
 My goals are two-fold: make a Souls-style equip HUD that is exactly what I want to use, and learn how to do Rust FFI. A bonus is demonstrating how to write Skyrim native-code mods in Rust.
 
-This project has been released and is in active use. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish. See the TODO list at the end of this readme for details about my next steps.
+This project has been released and is in active use. My eventual goal is to move everything except the SKSE plugin glue code to Rust, and have the C++ mostly vanish. There will always be some C++ in the project to interact with the Skyrim reverse-engineered library, which is all in C++ as is the game itself.
 
 ## Building
 
@@ -25,13 +25,10 @@ The plugin requires the following vcpkg libraries, which will be installed for y
 
 - [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG)
 - [spdlog](https://github.com/gabime/spdlog)
-- [simpleini](https://github.com/brofield/simpleini)
 - [nanosvg](https://github.com/memononen/nanosvg)
 - [imgui](https://github.com/ocornut/imgui)
 
-There are a number of development conveniences in the [justfile](https://just.systems), including build and archive recipes for Powershell. `cargo install just` if you do not have it. Because I am more comfortable on Unixes than on Windows, some recipes are written in Bash.
-The just recipes can build, copy to a test mod directory, update version
-numbers and tag a new release, and build archives for upload to the Nexus.
+There are a number of development conveniences in the [justfile](https://just.systems), including build recipes for Powershell. `cargo install just` if you do not have it. Because I am more comfortable on Unixes than on Windows, some recipes are written in Bash. The just recipes can build, copy to a test mod directory, update version numbers and tag a new release, and build archives for upload to the Nexus.
 
 `cargo --doc open` displays programmer documentation for the Rust side of the plugin. The C++ side is commented, but not to the same degree.
 
@@ -39,15 +36,15 @@ You are absolutely invited to contribute. This project follows the standard [Con
 
 ## Credits
 
-I could not have approached the rendering code without the work in [LamasTinyHud](https://www.nexusmods.com/skyrimspecialedition/mods/82545), so [mlthelama](https://github.com/mlthelama) gets all the props. I also learned a lot about how to make an SKSE plugin by reading their source. Give that HUD a try if you don't like the souls-game style, or want a UI you can edit in-game. The original has more features than this one does! It's also the only hotkeys hud mod I tried that worked well in my game, so that's a testimonial.
+I could not have approached the rendering code without the work in [LamasTinyHud](https://www.nexusmods.com/skyrimspecialedition/mods/82545), so [mlthelama](https://github.com/mlthelama) gets all the props. I also learned a lot about how to make an SKSE plugin by reading their source. Give that HUD a try if you don't like the souls-game style, or want a UI you can edit in-game. The original is the only hotkeys hud mod I tried that worked well in my game, so that's a testimonial.
 
-The icons for the built-in theme are the usual SkyUI icons, plus the `futura-book-bt` true-type font. The background assets were built from scratch but were inspired by the [Untarnished UI skin](https://www.nexusmods.com/skyrimspecialedition/mods/82545) for LamasTinyHUD by [MinhazMurks](https://www.nexusmods.com/skyrimspecialedition/users/26341279). The icons are the SkyUI icons by psychosteve, which are used in so many places I am not sure how to credit them.
+The icons for the built-in theme are the usual SkyUI icons, plus the `futura-book-bt` true-type font. The background assets were built from scratch but were inspired by the [Untarnished UI skin](https://www.nexusmods.com/skyrimspecialedition/mods/82545) for LamasTinyHUD by [MinhazMurks](https://www.nexusmods.com/skyrimspecialedition/users/26341279).
 
-The icons for the Ceej remix layout are licensed to me from the Noun Project for use without attribution, but I am going to give attribution anyway because they're great icons. I am using the [Role Playing Game collection](https://thenounproject.com/browse/collection-icon/role-playing-game-70773/?p=1) by [Maxicons](https://thenounproject.com/maxicons/).
+The built-in icons are the SkyUI icons by psychosteve, which are used in so many places I am not sure how to credit them. The icons for the Ceej remix layout are licensed to me from the Noun Project for use without attribution, but I am going to give attribution anyway because they're great icons. I am using the [Role Playing Game collection](https://thenounproject.com/browse/collection-icon/role-playing-game-70773/?p=1) by [Maxicons](https://thenounproject.com/maxicons/). The THICC icon pack uses icons with permission from the [THICC icon mod](https://www.nexusmods.com/skyrimspecialedition/mods/90508).
 
 The font in use for some layouts is [Inter](https://rsms.me/inter/).
 
-[cxx](https://cxx.rs/) made developing the C++/Rust bridge a snap. This crate unlocks Rust as a viable language for all of your modding needs. The only drawback is that async Rust is not yet supported, but there are workarounds described in the docs.
+[cxx](https://cxx.rs/) made developing the C++/Rust bridge a snap. This crate unlocks Rust as a viable language for all of your modding needs. [bindgen](https://rust-lang.github.io/rust-bindgen/introduction.html) is also available for doing this, but `cxx` generates _safer_ C++ bindings by restricting the kinds of code generated. Its major drawback is that async Rust is not yet supported, but there are workarounds described in the docs.
 
 ## License
 

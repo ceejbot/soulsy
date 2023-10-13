@@ -67,14 +67,18 @@ impl EquipSet {
         self.id
     }
 
+    /// Borrow a list of this set's item formspecs.
     pub fn items(&self) -> &[String] {
         self.items.as_slice()
     }
 
+    /// Borrow a list of this set's empty slots. Turn these slot into biped slots
+    /// in-game by shifting: `1 << slotnum`.
     pub fn empty_slots(&self) -> &[u8] {
         self.empty.as_slice()
     }
 
+    /// Get this equip set's icon.
     pub fn icon(&self) -> &Icon {
         &self.icon
     }
@@ -82,6 +86,7 @@ impl EquipSet {
 
 /// Trait for anything that can be in a cycle.
 pub trait CycleEntry {
+    /// A unique string identifier for this item.
     fn identifier(&self) -> String;
 }
 
@@ -217,12 +222,12 @@ impl HudItemCycle for Vec<String> {
         }
     }
 
+    // This requires cache lookups to get full item info.
     fn advance_skipping_twohanders(&mut self, cache: &mut ItemCache) -> Option<String> {
         if self.is_empty() {
             return None;
         }
 
-        // This requires cache lookups.
         self.rotate_left(1);
         let candidate = self.iter().find(|xs| {
             let item = cache.get(xs);
@@ -282,7 +287,10 @@ impl UpdateableItemCycle for Vec<EquipSet> {
         let Some(to_update) = self.get_mut(idx) else {
             return false;
         };
-        log::info!("Updating the items in equipment set '{}'.", to_update.name());
+        log::info!(
+            "Updating the items in equipment set '{}'.",
+            to_update.name()
+        );
         to_update.items = items;
         to_update.empty = empty;
         true
@@ -295,7 +303,11 @@ impl UpdateableItemCycle for Vec<EquipSet> {
         let Some(to_update) = self.get_mut(idx) else {
             return false;
         };
-        log::info!("Renaming equipment set '{}' to '{}'.", to_update.name(), name);
+        log::info!(
+            "Renaming equipment set '{}' to '{}'.",
+            to_update.name(),
+            name
+        );
         to_update.set_name(name.as_str());
         true
     }
@@ -307,7 +319,10 @@ impl UpdateableItemCycle for Vec<EquipSet> {
         let Some(to_update) = self.get_mut(idx) else {
             return false;
         };
-        log::info!("Setting the icon for equipment set {} to {icon}.", to_update.name());
+        log::info!(
+            "Setting the icon for equipment set {} to {icon}.",
+            to_update.name()
+        );
         to_update.icon = icon;
         true
     }
@@ -364,6 +379,7 @@ mod tests {
         let item = cache.get(&"form-one".to_string());
         assert!(cycle.add(&item));
 
+        // functions to test:
         // filter_kind(&mut self, unwanted: &BaseType, cache: &mut ItemCache);
         // advance_skipping(&mut self, skip: &HudItem) -> Option<String>;
         // advance_skipping_twohanders(&mut self, cache: &mut ItemCache) -> Option<String>;
