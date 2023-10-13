@@ -280,7 +280,7 @@ namespace helpers
 		auto* itemList = menu->GetRuntimeData().itemList;
 		auto* selected = itemList->GetSelectedItem();
 
-		if (selected->data.objDesc && selected->data.objDesc->object)
+		if (selected && selected->data.objDesc && selected->data.objDesc->object)
 		{
 			auto* obj           = selected->data.objDesc->object;
 			auto form_id        = obj->GetFormID();
