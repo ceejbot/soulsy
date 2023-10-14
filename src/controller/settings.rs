@@ -522,7 +522,7 @@ impl std::fmt::Display for UserSettings {
               left cycle key: {}
              right cycle key: {}
           equipset cycle key: {}
-          refresh_layout key: {}
+          refresh layout key: {}
              how_to_activate: {}
         activate consumables: {}
            activate_modifier: {}

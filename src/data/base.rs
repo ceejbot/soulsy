@@ -234,7 +234,7 @@ impl IsHudItem for BaseType {
                 // Lanterns might be utility items AND left-hand items.
                 // Mods do both.
                 !matches!(t, LightType::Torch)
-            },
+            }
             BaseType::Potion(_) => true,
             BaseType::PotionProxy(_) => true,
             BaseType::Power => false,
@@ -381,7 +381,8 @@ mod tests {
         let item = BaseType::Armor(armor);
         assert!(item.is_utility());
 
-        assert!(!BaseType::Light(LightType::Lantern).is_utility());
+        assert!(BaseType::Light(LightType::Lantern).is_utility());
+        assert!(!BaseType::Light(LightType::Torch).is_utility());
 
         let potion = BaseType::Potion(PotionType::Health);
         assert!(potion.is_utility());
