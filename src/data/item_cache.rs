@@ -91,6 +91,15 @@ impl ItemCache {
         self.lru.contains(form_spec)
     }
 
+    /// Set the count of a cached item to the passed-in value.
+    pub fn set_count(&mut self, form_spec: &str, new_count: u32) -> Option<&HudItem> {
+        let Some(item) = self.lru.get_mut(form_spec) else {
+            return None;
+        };
+        item.set_count(new_count);
+        Some(item)
+    }
+
     /// Update the count for a cached item. If the item is not in the
     /// cache, no action is taken.
     pub fn update_count(&mut self, form_spec: &str, delta: i32) -> Option<&HudItem> {

@@ -201,30 +201,15 @@ impl Controller {
         if kind.is_potion() && settings().group_potions() {
             if matches!(kind, BaseType::Potion(PotionType::Health)) {
                 let count = healthPotionCount();
-                self.cache.update_count("health_proxy", delta);
-                self.cycles.remove_zero_count_items(
-                    "health_proxy",
-                    &BaseType::PotionProxy(Proxy::Health),
-                    count,
-                );
+                self.cache.set_count("health_proxy", count);
             }
             if matches!(kind, BaseType::Potion(PotionType::Magicka)) {
                 let count = magickaPotionCount();
-                self.cache.update_count("magicka_proxy", delta);
-                self.cycles.remove_zero_count_items(
-                    "magicka_proxy",
-                    &BaseType::PotionProxy(Proxy::Magicka),
-                    count,
-                );
+                self.cache.set_count("magicka_proxy", count);
             }
             if matches!(kind, BaseType::Potion(PotionType::Stamina)) {
-                self.cache.update_count("stamina_proxy", delta);
                 let count = staminaPotionCount();
-                self.cycles.remove_zero_count_items(
-                    "stamina_proxy",
-                    &BaseType::PotionProxy(Proxy::Stamina),
-                    count,
-                );
+                self.cache.set_count("stamina_proxy", count);
             }
         }
 
