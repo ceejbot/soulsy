@@ -55,7 +55,7 @@ pub fn initialize_hud() {
     let settings = settings();
     log::info!("Reading and applying settings. Your settings are:");
     let mut ctrl = control::get();
-    log::info!("{settings:?}");
+    log::info!("{settings}");
 
     let hud = hud_layout();
     ctrl.apply_settings();

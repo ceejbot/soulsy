@@ -410,7 +410,7 @@ impl UserSettings {
 }
 
 /// General-purpose enum for how to activate things.
-#[derive(Debug, Clone, Display, Copy)]
+#[derive(Debug, Clone, strum::Display, Copy)]
 pub enum ActivationMethod {
     /// Tap the hotkey.
     Hotkey,
@@ -505,5 +505,78 @@ impl FromIniStr for i32 {
 impl FromIniStr for String {
     fn from_ini(value: &str) -> Option<Self> {
         Some(value.to_string())
+    }
+}
+
+// qualified so we don't collide with the macro strum::Display
+// We implement this so the logs contain a human-readable dump of the settings
+// at save game load, so people can debug.
+impl std::fmt::Display for UserSettings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            r#"               debug logging: {}
+           show/hide HUD key: {}
+             power cycle key: {}
+           utility cycle key: {}
+              left cycle key: {}
+             right cycle key: {}
+          equipset cycle key: {}
+          refresh_layout key: {}
+             how_to_activate: {}
+        activate consumables: {}
+           activate_modifier: {}
+               group_potions: {}
+                how_to_cycle: {}
+              cycle_modifier: {}
+    dual-wield on long press: {}
+               how_to_toggle: {}
+               menu_modifier: {}
+           link_to_favorites: {}
+            unarmed_handling: {}
+            unequip_modifier: {}
+              equip_delay_ms: {} ms
+               long_press_ms: {} ms
+                    autofade: {}
+                   fade_time: {} ms
+             controller_kind: {}
+          cycling_slows_time: {}
+            slow_time_factor: {} %
+                  cycle_ammo: {}
+              colorize_icons: {}
+          equip_sets_unequip: {}
+             skse_identifier: {}"#,
+            self.debug,
+            self.showhide,
+            self.power,
+            self.utility,
+            self.left,
+            self.right,
+            self.equipset,
+            self.refresh_layout,
+            self.how_to_activate,
+            self.activate,
+            self.activate_modifier,
+            self.group_potions,
+            self.how_to_cycle,
+            self.cycle_modifier,
+            self.long_press_matches,
+            self.how_to_toggle,
+            self.menu_modifier,
+            self.link_to_favorites,
+            self.unarmed_handling,
+            self.unequip_modifier,
+            self.equip_delay_ms,
+            self.long_press_ms,
+            self.autofade,
+            self.fade_time,
+            self.controller_kind,
+            self.cycling_slows_time,
+            self.slow_time_factor,
+            self.cycle_ammo,
+            self.colorize_icons,
+            self.equip_sets_unequip,
+            self.skse_identifier
+        )
     }
 }
