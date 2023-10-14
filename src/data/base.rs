@@ -230,7 +230,11 @@ impl IsHudItem for BaseType {
             BaseType::Equipset(_) => false,
             BaseType::Food(_) => true,
             BaseType::HandToHand => false,
-            BaseType::Light(_) => false,
+            BaseType::Light(t) => {
+                // Lanterns might be utility items AND left-hand items.
+                // Mods do both.
+                !matches!(t, LightType::Torch)
+            },
             BaseType::Potion(_) => true,
             BaseType::PotionProxy(_) => true,
             BaseType::Power => false,
