@@ -6,7 +6,6 @@ bool property pEnableActivateHotkey = false auto
 bool property pCycleNeedsModifier = false auto
 bool property pMenuNeedsModifier = false auto
 bool property pEnableUnequipModifier = false auto
-bool property pAutoFadeGroupControl = false auto
 bool property pEnableLongPressMatchOption = true auto
 
 int property pCycleToShow = 0 auto
@@ -166,8 +165,6 @@ Event OnSettingChange(String changedID)
         if unequipEnum == 1
             SetModSettingBool("bLongPressMatches:Controls", false)
         endif
-    elseif (changedId == "bAutoFade:Options")
-        pAutoFadeGroupControl =  GetModSettingBool("bAutoFade:Options")
     elseif (changedId == "pEquipSetMenuSelection")
         pSelectedEquipSetId = FindSelectedSetID(pEquipSetMenuSelection)
     	SetModSettingString("sLastEditedSetName:Equipsets", pEquipSetMenuSelection)

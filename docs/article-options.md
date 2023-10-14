@@ -44,7 +44,7 @@ If you are using a controller or intend to use some of the keys dedicated as hot
 
 At a minimum, you want to set hotkeys for the cycles. You need at least four: powers & shouts, left hand, right hand, and consumables. Pressing these keys let you change which item you have readied or equipped, and they allow you to add and remove items from the matching cycle. If you are using the equipment sets feature of SoulsyHUD, you'll need a fifth key for cycling through outfits or 'equip sets'. You cycle through equipment sets the same way you cycle through other times, but you create them differently. There's more information in the section on equipment sets.
 
-![MCM options page](./mcm_options_page.jpg)
+![MCM options page](./01_mcm_gameplay_page.jpg)
 
 Each of these cycles has three options for advancing it.
 
@@ -128,7 +128,7 @@ This option defaults to off, but many players will want to enable it. The defaul
 
 ## Display options
 
-![display options](./mcm_display_page.jpg)
+![display options](./05_mcm_display_page.jpg)
 
 ## Showing and hiding the HUD
 
