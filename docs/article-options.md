@@ -46,7 +46,7 @@ At a minimum, you want to set hotkeys for the cycles. You need at least four: po
 
 If you are using the equipment sets feature of SoulsyHUD, you'll need a fifth key for cycling through outfits or 'equip sets'. You cycle through equipment sets the same way you cycle through other times, but you create them differently. There's more information in the section on equipment sets.
 
-![MCM options page](./01_mcm_gameplay_page.jpeg)
+![MCM options page](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697248531-322634713.jpeg)
 
 Each of these cycles has three options for advancing it.
 
@@ -54,7 +54,7 @@ Each of these cycles has three options for advancing it.
 - A long press of its button. (⚠️ This option might be removed in a future release!)
 - A button press plus a modifier.
 
-![ways to advance cycles](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1691440328-2116876633.jpeg)
+![ways to advance cycles](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697248579-503788721.jpeg)
 
 Modifiers are handy if you're using a controller and need to make each button do a lot of work. You might set up your d-pad to do long presses to advance a cycle, and short presses to do something else. Experiment to find out what works best for you!
 
@@ -83,13 +83,13 @@ The HUD can help you switch to unarmed combat, or unequip your hands or shout, i
 
 If you select long-press here, you cannot long press to advance a cycle or to dual-wield. If you pick the modifier key, make sure it's different from any cycle advance modifier key.
 
-![options for unequipping a slot](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1691440273-1546011560.jpeg)
+![options for unequipping a slot](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697248622-1275982389.jpeg)
 
 ### Dual-wielding
 
 If you haven't already used long-press for cycling or for unequipping, you can enable a third option for using it: matching hands. You can long-press the left or right cycle key to dual-wield whatever is in that hand, if it can be dual-wielded. For example, if you have a spell in your right hand, you can long-press the right cycle key to equip the same spell in your left hand. Or if you have a dagger in your left hand, long-press left to equip the same kind of dagger in your right. This fails if you don't have at least two of the weapon in your inventory, or if it's a weapon or spell that can't go into either hand.
 
-![the dual-wield option](./04_mcm_long_press.jpeg)
+![the dual-wield option](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697248661-2065591199.jpeg)
 
 As a keyboard user, this is my preferred meaning for long-pressing a key. This feature is _disabled_ by default.
 
@@ -111,7 +111,7 @@ You can also change how the HUD treats potion consumables. Enable *Group potions
 
 The next few options control how the HUD feels during gameplay.
 
-![image](./06_gameplay_feel.jpeg)
+![image](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697248737-1336120952.jpeg)
 
 
 ### Equip delay
@@ -132,7 +132,7 @@ This option defaults to off, but many players will want to enable it. The defaul
 
 ## Display options
 
-![display options](./07_mcm_display_page.jpeg)
+![display options](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249053-1968562125.jpeg)
 
 ### Auto-fade
 
@@ -176,11 +176,11 @@ The text is a button you can click on to wipe all of your cycles clear. This cle
 
 As mentioned in the section on debug logging, cycle information is logged when a save is loaded. There is also a way to look at what's in your cycles in-game in this page of the menus. You can pick one of the four cycles to preview:
 
-![picking a cycle to preview](./08_mcm_select_cycle.jpeg)
+![picking a cycle to preview](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249087-1633785946.jpeg)
 
 Once you select a cycle to preview, the second dropdown menu is filled in with the items in that cycle, in order.
 
-![previewing the utilities cycle](./09_utility_items_preview.jpeg)
+![previewing the utilities cycle](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249123-752809511.jpeg)
 
 Choosing items in this drop down has no effect on anything in-game. It's just a preview.
 
@@ -194,7 +194,7 @@ The workflow for making equipment sets is to put on exactly what you want to sav
 
 This is the most complex MCM page in the mod, so we'll walk through all the available options now.
 
-![equipset options page](./10_mcm_equipset_page.jpeg)
+![equipset options page](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249157-1574197108.jpeg)
 
 ### Creating equipment sets
 
@@ -208,14 +208,14 @@ Next, we have a text field for the name to use for a new equipment set. The mod 
 
 ### Editing and updating sets
 
-![selecting an existing equipment set](./11_equipset_select_set.jpeg)
+![selecting an existing equipment set](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249187-1326592581.jpeg)
 
 Select an equipment set from the dropdown. When you've selected a set to edit, the text field below the dropdown is filled in with the current name of the set.
 
 - To rename the selected set, type a new name into the field.
 - Next, press the `Rename set` text button.
 
-![update buttons](./12_equipsets_edit_buttons.jpeg)
+![update buttons](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249212-1256359423.jpeg)
 
 The `Update set` text button updates the selected equipment set with what the player character is wearing right now.
 
@@ -223,18 +223,18 @@ The `Remove set` text button deletes the equipment set. You cannot undo this act
 
 ### Choosing an icon
 
-![image](./13_equipset_select_item.jpeg)
+![image](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249243-301527399.jpeg)
 
 In the second column there's another dropdown menu. This dropdown shows all the items in the equipment set you've selected. You can use this dropdown to choose an icon to represent this equipment set in any layouts that draw icons for equipment sets.
 
 1. Select an item in the equipment set from the dropdown.
 2. Press the `Use this icon` text button to use that item's icon.
 
-![image](./14_equipset_use_icon.jpeg)
+![image](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249275-59763868.jpeg)
 
 Icons are not previewed in the MCM for technical reasons. (The mod author would like to figure out a way to do this.) HUD layouts can draw them like they draw any other item icon, however.
 
-![an equipment set in a HUD layout](./15_default_layout_equipset.jpeg)
+![an equipment set in a HUD layout](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1697249305-2042603145.jpeg)
 
 ## That's all the options!
 
