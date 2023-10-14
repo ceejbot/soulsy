@@ -38,13 +38,15 @@ Table of contents:
 
 ## Before configuring
 
-If you are using a controller or intend to use some of the keys dedicated as hotkeys, you might want to unbind them first. The game doesn't show you any user interface for unbinding hotkeys, but you can do this with a *control map*. The Nexus has a number of control maps for PS and XBox controllers that set things up for you. One that works well is [Gamepad Controlmap for One Click Power Attack](https://www.nexusmods.com/skyrimspecialedition/mods/72417). If you want to make your own tweaks, I suggest you start with [this commented control map](https://www.nexusmods.com/skyrimspecialedition/mods/44160). A commented control map also comes with SoulsyHUD, which you can move into place and edit. (It has a name different from the required name so it doesn't change your controls on you by surprise.)
+If you are using a controller or intend to use some of the keys dedicated as hotkeys, you might want to unbind them first. The game doesn't show you any user interface for unbinding hotkeys, but you can do this with a *control map*. The Nexus has a number of control maps for PS and XBox controllers that set things up for you. One that works well is [Gamepad Controlmap for One Click Power Attack](https://www.nexusmods.com/skyrimspecialedition/mods/72417). If you want to make your own tweaks, I suggest you start with [this commented control map](https://www.nexusmods.com/skyrimspecialedition/mods/44160). A commented control map also comes with SoulsyHUD, which you can move into place and edit. (It has a name different from the required name so it doesn't change your controls on you by surprise. Look for it in the directory `data/interface/controls/pc`.)
 
 ## Hotkeys for cycling items
 
-At a minimum, you want to set hotkeys for the cycles. You need at least four: powers & shouts, left hand, right hand, and consumables. Pressing these keys let you change which item you have readied or equipped, and they allow you to add and remove items from the matching cycle. If you are using the equipment sets feature of SoulsyHUD, you'll need a fifth key for cycling through outfits or 'equip sets'. You cycle through equipment sets the same way you cycle through other times, but you create them differently. There's more information in the section on equipment sets.
+At a minimum, you want to set hotkeys for the cycles. You need at least four: powers & shouts, left hand, right hand, and consumables. Pressing these keys let you change which item you have readied or equipped, and they allow you to add and remove items from the matching cycle.
 
-![MCM options page](./01_mcm_gameplay_page.jpg)
+If you are using the equipment sets feature of SoulsyHUD, you'll need a fifth key for cycling through outfits or 'equip sets'. You cycle through equipment sets the same way you cycle through other times, but you create them differently. There's more information in the section on equipment sets.
+
+![MCM options page](./01_mcm_gameplay_page.jpeg)
 
 Each of these cycles has three options for advancing it.
 
@@ -81,11 +83,13 @@ The HUD can help you switch to unarmed combat, or unequip your hands or shout, i
 
 If you select long-press here, you cannot long press to advance a cycle or to dual-wield. If you pick the modifier key, make sure it's different from any cycle advance modifier key.
 
-![image](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1691440273-1546011560.jpeg)
+![options for unequipping a slot](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1691440273-1546011560.jpeg)
 
 ### Dual-wielding
 
 If you haven't already used long-press for cycling or for unequipping, you can enable a third option for using it: matching hands. You can long-press the left or right cycle key to dual-wield whatever is in that hand, if it can be dual-wielded. For example, if you have a spell in your right hand, you can long-press the right cycle key to equip the same spell in your left hand. Or if you have a dagger in your left hand, long-press left to equip the same kind of dagger in your right. This fails if you don't have at least two of the weapon in your inventory, or if it's a weapon or spell that can't go into either hand.
+
+![the dual-wield option](./04_mcm_long_press.jpeg)
 
 As a keyboard user, this is my preferred meaning for long-pressing a key. This feature is _disabled_ by default.
 
@@ -105,9 +109,9 @@ You can also change how the HUD treats potion consumables. Enable *Group potions
 
 ## Gameplay feel
 
-The next section lets you control how the HUD feels during gameplay.
+The next few options control how the HUD feels during gameplay.
 
-![image](https://staticdelivery.nexusmods.com/mods/1704/images/96210/96210-1691440314-502106306.jpeg)
+![image](./06_gameplay_feel.jpeg)
 
 
 ### Equip delay
@@ -128,11 +132,11 @@ This option defaults to off, but many players will want to enable it. The defaul
 
 ## Display options
 
-![display options](./05_mcm_display_page.jpg)
+![display options](./07_mcm_display_page.jpeg)
 
-## Showing and hiding the HUD
+### Auto-fade
 
-You have two choices here: whether you want to use a hotkey for toggling visibility, or whether you want the HUD to control its own visibility. If you choose auto-fade, the HUD will fade in when your weapons are drawn or you are in combat, and fade out otherwise. You can tweak the fade out time to your preference. The HUD always fades in *twice as fast* as it fades out.
+You have two choices here: whether you want to use a hotkey for toggling visibility, or whether you want the HUD to control its own visibility. If you turn auto-fade on, the HUD will fade in when your weapons are drawn or you are in combat, and fade out otherwise. You can tweak the fade out time to your preference. The HUD always fades in *twice as fast* as it fades out.
 
 The HUD will also always show itself briefly when you tap a cycle key, to give you visual feedback about what changed.
 
@@ -160,26 +164,29 @@ Each SKSE mod that stores data in the cosave file must identify itself to the SK
 
 Enable this toggle and restart the game to make the mod log more verbosely.
 
-All SKSE plugin mods log in the same directory: `Documents/my games/Skyrim Special Edition/SKSE`. SoulsyHUD writes two logs, one for its C++ code and one for its Rust code. (Interleaving log output from the two very different logging systems is more worth than it's worth.) The two log files are named `SoulsyHUD.log` and `SoulsyHUD_rust.log`.
+All SKSE plugin mods log in the same directory: `Documents/my games/Skyrim Special Edition/SKSE`. SoulsyHUD writes two logs, one for its C++ code and one for its Rust code. (Correctly interleaving log output from the two very different logging systems is more work than it's worth.) The two log files are named `SoulsyHUD.log` and `SoulsyHUD_rust.log`.
 
 In normal logging mode, SoulsyHUD's logs are designed for you to read to learn about what the mod is doing and how it's making decisions for you. At game load, it will log what all your cycles contain and what your equipment sets are, for example. In debug mode, the logs contain information intended to help the mod author debug. Enable this if you're curious or if you have a problem you're trying to figure out.
 
 ### Clearing cycles
 
-The text is a button you can click on to wipe all of your cycles clear. (This does *not* affect equipment sets.) You cannot undo this action in-game. If you want your cycles back, you must load a save from before you cleared them.
+The text is a button you can click on to wipe all of your cycles clear. This clears equipment set lists as well as the regular four cycles. You cannot undo this action in-game. If you want your cycles back, you must load a save from before you cleared them.
 
-##@ Previewing cycles
+### Previewing cycles
 
-![picking a cycle to preview](./mcm_cycle_preview_page.jpg)
+As mentioned in the section on debug logging, cycle information is logged when a save is loaded. There is also a way to look at what's in your cycles in-game in this page of the menus. You can pick one of the four cycles to preview:
 
-The second dropdown menu is filled in with the items in that cycle, in order.
+![picking a cycle to preview](./08_mcm_select_cycle.jpeg)
 
-![previewing the powers cycle](./mcm_powers_preview.jpg)
+Once you select a cycle to preview, the second dropdown menu is filled in with the items in that cycle, in order.
 
+![previewing the utilities cycle](./09_utility_items_preview.jpeg)
+
+Choosing items in this drop down has no effect on anything in-game. It's just a preview.
 
 ## Equipment sets
 
-If you want, you can use SoulsyHUD to cycle equipment sets, say, the way [Serio's Cycle Hotkeys](https://www.nexusmods.com/skyrimspecialedition/mods/27184) does. Equipment sets can include any item a player can equip that does not go into the left or right hands. (Behind the scenes, the code walks through all the available biped object slots and record what's in each.)
+If you want, you can use SoulsyHUD to cycle equipment sets, say, the way [Serio's Cycle Hotkeys](https://www.nexusmods.com/skyrimspecialedition/mods/27184) does. Equipment sets can include any item a player can equip that does not go into the left or right hands. (Behind the scenes, the code walks through all the available biped object slots and record what's in each. This means that non-standard items like earrings and tails *should* be correctly supported.)
 
 SoulsyHUD does not include any interface for editing items in equipment sets. The game already has a great user interface for choosing what you're wearing-- it's the SkyUI armor inventory screen!  Instead of trying to build an interface as good as that, SoulsyHUD records what the player character is wearing when an equipment set is created.
 
@@ -187,22 +194,28 @@ The workflow for making equipment sets is to put on exactly what you want to sav
 
 This is the most complex MCM page in the mod, so we'll walk through all the available options now.
 
+![equipset options page](./10_mcm_equipset_page.jpeg)
+
 ### Creating equipment sets
 
 First you should set the key to use to advance equipment sets. This key works like all the other cycle keys and is affected by all the settings you've chosen for them, like modifiers and timers.
 
-Toggle whether or not to unequip empty slots when you change sets. This option defaults to on. For example, if an equipment set does not a cloak or a backpack, should switching to that set unequip any cloak or backpack you're wearing or leave them on?
+Next, choose whether or not to unequip empty slots when you change sets. For example, if an equipment set does not include a cloak or a backpack, should switching to that set unequip any cloak or backpack you're wearing or leave them on? This option defaults to *on*, aka unequip slots the equipset does not mention.
 
 People use outfits in many ways while playing Skyrim. Some people might want to use an equipment set to swap in a fur cloak or other warm items during a survival playthrough, so they would turn this option off and use the sets as partial outfit switches. Other people want to use equipment sets as full outfits, such as swapping from a full set of armor to a set of clothing in-town for role-play reasons. People with that use case will leave the option on.
 
-Next, we have a text field for the name to use for a new equipment set. The mod remembers what you typed in last time. Below that is
+Next, we have a text field for the name to use for a new equipment set. The mod remembers what you typed in last time. Below that is the text button for creating a set.
 
 ### Editing and updating sets
 
-Select an equipment set from the dropdown. Below this is a text field containing the current name of the set you've selected.
+![selecting an existing equipment set](./11_equipset_select_set.jpeg)
 
-- To rename the selected set, type in a new name.
+Select an equipment set from the dropdown. When you've selected a set to edit, the text field below the dropdown is filled in with the current name of the set.
+
+- To rename the selected set, type a new name into the field.
 - Next, press the `Rename set` text button.
+
+![update buttons](./12_equipsets_edit_buttons.jpeg)
 
 The `Update set` text button updates the selected equipment set with what the player character is wearing right now.
 
@@ -210,12 +223,18 @@ The `Remove set` text button deletes the equipment set. You cannot undo this act
 
 ### Choosing an icon
 
+![image](./13_equipset_select_item.jpeg)
+
 In the second column there's another dropdown menu. This dropdown shows all the items in the equipment set you've selected. You can use this dropdown to choose an icon to represent this equipment set in any layouts that draw icons for equipment sets.
 
 1. Select an item in the equipment set from the dropdown.
 2. Press the `Use this icon` text button to use that item's icon.
 
-Icons are not previewed in the MCM for technical reasons. (The mod author would like to figure out a way to do this.)
+![image](./14_equipset_use_icon.jpeg)
+
+Icons are not previewed in the MCM for technical reasons. (The mod author would like to figure out a way to do this.) HUD layouts can draw them like they draw any other item icon, however.
+
+![an equipment set in a HUD layout](./15_default_layout_equipset.jpeg)
 
 ## That's all the options!
 
