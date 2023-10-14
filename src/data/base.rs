@@ -11,7 +11,7 @@ use super::potion::PotionType;
 use super::shout::ShoutType;
 use super::spell::SpellType;
 use super::weapon::WeaponType;
-use super::{HasIcon, HasKeywords, IsHudItem};
+use super::{HasIcon, HasKeywords};
 use crate::plugin::{Color, ItemCategory};
 
 #[derive(Clone, Debug, Default, Display, Eq, Hash, PartialEq)]
@@ -124,6 +124,130 @@ impl BaseType {
             BaseType::Equipset(_) => Icon::ArmorHeavy,
         }
     }
+
+    pub fn count_matters(&self) -> bool {
+        match *self {
+            BaseType::Empty => false,
+            BaseType::Ammo(_) => true,
+            BaseType::Armor(_) => true,
+            BaseType::Equipset(_) => false,
+            BaseType::Food(_) => true,
+            BaseType::HandToHand => false,
+            BaseType::Light(_) => true,
+            BaseType::Potion(_) => true,
+            BaseType::PotionProxy(_) => true,
+            BaseType::Power => false,
+            BaseType::Scroll(_) => true,
+            BaseType::Shout(_) => false,
+            BaseType::Spell(_) => false,
+            BaseType::Weapon(_) => true,
+        }
+    }
+
+    pub fn is_ammo(&self) -> bool {
+        matches!(self, BaseType::Ammo(_))
+    }
+
+    pub fn is_armor(&self) -> bool {
+        matches!(self, BaseType::Armor(_))
+    }
+
+    pub fn is_magic(&self) -> bool {
+        matches!(self, BaseType::Spell(_) | BaseType::Scroll(_))
+    }
+
+    pub fn is_potion(&self) -> bool {
+        matches!(self, BaseType::Potion(_))
+    }
+
+    pub fn is_power(&self) -> bool {
+        matches!(self, BaseType::Power | BaseType::Shout(_))
+    }
+
+    pub fn is_spell(&self) -> bool {
+        matches!(self, BaseType::Spell(_))
+    }
+
+    pub fn is_utility(&self) -> bool {
+        match self {
+            BaseType::Empty => false,
+            BaseType::Ammo(_) => false,
+            BaseType::Armor(t) => t.is_utility(),
+            BaseType::Equipset(_) => false,
+            BaseType::Food(_) => true,
+            BaseType::HandToHand => false,
+            BaseType::Light(t) => {
+                // Lanterns might be utility items AND left-hand items.
+                // Mods do both.
+                !matches!(t, LightType::Torch)
+            }
+            BaseType::Potion(_) => true,
+            BaseType::PotionProxy(_) => true,
+            BaseType::Power => false,
+            BaseType::Scroll(_) => false,
+            BaseType::Shout(_) => false,
+            BaseType::Spell(_) => false,
+            BaseType::Weapon(_) => false,
+        }
+    }
+
+    pub fn is_weapon(&self) -> bool {
+        matches!(self, BaseType::Weapon(_))
+    }
+
+    pub fn is_one_handed(&self) -> bool {
+        match self {
+            BaseType::Weapon(t) => t.is_one_handed(),
+            BaseType::Spell(v) => !v.two_handed(),
+            _ => true,
+        }
+    }
+
+    pub fn two_handed(&self) -> bool {
+        if matches!(self, BaseType::Armor(..)) {
+            false
+        } else {
+            !self.is_one_handed()
+        }
+    }
+
+    pub fn left_hand_ok(&self) -> bool {
+        match self {
+            BaseType::Empty => false,
+            BaseType::Ammo(_) => false,
+            BaseType::Armor(t) => !t.is_utility(),
+            BaseType::Equipset(_) => false,
+            BaseType::Food(_) => false,
+            BaseType::HandToHand => true,
+            BaseType::Light(_) => true,
+            BaseType::Potion(_) => false,
+            BaseType::PotionProxy(_) => false,
+            BaseType::Power => false,
+            BaseType::Scroll(t) => !t.two_handed(),
+            BaseType::Shout(_) => false,
+            BaseType::Spell(t) => !t.two_handed(),
+            BaseType::Weapon(t) => t.left_hand_ok(),
+        }
+    }
+
+    pub fn right_hand_ok(&self) -> bool {
+        match self {
+            BaseType::Empty => false,
+            BaseType::Ammo(_) => false,
+            BaseType::Armor(_) => false,
+            BaseType::Equipset(_) => false,
+            BaseType::Food(_) => false,
+            BaseType::HandToHand => true,
+            BaseType::Light(_) => false,
+            BaseType::Potion(_) => false,
+            BaseType::PotionProxy(_) => false,
+            BaseType::Power => false,
+            BaseType::Scroll(_) => true,
+            BaseType::Shout(_) => false,
+            BaseType::Spell(_) => true,
+            BaseType::Weapon(t) => t.right_hand_ok(),
+        }
+    }
 }
 
 pub fn color_from_keywords(keywords: &[String]) -> InvColor {
@@ -174,132 +298,6 @@ impl HasIcon for BaseType {
             BaseType::Shout(t) => t.icon(),
             BaseType::Spell(t) => t.icon(),
             BaseType::Weapon(t) => t.icon(),
-        }
-    }
-}
-
-impl IsHudItem for BaseType {
-    fn count_matters(&self) -> bool {
-        match *self {
-            BaseType::Empty => false,
-            BaseType::Ammo(_) => true,
-            BaseType::Armor(_) => true,
-            BaseType::Equipset(_) => false,
-            BaseType::Food(_) => true,
-            BaseType::HandToHand => false,
-            BaseType::Light(_) => true,
-            BaseType::Potion(_) => true,
-            BaseType::PotionProxy(_) => true,
-            BaseType::Power => false,
-            BaseType::Scroll(_) => true,
-            BaseType::Shout(_) => false,
-            BaseType::Spell(_) => false,
-            BaseType::Weapon(_) => true,
-        }
-    }
-
-    fn is_ammo(&self) -> bool {
-        matches!(self, BaseType::Ammo(_))
-    }
-
-    fn is_armor(&self) -> bool {
-        matches!(self, BaseType::Armor(_))
-    }
-
-    fn is_magic(&self) -> bool {
-        matches!(self, BaseType::Spell(_) | BaseType::Scroll(_))
-    }
-
-    fn is_potion(&self) -> bool {
-        matches!(self, BaseType::Potion(_))
-    }
-
-    fn is_power(&self) -> bool {
-        matches!(self, BaseType::Power | BaseType::Shout(_))
-    }
-
-    fn is_spell(&self) -> bool {
-        matches!(self, BaseType::Spell(_))
-    }
-
-    fn is_utility(&self) -> bool {
-        match self {
-            BaseType::Empty => false,
-            BaseType::Ammo(_) => false,
-            BaseType::Armor(t) => t.is_utility(),
-            BaseType::Equipset(_) => false,
-            BaseType::Food(_) => true,
-            BaseType::HandToHand => false,
-            BaseType::Light(t) => {
-                // Lanterns might be utility items AND left-hand items.
-                // Mods do both.
-                !matches!(t, LightType::Torch)
-            }
-            BaseType::Potion(_) => true,
-            BaseType::PotionProxy(_) => true,
-            BaseType::Power => false,
-            BaseType::Scroll(_) => false,
-            BaseType::Shout(_) => false,
-            BaseType::Spell(_) => false,
-            BaseType::Weapon(_) => false,
-        }
-    }
-
-    fn is_weapon(&self) -> bool {
-        matches!(self, BaseType::Weapon(_))
-    }
-
-    fn is_one_handed(&self) -> bool {
-        match self {
-            BaseType::Weapon(t) => t.is_one_handed(),
-            BaseType::Spell(v) => !v.two_handed(),
-            _ => true,
-        }
-    }
-
-    fn two_handed(&self) -> bool {
-        if matches!(self, BaseType::Armor(..)) {
-            false
-        } else {
-            !self.is_one_handed()
-        }
-    }
-
-    fn left_hand_ok(&self) -> bool {
-        match self {
-            BaseType::Empty => false,
-            BaseType::Ammo(_) => false,
-            BaseType::Armor(t) => !t.is_utility(),
-            BaseType::Equipset(_) => false,
-            BaseType::Food(_) => false,
-            BaseType::HandToHand => true,
-            BaseType::Light(_) => true,
-            BaseType::Potion(_) => false,
-            BaseType::PotionProxy(_) => false,
-            BaseType::Power => false,
-            BaseType::Scroll(t) => !t.two_handed(),
-            BaseType::Shout(_) => false,
-            BaseType::Spell(t) => !t.two_handed(),
-            BaseType::Weapon(t) => t.left_hand_ok(),
-        }
-    }
-
-    fn right_hand_ok(&self) -> bool {
-        match self {
-            BaseType::Empty => false,
-            BaseType::Ammo(_) => false,
-            BaseType::Armor(_) => false,
-            BaseType::Equipset(_) => false,
-            BaseType::Food(_) => false,
-            BaseType::HandToHand => true,
-            BaseType::Light(_) => false,
-            BaseType::Potion(_) => false,
-            BaseType::PotionProxy(_) => false,
-            BaseType::Power => false,
-            BaseType::Scroll(_) => true,
-            BaseType::Shout(_) => false,
-            BaseType::Spell(_) => true,
-            BaseType::Weapon(t) => t.right_hand_ok(),
         }
     }
 }

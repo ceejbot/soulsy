@@ -10,7 +10,7 @@ use super::keys::CycleSlot;
 use super::user_settings;
 use crate::data::icons::Icon;
 use crate::data::item_cache::ItemCache;
-use crate::data::{BaseType, HudItem, IsHudItem};
+use crate::data::{BaseType, HudItem};
 use crate::plugin::{
     hasItemOrSpell, healthPotionCount, itemCount, magickaPotionCount, staminaPotionCount,
     startAlphaTransition, EquippedData,

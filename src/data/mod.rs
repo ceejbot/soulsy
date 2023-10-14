@@ -188,24 +188,7 @@ pub trait HasKeywords {
     fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self;
 }
 
-// ---------- Unclear this needs to be a trait.
-
-pub trait IsHudItem {
-    // TODO fold most of these up into base type
-    fn count_matters(&self) -> bool;
-    fn is_ammo(&self) -> bool;
-    fn is_armor(&self) -> bool;
-    fn is_magic(&self) -> bool;
-    fn is_potion(&self) -> bool;
-    fn is_power(&self) -> bool;
-    fn is_spell(&self) -> bool;
-    fn is_utility(&self) -> bool;
-    fn is_weapon(&self) -> bool;
-    fn is_one_handed(&self) -> bool;
-    fn left_hand_ok(&self) -> bool;
-    fn right_hand_ok(&self) -> bool;
-    fn two_handed(&self) -> bool;
-}
+// ---------- Tests. I hear they're good.
 
 #[cfg(test)]
 mod tests {

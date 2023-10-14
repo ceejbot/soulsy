@@ -482,7 +482,7 @@ impl Controller {
         };
         let item = self.cache.get(&equipped);
 
-        if item.kind().left_hand_ok() && item.kind().right_hand_ok() {
+        if item.left_hand_ok() && item.right_hand_ok() {
             log::info!("Attempting to dual-wield '{}' by request.", item.name());
             if item.form_string().as_str() == "unarmed_proxy" {
                 unequipSlot(other_hand);
@@ -578,7 +578,7 @@ impl Controller {
             }
 
             // They are the same. Do we have more than one? If so, we're good.
-            if !candidate.kind().count_matters() || candidate.count() > 1 {
+            if !candidate.count_matters() || candidate.count() > 1 {
                 self.cycles.advance(which, 1);
                 let _changed = &self.update_slot(other_hud, &return_to.clone());
                 self.cycles.set_top(&other_hand, &return_to.form_string());
@@ -605,7 +605,7 @@ impl Controller {
             // Phew. Okay. Now we're on to the one-handers equipped cases. These are easier.
             let maybe_candidate = if let Some(other_equipped) = self.visible.get(&other_hud) {
                 // Are we dual-wielding? If so, do we have at least two?
-                if !other_equipped.kind().count_matters() || other_equipped.count() > 1 {
+                if !other_equipped.count_matters() || other_equipped.count() > 1 {
                     self.cycles.advance(which, 1)
                 } else {
                     self.cycles.advance_skipping(which, other_equipped.clone())
@@ -685,13 +685,13 @@ impl Controller {
                 chooseMagickaPotion();
             } else if item.form_string() == "stamina_proxy" {
                 chooseStaminaPotion();
-            } else if item.kind().is_potion() {
+            } else if item.is_potion() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 consumePotion(&form_spec);
-            } else if item.kind().is_armor() {
+            } else if item.is_armor() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 equipArmor(&form_spec);
-            } else if item.kind().is_ammo() {
+            } else if item.is_ammo() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 equipAmmo(&form_spec)
             }
@@ -771,7 +771,7 @@ impl Controller {
 
         if matches!(which, Action::Power) {
             // Equip that fus-ro-dah, dovahkin!
-            if let BaseType::Shout(t) = item.kind() {
+            if let BaseType::Shout(t) = kind {
                 log::info!("{}", t.translation());
             }
             cxx::let_cxx_string!(form_spec = item.form_string());
@@ -922,7 +922,7 @@ impl Controller {
         };
         log::info!("{prefix}: name='{}'; form_spec='{form_spec}';", item.name());
 
-        if item.kind().is_ammo() {
+        if item.is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
                 if visible.form_string() != *form_spec {
                     self.update_slot(HudElement::Ammo, &item);
@@ -936,12 +936,12 @@ impl Controller {
             }
         }
 
-        if item.kind().is_utility() {
+        if item.is_utility() {
             // We do nothing. We are the source of truth for non-ammo on the utility view.
             return false;
         }
 
-        if item.kind().is_power() {
+        if item.is_power() {
             if let Some(visible) = self.visible.get(&HudElement::Power) {
                 if visible.form_string() != *form_spec {
                     self.update_slot(HudElement::Power, &item);
@@ -1199,13 +1199,13 @@ impl Controller {
             let mut vars = HashMap::new();
             vars.insert("item".to_string(), item.name());
 
-            let maybe_cycle = if item.kind().is_utility() {
+            let maybe_cycle = if item.is_utility() {
                 if self.cycles.remove_item(CycleSlot::Utility, &item) {
                     Some(translated_key(FMT_ITEM_UTILITIES_CYCLE))
                 } else {
                     None
                 }
-            } else if item.kind().is_power() {
+            } else if item.is_power() {
                 if self.cycles.remove_item(CycleSlot::Power, &item) {
                     Some(translated_key(FMT_ITEM_POWERS_CYCLE))
                 } else {
@@ -1242,13 +1242,13 @@ impl Controller {
             let mut vars = HashMap::new();
             vars.insert("item".to_string(), item.name());
 
-            let maybe_cycle = if item.kind().is_utility() {
+            let maybe_cycle = if item.is_utility() {
                 if self.cycles.add_item(CycleSlot::Utility, &item) {
                     Some(translated_key(FMT_ITEM_UTILITIES_CYCLE))
                 } else {
                     None
                 }
-            } else if item.kind().is_power() {
+            } else if item.is_power() {
                 if self.cycles.add_item(CycleSlot::Power, &item) {
                     Some(translated_key(FMT_ITEM_POWERS_CYCLE))
                 } else {
@@ -1260,7 +1260,7 @@ impl Controller {
                 } else {
                     None
                 }
-            } else if item.kind().is_spell() || (item.kind().right_hand_ok() && item.count() > 1) {
+            } else if item.is_spell() || (item.right_hand_ok() && item.count() > 1) {
                 let added_right = self.cycles.add_item(CycleSlot::Right, &item);
                 let added_left = self.cycles.add_item(CycleSlot::Left, &item);
                 if added_right && added_left {
@@ -1272,7 +1272,7 @@ impl Controller {
                 } else {
                     None
                 }
-            } else if item.kind().right_hand_ok() {
+            } else if item.right_hand_ok() {
                 if self.cycles.add_item(CycleSlot::Right, &item) {
                     Some(translated_key(FMT_ITEM_RIGHT_CYCLE))
                 } else {

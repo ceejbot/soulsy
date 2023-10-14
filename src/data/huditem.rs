@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use super::base::BaseType;
 use super::icons::Icon;
-use super::{HasIcon, IsHudItem};
+use super::HasIcon;
 use crate::plugin::{Color, ItemCategory};
 
 /// A TESForm item that the player can use or equip, with the data
@@ -128,16 +128,71 @@ impl HudItem {
         self.count = v
     }
 
+    pub fn is_poisoned(&self) -> bool {
+        // TODO track this somehow
+        false
+    }
+
+    /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons
+    /// and torches or other fueled items.
+    pub fn charge_level(&self) -> f32 {
+        1.0
+    }
+
+    // We delegate everything to our object-kind. The goal is for
+    // most things not to need to know about the item kind mess.
+    // Note that these functions are all from the trait IsHudItem, which
+    // we can't implement because we offer all of these to the C++ side.
     pub fn count_matters(&self) -> bool {
         self.kind.count_matters()
     }
 
-    pub fn two_handed(&self) -> bool {
-        self.kind.two_handed()
+    pub fn is_ammo(&self) -> bool {
+        self.kind.is_ammo()
+    }
+
+    pub fn is_armor(&self) -> bool {
+        self.kind.is_armor()
     }
 
     pub fn is_magic(&self) -> bool {
         self.kind.is_magic()
+    }
+
+    pub fn is_potion(&self) -> bool {
+        self.kind.is_power()
+    }
+
+    pub fn is_power(&self) -> bool {
+        self.kind.is_power()
+    }
+
+    pub fn is_spell(&self) -> bool {
+        self.kind.is_spell()
+    }
+
+    pub fn is_utility(&self) -> bool {
+        self.kind.is_utility()
+    }
+
+    pub fn is_weapon(&self) -> bool {
+        self.kind.is_weapon()
+    }
+
+    pub fn is_one_handed(&self) -> bool {
+        self.kind.is_one_handed()
+    }
+
+    pub fn left_hand_ok(&self) -> bool {
+        self.kind.left_hand_ok()
+    }
+
+    pub fn right_hand_ok(&self) -> bool {
+        self.kind.right_hand_ok()
+    }
+
+    pub fn two_handed(&self) -> bool {
+        self.kind.two_handed()
     }
 }
 
