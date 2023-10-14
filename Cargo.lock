@@ -488,7 +488,7 @@ dependencies = [
 
 [[package]]
 name = "soulsy"
-version = "0.9.15"
+version = "0.10.0"
 dependencies = [
  "anyhow",
  "bincode",
