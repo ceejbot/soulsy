@@ -20,7 +20,7 @@ use crate::{control, hud_layout};
 
 // ---------- logging
 
-pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
+pub fn initialize_rust_logging(_logdir: &cxx::CxxVector<u16>) {
     let settings = settings();
     let log_level = if settings.debug() {
         LevelFilter::Trace
@@ -31,7 +31,7 @@ pub fn initialize_rust_logging(logdir: &cxx::CxxVector<u16>) {
     #[cfg(any(target_os = "macos", target_os = "unix"))]
     let chonky_path = OsString::from("placeholder");
     #[cfg(target_os = "windows")]
-    let chonky_path = OsString::from_wide(logdir.as_slice());
+    let chonky_path = OsString::from_wide(_logdir.as_slice());
     let path = Path::new(chonky_path.as_os_str()).with_file_name("SoulsyHUD_rust.log");
 
     if let Ok(logfile) = File::create(path) {
