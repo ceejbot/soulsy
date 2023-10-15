@@ -375,14 +375,23 @@ mod tests {
         let item = BaseType::Armor(armor);
         assert!(item.is_utility());
 
-        assert!(BaseType::Light(LightType::Lantern).is_utility());
-        assert!(!BaseType::Light(LightType::Torch).is_utility());
-
         let potion = BaseType::Potion(PotionType::Health);
         assert!(potion.is_utility());
 
         let food = BaseType::Food(FoodType::default());
         assert!(food.is_utility());
+    }
+
+    #[test]
+    fn lanterns_and_torches() {
+        // these are held items
+        assert!(!BaseType::Light(LightType::Lantern).is_utility());
+        assert!(!BaseType::Light(LightType::Torch).is_utility());
+
+        // this is worn
+        let lantern = BaseType::Armor(ArmorType::new(Icon::Lantern, InvColor::Sun));
+        assert!(lantern.is_utility());
+        assert!(!lantern.left_hand_ok());
     }
 
     #[test]
