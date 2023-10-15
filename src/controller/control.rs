@@ -161,6 +161,9 @@ impl Controller {
             return;
         };
 
+        // If I were smart enough to have the hud use the same object that the cache
+        // holds this would be a lot less work, but I am stupid.
+
         let kind = item.kind().clone();
         let new_count = item.count();
         log::debug!(
@@ -175,9 +178,29 @@ impl Controller {
                 }
             }
         } else if kind.is_utility() {
+            // update count of magicka, health, or stamina potions if we're grouped
+            if kind.is_potion() && settings().group_potions() {
+                if matches!(kind, BaseType::Potion(PotionType::Health)) {
+                    self.cache.set_count("health_proxy", healthPotionCount());
+                }
+                if matches!(kind, BaseType::Potion(PotionType::Magicka)) {
+                    self.cache.set_count("magicka_proxy", magickaPotionCount());
+                }
+                if matches!(kind, BaseType::Potion(PotionType::Stamina)) {
+                    self.cache.set_count("stamina_proxy", staminaPotionCount());
+                }
+            }
+
             if let Some(candidate) = self.visible.get_mut(&HudElement::Utility) {
-                if candidate.form_string() == *form_spec {
+                let visible_spec = candidate.form_string();
+                if visible_spec == *form_spec {
                     candidate.set_count(new_count);
+                } else if visible_spec == "health_proxy" {
+                    candidate.set_count(healthPotionCount());
+                } else if visible_spec == "magicka_proxy" {
+                    candidate.set_count(magickaPotionCount());
+                } else if visible_spec == "stamina_proxy" {
+                    candidate.set_count(staminaPotionCount());
                 }
             }
         } else {
@@ -195,23 +218,6 @@ impl Controller {
 
         self.cycles
             .remove_zero_count_items(form_spec.as_str(), &kind, new_count);
-
-        // update count of magicka, health, or stamina potions if we're grouped
-        // TODO magic strings
-        if kind.is_potion() && settings().group_potions() {
-            if matches!(kind, BaseType::Potion(PotionType::Health)) {
-                let count = healthPotionCount();
-                self.cache.set_count("health_proxy", count);
-            }
-            if matches!(kind, BaseType::Potion(PotionType::Magicka)) {
-                let count = magickaPotionCount();
-                self.cache.set_count("magicka_proxy", count);
-            }
-            if matches!(kind, BaseType::Potion(PotionType::Stamina)) {
-                let count = staminaPotionCount();
-                self.cache.set_count("stamina_proxy", count);
-            }
-        }
 
         if new_count > 0 {
             return;
