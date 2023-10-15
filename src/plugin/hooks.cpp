@@ -167,7 +167,9 @@ namespace hooks
 		pick_up_object_(actor, object, count, a_arg3, a_play_sound);
 		if (object->GetBaseObject()->IsInventoryObject())
 		{
-			auto item_form = RE::TESForm::LookupByID(object->formID);
+			auto lookup = object->formID;
+			if (lookup == 0) { lookup = object->GetBaseObject()->formID; }
+			auto item_form = RE::TESForm::LookupByID(lookup);
 			if (!item_form) { return; }
 			std::string form_string = helpers::makeFormSpecString(item_form);
 			handle_inventory_changed(form_string, count);

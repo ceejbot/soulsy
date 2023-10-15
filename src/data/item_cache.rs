@@ -28,7 +28,7 @@ impl ItemCache {
     /// Create a new item cache with the given capacity.
     pub fn new() -> Self {
         let capacity =
-            NonZeroUsize::new(100).expect("cats and dogs living together! 100 is not non-zero!");
+            NonZeroUsize::new(200).expect("cats and dogs living together! 200 is not non-zero!");
         let lru = LruCache::new(capacity);
         Self { lru }
     }
@@ -93,6 +93,11 @@ impl ItemCache {
 
     /// Set the count of a cached item to the passed-in value.
     pub fn set_count(&mut self, form_spec: &str, new_count: u32) -> Option<&HudItem> {
+        if !self.contains(form_spec) {
+            let fetched = fetch_game_item(form_spec);
+            self.record(fetched);
+        }
+
         let Some(item) = self.lru.get_mut(form_spec) else {
             return None;
         };
@@ -103,6 +108,10 @@ impl ItemCache {
     /// Update the count for a cached item. If the item is not in the
     /// cache, no action is taken.
     pub fn update_count(&mut self, form_spec: &str, delta: i32) -> Option<&HudItem> {
+        if !self.contains(form_spec) {
+            let fetched = fetch_game_item(form_spec);
+            self.record(fetched);
+        }
         let Some(item) = self.lru.get_mut(form_spec) else {
             return None;
         };

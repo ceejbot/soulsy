@@ -28,7 +28,6 @@ impl EquipSet {
         icon_name: String,
     ) -> Self {
         let icon = Icon::try_from(icon_name.as_str()).unwrap_or(Icon::ArmorHeavy);
-        log::info!("got icon {icon:?} from name {icon_name}");
         Self {
             id,
             name,

@@ -39,6 +39,13 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 	auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 
+	if (form->IsAmmo())
+	{
+		// double-check that we really unequipped it and it's not just a count change.
+		auto* current_ammo = player->GetCurrentAmmo();
+		if (current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
+	}
+
 	std::string worn_right = helpers::makeFormSpecString(right_eq);
 	std::string worn_left  = helpers::makeFormSpecString(left_eq);
 	std::string form_spec  = helpers::makeFormSpecString(form);
