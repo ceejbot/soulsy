@@ -19,7 +19,8 @@ namespace equippable
 		if (item_form->IsWeapon())
 		{
 			const auto* weapon = item_form->As<RE::TESObjectWEAP>();
-			return weapon && (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow() || weapon->IsCrossbow());
+			return weapon &&
+			       (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword() || weapon->IsBow() || weapon->IsCrossbow());
 		}
 
 		if (item_form->Is(RE::FormType::Scroll))
@@ -79,34 +80,6 @@ namespace equippable
 		std::string form_string = helpers::makeFormSpecString(item_form);
 		bool two_handed         = requiresTwoHands(item_form);
 
-		if (item_form->Is(RE::FormType::Light))
-		{
-			// This form type does not have keywords. This presents a problem.
-			logger::info("making HudItem for light: '{}';"sv, item_form->GetName());
-			// This is somewhat fragile because if OCF changes the string this starts failing.
-			// At least we'll fall back to torches. Also, I'm not sure that this is at all
-			// the way to ask the question.
-			auto* ocfflist = RE::TESForm::LookupByEditorID("OCF_FL_LIGH_HeldLantern");
-			if (ocfflist && ocfflist->Is(RE::FormType::FormList))
-			{
-				const auto* flist = ocfflist->As<RE::BGSListForm>();
-				if (flist && flist->HasForm(item_form))
-				{
-					rust::Box<HudItem> item =
-						simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
-					return item;
-				}
-			}
-			const auto name = std::string(item_form->GetName());
-			if (name.find("Lantern") != std::string::npos) // yes, very limited in effectiveness
-			{
-				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
-				return item;
-			}
-			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Torch, std::move(chonker), form_string);
-			return item;
-		}
-
 		if (item_form->Is(RE::FormType::Ammo))
 		{
 			logger::info("making HudItem for ammo: '{}'"sv, item_form->GetName());
@@ -147,6 +120,24 @@ namespace equippable
 			rust::Box<HudItem> item =
 				hud_item_from_keywords(ItemCategory::Armor, *keywords, std::move(chonker), form_string, count, false);
 
+			return item;
+		}
+
+		// There are two kinds of lights: lights held in the hand like torches,
+		// and wearable lights (usually lanterns). The wearable ones are armor, and
+		// have just been taken care of in the previous block. This block handles
+		// the other types. These go into the left hand!
+		if (item_form->Is(RE::FormType::Light))
+		{
+			// This form type does not have keywords. This presents a problem. Cough.
+			logger::info("making HudItem for light: '{}';"sv, item_form->GetName());
+			const auto name = std::string(item_form->GetName());
+			if (name.find("Lantern") != std::string::npos)  // yes, very limited in effectiveness
+			{
+				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
+				return item;
+			}
+			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Torch, std::move(chonker), form_string);
 			return item;
 		}
 

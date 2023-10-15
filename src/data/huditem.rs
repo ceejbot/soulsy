@@ -200,11 +200,11 @@ impl Display for HudItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "name='{}'; form_string='{}'; kind='{:?}'; count={};",
+            "name='{}'; kind='{:?}'; count={}; form_string='{}';",
             self.name(),
-            self.form_string(),
             self.kind(),
-            self.count()
+            self.count(),
+            self.form_string(),
         )
     }
 }
@@ -218,7 +218,7 @@ fn name_from_bytes(name_bytes: &[u8]) -> (bool, String) {
             if let Ok(cstring) = CString::new(name_bytes.to_owned()) {
                 cstring
             } else {
-                log::info!("Surprising: item name bytes were an invalid C string; error: {e:#}");
+                log::info!("This is a bug with the mod this item comes from: item name bytes were an invalid C string; error: {e:#}");
                 CString::default()
             }
         }
@@ -228,7 +228,7 @@ fn name_from_bytes(name_bytes: &[u8]) -> (bool, String) {
         name_is_utf8 = true;
         v
     } else {
-        log::trace!("item name is invalid utf-8; falling back to lossy string");
+        log::trace!("Item name is invalid utf-8; falling back to lossy string");
         cstring.to_string_lossy().to_string()
     };
 
