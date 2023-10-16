@@ -302,6 +302,7 @@ impl HasIcon for BaseType {
 mod tests {
     use super::*;
     use crate::data::color::InvColor;
+    use crate::data::magic::{MagicCategory, SpellData};
     use crate::data::weapon::{WeaponEquipType, WeaponType};
 
     #[test]
@@ -375,8 +376,12 @@ mod tests {
         let item = BaseType::Armor(armor);
         assert!(item.is_utility());
 
-        let potion = BaseType::Potion(PotionType::Health);
-        assert!(potion.is_utility());
+        assert!(BaseType::Potion(PotionType::Health).is_utility());
+        assert!(BaseType::Potion(PotionType::Magicka).is_utility());
+        assert!(BaseType::Potion(PotionType::Stamina).is_utility());
+        assert!(BaseType::Potion(PotionType::Poison).is_utility());
+        assert!(BaseType::Potion(PotionType::Default).is_utility());
+        assert!(BaseType::Potion(PotionType::Resist(MagicCategory::Shock)).is_utility());
 
         let food = BaseType::Food(FoodType::default());
         assert!(food.is_utility());
@@ -425,6 +430,26 @@ mod tests {
             WeaponEquipType::RightHand,
         ));
         assert!(!sword.left_hand_ok());
+
+        let spell = BaseType::Spell(SpellType::new(
+            SpellData::new(
+                true, 43, // ActorValue::ResistFrost
+                false, 20, // School::Destruction,
+                25, 1, // SpellArchetype::ValueModifier,
+            ),
+            Vec::new(),
+        ));
+        assert!(spell.left_hand_ok());
+
+        let master_spell = BaseType::Spell(SpellType::new(
+            SpellData::new(
+                false, 0, // ActorValue::ResistFrost
+                true, 22, // School::Restoration,
+                100, 1, // SpellArchetype::ValueModifier,
+            ),
+            Vec::new(),
+        ));
+        assert!(!master_spell.left_hand_ok());
     }
 
     #[test]
@@ -461,5 +486,25 @@ mod tests {
             WeaponEquipType::RightHand,
         ));
         assert!(sword.right_hand_ok());
+
+        let spell = BaseType::Spell(SpellType::new(
+            SpellData::new(
+                true, 43, // ActorValue::ResistFrost
+                false, 20, // School::Destruction,
+                25, 1, // SpellArchetype::ValueModifier,
+            ),
+            Vec::new(),
+        ));
+        assert!(spell.right_hand_ok());
+
+        let master_spell = BaseType::Spell(SpellType::new(
+            SpellData::new(
+                false, 0, // ActorValue::ResistFrost
+                true, 22, // School::Restoration,
+                100, 1, // SpellArchetype::ValueModifier,
+            ),
+            Vec::new(),
+        ));
+        assert!(master_spell.right_hand_ok());
     }
 }

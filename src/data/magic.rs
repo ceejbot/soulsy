@@ -7,11 +7,11 @@ use super::icons::Icon;
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellData {
     pub hostile: bool,
+    pub damage: MagicCategory,
     pub twohanded: bool,
     pub school: School,
     pub level: MagicSpellLevel,
     pub archetype: SpellArchetype,
-    pub damage: MagicCategory,
 }
 
 impl SpellData {
