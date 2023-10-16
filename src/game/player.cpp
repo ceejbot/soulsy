@@ -230,7 +230,7 @@ namespace player
 
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		count        = inventoryCount(form, form->GetFormType(), player);
-		logger::trace("item='{}'; count={};"sv, form->GetName(), count);
+		// logger::trace("item='{}'; count={};"sv, form->GetName(), count);
 
 		return count;
 	}
@@ -336,7 +336,7 @@ namespace player
 			sound_handle.SetObjectToFollow(a_player->Get3D());
 			sound_handle.SetVolume(1.0);
 			sound_handle.Play();
-			logger::trace("played sound"sv);
+			// logger::trace("played sound"sv);
 		}
 	}
 

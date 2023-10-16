@@ -160,7 +160,7 @@ impl HudItem {
     }
 
     pub fn is_potion(&self) -> bool {
-        self.kind.is_power()
+        self.kind.is_potion()
     }
 
     pub fn is_power(&self) -> bool {

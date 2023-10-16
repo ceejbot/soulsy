@@ -79,13 +79,13 @@ namespace hooks
 						if (selection->bound_obj)
 						{
 							auto entry = equippable::hudItemFromForm(selection->bound_obj);
-							logger::trace("got bound object; name='{}';"sv, selection->bound_obj->GetName());
+							// logger::trace("got bound object; name='{}';"sv, selection->bound_obj->GetName());
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
 						}
 						else if (selection->form)
 						{
 							auto entry = equippable::hudItemFromForm(selection->form);
-							logger::trace("got form; name='{}'"sv, selection->form->GetName());
+							// logger::trace("got form; name='{}'"sv, selection->form->GetName());
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
 						}
 						continue;

@@ -29,7 +29,7 @@ namespace game
 
 		if (const auto* current_ammo = player->GetCurrentAmmo(); current_ammo && current_ammo->formID == obj->formID)
 		{
-			logger::trace("ammo is already equipped; bound formID={}"sv, string_util::int_to_hex(obj->formID));
+			// logger::trace("ammo is already equipped; bound formID={}"sv, string_util::int_to_hex(obj->formID));
 			return;
 		}
 
@@ -77,7 +77,7 @@ namespace game
 			{
 				task->AddTask([=]() { equip_manager->UnequipObject(player, item); });
 			}
-			logger::trace("unequipped armor; name='{}';"sv, item->GetName());
+			// logger::trace("unequipped armor; name='{}';"sv, item->GetName());
 		}
 		return is_worn;
 	}
@@ -85,7 +85,7 @@ namespace game
 	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
 		// This is a toggle in reality. Also, use this as a model for other equip funcs.
-		logger::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
+		// logger::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
 		auto remaining           = boundObjectForForm(form, player, obj, extra);
@@ -117,7 +117,7 @@ namespace game
 
 	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
-		logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
+		// logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
 		auto remaining           = boundObjectForForm(form, player, obj, extra);
@@ -151,7 +151,7 @@ namespace game
 
 		if (!obj || remaining == 0)
 		{
-			logger::warn("couldn't find requested potion in inventory!"sv);
+			logger::warn("Couldn't find requested potion in inventory!"sv);
 			helpers::honk();
 			return;
 		}
@@ -172,10 +172,10 @@ namespace game
 			return;
 		}
 
-		logger::trace("queuing task to use consumable; name='{}'; remaining={}; formID={};"sv,
-			obj->GetName(),
-			remaining,
-			string_util::int_to_hex(obj->formID));
+		// logger::trace("queuing task to use consumable; name='{}'; remaining={}; formID={};"sv,
+		// 	obj->GetName(),
+		// 	remaining,
+		// 	string_util::int_to_hex(obj->formID));
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
@@ -185,7 +185,7 @@ namespace game
 
 	void poison_weapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& a_poison, uint32_t a_count)
 	{
-		logger::trace("try to apply poison to weapon, inventory count={}"sv, a_count);
+		// logger::trace("try to apply poison to weapon, inventory count={}"sv, a_count);
 		uint32_t poison_doses = 1;
 		/*
 comment preserved from mlthelama

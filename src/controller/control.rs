@@ -675,10 +675,9 @@ impl Controller {
 
     /// Activate whatever we have in the utility slot.
     fn use_utility_item(&mut self) -> KeyEventResponse {
-        log::debug!("using utility item");
-
         if let Some(form_string) = self.cycles.get_top(&CycleSlot::Utility) {
             let item = self.cache.get(&form_string);
+            log::info!("Activating utility item: name='{}';", item.name());
             if matches!(
                 item.kind(),
                 BaseType::Potion(PotionType::Poison) | BaseType::Food(_)
@@ -701,6 +700,8 @@ impl Controller {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 equipAmmo(&form_spec)
             }
+        } else {
+            log::debug!("No item at top of utility cycle to use.");
         }
 
         // No matter what we did, we stop the timer. Not that a timer should exist.

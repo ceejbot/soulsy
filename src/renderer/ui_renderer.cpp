@@ -358,7 +358,7 @@ namespace ui
 				a_duration,
 				size);
 		animation_list.emplace_back(static_cast<ui::animation_type>(animation_type), std::move(anim));
-		logger::trace("done initializing animation. return.");
+		// logger::trace("done initializing animation. return.");
 	}
 
 	void ui_renderer::drawElement(ID3D11ShaderResourceView* texture,
@@ -571,14 +571,15 @@ namespace ui
 						out_struct[icon_file].width,
 						out_struct[icon_file].height))
 				{
-					logger::debug("loaded texture {}, type: {}, width: {}, height: {}"sv,
-						entrypath.filename().string().c_str(),
-						entrypath.filename().extension().string().c_str(),
-						out_struct[icon_file].width,
-						out_struct[icon_file].height);
+					// nothing to do here but log and I don't want to log.
+					// logger::trace("loaded texture {}, type: {}, width: {}, height: {}"sv,
+					// 	entrypath.filename().string().c_str(),
+					// 	entrypath.filename().extension().string().c_str(),
+					// 	out_struct[icon_file].width,
+					// 	out_struct[icon_file].height);
 				}
 			}
-			else { logger::error("this pack has no icon data for {}"sv, entrypath.filename().string().c_str()); }
+			else { logger::info("TODO: Add an icon to this pack for {}"sv, entrypath.filename().string().c_str()); }
 		}
 	}
 
@@ -638,7 +639,7 @@ namespace ui
 
 			load_texture_from_file(entry.path().string().c_str(), &texture, width, height);
 
-			logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
+			// logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
 			image img;
 			img.texture = texture;
 			// img.width   = static_cast<int32_t>(width * get_resolution_scale_width());

@@ -95,13 +95,13 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 
 		if (response.stop_timer != Action::None)
 		{
-			logger::trace("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
+			// logger::trace("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
 			ui::stopTimer(response.stop_timer);
 		}
 
 		if (response.start_timer != Action::None)
 		{
-			logger::trace("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
+			// logger::trace("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
 			auto settings = user_settings();
 			auto duration = settings->equip_delay_ms();
 			ui::startTimer(response.start_timer, duration);
