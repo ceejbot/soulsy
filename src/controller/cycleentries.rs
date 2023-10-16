@@ -143,6 +143,9 @@ where
     }
 
     fn advance(&mut self, amount: usize) -> Option<T> {
+        if self.is_empty() || amount > self.len() {
+            return None;
+        }
         self.rotate_left(amount);
         self.first().cloned()
     }

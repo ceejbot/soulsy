@@ -1457,10 +1457,8 @@ impl Controller {
 
     /// Advance the equipment set and start the timer.
     fn handle_equipset_cycle(&mut self, _hotkey: &Hotkey) -> KeyEventResponse {
-        // For now, no user interface drawn for equip sets. We just equip them.
         let candidate = self.cycles.advance_equipset(1);
         if let Some(_next) = candidate {
-            // self.update_slot(hud, &item);
             KeyEventResponse {
                 handled: true,
                 start_timer: Action::Equipment,
