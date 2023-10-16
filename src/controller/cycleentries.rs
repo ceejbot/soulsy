@@ -374,18 +374,42 @@ mod tests {
 
     #[test]
     fn hud_item_cycles() {
-        use crate::data::huditem::HudItem;
         use crate::data::item_cache::ItemCache;
         let mut cache = ItemCache::new();
-        let mut cycle = Vec::<HudItem>::new();
+        let mut cycle = Vec::<String>::new();
+
+        assert_eq!(cycle.advance(1), None); // also we do not panick
         let item = cache.get(&"form-one".to_string());
-        assert!(cycle.add(&item));
+        assert!(cycle.add(&item.form_string()));
+        assert_eq!(cycle.advance(1), Some("form-one".to_string()));
+        assert!(!cycle.add(&item.form_string()));
+        let item2 = cache.get(&"form-two".to_string());
+        assert!(cycle.add(&item2.form_string()));
+        assert_eq!(cycle.len(), 2);
+
+        let expected = if item.kind() == item2.kind() { 0 } else { 1 };
+        cycle.filter_kind(item.kind(), &mut cache);
+        assert_eq!(cycle.len(), expected);
+
+        cycle.add(&"form-one".to_string());
+        cycle.add(&"form-two".to_string());
+        let item3 = cache.get(&"form-three".to_string());
+        cycle.add(&item3.form_string());
+        assert_eq!(cycle.len(), 3);
+
+        let next_spec = cycle.peek_next().expect("we should have a next item");
+        let next_item = cache.get(&next_spec);
+        let skipped = cycle
+            .advance_skipping(&next_item)
+            .expect("we expect to find a skipped item");
+        assert!(skipped != next_spec);
+        assert_eq!(skipped, "form-three");
+
+        let names = cycle.names(&mut cache);
+        assert_eq!(names.len(), cycle.len());
 
         // functions to test:
-        // filter_kind(&mut self, unwanted: &BaseType, cache: &mut ItemCache);
-        // advance_skipping(&mut self, skip: &HudItem) -> Option<String>;
         // advance_skipping_twohanders(&mut self, cache: &mut ItemCache) -> Option<String>;
-        // names(&self, cache: &mut ItemCache) -> Vec<String>;
     }
 
     #[test]
