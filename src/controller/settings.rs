@@ -2,6 +2,7 @@ use std::sync::Mutex;
 
 use anyhow::Result;
 use ini::Ini;
+use log::Level;
 use once_cell::sync::Lazy;
 use strum::Display;
 
@@ -45,8 +46,8 @@ pub fn refresh_user_settings() {
 /// it's read-only.
 #[derive(Debug, Clone)]
 pub struct UserSettings {
-    /// Whether to log at debug level or not.
-    debug: bool,
+    /// Desired log level. `sLogLevel`
+    log_level: Level,
 
     /// The key for powers. uPowerCycleKey
     power: u32,
@@ -119,7 +120,7 @@ pub struct UserSettings {
 impl Default for UserSettings {
     fn default() -> Self {
         Self {
-            debug: false,
+            log_level: Level::Info,
             // The map in key_path.h starts with numeral 1 => 2.
             showhide: 2,
             power: 3,
@@ -188,7 +189,12 @@ impl UserSettings {
             &empty
         };
 
-        self.debug = read_from_ini(self.debug, "bDebugMode", options);
+        self.log_level = read_from_ini(self.log_level, "sLogLevel", options);
+        let debug = read_from_ini(false, "bDebugMode", options);
+        // Allow the player toggle setting to function while also letting me set a level.
+        if debug && self.log_level > Level::Debug {
+            self.log_level = Level::Debug;
+        }
 
         self.left = read_from_ini(self.left, "uLeftCycleKey", controls);
         self.right = read_from_ini(self.right, "uRightCycleKey", controls);
@@ -252,8 +258,19 @@ impl UserSettings {
         Ok(())
     }
 
-    pub fn debug(&self) -> bool {
-        self.debug
+    pub fn log_level(&self) -> Level {
+        self.log_level
+    }
+
+    pub fn log_level_number(&self) -> u32 {
+        // See #defines in spdlog/include/common.h
+        match self.log_level {
+            Level::Error => 4,
+            Level::Warn => 3,
+            Level::Info => 2,
+            Level::Debug => 1,
+            Level::Trace => 0,
+        }
     }
 
     pub fn unequip_with_modifier(&self) -> bool {
@@ -451,6 +468,23 @@ impl FromIniStr for ActivationMethod {
     }
 }
 
+impl FromIniStr for Level {
+    fn from_ini(value: &str) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        match value.parse::<Level>() {
+            Ok(v) => Some(v),
+            Err(e) => {
+                // This is an error parsing a log level string. We might not manage
+                // to log this error if it's at startup, but we try anyway.
+                log::warn!("Error parsing log level string: {e:?}");
+                Some(Level::Info)
+            }
+        }
+    }
+}
+
 /// How the player wants to handle unarmed combat.
 #[derive(Debug, Clone, Display, Copy)]
 pub enum UnarmedMethod {
@@ -515,7 +549,7 @@ impl std::fmt::Display for UserSettings {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            r#"               debug logging: {}
+            r#"    log level: {}
            show/hide HUD key: {}
              power cycle key: {}
            utility cycle key: {}
@@ -546,7 +580,7 @@ impl std::fmt::Display for UserSettings {
               colorize_icons: {}
           equip_sets_unequip: {}
              skse_identifier: {}"#,
-            self.debug,
+            self.log_level,
             self.showhide,
             self.power,
             self.utility,

@@ -84,11 +84,9 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
 	auto settings = user_settings();
 
-	if (settings->debug())
-	{
-		spdlog::set_level(spdlog::level::trace);
-		spdlog::flush_on(spdlog::level::trace);
-	}
+	auto loglevel = settings->log_level_number();
+	spdlog::set_level(loglevel);
+	spdlog::flush_on(loglevel);
 
 	Init(a_skse);
 	cosave::initializeCosaves();

@@ -286,8 +286,8 @@ pub mod plugin {
         fn link_to_favorites(self: &UserSettings) -> bool;
         /// If icons should be colorful.
         fn colorize_icons(self: &UserSettings) -> bool;
-        /// If we should log at debug level.
-        fn debug(self: &UserSettings) -> bool;
+        /// What log level to use, shared across Rust & C++.
+        fn log_level_number(self: &UserSettings) -> u32;
         /// The identifier to use for this mod in SKSE cosaves. Not exposed in UI.
         fn skse_identifier(self: &UserSettings) -> u32;
 

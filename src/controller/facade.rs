@@ -21,12 +21,8 @@ use crate::{control, hud_layout};
 // ---------- logging
 
 pub fn initialize_rust_logging(_logdir: &cxx::CxxVector<u16>) {
-    let settings = settings();
-    let log_level = if settings.debug() {
-        LevelFilter::Trace
-    } else {
-        LevelFilter::Info
-    };
+    let config = settings();
+    let log_level = config.log_level().to_level_filter();
 
     #[cfg(any(target_os = "macos", target_os = "unix"))]
     let chonky_path = OsString::from("placeholder");
