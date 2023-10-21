@@ -376,8 +376,6 @@ pub mod plugin {
         fn entry_to_show_in_slot(slot: HudElement) -> Box<HudItem>;
         /// A cycle delay timer has expired. Time to equip!
         fn timer_expired(slot: Action);
-        /// Update the entire HUD without any hints about what just changed.
-        fn update_hud() -> bool;
         /// Handle equipment-changed events from the game.
         fn handle_item_equipped(
             equipped: bool,

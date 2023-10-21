@@ -57,9 +57,8 @@ impl Controller {
         }
     }
 
-    pub fn validate_cycles(&mut self) {
+    pub fn refresh_after_load(&mut self) {
         self.cycles.validate(&mut self.cache);
-        // log::info!("after validation, cycles are: {}", self.cycles);
         self.update_hud();
     }
 
@@ -1105,7 +1104,7 @@ impl Controller {
     /// Updates will only happen here if the player changed equipment
     /// out of band, e.g., by using a menu, and only then if we screwed
     /// up an equip event.
-    pub fn update_hud(&mut self) -> bool {
+    fn update_hud(&mut self) {
         let right_spec = specEquippedRight();
         let right_entry = self.cache.get(&right_spec);
 
@@ -1136,41 +1135,36 @@ impl Controller {
 
         let ammo_form = specEquippedAmmo();
         let ammo = self.cache.get(&ammo_form);
-        let ammo_changed = self.update_slot(HudElement::Ammo, &ammo);
+        self.update_slot(HudElement::Ammo, &ammo);
 
-        let utility_changed = if self.visible.get(&HudElement::Utility).is_none() {
-            if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {
-                let item = self.cache.get(&utility);
-                self.update_slot(HudElement::Utility, &item)
-            } else {
-                false
-            }
+        if let Some(utility) = self.cycles.get_top(&CycleSlot::Utility) {
+            let item = self.cache.get(&utility);
+            self.update_slot(HudElement::Utility, &item);
         } else {
-            false
-        };
+            self.update_slot(HudElement::Utility, &HudItem::default());
+        }
 
-        let changed =
-            right_changed || left_unexpected || power_changed || ammo_changed || utility_changed;
+        log::info!(
+            "HUD updated. Now showing: power='{}'; left='{}'; right='{}'; ammo='{}';",
+            power.name(),
+            left_entry.name(),
+            right_entry.name(),
+            ammo.name(),
+        );
 
-        if changed {
-            log::info!(
-                "HUD updated. Now showing: power='{}'; left='{}'; right='{}'; ammo='{}';",
-                power.name(),
-                left_entry.name(),
-                right_entry.name(),
-                ammo.name(),
-            );
-
-            // If any of our equipped items is in a cycle, make that item the top item
-            // so advancing the cycles works as expected.
+        // If any of our equipped items is in a cycle, make that item the top item
+        // so advancing the cycles works as expected.
+        if power_changed {
             self.cycles.set_top(&CycleSlot::Power, &power.form_string());
+        }
+        if left_unexpected {
             self.cycles
                 .set_top(&CycleSlot::Left, &left_entry.form_string());
+        }
+        if right_changed {
             self.cycles
                 .set_top(&CycleSlot::Right, &right_entry.form_string());
         }
-
-        changed
     }
 
     /// Update the displayed slot for the specified HUD element.

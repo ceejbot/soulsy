@@ -98,11 +98,6 @@ pub fn timer_expired(slot: Action) {
     control::get().timer_expired(slot);
 }
 
-/// Update our view of the player's equipment.
-pub fn update_hud() -> bool {
-    control::get().update_hud()
-}
-
 /// We know for sure the player just equipped this item.
 pub fn handle_item_equipped(
     equipped: bool,
@@ -161,7 +156,7 @@ pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32) {
     if let Some(cosave_cycle) = CycleData::deserialize(bytes, version) {
         ctrl.cycles = cosave_cycle;
         ctrl.apply_settings();
-        ctrl.validate_cycles();
+        ctrl.refresh_after_load();
         log::info!("Cycles loaded and ready to rock.");
     } else {
         log::warn!("Cosave load failed. Defaulting to fresh start.");
