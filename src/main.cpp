@@ -84,7 +84,7 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	logger::info("Game version {}", a_skse->RuntimeVersion().string());
 	auto settings = user_settings();
 
-	auto loglevel = settings->log_level_number();
+	auto loglevel = static_cast<spdlog::level::level_enum>(settings->log_level_number());
 	spdlog::set_level(loglevel);
 	spdlog::flush_on(loglevel);
 

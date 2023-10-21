@@ -695,7 +695,7 @@ impl Controller {
                 consumePotion(&form_spec);
             } else if item.is_armor() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
-                equipArmor(&form_spec);
+                toggleArmor(&form_spec);
             } else if item.is_ammo() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 equipAmmo(&form_spec)
