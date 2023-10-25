@@ -142,8 +142,8 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
 #[cfg(test)]
 pub fn fetch_game_item(form_string: &str) -> HudItem {
     use super::color::random_color;
-    use super::icons::random_icon;
     use super::weapon::{WeaponEquipType, WeaponType};
+    use crate::images::random_icon;
 
     let name = petname::petname(2, " ");
     let item = HudItem::preclassified(

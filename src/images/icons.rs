@@ -4,6 +4,10 @@ pub fn icon_files() -> Vec<String> {
     Icon::iter().map(|xs| xs.icon_file()).collect()
 }
 
+pub fn icon_list() -> Vec<String> {
+    Icon::iter().map(|xs| xs.to_string()).collect()
+}
+
 #[derive(
     Debug, Clone, Default, Hash, PartialEq, Eq, EnumIter, EnumString, EnumVariantNames, Display,
 )]

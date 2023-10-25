@@ -2,8 +2,8 @@ use std::ffi::CString;
 use std::fmt::Display;
 
 use super::base::BaseType;
-use super::icons::Icon;
 use super::HasIcon;
+use crate::images::icons::Icon;
 use crate::plugin::{Color, ItemCategory};
 
 /// A TESForm item that the player can use or equip, with the data

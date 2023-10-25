@@ -137,6 +137,61 @@ namespace ui
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
+	bool ui_renderer::vec_to_texture(LoadedImage* img,
+		ID3D11ShaderResourceView** out_srv,
+		int32_t& out_width,
+		int32_t& out_height)
+	{
+		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
+		if (!renderer)
+		{
+			logger::error("Cannot find render manager. Initialization failed."sv);
+			return false;
+		}
+		const auto forwarder = renderer->data.forwarder;
+
+		// Create texture
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Width            = img->width;
+		desc.Height           = img->height;
+		desc.MipLevels        = 1;
+		desc.ArraySize        = 1;
+		desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.SampleDesc.Count = 1;
+		desc.Usage            = D3D11_USAGE_DEFAULT;
+		desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags   = 0;
+		desc.MiscFlags        = 0;
+
+		// todo
+		// copy image_data into the subresource
+
+		ID3D11Texture2D* p_texture = nullptr;
+		D3D11_SUBRESOURCE_DATA sub_resource;
+		sub_resource.pSysMem          = image_data;
+		sub_resource.SysMemPitch      = desc.Width * 4;
+		sub_resource.SysMemSlicePitch = 0;
+		device_->CreateTexture2D(&desc, &sub_resource, &p_texture);
+
+		// Create texture view
+		D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
+		ZeroMemory(&srv_desc, sizeof srv_desc);
+		srv_desc.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
+		srv_desc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srv_desc.Texture2D.MipLevels       = desc.MipLevels;
+		srv_desc.Texture2D.MostDetailedMip = 0;
+		forwarder->CreateShaderResourceView(p_texture, &srv_desc, out_srv);
+		p_texture->Release();
+
+		free(image_data);
+
+		out_width  = image_width;
+		out_height = image_height;
+
+		return true;
+	}
+
 	// Helper function to load an image into a DX11 texture with common settings
 	bool ui_renderer::load_texture_from_file(const char* filename,
 		ID3D11ShaderResourceView** out_srv,

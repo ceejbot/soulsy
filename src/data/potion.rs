@@ -3,9 +3,9 @@
 use strum::Display;
 
 use super::game_enums::ActorValue;
-use super::icons::Icon;
 use super::magic::MagicCategory;
 use super::{HasIcon, InvColor};
+use crate::images::icons::Icon;
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Default, Display, Hash, Eq, PartialEq)]

@@ -12,10 +12,10 @@
 use enumset::EnumSet;
 
 use super::color::InvColor;
-use super::icons::Icon;
 use super::keywords::*;
 use super::magic::{School, SpellData};
 use super::{strings_to_enumset, strings_to_keywords, HasIcon};
+use crate::images::icons::Icon;
 use crate::plugin::Color;
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]

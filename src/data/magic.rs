@@ -2,7 +2,7 @@ use strum::Display;
 
 use super::color::InvColor;
 use super::game_enums::{ActorValue, SpellArchetype};
-use super::icons::Icon;
+use crate::images::icons::Icon;
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
 pub struct SpellData {

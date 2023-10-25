@@ -1,7 +1,8 @@
 use super::color::InvColor;
-use super::icons::Icon;
+use super::keywords::*;
+use super::strings_to_enumset;
 use super::HasIcon;
-use super::{keywords::*, strings_to_enumset};
+use crate::images::Icon;
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

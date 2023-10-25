@@ -4,8 +4,8 @@ use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::{Display, EnumString};
 
 use super::color::InvColor;
-use super::icons::Icon;
 use super::{strings_to_enumset, HasIcon, HasKeywords};
+use crate::images::icons::Icon;
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

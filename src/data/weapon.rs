@@ -12,8 +12,8 @@ use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::EnumString;
 
 use super::color::InvColor;
-use super::icons::Icon;
 use super::{strings_to_enumset, HasIcon, HasKeywords};
+use crate::images::icons::Icon;
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, EnumString, Eq, Hash, PartialEq)]

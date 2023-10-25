@@ -2,10 +2,12 @@
 #![warn(rust_2018_idioms, trivial_casts)]
 
 pub mod controller;
-use controller::*;
 pub mod data;
-use data::icons::icon_files;
+pub mod images;
+
+use controller::*;
 use data::{HudItem, SpellData, *};
+use images::icons::{icon_files, icon_list};
 
 /// Rust defines the bridge between it and C++ in this mod, using the
 /// affordances of the `cxx` crate. At build time `cxx_build` generates the
@@ -362,6 +364,7 @@ pub mod plugin {
         fn empty_huditem() -> Box<HudItem>;
 
         fn icon_files() -> Vec<String>;
+        fn icon_list() -> Vec<String>;
 
         // These are called by plugin hooks and sinks.
 
