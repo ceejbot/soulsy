@@ -32,8 +32,7 @@ use self::spell::SpellType;
 pub use super::magic::SpellData;
 use crate::images::icons::Icon;
 #[cfg(not(test))]
-use crate::plugin::{
-    healthPotionCount, magickaPotionCount, staminaPotionCount};
+use crate::plugin::{healthPotionCount, magickaPotionCount, staminaPotionCount};
 use crate::plugin::{Color, ItemCategory};
 
 // ---------- Designed for C++ to call.
