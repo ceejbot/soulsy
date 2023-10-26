@@ -1,7 +1,7 @@
 //! Rasterize svgs and provide them to the C++ side.
 //! Possibly read on the fly?
 pub mod icons;
-use std::ffi::OsString;
+use std::path::PathBuf;
 
 use anyhow::{anyhow, Result};
 pub use icons::*;
@@ -36,15 +36,15 @@ pub fn rasterize_svg(icon: Icon, maxdim: u32) -> Vec<u8> {
     match load_and_rasterize(&file_path, maxdim) {
         Ok(v) => {
             log::trace!(
-                "successfully rasterized svg; path='{:?}';",
-                file_path.into_string()
+                "successfully rasterized svg; path='{}';",
+                file_path.display()
             );
             v
         }
         Err(e) => {
             log::error!(
-                "failed to load SVG; path='{:?}'; error={e:?}",
-                file_path.into_string()
+                "failed to load SVG; path='{}'; error={e:?}",
+                file_path.display()
             );
             Vec::new()
         }
@@ -57,22 +57,18 @@ pub fn load_icon(icon: Icon, maxdim: u32) -> Result<Vec<u8>> {
     load_and_rasterize(&file_path, maxdim)
 }
 
-fn icon_to_path(icon: &Icon) -> OsString {
-    let icon_chonk = OsString::from(icon.icon_file());
-    let mut full_path = OsString::from(ICON_SVG_PATH);
-    full_path.push(icon_chonk.as_os_str());
-    full_path
+fn icon_to_path(icon: &Icon) -> PathBuf {
+    [ICON_SVG_PATH, icon.icon_file().as_str()].iter().collect()
 }
 
-fn icon_fallback_path(icon: &Icon) -> OsString {
-    let icon_chonk = OsString::from(icon.fallback().icon_file());
-    let mut full_path = OsString::from(ICON_SVG_PATH);
-    full_path.push(icon_chonk.as_os_str());
-    full_path
+fn icon_fallback_path(icon: &Icon) -> PathBuf {
+    [ICON_SVG_PATH, icon.fallback().icon_file().as_str()]
+        .iter()
+        .collect()
 }
 
 /// Internal shared implementation.
-fn load_and_rasterize(file_path: &OsString, maxdim: u32) -> Result<Vec<u8>> {
+fn load_and_rasterize(file_path: &PathBuf, maxdim: u32) -> Result<Vec<u8>> {
     let buffer = std::fs::read(file_path)?;
     let opt = usvg::Options::default();
     let tree = usvg::Tree::from_data(&buffer, &opt)?;
@@ -96,11 +92,6 @@ fn load_and_rasterize(file_path: &OsString, maxdim: u32) -> Result<Vec<u8>> {
     let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())
         .ok_or(anyhow!("unable to allocate first pixmap"))?;
     rtree.render(transform, &mut pixmap.as_mut());
-
-    let pixmap_size = rtree.size.to_int_size();
-    let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height())
-        .ok_or(anyhow!("unable to allocate second pixmap"))?;
-    rtree.render(tiny_skia::Transform::default(), &mut pixmap.as_mut());
     Ok(pixmap.data().to_vec())
 }
 
@@ -114,14 +105,12 @@ mod tests {
         let icon = Icon::WeaponSwordOneHanded;
         let full = icon_to_path(&icon);
         assert_eq!(
-            full.clone()
-                .into_string()
-                .expect("this should be valid utf8"),
+            full.clone().to_string_lossy(),
             "data/SKSE/plugins/resources/icons/weapon_sword_one_handed.svg".to_string()
         );
         let buffer =
             load_and_rasterize(&full, 128).expect("should return okay for a known-present file");
-        eprintln!("{}", buffer.len());
         assert!(!buffer.is_empty());
+        assert_eq!(buffer.len(), 128 * 128 * 4); // expected size given dimensions & square image
     }
 }

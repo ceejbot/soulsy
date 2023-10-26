@@ -248,6 +248,13 @@ pub mod plugin {
         empty_slots: Vec<u8>,
     }
 
+    #[derive(Debug, Clone)]
+    struct LoadedImage {
+        width: u32,
+        height: u32,
+        buffer: Vec<u8>,
+    }
+
     extern "Rust" {
         /// Tell the rust side where to log.
         fn initialize_rust_logging(logdir: &CxxVector<u16>);

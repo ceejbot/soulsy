@@ -137,7 +137,7 @@ namespace ui
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
-	bool ui_renderer::vec_to_texture(LoadedImage* img,
+	bool ui_renderer::vecToTexture(LoadedImage* img,
 		ID3D11ShaderResourceView** out_srv,
 		int32_t& out_width,
 		int32_t& out_height)
@@ -164,8 +164,10 @@ namespace ui
 		desc.CPUAccessFlags   = 0;
 		desc.MiscFlags        = 0;
 
-		// todo
 		// copy image_data into the subresource
+		auto image_data = (unsigned char*)malloc(image->buffer.size());
+		int counter     = 0;
+		for (auto byte : image->buffer) { image_data[counter++] = static_cast<char>(byte); }
 
 		ID3D11Texture2D* p_texture = nullptr;
 		D3D11_SUBRESOURCE_DATA sub_resource;
@@ -636,6 +638,20 @@ namespace ui
 			}
 			else { logger::info("TODO: Add an icon to this pack for {}"sv, entrypath.filename().string().c_str()); }
 		}
+	}
+
+	void ui_rendered::lazyLoadIcon()
+	{
+		// look in map: does it exist? if so, return that
+		// otherwise, ask rust for the LoadedImage struct
+		// turn data into texture with vecToTexture()
+		/* vecToTexture(LoadedImage* img,
+			ID3D11ShaderResourceView** out_srv,
+			int32_t& out_width,
+			int32_t& out_height)
+		*/
+		// store texture in map (falling back to default icon on failure)
+		// return data
 	}
 
 	template <typename T>
