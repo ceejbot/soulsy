@@ -2,11 +2,15 @@ set windows-shell := ["pwsh.exe", "-Command"]
 set shell := ["bash", "-uc"]
 set dotenv-load := true
 
-spriggit := "~/bin/spriggit"
+SPRIGGIT := "~/bin/spriggit"
+TESTMOD := "/mnt/g/Vortex Mods/skyrimse/Soulsy HUD dev version/"
 
 # List available recipes.
 help:
     just -l
+
+# Build everything from a clean repo. One-stop shop.
+full-build: tools cmake build archive layouts
 
 # Install required tools.
 @tools:
@@ -14,27 +18,30 @@ help:
     cargo install cargo-nextest
     cargo install tomato-toml
 
-# Run initial cmake step. Cannot be run in WSL.
+# Run initial cmake to generate project files. Requires Windows.
 cmake:
     cmake --preset vs2022-windows
 
-# Rebuild the archive for testing. Requires windows.
+# Use cargo & cmake to compile the mod in release mode. Requires Windows.
 @build:
     # if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
 
-# Check clippy lints and format both Rust & C++.
-@lint:
+# Format both Rust & C++. Can run anywhere.
+@format:
     cargo +nightly fmt
     find src -iname '*.h' -o -iname '*.cpp' | xargs clang-format -i
-    cargo clippy
 
-# Run rust tests
+# Clippy.
+@lint:
+	cargo clippy --all-targets
+
+# Run rust tests. Cannot run on Windows (yet; use Mac or WSL Ubuntu for now).
 @test:
     cargo nextest run
 
-# Generate source files list for CMake. Bash.
+# Generate source files list for CMake. Requires bash. Use a *nix.
 sources:
     #!/bin/bash
     set -e
@@ -50,7 +57,7 @@ sources:
     sed -e 's/^\.\//    /' test.txt > cmake/sourcelist.cmake
     rm test.txt
 
-# Set the crate version and tag the repo to match. Bash.
+# Set the crate version and tag the repo to match. Requires bash.
 tag VERSION:
     #!/usr/bin/env bash
     set -e
@@ -63,28 +70,11 @@ tag VERSION:
     git tag "v{{VERSION}}"
     echo "Release tagged for version v{{VERSION}}"
 
-# Create a mod archive and 7zip it. Requires bash.
-archive:
-    #!/usr/bin/env bash
-    set -e
-    version=$(tomato get package.version Cargo.toml)
-    release_name=SoulsyHUD_v${version}
-    mkdir -p "releases/$release_name"
-    cp -rp data/* "releases/${release_name}/"
-    cp -p build/Release/SoulsyHUD.dll "releases/${release_name}/SKSE/plugins/SoulsyHUD.dll"
-    cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}/SKSE/plugins/SoulsyHUD.pdb"
-    rm "releases/${release_name}/scripts/source/TESV_Papyrus_Flags.flg"
-    cd releases
-    7z a "$release_name".7z "$release_name"
-    rm -rf "$release_name"
-    cd ..
-    echo "Mod archive for v${version} ready at releases/${release_name}.7z"
-
-# copy files to my test mod
+# Copy the built mod files to my test mod.
 install:
     #!/usr/bin/env bash
     echo "copying to live mod for testing..."
-    outdir="/mnt/g/Vortex Mods/skyrimse/Soulsy HUD dev version/"
+    outdir="{{TESTMOD}}"
     cp -rp data/* "$outdir"
     cp -p build/Release/SoulsyHUD.dll "${outdir}/SKSE/plugins/SoulsyHUD.dll"
     cp -p build/Release/SoulsyHUD.pdb "${outdir}/SKSE/plugins/SoulsyHUD.pdb"
@@ -114,8 +104,25 @@ check-translations:
     done
     rm tmp.txt
 
+# Create a mod archive and 7zip it. Requires bash.
+archive:
+    #!/usr/bin/env bash
+    set -e
+    version=$(tomato get package.version Cargo.toml)
+    release_name=SoulsyHUD_v${version}
+    mkdir -p "releases/$release_name"
+    cp -rp data/* "releases/${release_name}/"
+    cp -p build/Release/SoulsyHUD.dll "releases/${release_name}/SKSE/plugins/SoulsyHUD.dll"
+    cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}/SKSE/plugins/SoulsyHUD.pdb"
+    rm "releases/${release_name}/scripts/source/TESV_Papyrus_Flags.flg"
+    cd releases
+    7z a "$release_name".7z "$release_name"
+    rm -rf "$release_name"
+    cd ..
+    echo "Mod archive for v${version} ready at releases/${release_name}.7z"
+
 # Build mod structures for additional layouts. Bash.
-build-layouts:
+layouts:
     #!/usr/bin/env bash
 
     ar=$(which 7zz)
@@ -177,18 +184,18 @@ build-layouts:
 
 # Use spriggit to dump the plugin to text.
 plugin-ser:
-    {{spriggit}} serialize --InputPath ./data/SoulsyHUD.esl --OutputPath ./plugin/ --GameRelease SkyrimSE --PackageName Spriggit.Json
+    {{SPRIGGIT}} serialize --InputPath ./data/SoulsyHUD.esl --OutputPath ./plugin/ --GameRelease SkyrimSE --PackageName Spriggit.Json
 
 # Use spriggit to rehydrate the plugin.
 @plugin-de:
-    {{spriggit}} deserialize --InputPath ./plugin --OutputPath ./SoulsyHUD_test.esl
+    {{SPRIGGIT}} deserialize --InputPath ./plugin --OutputPath ./SoulsyHUD_test.esl
 
-# The traditional
+# Remove archive files.
 @clean:
     rm -f archive.7z
     rm -rf archive/
 
-# A little niche, but still handy
+# Remove archive files & all build artifacts.
 spotless: clean
     cargo clean
     rm -rf build
