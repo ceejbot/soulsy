@@ -175,7 +175,8 @@ namespace helpers
 
 	RE::TESForm* formSpecToFormItem(const std::string& a_str)
 	{
-		if (a_str.empty()) {
+		if (a_str.empty())
+		{
 			// logger::debug("formSpecToFormItem() got empty string; this can never return an item.");
 			return nullptr;
 		}
@@ -219,7 +220,8 @@ namespace helpers
 
 	rust::Box<HudItem> formSpecToHudItem(const std::string& spec)
 	{
-		if (spec.empty()) {
+		if (spec.empty())
+		{
 			// logger::debug("Empty string passed to formSpecToHudItem(); returning empty item.");
 			return empty_huditem();
 		}

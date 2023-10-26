@@ -200,3 +200,7 @@ plugin-ser:
 spotless: clean
     cargo clean
     rm -rf build
+
+# experimental
+precomp:
+	clang -cc1 src/PCH.h -emit-pch -o PCH.h.pch  -isystem"./extern/CommonLibSSE-NG/include"

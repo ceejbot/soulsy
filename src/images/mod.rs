@@ -8,10 +8,10 @@ pub use icons::*;
 use resvg::usvg::TreeParsing;
 use resvg::*;
 
-#[cfg(test)]
-const ICON_SVG_PATH: &'static str = "data/SKSE/plugins/resources/icons/";
 #[cfg(not(test))]
-const ICON_SVG_PATH: &'static str = "SKSE/plugins/resources/icons/";
+const ICON_SVG_PATH: &str = "SKSE/plugins/resources/icons/";
+#[cfg(test)]
+const ICON_SVG_PATH: &str = "data/SKSE/plugins/resources/icons/";
 
 /// Called by C++, so it needs to handle all errors and signal its
 /// success or failure through some means other than a Result.
@@ -93,11 +93,13 @@ fn load_and_rasterize(file_path: &OsString, maxdim: u32) -> Result<Vec<u8>> {
         size.height() as f32 / rtree.size.height() as f32,
     );
 
-    let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height()).unwrap();
+    let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())
+        .ok_or(anyhow!("unable to allocate first pixmap"))?;
     rtree.render(transform, &mut pixmap.as_mut());
 
     let pixmap_size = rtree.size.to_int_size();
-    let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
+    let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height())
+        .ok_or(anyhow!("unable to allocate second pixmap"))?;
     rtree.render(tiny_skia::Transform::default(), &mut pixmap.as_mut());
     Ok(pixmap.data().to_vec())
 }
@@ -120,6 +122,6 @@ mod tests {
         let buffer =
             load_and_rasterize(&full, 128).expect("should return okay for a known-present file");
         eprintln!("{}", buffer.len());
-        assert!(buffer.len() > 0);
+        assert!(!buffer.is_empty());
     }
 }

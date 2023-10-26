@@ -21,5 +21,5 @@ namespace game
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 
 	void unequipHand(RE::PlayerCharacter*& player, Action which);
-	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot,  RE::PlayerCharacter*& player);
+	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player);
 }
