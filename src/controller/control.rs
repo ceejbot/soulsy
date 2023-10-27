@@ -40,20 +40,22 @@ pub struct Controller {
     right_hand_cached: String,
     /// We need to track keystate to implement modifier keys.
     tracked_keys: HashMap<Hotkey, TrackedKey>,
+    /// True if we're using CGO's alternative grip.
+    cgo_alt_grip: bool,
 }
 
 impl Controller {
     /// Make a controller with no information in it.
     pub fn new() -> Self {
-        let cycles = CycleData::default();
         Controller {
-            cycles,
+            cycles: CycleData::default(),
             cache: ItemCache::new(),
             visible: HashMap::new(),
             two_hander_equipped: false,
             left_hand_cached: "".to_string(),
             right_hand_cached: "".to_string(),
             tracked_keys: HashMap::new(),
+            cgo_alt_grip: false,
         }
     }
 
@@ -862,6 +864,69 @@ impl Controller {
         }
     }
 
+    /// We get this event when the player is using CGO and has switched grip mode.
+    pub fn handle_grip_change(&mut self, using_alt_grip: bool) {
+        // Record this in a local var so we can respect it when we equip new things.
+        log::info!("CGO grip change observed; alt-grip={using_alt_grip};");
+        self.cgo_alt_grip = using_alt_grip;
+
+        let spec = specEquippedRight();
+        let item = self.cache.get(&spec);
+        if hasRangedEquipped() || !item.is_weapon() {
+            // We have nothing to update in this case.
+            return;
+        }
+
+        if using_alt_grip && item.two_handed() {
+            // IFF we had been equipping a two-hander, we're now equipping a one-hander.
+            self.switch_to_one_hander();
+        } else if using_alt_grip && !item.two_handed() {
+            // This is weird stuff. CGO will make you hold this in two hands.
+            let left = specEquippedLeft();
+            self.switch_to_two_hander();
+            self.left_hand_cached = left;
+        } else if item.two_handed() {
+            // Alt grip is now OFF and we are holding what is normally a two-hander.
+            self.update_slot(HudElement::Left, &HudItem::default());
+            unequipSlot(Action::Left);
+        } else {
+            // Alt grip is now OFF and we are holding what is normally a one-hander.
+            self.switch_to_one_hander();
+        }
+    }
+
+    fn switch_to_two_hander(&mut self) {
+        self.update_slot(HudElement::Left, &HudItem::default());
+        unequipSlot(Action::Left);
+    }
+
+    fn switch_to_one_hander(&mut self) {
+        log::debug!("entering switch_to_one_hander()");
+        if !self.left_hand_cached.is_empty() {
+            let unarmed = HudItem::make_unarmed_proxy();
+            let prev_left = self.left_hand_cached.clone();
+            log::debug!(
+                "re-requipping what we previously had in the LEFT hand; spec={};",
+                prev_left
+            );
+            if prev_left == unarmed.form_string() {
+                unequipSlot(Action::Left);
+                self.update_slot(HudElement::Left, &unarmed);
+            } else {
+                let item = self.cache.get(&prev_left);
+                self.update_slot(HudElement::Left, &item);
+                cxx::let_cxx_string!(form_spec = prev_left.clone());
+                reequipHand(Action::Left, &form_spec);
+            }
+        } else if let Some(left_next) = self.cycles.get_top(&CycleSlot::Left) {
+            let item = self.cache.get(&left_next);
+            self.left_hand_cached = left_next.clone();
+            self.update_slot(HudElement::Left, &item);
+            cxx::let_cxx_string!(form_spec = left_next);
+            reequipHand(Action::Left, &form_spec);
+        }
+    }
+
     pub fn handle_item_unequipped(
         &mut self,
         unequipped_spec: &String,
@@ -967,34 +1032,33 @@ impl Controller {
         }
 
         // ----------
-        // The hard part starts. Left hand vs right hand. Earlier, we did our
-        // best to set up the HUD to show what we want in each hand. So we look
-        // at the item equipped: does it match an earlier decision? If so, make
-        // the other decision happen as well. If the equip event was NOT driven
-        // by the HUD, we have some more work to do.
+        // The hard part starts. Earlier, we did our best to set up the HUD to
+        // show what we want in each hand. So we look at the item equipped: does
+        // it match an earlier decision? If so, make the other decision happen
+        // as well. If the equip event was NOT driven by the HUD, we have some
+        // more work to do.
+        //
+        // CGO throws a wrinkle into all of this. If we're using alt-grip mode,
+        // two-hander *melee* weapons are treated like one-handers and
+        // one-handers are used with both hands. Cats living with dogs. Real
+        // end-of-the-world type stuff.
 
-        // log::trace!("is-now-equipped={}; allegedly-right={}; allegedly-left: {}; name='{}'; item.kind={:?}; item 2-handed={}; 2-hander equipped={}; left_cached='{}'; right_cached='{}';",
-        //     equipped,
-        //     right,
-        //     left,
-        //     item.name(),
-        //     item.kind(),
-        //     item.two_handed(),
-        //     self.two_hander_equipped,
-        //     self.left_hand_cached,
-        //     self.right_hand_cached
-        // );
+        let treat_as_two_hander = (self.cgo_alt_grip || !item.two_handed()) || (!self.cgo_alt_grip && item.two_handed());
+        let switching = item.two_handed() != self.two_hander_equipped;
+        log::debug!("weapon grip normally={}; alt-grip={}; we are treating it like: 2-hander={treat_as_two_hander}; switching={switching};",
+            item.two_handed(), self.cgo_alt_grip);
+        self.two_hander_equipped = item.two_handed();
 
-        if item.two_handed() {
-            // log::trace!("we have a two-hander. we should exit after this block.");
+        if treat_as_two_hander && right {
             let changed = self.update_slot(HudElement::Right, &item);
             if changed {
                 // Change was out of band. We need to react.
                 self.cycles.set_top(&CycleSlot::Right, &item.form_string());
             }
             self.update_slot(HudElement::Left, &HudItem::default());
-            self.two_hander_equipped = true;
             return changed;
+        } else if treat_as_two_hander && left {
+            log::info!("treat_as_two_hander + left detected");
         }
 
         // It's a one-hander. Does it match an earlier decision?
@@ -1030,8 +1094,8 @@ impl Controller {
             self.update_slot(HudElement::Left, &item);
         }
 
-        if !self.two_hander_equipped {
-            // We are done. Phew.
+        if !switching {
+            // We are not switching from two-hander to one-hander. Phew.
             return left_unexpected || right_unexpected;
         }
 
@@ -1041,28 +1105,12 @@ impl Controller {
         let unarmed = HudItem::make_unarmed_proxy();
 
         if right {
-            if !self.left_hand_cached.is_empty() {
-                let prev_left = self.left_hand_cached.clone();
-                log::debug!("considering re-requipping LEFT; {}", prev_left);
-                if prev_left == unarmed.form_string() {
-                    unequipSlot(Action::Left);
-                    self.update_slot(HudElement::Left, &unarmed);
-                } else {
-                    let item = self.cache.get(&prev_left);
-                    self.update_slot(HudElement::Left, &item);
-                    cxx::let_cxx_string!(form_spec = prev_left.clone());
-                    reequipHand(Action::Left, &form_spec);
-                }
-            } else if let Some(left_next) = self.cycles.get_top(&CycleSlot::Left) {
-                let item = self.cache.get(&left_next);
-                self.left_hand_cached = left_next.clone();
-                self.update_slot(HudElement::Left, &item);
-                cxx::let_cxx_string!(form_spec = left_next);
-                reequipHand(Action::Left, &form_spec);
-            }
+            // This function is CGO-aware.
+            self.switch_to_one_hander();
         }
 
-        if left {
+        if left && !self.cgo_alt_grip {
+            // CGO does not care about the left hand.
             if !self.right_hand_cached.is_empty() {
                 let prev_right = self.right_hand_cached.clone();
                 log::debug!("considering re-requipping RIGHT; {prev_right}");
@@ -1084,7 +1132,6 @@ impl Controller {
             }
         }
 
-        self.two_hander_equipped = item.two_handed();
         left_unexpected || right_unexpected
     }
 

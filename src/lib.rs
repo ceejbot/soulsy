@@ -387,6 +387,8 @@ pub mod plugin {
         fn handle_inventory_changed(form_spec: &String, delta: i32);
         /// Favoriting & unfavoriting.
         fn handle_favorite_event(_button: &ButtonEvent, is_favorite: bool, _item: Box<HudItem>);
+        /// Handle CGO switching grip mode.
+        fn handle_grip_change(use_alt_grip: bool);
         /// Clear all cycles on player request.
         fn clear_cycles();
         /// Get the names of the entries in the given cycle as a string.

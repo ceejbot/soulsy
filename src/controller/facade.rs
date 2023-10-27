@@ -108,6 +108,10 @@ pub fn handle_item_equipped(
     control::get().handle_item_equipped(equipped, form_spec, right, left)
 }
 
+pub fn handle_grip_change(use_alt_grip: bool) {
+    control::get().handle_grip_change(use_alt_grip);
+}
+
 /// A consumable's count changed. Record if relevant.
 pub fn handle_inventory_changed(form_spec: &String, count: i32) {
     control::get().handle_inventory_changed(form_spec, count);

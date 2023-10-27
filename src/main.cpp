@@ -56,16 +56,16 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 					ui::ui_renderer::get_resolution_scale_height());
 
 				ui::ui_renderer::load_all_images();
-				register_all_sinks();
 				hooks::install_hooks();
 				papyrus::registerPapyrusFunctions();
-				initialize_hud();
 			}
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
 		case SKSE::MessagingInterface::kNewGame:
 			// logger::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
 			logger::info("SKSE kNewGame post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
+				registerAllListeners();
+				initialize_hud();
 			break;
 		default: break;
 	}

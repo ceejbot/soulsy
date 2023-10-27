@@ -5,51 +5,74 @@
 // with CommonLibSSE's events and do initial processing in the callbacks.
 // All heavy application-level logic happens on the Rust side.
 
-void register_all_sinks();
+void registerAllListeners();
 
-class EquipEventSink final : public RE::BSTEventSink<RE::TESEquipEvent>
+class EquipEventListener final : public RE::BSTEventSink<RE::TESEquipEvent>
 {
 	using event_result = RE::BSEventNotifyControl;
 
 public:
-	static EquipEventSink* get_singleton(void);
-	static void register_sink(void);
+	static EquipEventListener* get_singleton(void);
+	static void registerListener(void);
 
 	// It's a programmer error to have more than one.
-	EquipEventSink(const EquipEventSink&) = delete;
-	EquipEventSink(EquipEventSink&&)      = delete;
+	EquipEventListener(const EquipEventListener&) = delete;
+	EquipEventListener(EquipEventListener&&)      = delete;
 
-	EquipEventSink& operator=(const EquipEventSink&) = delete;
-	EquipEventSink& operator=(EquipEventSink&&)      = delete;
+	EquipEventListener& operator=(const EquipEventListener&) = delete;
+	EquipEventListener& operator=(EquipEventListener&&)      = delete;
 
 protected:
 	RE::BSEventNotifyControl ProcessEvent(const RE::TESEquipEvent* event,
 		[[maybe_unused]] RE::BSTEventSource<RE::TESEquipEvent>* source) override;
 
 private:
-	EquipEventSink()           = default;
-	~EquipEventSink() override = default;
+	EquipEventListener()           = default;
+	~EquipEventListener() override = default;
 };
 
-class KeyEventSink final : public RE::BSTEventSink<RE::InputEvent*>
+class KeyEventListener final : public RE::BSTEventSink<RE::InputEvent*>
 {
 	using event_result = RE::BSEventNotifyControl;
 
 public:
-	static KeyEventSink* get_singleton();
-	static void register_sink();
+	static KeyEventListener* get_singleton();
+	static void registerListener();
 
-	KeyEventSink(const KeyEventSink&) = delete;
-	KeyEventSink(KeyEventSink&&)      = delete;
+	KeyEventListener(const KeyEventListener&) = delete;
+	KeyEventListener(KeyEventListener&&)      = delete;
 
-	KeyEventSink& operator=(const KeyEventSink&) = delete;
-	KeyEventSink& operator=(KeyEventSink&&)      = delete;
+	KeyEventListener& operator=(const KeyEventListener&) = delete;
+	KeyEventListener& operator=(KeyEventListener&&)      = delete;
 
 protected:
 	RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event,
 		[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* a_event_source) override;
 
 private:
-	KeyEventSink()           = default;
-	~KeyEventSink() override = default;
+	KeyEventListener()           = default;
+	~KeyEventListener() override = default;
+};
+
+class AnimGraphListener final : public RE::BSTEventSink<RE::BSAnimationGraphEvent>
+{
+	using event_result = RE::BSEventNotifyControl;
+
+public:
+	static AnimGraphListener* get_singleton();
+	static void registerListener();
+
+	AnimGraphListener(const AnimGraphListener&) = delete;
+	AnimGraphListener(AnimGraphListener&&)      = delete;
+
+	AnimGraphListener& operator=(const AnimGraphListener&) = delete;
+	AnimGraphListener& operator=(AnimGraphListener&&)      = delete;
+
+protected:
+	RE::BSEventNotifyControl ProcessEvent(const RE::BSAnimationGraphEvent* event,
+		RE::BSTEventSource<RE::BSAnimationGraphEvent>* source) override;
+
+private:
+	AnimGraphListener()           = default;
+	~AnimGraphListener() override = default;
 };

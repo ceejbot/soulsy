@@ -9,26 +9,30 @@
 
 #include "lib.rs.h"
 
-// Handle equipment change events. We need to update our UI when this happens.
 
 using event_result = RE::BSEventNotifyControl;
 
 // Where all == both.
-void register_all_sinks()
+void registerAllListeners()
 {
-	EquipEventSink::register_sink();
-	KeyEventSink::register_sink();
+	EquipEventListener::registerListener();
+	KeyEventListener::registerListener();
+	AnimGraphListener::registerListener();
 }
 
-EquipEventSink* EquipEventSink::get_singleton()
+EquipEventListener* EquipEventListener::get_singleton()
 {
-	static EquipEventSink singleton;
+	static EquipEventListener singleton;
 	return std::addressof(singleton);
 }
 
-void EquipEventSink::register_sink() { RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(get_singleton()); }
+void EquipEventListener::registerListener()
+{
+	RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(get_singleton());
+}
 
-EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEvent* event,
+// Handle equipment change events. We need to update our UI when this happens.
+EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESEquipEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::TESEquipEvent>* source)
 {
 	if (!event || !event->actor || !event->actor->IsPlayerRef()) { return event_result::kContinue; }
@@ -54,19 +58,19 @@ EquipEventSink::event_result EquipEventSink::ProcessEvent(const RE::TESEquipEven
 	return event_result::kContinue;
 }
 
-KeyEventSink* KeyEventSink::get_singleton()
+KeyEventListener* KeyEventListener::get_singleton()
 {
-	static KeyEventSink singleton;
+	static KeyEventListener singleton;
 	return std::addressof(singleton);
 }
 
-void KeyEventSink::register_sink()
+void KeyEventListener::registerListener()
 {
 	RE::BSInputDeviceManager::GetSingleton()->AddEventSink(get_singleton());
 	logger::info("Now listening for input events."sv);
 }
 
-event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
+event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 	[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* source)
 {
 	// We start by figuring out if we need to do anything at all.
@@ -108,6 +112,37 @@ event_result KeyEventSink::ProcessEvent(RE::InputEvent* const* event_list,
 		}
 
 	}  // end event handling for loop
+
+	return event_result::kContinue;
+}
+
+
+// ---------- animation graph events
+// Here we watch for anim graph events ONLY to catch CGO's grip switch variable change.
+
+AnimGraphListener* AnimGraphListener::get_singleton()
+{
+	static AnimGraphListener singleton;
+	return std::addressof(singleton);
+}
+
+void AnimGraphListener::registerListener()
+{
+	auto* player = RE::PlayerCharacter::GetSingleton();
+	auto okay    = player->AddAnimationGraphEventSink(AnimGraphListener::get_singleton());
+	if (okay) { logger::info("Now listening for animation graph events."sv); }
+	else { logger::warn("Surprising: failed to add an event listener for animation graph events."); }
+}
+
+RE::BSEventNotifyControl AnimGraphListener::ProcessEvent(const RE::BSAnimationGraphEvent* event,
+	[[maybe_unused]] RE::BSTEventSource<RE::BSAnimationGraphEvent>* source)
+{
+	if (event->tag == "GripChangeEvent")
+	{
+		bool useAltGrip = false;
+		RE::PlayerCharacter::GetSingleton()->GetGraphVariableBool("bUseAltGrip", useAltGrip);
+		handle_grip_change(useAltGrip);
+	}
 
 	return event_result::kContinue;
 }
