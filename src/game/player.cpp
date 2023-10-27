@@ -31,6 +31,13 @@ namespace player
 
 	bool weaponsAreDrawn() { return RE::PlayerCharacter::GetSingleton()->AsActorState()->IsWeaponDrawn(); }
 
+	bool useCGOAltGrip()
+	{
+		bool useAltGrip = false;
+		RE::PlayerCharacter::GetSingleton()->GetGraphVariableBool("bUseAltGrip", useAltGrip);
+		return useAltGrip;
+	}
+
 	rust::String specEquippedLeft()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();

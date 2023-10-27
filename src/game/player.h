@@ -59,4 +59,6 @@ namespace player
 	void chooseMagickaPotion();
 	void chooseHealthPotion();
 	void chooseStaminaPotion();
+
+	bool useCGOAltGrip();
 }

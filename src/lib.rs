@@ -538,5 +538,7 @@ pub mod plugin {
         fn magickaPotionCount() -> u32;
         /// Get a count for items with this form spec.
         fn itemCount(form_spec: &CxxString) -> u32;
+        /// Is the player using CGO's alt-grip mode? (Always false if not using CGO.)
+        fn useCGOAltGrip() -> bool;
     }
 }

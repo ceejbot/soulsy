@@ -1043,7 +1043,8 @@ impl Controller {
         // one-handers are used with both hands. Cats living with dogs. Real
         // end-of-the-world type stuff.
 
-        let treat_as_two_hander = (self.cgo_alt_grip || !item.two_handed()) || (!self.cgo_alt_grip && item.two_handed());
+        let treat_as_two_hander =
+            (self.cgo_alt_grip || !item.two_handed()) || (!self.cgo_alt_grip && item.two_handed());
         let switching = item.two_handed() != self.two_hander_equipped;
         log::debug!("weapon grip normally={}; alt-grip={}; we are treating it like: 2-hander={treat_as_two_hander}; switching={switching};",
             item.two_handed(), self.cgo_alt_grip);
@@ -1058,7 +1059,10 @@ impl Controller {
             self.update_slot(HudElement::Left, &HudItem::default());
             return changed;
         } else if treat_as_two_hander && left {
-            log::info!("treat_as_two_hander + left detected");
+            log::info!("treat_as_two_hander + left detected; item={item}");
+            // TODO The left hud slot should be cleared and the left hand unequipped.
+            // but I'm also not sure we ever get here.
+            return false;
         }
 
         // It's a one-hander. Does it match an earlier decision?
@@ -1152,22 +1156,28 @@ impl Controller {
     /// out of band, e.g., by using a menu, and only then if we screwed
     /// up an equip event.
     fn update_hud(&mut self) {
+        self.cgo_alt_grip = useCGOAltGrip();
         let right_spec = specEquippedRight();
         let right_entry = self.cache.get(&right_spec);
 
+        let treat_right_as_2h = (self.cgo_alt_grip || !right_entry.two_handed())
+            || (!self.cgo_alt_grip && right_entry.two_handed());
+
         let right_changed = self.update_slot(HudElement::Right, &right_entry);
-        if !right_entry.two_handed() {
+        if !treat_right_as_2h {
             self.right_hand_cached = right_entry.form_string();
         }
 
         let left_spec = specEquippedLeft();
         let left_entry = self.cache.get(&left_spec);
+        let treat_left_as_2h = (self.cgo_alt_grip || !left_entry.two_handed())
+            || (!self.cgo_alt_grip && left_entry.two_handed());
 
-        let left_unexpected = if !left_entry.two_handed() {
+        let left_unexpected = if !treat_left_as_2h {
             self.left_hand_cached = left_entry.form_string();
             self.update_slot(HudElement::Left, &left_entry)
         } else {
-            // it's a two-handed item in the left hand.
+            // Two-handed item in the left hand, which means we show it as empty.
             self.left_hand_cached = self
                 .cycles
                 .get_top(&CycleSlot::Left)
@@ -1216,7 +1226,7 @@ impl Controller {
 
     /// Update the displayed slot for the specified HUD element.
     fn update_slot(&mut self, slot: HudElement, new_item: &HudItem) -> bool {
-        log::debug!("updating hud slot {slot}; visible: {new_item}");
+        log::debug!("updating hud slot '{slot}'; visible: {new_item}");
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
         } else {
