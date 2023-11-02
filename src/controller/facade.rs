@@ -30,12 +30,15 @@ pub fn initialize_rust_logging(_logdir: &cxx::CxxVector<u16>) {
     let chonky_path = OsString::from_wide(_logdir.as_slice());
     let path = Path::new(chonky_path.as_os_str()).with_file_name("SoulsyHUD_rust.log");
 
-    if let Ok(logfile) = File::create(path) {
-        let _ = WriteLogger::init(log_level, Config::default(), logfile);
-        log::info!("Rust logging standing by.");
-    } else {
+    let Ok(logfile) = File::create(path) else {
         // Welp, we failed and I have nowhere to write the darn error. Ha ha.
-    }
+        return;
+    };
+    let Ok(_) = WriteLogger::init(log_level, Config::default(), logfile) else {
+        // oh dear
+        return;
+    };
+    log::info!("Rust logging standing by.");
 }
 
 // ---------- boxed user settings
