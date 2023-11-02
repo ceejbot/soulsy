@@ -1,10 +1,13 @@
 //! Rasterize svgs and provide them to the C++ side.
 //! Possibly read on the fly?
 pub mod icons;
+use crate::plugin::LoadedImage;
+pub use icons::*;
+
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use anyhow::{anyhow, Result};
-pub use icons::*;
 use resvg::usvg::TreeParsing;
 use resvg::*;
 
@@ -16,7 +19,23 @@ const ICON_SVG_PATH: &str = "data/SKSE/plugins/resources/icons/";
 /// Called by C++, so it needs to handle all errors and signal its
 /// success or failure through some means other than a Result.
 /// In this case, a zero-length vector is a failure.
-pub fn load_icon_with_fallback(icon: Icon, maxdim: u32) -> Vec<u8> {
+pub fn load_icon_with_fallback(name: String, maxdim: u32) -> LoadedImage {
+    let icon: Icon = Icon::from_str(name.as_str()).unwrap_or_default();
+    icon_data_by_name(icon, maxdim)
+}
+
+/*
+struct LoadedImage {
+    width: u32,
+    height: u32,
+    buffer: Vec<u8>,
+}
+*/
+
+/// Called by C++, so it needs to handle all errors and signal its
+/// success or failure through some means other than a Result.
+/// In this case, a zero-length vector is a failure.
+fn icon_data_by_name(icon: Icon, maxdim: u32) -> LoadedImage {
     let first_path = icon_to_path(&icon);
     match load_and_rasterize(&first_path, maxdim) {
         Ok(v) => {
@@ -26,12 +45,12 @@ pub fn load_icon_with_fallback(icon: Icon, maxdim: u32) -> Vec<u8> {
         Err(e) => {
             let fallback_path = icon_fallback_path(&icon);
             log::error!("failed to load SVG; loading fallback; icon='{icon:?}'; error={e:?}");
-            load_and_rasterize(&fallback_path, maxdim).unwrap_or_else(|_| Vec::new())
+            load_and_rasterize(&fallback_path, maxdim).unwrap_or_else(|_| LoadedImage::default())
         }
     }
 }
 
-pub fn rasterize_svg(icon: Icon, maxdim: u32) -> Vec<u8> {
+pub fn rasterize_svg(icon: Icon, maxdim: u32) -> LoadedImage {
     let file_path = icon_to_path(&icon);
     match load_and_rasterize(&file_path, maxdim) {
         Ok(v) => {
@@ -46,13 +65,13 @@ pub fn rasterize_svg(icon: Icon, maxdim: u32) -> Vec<u8> {
                 "failed to load SVG; path='{}'; error={e:?}",
                 file_path.display()
             );
-            Vec::new()
+            LoadedImage::default()
         }
     }
 }
 
 /// Rust wants to use this.
-pub fn load_icon(icon: Icon, maxdim: u32) -> Result<Vec<u8>> {
+pub fn load_icon(icon: Icon, maxdim: u32) -> Result<LoadedImage> {
     let file_path = icon_to_path(&icon);
     load_and_rasterize(&file_path, maxdim)
 }
@@ -68,7 +87,7 @@ fn icon_fallback_path(icon: &Icon) -> PathBuf {
 }
 
 /// Internal shared implementation.
-fn load_and_rasterize(file_path: &PathBuf, maxdim: u32) -> Result<Vec<u8>> {
+fn load_and_rasterize(file_path: &PathBuf, maxdim: u32) -> Result<LoadedImage> {
     let buffer = std::fs::read(file_path)?;
     let opt = usvg::Options::default();
     let tree = usvg::Tree::from_data(&buffer, &opt)?;
@@ -92,7 +111,12 @@ fn load_and_rasterize(file_path: &PathBuf, maxdim: u32) -> Result<Vec<u8>> {
     let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())
         .ok_or(anyhow!("unable to allocate first pixmap"))?;
     rtree.render(transform, &mut pixmap.as_mut());
-    Ok(pixmap.data().to_vec())
+
+    Ok(LoadedImage {
+        buffer: pixmap.data().to_vec(),
+        width: pixmap.width(),
+        height: pixmap.height(),
+    })
 }
 
 #[cfg(test)]
@@ -108,9 +132,9 @@ mod tests {
             full.clone().to_string_lossy(),
             "data/SKSE/plugins/resources/icons/weapon_sword_one_handed.svg".to_string()
         );
-        let buffer =
+        let loaded =
             load_and_rasterize(&full, 128).expect("should return okay for a known-present file");
-        assert!(!buffer.is_empty());
-        assert_eq!(buffer.len(), 128 * 128 * 4); // expected size given dimensions & square image
+        assert!(!loaded.buffer.is_empty());
+        assert_eq!(loaded.buffer.len(), 128 * 128 * 4); // expected size given dimensions & square image
     }
 }

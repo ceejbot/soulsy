@@ -13,7 +13,7 @@ struct Color;
 
 namespace ui
 {
-	struct image
+	struct TextureData
 	{
 		ID3D11ShaderResourceView* texture = nullptr;
 		int32_t width                     = 0;
@@ -95,15 +95,17 @@ namespace ui
 		static inline ID3D11DeviceContext* context_ = nullptr;
 
 		template <typename T>
-		static void
-			load_images(std::map<std::string, T>& a_map, std::map<uint32_t, image>& a_struct, std::string& file_path);
+		static void load_images(std::map<std::string, T>& a_map,
+			std::map<uint32_t, TextureData>& a_struct,
+			std::string& file_path);
 
-		static void load_animation_frames(std::string& file_path, std::vector<image>& frame_list);
+		static void load_animation_frames(std::string& file_path, std::vector<TextureData>& frame_list);
 
-		static image get_key_icon(uint32_t a_key);
+		static TextureData get_key_icon(uint32_t a_key);
 		static void load_font();
 
-		static void load_icon_images(std::map<std::string, image>& a_struct, std::string& file_path);
+		static void load_icon_images(std::map<std::string, TextureData>& a_struct, std::string& file_path);
+		static bool lazyLoadIcon(std::string name);
 
 	public:
 		static float get_resolution_scale_width();

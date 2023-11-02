@@ -20,17 +20,17 @@
 
 namespace ui
 {
-	static std::map<animation_type, std::vector<image>> animation_frame_map = {};
+	static std::map<animation_type, std::vector<TextureData>> animation_frame_map = {};
 	static std::vector<std::pair<animation_type, std::unique_ptr<animation>>> animation_list;
 
 	static std::map<uint8_t, float> cycle_timers = {};
 
-	static std::map<uint32_t, image> image_struct;
-	static std::map<uint32_t, image> key_struct;
-	static std::map<uint32_t, image> default_key_struct;
-	static std::map<uint32_t, image> ps_key_struct;
-	static std::map<uint32_t, image> xbox_key_struct;
-	static std::map<std::string, image> icon_struct;
+	static std::map<uint32_t, TextureData> image_struct;
+	static std::map<uint32_t, TextureData> key_struct;
+	static std::map<uint32_t, TextureData> default_key_struct;
+	static std::map<uint32_t, TextureData> PS5_BUTTON_MAP;
+	static std::map<uint32_t, TextureData> XBOX_BUTTON_MAP;
+	static std::map<std::string, TextureData> ICON_MAP;
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 
@@ -44,7 +44,7 @@ namespace ui
 	bool gDoingBriefPeek    = false;
 
 	ImFont* imFont;
-	auto tried_font_load = false;
+	auto triedFontLoad = false;
 
 	LRESULT ui_renderer::wnd_proc_hook::thunk(const HWND h_wnd,
 		const UINT u_msg,
@@ -124,7 +124,7 @@ namespace ui
 
 		if (!d_3d_init_hook::initialized.load()) { return; }
 
-		if (!imFont && !tried_font_load) { load_font(); }
+		if (!imFont && !triedFontLoad) { load_font(); }
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -135,63 +135,6 @@ namespace ui
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-	}
-
-	bool ui_renderer::vecToTexture(LoadedImage* img,
-		ID3D11ShaderResourceView** out_srv,
-		int32_t& out_width,
-		int32_t& out_height)
-	{
-		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
-		if (!renderer)
-		{
-			logger::error("Cannot find render manager. Initialization failed."sv);
-			return false;
-		}
-		const auto forwarder = renderer->data.forwarder;
-
-		// Create texture
-		D3D11_TEXTURE2D_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Width            = img->width;
-		desc.Height           = img->height;
-		desc.MipLevels        = 1;
-		desc.ArraySize        = 1;
-		desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.SampleDesc.Count = 1;
-		desc.Usage            = D3D11_USAGE_DEFAULT;
-		desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
-		desc.CPUAccessFlags   = 0;
-		desc.MiscFlags        = 0;
-
-		// copy image_data into the subresource
-		auto image_data = (unsigned char*)malloc(image->buffer.size());
-		int counter     = 0;
-		for (auto byte : image->buffer) { image_data[counter++] = static_cast<char>(byte); }
-
-		ID3D11Texture2D* p_texture = nullptr;
-		D3D11_SUBRESOURCE_DATA sub_resource;
-		sub_resource.pSysMem          = image_data;
-		sub_resource.SysMemPitch      = desc.Width * 4;
-		sub_resource.SysMemSlicePitch = 0;
-		device_->CreateTexture2D(&desc, &sub_resource, &p_texture);
-
-		// Create texture view
-		D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
-		ZeroMemory(&srv_desc, sizeof srv_desc);
-		srv_desc.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		srv_desc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srv_desc.Texture2D.MipLevels       = desc.MipLevels;
-		srv_desc.Texture2D.MostDetailedMip = 0;
-		forwarder->CreateShaderResourceView(p_texture, &srv_desc, out_srv);
-		p_texture->Release();
-
-		free(image_data);
-
-		out_width  = image_width;
-		out_height = image_height;
-
-		return true;
 	}
 
 	// Helper function to load an image into a DX11 texture with common settings
@@ -523,8 +466,8 @@ namespace ui
 			{
 				const auto iconColor = colorizeIcons ? entry->color() : slotLayout.icon_color;
 				auto iconFile        = std::string(entry->icon_file());
-				if (icon_struct[iconFile].width == 0) { iconFile = std::string(entry->icon_fallback()); }
-				const auto [texture, width, height] = icon_struct[iconFile];
+				if (ICON_MAP[iconFile].width == 0) { iconFile = std::string(entry->icon_fallback()); }
+				const auto [texture, width, height] = ICON_MAP[iconFile];
 				const auto scale                    = width > height ? (slotLayout.icon_size.x * globalScale / width) :
 				                                                       (slotLayout.icon_size.y * globalScale / height);
 				const auto size                     = ImVec2(width * scale, height * scale);
@@ -611,7 +554,7 @@ namespace ui
 		ImGui::End();
 	}
 
-	void ui_renderer::load_icon_images(std::map<std::string, image>& out_struct, std::string& icondir)
+	void ui_renderer::load_icon_images(std::map<std::string, TextureData>& out_struct, std::string& icondir)
 	{
 		const auto needed_icons = icon_files();
 		for (auto icon_file_str : needed_icons)
@@ -640,23 +583,68 @@ namespace ui
 		}
 	}
 
-	void ui_rendered::lazyLoadIcon()
+	bool ui_renderer::lazyLoadIcon(std::string name)
 	{
-		// look in map: does it exist? if so, return that
-		// otherwise, ask rust for the LoadedImage struct
-		// turn data into texture with vecToTexture()
-		/* vecToTexture(LoadedImage* img,
-			ID3D11ShaderResourceView** out_srv,
-			int32_t& out_width,
-			int32_t& out_height)
-		*/
-		// store texture in map (falling back to default icon on failure)
-		// return data
+		auto target = ICON_MAP[iconFile];
+		if (target.width > 0) { return true; }
+
+		rust::Box<LoadedImage> img = load_icon_with_fallback(name, 512);
+
+		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
+		if (!renderer)
+		{
+			logger::error("Cannot find render manager. Initialization failed."sv);
+			return false;
+		}
+		const auto forwarder = renderer->data.forwarder;
+
+		// Create texture
+		D3D11_TEXTURE2D_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.Width            = img->width;
+		desc.Height           = img->height;
+		desc.MipLevels        = 1;
+		desc.ArraySize        = 1;
+		desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.SampleDesc.Count = 1;
+		desc.Usage            = D3D11_USAGE_DEFAULT;
+		desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags   = 0;
+		desc.MiscFlags        = 0;
+
+		// copy image_data into the subresource
+		auto image_data = (unsigned char*)malloc(img->buffer.size());
+		int counter     = 0;
+		for (auto byte : img->buffer) { image_data[counter++] = static_cast<char>(byte); }
+
+		ID3D11Texture2D* p_texture = nullptr;
+		D3D11_SUBRESOURCE_DATA sub_resource;
+		sub_resource.pSysMem          = image_data;
+		sub_resource.SysMemPitch      = desc.Width * 4;
+		sub_resource.SysMemSlicePitch = 0;
+		device_->CreateTexture2D(&desc, &sub_resource, &p_texture);
+
+		// Create texture view
+		D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
+		ZeroMemory(&srv_desc, sizeof srv_desc);
+		srv_desc.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
+		srv_desc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srv_desc.Texture2D.MipLevels       = desc.MipLevels;
+		srv_desc.Texture2D.MostDetailedMip = 0;
+		forwarder->CreateShaderResourceView(p_texture, &srv_desc, out_srv);
+		p_texture->Release();
+
+		free(image_data);
+
+		target.width  = image_width;
+		target.height = image_height;
+
+		return true;
 	}
 
 	template <typename T>
 	void ui_renderer::load_images(std::map<std::string, T>& a_map,
-		std::map<uint32_t, image>& a_struct,
+		std::map<uint32_t, TextureData>& a_struct,
 		std::string& file_path)
 	{
 		const auto res_width  = get_resolution_scale_width();
@@ -694,7 +682,7 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::load_animation_frames(std::string& file_path, std::vector<image>& frame_list)
+	void ui_renderer::load_animation_frames(std::string& file_path, std::vector<TextureData>& frame_list)
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
@@ -711,7 +699,7 @@ namespace ui
 			load_texture_from_file(entry.path().string().c_str(), &texture, width, height);
 
 			// logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
-			image img;
+			TextureData img;
 			img.texture = texture;
 			// img.width   = static_cast<int32_t>(width * get_resolution_scale_width());
 			// img.height  = static_cast<int32_t>(height * get_resolution_scale_height());
@@ -719,7 +707,7 @@ namespace ui
 		}
 	}
 
-	image ui_renderer::get_key_icon(const uint32_t a_key)
+	TextureData ui_renderer::get_key_icon(const uint32_t a_key)
 	{
 		const auto settings = user_settings();
 		auto return_image   = default_key_struct[static_cast<int32_t>(default_keys::key)];
@@ -728,9 +716,9 @@ namespace ui
 		{
 			if (settings->controller_kind() == static_cast<uint32_t>(controller_set::playstation))
 			{
-				return_image = ps_key_struct[a_key];
+				return_image = PS5_BUTTON_MAP[a_key];
 			}
-			else { return_image = xbox_key_struct[a_key]; }
+			else { return_image = XBOX_BUTTON_MAP[a_key]; }
 		}
 		else
 		{
@@ -871,7 +859,7 @@ namespace ui
 
 		logger::trace(
 			"about to try to load font; size={}; globalScale={}; path={}"sv, hud.font_size, hud.global_scale, path);
-		tried_font_load = true;
+		triedFontLoad = true;
 		if (std::filesystem::is_regular_file(file_path) &&
 			((file_path.extension() == ".ttf") || (file_path.extension() == ".otf")))
 		{
@@ -907,10 +895,10 @@ namespace ui
 		load_images(image_type_name_map, image_struct, img_directory);
 		load_images(key_icon_name_map, key_struct, key_directory);
 		load_images(default_key_icon_name_map, default_key_struct, key_directory);
-		load_images(gamepad_ps_icon_name_map, ps_key_struct, key_directory);
-		load_images(gamepad_xbox_icon_name_map, xbox_key_struct, key_directory);
+		load_images(gamepad_ps_icon_name_map, PS5_BUTTON_MAP, key_directory);
+		load_images(gamepad_xbox_icon_name_map, XBOX_BUTTON_MAP, key_directory);
 
-		load_icon_images(icon_struct, icon_directory);
+		load_icon_images(ICON_MAP, icon_directory);
 
 		load_animation_frames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());

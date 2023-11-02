@@ -7,7 +7,7 @@ pub mod images;
 
 use controller::*;
 use data::{HudItem, SpellData, *};
-use images::icons::{icon_files, icon_list};
+use images::load_icon_with_fallback;
 
 /// Rust defines the bridge between it and C++ in this mod, using the
 /// affordances of the `cxx` crate. At build time `cxx_build` generates the
@@ -248,7 +248,7 @@ pub mod plugin {
         empty_slots: Vec<u8>,
     }
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Default, Clone)]
     struct LoadedImage {
         width: u32,
         height: u32,
@@ -370,8 +370,7 @@ pub mod plugin {
         fn make_unarmed_proxy() -> Box<HudItem>;
         fn empty_huditem() -> Box<HudItem>;
 
-        fn icon_files() -> Vec<String>;
-        fn icon_list() -> Vec<String>;
+        fn load_icon_with_fallback(name: String, maxdim: u32) -> LoadedImage;
 
         // These are called by plugin hooks and sinks.
 
