@@ -927,6 +927,10 @@ impl Controller {
         }
     }
 
+    fn treat_as_two_handed(&self, item: &HudItem) -> bool {
+        (self.cgo_alt_grip && !item.two_handed()) || (!self.cgo_alt_grip && item.two_handed())
+    }
+
     pub fn handle_item_unequipped(
         &mut self,
         unequipped_spec: &String,
@@ -1043,8 +1047,7 @@ impl Controller {
         // one-handers are used with both hands. Cats living with dogs. Real
         // end-of-the-world type stuff.
 
-        let treat_as_two_hander =
-            (self.cgo_alt_grip || !item.two_handed()) || (!self.cgo_alt_grip && item.two_handed());
+        let treat_as_two_hander = self.treat_as_two_handed(&item);
         let switching = item.two_handed() != self.two_hander_equipped;
         log::debug!("weapon grip normally={}; alt-grip={}; we are treating it like: 2-hander={treat_as_two_hander}; switching={switching};",
             item.two_handed(), self.cgo_alt_grip);
@@ -1160,9 +1163,7 @@ impl Controller {
         let right_spec = specEquippedRight();
         let right_entry = self.cache.get(&right_spec);
 
-        let treat_right_as_2h = (self.cgo_alt_grip || !right_entry.two_handed())
-            || (!self.cgo_alt_grip && right_entry.two_handed());
-
+        let treat_right_as_2h = self.treat_as_two_handed(&right_entry);
         let right_changed = self.update_slot(HudElement::Right, &right_entry);
         if !treat_right_as_2h {
             self.right_hand_cached = right_entry.form_string();
@@ -1170,8 +1171,7 @@ impl Controller {
 
         let left_spec = specEquippedLeft();
         let left_entry = self.cache.get(&left_spec);
-        let treat_left_as_2h = (self.cgo_alt_grip || !left_entry.two_handed())
-            || (!self.cgo_alt_grip && left_entry.two_handed());
+        let treat_left_as_2h = self.treat_as_two_handed(&left_entry);
 
         let left_unexpected = if !treat_left_as_2h {
             self.left_hand_cached = left_entry.form_string();
