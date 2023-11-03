@@ -4,7 +4,7 @@ use strum::Display;
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{base, HasIcon, HasKeywords};
+use super::{HasIcon, HasKeywords};
 
 #[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum AmmoType {
@@ -25,7 +25,7 @@ impl Default for AmmoType {
 
 impl HasKeywords for AmmoType {
     fn classify(_name: &str, keywords: Vec<String>, _ignored: bool) -> Self {
-        let color = base::color_from_keywords(&keywords);
+        let color = super::color::color_from_keywords(&keywords);
 
         let ammo_keywords: Vec<AmmoType> = keywords
             .iter()

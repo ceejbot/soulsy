@@ -5,7 +5,7 @@ use strum::{Display, EnumString};
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{base, HasIcon, HasKeywords, strings_to_keywords};
+use super::{strings_to_keywords, HasIcon, HasKeywords};
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -36,7 +36,7 @@ impl HasIcon for ArmorType {
 
 impl HasKeywords for ArmorType {
     fn classify(name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
-        let color = base::color_from_keywords(&keywords);
+        let color = super::color::color_from_keywords(&keywords);
         let tags: Vec<ArmorTag> = strings_to_keywords::<ArmorTag>(&keywords);
 
         let weight = if let Some(w) = tags.iter().find_map(|xs| {

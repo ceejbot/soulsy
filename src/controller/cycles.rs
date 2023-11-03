@@ -151,7 +151,7 @@ impl CycleData {
     pub fn toggle(&mut self, which: &CycleSlot, item: HudItem) -> MenuEventResponse {
         let cycle = match which {
             CycleSlot::Power => {
-                if !matches!(item.kind(), BaseType::Power | BaseType::Shout(_)) {
+                if !matches!(item.kind(), BaseType::Power(_) | BaseType::Shout(_)) {
                     return MenuEventResponse::ItemInappropriate;
                 }
                 &mut self.power

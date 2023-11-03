@@ -14,13 +14,13 @@ pub mod item_cache;
 pub mod keywords;
 pub mod magic;
 pub mod potion;
+pub mod power;
 pub mod shout;
 pub mod spell;
 pub mod weapon;
 
 use cxx::{CxxString, CxxVector};
 
-use self::ammo::AmmoType;
 pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
@@ -28,6 +28,7 @@ use self::icons::Icon;
 use self::potion::PotionType;
 use self::shout::ShoutType;
 use self::spell::SpellType;
+use self::{ammo::AmmoType, power::PowerType};
 pub use super::magic::SpellData;
 #[cfg(not(test))]
 use crate::plugin::{healthPotionCount, magickaPotionCount, staminaPotionCount};
@@ -105,7 +106,7 @@ pub fn simple_from_formdata(
         ItemCategory::HandToHand => BaseType::HandToHand,
         ItemCategory::Lantern => BaseType::Light(base::LightType::Lantern),
         ItemCategory::Torch => BaseType::Light(base::LightType::Torch),
-        ItemCategory::Power => BaseType::Power,
+        ItemCategory::Power => BaseType::Power(PowerType::default()),
         ItemCategory::Food => BaseType::Food(super::food::FoodType::default()),
         ItemCategory::Shout => BaseType::Shout(ShoutType::default()),
         _ => BaseType::Empty,

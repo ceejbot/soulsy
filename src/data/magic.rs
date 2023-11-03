@@ -105,16 +105,16 @@ impl MagicCategory {
 
     pub fn icon(&self) -> Option<Icon> {
         match self {
-            MagicCategory::Arcane => Some(Icon::SpellAstral),
+            MagicCategory::Arcane => Some(Icon::SpellStars),
             MagicCategory::ShockArc => Some(Icon::SpellArclight),
-            MagicCategory::Astral => Some(Icon::SpellAstral),
+            MagicCategory::Astral => Some(Icon::SpellStars),
             MagicCategory::Bleed => Some(Icon::SpellBleed),
             MagicCategory::FrostFire => Some(Icon::SpellFire),
             MagicCategory::Earth => Some(Icon::SpellEarth),
             MagicCategory::Fire => Some(Icon::SpellFire),
             MagicCategory::Frost => Some(Icon::SpellFrost),
             MagicCategory::Lunar => Some(Icon::SpellMoon),
-            MagicCategory::Necrotic => Some(Icon::SpellNecrotic),
+            MagicCategory::Necrotic => Some(Icon::SpellDesecration),
             MagicCategory::Poison => Some(Icon::SpellPoison),
             MagicCategory::Shadow => Some(Icon::SpellShadow),
             MagicCategory::Shock => Some(Icon::SpellShock),

@@ -29,12 +29,14 @@ pub enum InvColor {
     Gold,
     Gray,
     Green,
+    Holy,
     Legendary,
     Orange,
     Pink,
     Poison,
     Purple,
     Red,
+    Shadow,
     Shock,
     Silver,
     Sun,
@@ -44,11 +46,26 @@ pub enum InvColor {
     Yellow,
 }
 
+pub fn color_from_keywords(keywords: &[String]) -> InvColor {
+    let color_keywords: Vec<InvColor> = keywords
+        .iter()
+        .filter_map(|xs| InvColor::try_from(xs.as_str()).ok())
+        .collect();
+    if let Some(c) = color_keywords.first() {
+        c.clone()
+    } else {
+        InvColor::default()
+    }
+}
+
 impl TryFrom<&str> for InvColor {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let color_name = value.replace("OCF_InvColor", "").to_lowercase();
+        let color_name = value
+            .replace("OCF_InvColor", "")
+            .replace("OCF_IconColor", "")
+            .to_lowercase();
         let color = InvColor::iter().find(|xs| color_name == xs.to_string());
         if let Some(c) = color {
             Ok(c)
@@ -77,12 +94,14 @@ impl InvColor {
             InvColor::Gold => Color::rgb(218, 165, 32),
             InvColor::Gray => Color::rgb(128, 128, 128),
             InvColor::Green => Color::rgb(32, 223, 32),
+            InvColor::Holy => Color::rgb(223, 188, 32),
             InvColor::Legendary => Color::rgb(255, 175, 0),
             InvColor::Orange => Color::rgb(255, 76, 0),
             InvColor::Pink => Color::rgb(219, 46, 114),
             InvColor::Poison => Color::rgb(192, 128, 255), // purple
             InvColor::Purple => Color::rgb(192, 128, 255),
             InvColor::Red => Color::rgb(255, 0, 0),
+            InvColor::Shadow => Color::rgb(80, 0, 145), // dark purple
             InvColor::Shock => Color::rgb(255, 213, 0), // yellow
             InvColor::Silver => Color::rgb(192, 192, 192),
             InvColor::Sun => Color::rgb(223, 188, 32),

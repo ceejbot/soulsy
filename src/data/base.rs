@@ -8,6 +8,7 @@ use super::color::InvColor;
 use super::food::FoodType;
 use super::icons::Icon;
 use super::potion::PotionType;
+use super::power::PowerType;
 use super::shout::ShoutType;
 use super::spell::SpellType;
 use super::weapon::WeaponType;
@@ -25,7 +26,7 @@ pub enum BaseType {
     Light(LightType),
     Potion(PotionType),
     PotionProxy(Proxy),
-    Power,
+    Power(PowerType),
     Scroll(SpellType),
     Shout(ShoutType),
     Spell(SpellType),
@@ -94,7 +95,7 @@ impl BaseType {
             ItemCategory::HandToHand => Self::HandToHand,
             ItemCategory::Lantern => Self::Light(LightType::Lantern),
             ItemCategory::Potion => Self::Potion(PotionType::Default),
-            ItemCategory::Power => Self::Power,
+            ItemCategory::Power => Self::Power(PowerType::new(name, keywords)),
             ItemCategory::Scroll => Self::Scroll(SpellType::default()),
             ItemCategory::Shout => Self::Shout(ShoutType::new(keywords)),
             ItemCategory::Spell => Self::Spell(SpellType::default()),
@@ -116,7 +117,7 @@ impl BaseType {
             BaseType::Light(_) => Icon::Torch,
             BaseType::Potion(_) => Icon::PotionDefault,
             BaseType::PotionProxy(_) => Icon::PotionDefault,
-            BaseType::Power => Icon::Power,
+            BaseType::Power(_) => Icon::Power,
             BaseType::Scroll(_) => Icon::Scroll,
             BaseType::Shout(_) => Icon::Shout,
             BaseType::Spell(t) => t.icon_fallback(), // will fall back to magic school icon
@@ -136,7 +137,7 @@ impl BaseType {
             BaseType::Light(_) => true,
             BaseType::Potion(_) => true,
             BaseType::PotionProxy(_) => true,
-            BaseType::Power => false,
+            BaseType::Power(_) => false,
             BaseType::Scroll(_) => true,
             BaseType::Shout(_) => false,
             BaseType::Spell(_) => false,
@@ -161,7 +162,7 @@ impl BaseType {
     }
 
     pub fn is_power(&self) -> bool {
-        matches!(self, BaseType::Power | BaseType::Shout(_))
+        matches!(self, BaseType::Power(_) | BaseType::Shout(_))
     }
 
     pub fn is_spell(&self) -> bool {
@@ -179,7 +180,7 @@ impl BaseType {
             BaseType::Light(_) => false, // These are held lights, not worn lights.
             BaseType::Potion(_) => true,
             BaseType::PotionProxy(_) => true,
-            BaseType::Power => false,
+            BaseType::Power(_) => false,
             BaseType::Scroll(_) => false,
             BaseType::Shout(_) => false,
             BaseType::Spell(_) => false,
@@ -218,7 +219,7 @@ impl BaseType {
             BaseType::Light(_) => true,
             BaseType::Potion(_) => false,
             BaseType::PotionProxy(_) => false,
-            BaseType::Power => false,
+            BaseType::Power(_) => false,
             BaseType::Scroll(t) => !t.two_handed(),
             BaseType::Shout(_) => false,
             BaseType::Spell(t) => !t.two_handed(),
@@ -237,24 +238,12 @@ impl BaseType {
             BaseType::Light(_) => false,
             BaseType::Potion(_) => false,
             BaseType::PotionProxy(_) => false,
-            BaseType::Power => false,
+            BaseType::Power(_) => false,
             BaseType::Scroll(_) => true,
             BaseType::Shout(_) => false,
             BaseType::Spell(_) => true,
             BaseType::Weapon(t) => t.right_hand_ok(),
         }
-    }
-}
-
-pub fn color_from_keywords(keywords: &[String]) -> InvColor {
-    let color_keywords: Vec<InvColor> = keywords
-        .iter()
-        .filter_map(|xs| InvColor::try_from(xs.as_str()).ok())
-        .collect();
-    if let Some(c) = color_keywords.first() {
-        c.clone()
-    } else {
-        InvColor::default()
     }
 }
 
@@ -270,7 +259,7 @@ impl HasIcon for BaseType {
             BaseType::Light(t) => t.color(),
             BaseType::Potion(t) => t.color(),
             BaseType::PotionProxy(t) => t.color(),
-            BaseType::Power => Color::default(),
+            BaseType::Power(_) => Color::default(),
             BaseType::Scroll(t) => t.color(),
             BaseType::Shout(t) => t.color(),
             BaseType::Spell(t) => t.color(),
@@ -289,7 +278,7 @@ impl HasIcon for BaseType {
             BaseType::Light(t) => t.icon(),
             BaseType::Potion(t) => t.icon(),
             BaseType::PotionProxy(t) => t.icon(),
-            BaseType::Power => &Icon::Power,
+            BaseType::Power(_) => &Icon::Power,
             BaseType::Scroll(_) => &Icon::Scroll,
             BaseType::Shout(t) => t.icon(),
             BaseType::Spell(t) => t.icon(),
@@ -301,7 +290,7 @@ impl HasIcon for BaseType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::color::InvColor;
+    use crate::data::color::{color_from_keywords, InvColor};
     use crate::data::magic::{MagicCategory, SpellData};
     use crate::data::weapon::{WeaponEquipType, WeaponType};
 

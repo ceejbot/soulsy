@@ -34,59 +34,59 @@ impl HasIcon for ShoutType {
 
 impl ShoutType {
     pub fn new(tags: Vec<String>) -> Self {
-        let keywords = strings_to_keywords::<SpellEffectKeywords>(&tags);
+        let keywords = strings_to_keywords::<SpellKeywords>(&tags);
 
-        let variant = if keywords.contains(&SpellEffectKeywords::Shout_AnimalAllegiance) {
+        let variant = if keywords.contains(&SpellKeywords::Shout_AnimalAllegiance) {
             ShoutVariant::AnimalAllegiance
-        } else if keywords.contains(&SpellEffectKeywords::Shout_AuraWhisper) {
+        } else if keywords.contains(&SpellKeywords::Shout_AuraWhisper) {
             ShoutVariant::AuraWhisper
-        } else if keywords.contains(&SpellEffectKeywords::Shout_BattleFury) {
+        } else if keywords.contains(&SpellKeywords::Shout_BattleFury) {
             ShoutVariant::BattleFury
-        } else if keywords.contains(&SpellEffectKeywords::Shout_BecomeEthereal) {
+        } else if keywords.contains(&SpellKeywords::Shout_BecomeEthereal) {
             ShoutVariant::BecomeEthereal
-        } else if keywords.contains(&SpellEffectKeywords::Shout_BendWill) {
+        } else if keywords.contains(&SpellKeywords::Shout_BendWill) {
             ShoutVariant::BendWill
-        } else if keywords.contains(&SpellEffectKeywords::Shout_CallDragon) {
+        } else if keywords.contains(&SpellKeywords::Shout_CallDragon) {
             ShoutVariant::CallDragon
-        } else if keywords.contains(&SpellEffectKeywords::Shout_CallOfValor) {
+        } else if keywords.contains(&SpellKeywords::Shout_CallOfValor) {
             ShoutVariant::CallOfValor
-        } else if keywords.contains(&SpellEffectKeywords::Shout_ClearSkies) {
+        } else if keywords.contains(&SpellKeywords::Shout_ClearSkies) {
             ShoutVariant::ClearSkies
-        } else if keywords.contains(&SpellEffectKeywords::Shout_Disarm) {
+        } else if keywords.contains(&SpellKeywords::Shout_Disarm) {
             ShoutVariant::Disarm
-        } else if keywords.contains(&SpellEffectKeywords::Shout_Dismay) {
+        } else if keywords.contains(&SpellKeywords::Shout_Dismay) {
             ShoutVariant::Dismay
-        } else if keywords.contains(&SpellEffectKeywords::Shout_DragonAspect) {
+        } else if keywords.contains(&SpellKeywords::Shout_DragonAspect) {
             ShoutVariant::DragonAspect
-        } else if keywords.contains(&SpellEffectKeywords::Shout_Dragonrend) {
+        } else if keywords.contains(&SpellKeywords::Shout_Dragonrend) {
             ShoutVariant::Dragonrend
-        } else if keywords.contains(&SpellEffectKeywords::Shout_DrainVitality) {
+        } else if keywords.contains(&SpellKeywords::Shout_DrainVitality) {
             ShoutVariant::DrainVitality
-        } else if keywords.contains(&SpellEffectKeywords::Shout_ElementalFury) {
+        } else if keywords.contains(&SpellKeywords::Shout_ElementalFury) {
             ShoutVariant::ElementalFury
-        } else if keywords.contains(&SpellEffectKeywords::Shout_FireBreath) {
+        } else if keywords.contains(&SpellKeywords::Shout_FireBreath) {
             ShoutVariant::FireBreath
-        } else if keywords.contains(&SpellEffectKeywords::Shout_FrostBreath) {
+        } else if keywords.contains(&SpellKeywords::Shout_FrostBreath) {
             ShoutVariant::FrostBreath
-        } else if keywords.contains(&SpellEffectKeywords::Shout_IceForm) {
+        } else if keywords.contains(&SpellKeywords::Shout_IceForm) {
             ShoutVariant::IceForm
-        } else if keywords.contains(&SpellEffectKeywords::Shout_KynesPeace) {
+        } else if keywords.contains(&SpellKeywords::Shout_KynesPeace) {
             ShoutVariant::KynesPeace
-        } else if keywords.contains(&SpellEffectKeywords::Shout_MarkedForDeath) {
+        } else if keywords.contains(&SpellKeywords::Shout_MarkedForDeath) {
             ShoutVariant::MarkedForDeath
-        } else if keywords.contains(&SpellEffectKeywords::Shout_Slowtime) {
+        } else if keywords.contains(&SpellKeywords::Shout_Slowtime) {
             ShoutVariant::Slowtime
-        } else if keywords.contains(&SpellEffectKeywords::Shout_SoulTear) {
+        } else if keywords.contains(&SpellKeywords::Shout_SoulTear) {
             ShoutVariant::SoulTear
-        } else if keywords.contains(&SpellEffectKeywords::Shout_StormCall) {
+        } else if keywords.contains(&SpellKeywords::Shout_StormCall) {
             ShoutVariant::StormCall
-        } else if keywords.contains(&SpellEffectKeywords::Shout_SummonDurnehviir) {
+        } else if keywords.contains(&SpellKeywords::Shout_SummonDurnehviir) {
             ShoutVariant::SummonDurnehviir
-        } else if keywords.contains(&SpellEffectKeywords::Shout_ThrowVoice) {
+        } else if keywords.contains(&SpellKeywords::Shout_ThrowVoice) {
             ShoutVariant::ThrowVoice
-        } else if keywords.contains(&SpellEffectKeywords::Shout_UnrelentingForce) {
+        } else if keywords.contains(&SpellKeywords::Shout_UnrelentingForce) {
             ShoutVariant::UnrelentingForce
-        } else if keywords.contains(&SpellEffectKeywords::Shout_WhirlwindSprint) {
+        } else if keywords.contains(&SpellKeywords::Shout_WhirlwindSprint) {
             ShoutVariant::WhirlwindSprint
         } else {
             ShoutVariant::Unclassified
@@ -116,8 +116,8 @@ impl ShoutType {
             ShoutVariant::ElementalFury => Icon::SpellElementalFury,
             ShoutVariant::FireBreath => Icon::ShoutBreathAttack,
             ShoutVariant::FrostBreath => Icon::ShoutBreathAttack,
-            ShoutVariant::IceForm => Icon::SpellFreeze,
-            ShoutVariant::MarkedForDeath => Icon::SpellDeath,
+            ShoutVariant::IceForm => Icon::ShoutIceForm,
+            ShoutVariant::MarkedForDeath => Icon::ShoutMarkedForDeath,
             ShoutVariant::Slowtime => Icon::SpellTime,
             ShoutVariant::StormCall => Icon::ShoutStormblast,
             ShoutVariant::WhirlwindSprint => Icon::SpellSprint,

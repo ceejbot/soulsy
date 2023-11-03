@@ -5,7 +5,7 @@ use strum::EnumString;
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{HasIcon, HasKeywords, strings_to_keywords};
+use super::{strings_to_keywords, HasIcon, HasKeywords};
 use crate::plugin::Color;
 
 /// Struct to hold the icon selection and the inventory color to use.
@@ -29,7 +29,7 @@ impl HasIcon for FoodType {
 /// We select color and icon from keywords, so we implement this trait.
 impl HasKeywords for FoodType {
     fn classify(_name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
-        let color = super::base::color_from_keywords(&keywords);
+        let color = super::color::color_from_keywords(&keywords);
         let tags = strings_to_keywords::<FoodKeywords>(&keywords);
         let containers = strings_to_keywords::<ContainerKeywords>(&keywords);
 

@@ -60,7 +60,7 @@ impl WeaponType {
 
 impl HasKeywords for WeaponType {
     fn classify(_name: &str, keywords: Vec<String>, twohanded: bool) -> Self {
-        let color = super::base::color_from_keywords(&keywords);
+        let color = super::color_from_keywords(&keywords);
 
         let equiptype = if twohanded {
             WeaponEquipType::TwoHanded

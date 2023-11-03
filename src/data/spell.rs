@@ -1,17 +1,23 @@
+//! Classify spells and assign icons and colors.
+//!
 //! Spells have two traits that we extract from keywords: the icon used to depict
 //! them, and the color used to draw the icon. Color is determined by damage type
-//! and spell "class" for spells that come from themed mods. The icon is
-//! determined by the spell archetype or in-game art. E.e., the wall spells are
-//! use wall-like icons. So we're pretty reductive. We keep the spell data around
-//! to handle fallbacks like using the magic school if other icons aren't available.
+//! and spell "class" for spells that come from themed mods. We use keywords for this
+//! as much as possible. Spell packs use single icons where this makes sense.
+//!
+//! We keep the boiled-down spell data around to handle fallbacks like using the magic school
+//! if other icons aren't available. 90% of the classification work is done in `keywords.rs`,
+//! which creates enum sets to match keywords against.
 
 #![allow(non_snake_case, non_camel_case_types)]
 
+use enumset::EnumSet;
+
 use super::color::InvColor;
 use super::icons::Icon;
-use super::magic::{MagicCategory, School, SpellData};
-use super::HasIcon;
-use super::{keywords::*, strings_to_keywords};
+use super::keywords::*;
+use super::magic::{School, SpellData};
+use super::{strings_to_keywords, HasIcon};
 use crate::plugin::Color;
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
@@ -23,280 +29,121 @@ pub struct SpellType {
 
 impl SpellType {
     pub fn new(data: SpellData, tags: Vec<String>) -> Self {
-        let keywords = strings_to_keywords::<SpellEffectKeywords>(&tags);
-
-        let mut damage_category = keywords.iter().find_map(|xs| {
-            if DAMAGE_ARCANE.contains(*xs) {
-                Some(MagicCategory::Arcane)
-            } else if DAMAGE_ARCANEFIRE.contains(*xs) {
-                Some(MagicCategory::ArcaneFire)
-            } else if DAMAGE_ASHFIRE.contains(*xs) {
-                Some(MagicCategory::Ashfire)
-            } else if DAMAGE_ASTRAL.contains(*xs) {
-                Some(MagicCategory::Astral)
-            } else if DAMAGE_BLOOD.contains(*xs) {
-                Some(MagicCategory::Bleed)
-            } else if DAMAGE_EARTH.contains(*xs) {
-                Some(MagicCategory::Earth)
-            } else if DAMAGE_FROSTFIRE.contains(*xs) {
-                Some(MagicCategory::FrostFire)
-            } else if DAMAGE_LUNAR.contains(*xs) {
-                Some(MagicCategory::Lunar)
-            } else if DAMAGE_NECROTIC.contains(*xs) {
-                Some(MagicCategory::Necrotic)
-            } else if DAMAGE_SHADOW.contains(*xs) {
-                Some(MagicCategory::Shadow)
-            } else if DAMAGE_SHOCKARC.contains(*xs) {
-                Some(MagicCategory::ShockArc)
-            } else if DAMAGE_WATER.contains(*xs) {
-                Some(MagicCategory::Water)
-            } else if DAMAGE_WIND.contains(*xs) {
-                Some(MagicCategory::Wind)
-            } else if DAMAGE_POISON.contains(*xs) {
-                Some(MagicCategory::Poison)
-            } else if DAMAGE_SUN.contains(*xs) {
-                Some(MagicCategory::Sun)
-            } else {
-                None
-            }
+        let keywords = strings_to_keywords::<SpellKeywords>(&tags);
+        let mut itemkwds: EnumSet<SpellKeywords> = EnumSet::new();
+        keywords.iter().for_each(|xs| {
+            itemkwds.insert(*xs);
         });
-        // Fall back to vanilla damage types.
-        if damage_category.is_none() {
-            damage_category = keywords.iter().find_map(|xs| {
-                if DAMAGE_FIRE.contains(*xs) {
-                    Some(MagicCategory::Fire)
-                } else if DAMAGE_FROST.contains(*xs) {
-                    Some(MagicCategory::Frost)
-                } else if DAMAGE_SHOCK.contains(*xs) {
-                    Some(MagicCategory::Shock)
-                } else {
-                    None
-                }
-            });
-        }
-        let damage = damage_category.map_or(data.damage.clone(), |xs| xs);
-        let mut color = damage.color(); // we might override this
 
-        let art_hint = keywords.iter().find_map(|xs| {
-            if matches!(xs, SpellEffectKeywords::ArtBall) {
-                if matches!(data.damage, MagicCategory::Fire) {
-                    Some(Icon::SpellFireball)
-                } else if matches!(data.damage, MagicCategory::Shock) {
-                    Some(Icon::SpellLightningBall)
-                } else {
-                    Some(Icon::ShoutStormblast)
-                }
-            } else if matches!(xs, SpellEffectKeywords::ArtBlast) {
-                if matches!(data.damage, MagicCategory::Fire) {
-                    Some(Icon::SpellMeteor)
-                } else if matches!(data.damage, MagicCategory::Shock) {
-                    Some(Icon::SpellLightningBlast)
-                } else if matches!(data.damage, MagicCategory::Wind | MagicCategory::Water) {
-                    Some(Icon::ShoutStormblast)
-                } else {
-                    Some(Icon::SpellBlast)
-                }
-            } else if matches!(xs, SpellEffectKeywords::ArtBolt) {
-                if matches!(data.damage, MagicCategory::Fire) {
-                    Some(Icon::SpellBolt)
-                } else if matches!(data.damage, MagicCategory::Shock) {
-                    Some(Icon::SpellShockStrong)
-                } else {
-                    None
-                }
-            } else if matches!(xs, SpellEffectKeywords::ArtBreath) {
-                Some(Icon::ShoutBreathAttack)
-            } else if matches!(xs, SpellEffectKeywords::ArtChainLightning) {
-                Some(Icon::SpellChainLightning)
-            } else if matches!(xs, SpellEffectKeywords::ArtFlame) {
-                Some(Icon::SpellFire)
-            } else if matches!(xs, SpellEffectKeywords::ArtLightning) {
-                Some(Icon::SpellLightning)
-            } else if matches!(xs, SpellEffectKeywords::ArtProjectile) {
-                Some(Icon::SpellBolt)
-            } else if matches!(xs, SpellEffectKeywords::ArtSpike) {
-                match damage {
-                    MagicCategory::Frost => Some(Icon::SpellIceShard),
-                    MagicCategory::FrostFire => Some(Icon::SpellIceShard),
-                    MagicCategory::Shadow => Some(Icon::SpellIceShard),
-                    MagicCategory::Shock => Some(Icon::SpellShockStrong),
-                    MagicCategory::ShockArc => Some(Icon::SpellShockStrong),
-                    _ => None,
-                }
-            } else if matches!(xs, SpellEffectKeywords::ArtStorm) {
-                Some(Icon::ShoutStormblast)
-            } else if matches!(xs, SpellEffectKeywords::ArtTornado) {
-                Some(Icon::ShoutCyclone)
-            } else if matches!(xs, SpellEffectKeywords::ArtWall) {
-                if matches!(data.damage, MagicCategory::Fire) {
-                    Some(Icon::SpellFireWall)
-                } else if matches!(data.damage, MagicCategory::Frost) {
-                    Some(Icon::SpellFrostWall)
-                } else if matches!(data.damage, MagicCategory::Shock) {
-                    Some(Icon::ShoutStormblast)
-                } else {
-                    None
-                }
+        // Icons. We look to see if the keywords contain any of the words that
+        // match certain known icon art sets. If we have a specific icon for
+        // a spell type, e.g. cloak spells, we use that. We then try to use an
+        // icon for a mod spell pack, e.g., constellation. If all else fails,
+        // we use the icon for the magic school.
+        let icon = if !itemkwds.is_disjoint(CLOAK_SPELLS) {
+            Icon::ArmorCloak
+        // next pre-classified spells
+        } else if !itemkwds.is_disjoint(USE_FIRE_ICON) {
+            Icon::SpellFire
+        } else if !itemkwds.is_disjoint(SUMMON_SPELLS) {
+            Icon::SpellSummon
+        } else if !itemkwds.is_disjoint(BUFF_SPELLS) {
+            Icon::SpellStamina
+        } else if !itemkwds.is_disjoint(CONTROL_SPELLS) {
+            Icon::SpellControl
+        } else if !itemkwds.is_disjoint(FEAR_SPELLS) {
+            Icon::SpellFear
+        } else if !itemkwds.is_disjoint(PARALYZE_SPELLS) {
+            Icon::SpellParalyze
+        } else if !itemkwds.is_disjoint(VISION_SPELLS) {
+            Icon::SpellEagleEye
+        } else if !itemkwds.is_disjoint(LIGHT_SPELLS) {
+            Icon::SpellLight
+        // bound weapons
+        } else if itemkwds.contains(SpellKeywords::SpellBound_Weapon) {
+            if keywords.contains(&SpellKeywords::BoundBattleAxe) {
+                Icon::WeaponAxeTwoHanded
+            } else if keywords.contains(&SpellKeywords::BoundBow) {
+                Icon::WeaponBow
+            } else if keywords.contains(&SpellKeywords::BoundDagger) {
+                Icon::WeaponDagger
+            } else if keywords.contains(&SpellKeywords::BoundGreatsword) {
+                Icon::WeaponSwordTwoHanded
+            } else if keywords.contains(&SpellKeywords::BoundHammer) {
+                Icon::WeaponHammer
+            } else if keywords.contains(&SpellKeywords::BoundMace) {
+                Icon::WeaponMace
+            } else if keywords.contains(&SpellKeywords::BoundShield) {
+                Icon::ArmorShieldHeavy
+            } else if keywords.contains(&SpellKeywords::BoundSword) {
+                Icon::WeaponSwordOneHanded
+            } else if keywords.contains(&SpellKeywords::BoundWarAxe) {
+                Icon::WeaponAxeOneHanded
             } else {
-                None
+                Icon::WeaponSwordOneHanded
             }
-        });
-        // og::info!("art hint: {art_hint:?}");
-
-        let icon = if let Some(v) = keywords.iter().find_map(|xs| {
-            if CLOAK_SPELLS.contains(*xs) {
-                Some(Icon::ArmorCloak)
-            } else if HEALING_SPELLS.contains(*xs) {
-                color = InvColor::Green;
-                Some(Icon::SpellHeal)
-            } else if SUMMON_SPELLS.contains(*xs) {
-                Some(Icon::SpellSummon)
-            } else if BUFF_SPELLS.contains(*xs) {
-                Some(Icon::SpellStamina)
-            } else if CONTROL_SPELLS.contains(*xs) {
-                Some(Icon::SpellControl)
-            // } else if COUNTER_SPELLS.contains(*xs) {
-            //     None
-            // } else if CURSES.contains(*xs) {
-            //     None
-            // } else if FRENZY_SPELLS.contains(*xs) {
-            //     None
-            } else if FEAR_SPELLS.contains(*xs) {
-                Some(Icon::SpellFear)
-            } else if PARALYZE_SPELLS.contains(*xs) {
-                Some(Icon::SpellParalyze)
-            } else if VISION_SPELLS.contains(*xs) {
-                Some(Icon::SpellEagleEye)
-            } else {
-                match *xs {
-                    SpellEffectKeywords::SpellEthereal => {
-                        color = InvColor::Silver;
-                        None
-                    }
-                    SpellEffectKeywords::Archetype_Teleport => Some(Icon::SpellTeleport),
-                    SpellEffectKeywords::SpellTime => Some(Icon::SpellTime),
-                    SpellEffectKeywords::Archetype_Detect => Some(Icon::SpellDetect),
-                    SpellEffectKeywords::Archetype_WeaponBuff => Some(Icon::SpellSharpen),
-                    SpellEffectKeywords::Archetype_Guide => {
-                        color = InvColor::Eldritch;
-                        Some(Icon::SpellWisp)
-                    }
-                    SpellEffectKeywords::SpellLight => {
-                        color = InvColor::Eldritch;
-                        Some(Icon::SpellLight)
-                    }
-                    SpellEffectKeywords::Archetype_Light => {
-                        color = InvColor::Eldritch;
-                        Some(Icon::SpellLight)
-                    }
-                    SpellEffectKeywords::Archetype_CarryWeight => Some(Icon::SpellFeather),
-                    SpellEffectKeywords::Archetype_Cure => {
-                        color = InvColor::Green;
-                        Some(Icon::SpellCure)
-                    }
-                    SpellEffectKeywords::SpellReanimate => Some(Icon::SpellReanimate),
-                    SpellEffectKeywords::Archetype_Reflect => Some(Icon::SpellReflect),
-                    SpellEffectKeywords::Archetype_Root => {
-                        color = InvColor::Green;
-                        Some(Icon::SpellRoot)
-                    }
-                    SpellEffectKeywords::MagicRune => Some(Icon::SpellRune),
-                    SpellEffectKeywords::Archetype_Silence => Some(Icon::SpellSilence),
-                    SpellEffectKeywords::SpellSoulTrap => {
-                        color = InvColor::Eldritch;
-                        Some(Icon::SpellSoultrap)
-                    }
-                    SpellEffectKeywords::MagicSlow => Some(Icon::SpellSlow),
-                    SpellEffectKeywords::MagicNightEye => Some(Icon::SpellDetect),
-                    SpellEffectKeywords::MagicTelekinesis => None,
-                    SpellEffectKeywords::MagicTurnUndead => {
-                        color = InvColor::Sun;
-                        Some(Icon::SpellSun)
-                    }
-                    SpellEffectKeywords::MagicWard => Some(Icon::SpellWard),
-                    SpellEffectKeywords::MagicWeaponSpeed => Some(Icon::SpellElementalFury),
-                    SpellEffectKeywords::MagicSummonFamiliar => Some(Icon::SpellSummon),
-                    SpellEffectKeywords::MagicSummonFire => {
-                        color = InvColor::Fire;
-                        Some(Icon::SpellSummon)
-                    }
-                    SpellEffectKeywords::MagicSummonFrost => {
-                        color = InvColor::Frost;
-                        Some(Icon::SpellSummon)
-                    }
-                    SpellEffectKeywords::MagicSummonShock => {
-                        color = InvColor::Shock;
-                        Some(Icon::SpellSummon)
-                    }
-                    SpellEffectKeywords::MagicSummonUndead => Some(Icon::SpellReanimate),
-                    SpellEffectKeywords::SpellBound_Weapon => {
-                        color = InvColor::Eldritch;
-                        let b = if keywords.contains(&SpellEffectKeywords::BoundBattleAxe) {
-                            Icon::WeaponAxeTwoHanded
-                        } else if keywords.contains(&SpellEffectKeywords::BoundBow) {
-                            Icon::WeaponBow
-                        } else if keywords.contains(&SpellEffectKeywords::BoundDagger) {
-                            Icon::WeaponDagger
-                        } else if keywords.contains(&SpellEffectKeywords::BoundGreatsword) {
-                            Icon::WeaponSwordTwoHanded
-                        } else if keywords.contains(&SpellEffectKeywords::BoundHammer) {
-                            Icon::WeaponHammer
-                        } else if keywords.contains(&SpellEffectKeywords::BoundMace) {
-                            Icon::WeaponMace
-                        } else if keywords.contains(&SpellEffectKeywords::BoundShield) {
-                            Icon::ArmorShieldHeavy
-                        } else if keywords.contains(&SpellEffectKeywords::BoundSword) {
-                            Icon::WeaponSwordOneHanded
-                        } else if keywords.contains(&SpellEffectKeywords::BoundWarAxe) {
-                            Icon::WeaponAxeOneHanded
-                        } else {
-                            Icon::WeaponSwordOneHanded
-                        };
-                        Some(b)
-                    }
-                    SpellEffectKeywords::SpellBound_Armor => {
-                        color = InvColor::Eldritch;
-                        Some(Icon::ArmorShieldHeavy)
-                    }
-                    SpellEffectKeywords::SpellShapechange_Werebeast => Some(Icon::SpellWerewolf),
-                    SpellEffectKeywords::SpellShapechange_Creature => {
-                        Some(Icon::ShoutAnimalAllegiance)
-                    }
-                    SpellEffectKeywords::SpellShapechange => Some(Icon::ShoutAnimalAllegiance),
-                    // SpellEffectKeywords::Archetype_Waterbreathing => None,
-                    // SpellEffectKeywords::Archetype_Waterwalking => None,
-                    // SpellEffectKeywords::Archetype_Resist => None,
-                    // SpellEffectKeywords::MagicArmorSpell => None,
-                    // SpellEffectKeywords::MagicInvisibility => Some(Icon::SpellInvisibility),
-                    _ => None,
-                }
-            }
-        }) {
-            v
-        } else if let Some(icon) = art_hint {
-            icon
-        } else if let Some(icon) = match damage {
-            MagicCategory::Arcane => Some(Icon::SpellAstral),
-            MagicCategory::ArcaneFire => Some(Icon::SpellFire),
-            MagicCategory::Ashfire => Some(Icon::SpellFire),
-            MagicCategory::Astral => Some(Icon::SpellAstral),
-            MagicCategory::Bleed => Some(Icon::SpellBleed),
-            MagicCategory::Earth => Some(Icon::SpellEarth),
-            MagicCategory::Fire => Some(Icon::SpellFire),
-            MagicCategory::Frost => Some(Icon::SpellFrost),
-            MagicCategory::FrostFire => Some(Icon::SpellFire),
-            MagicCategory::Lunar => Some(Icon::SpellMoon),
-            MagicCategory::Necrotic => Some(Icon::SpellNecrotic),
-            MagicCategory::Poison => Some(Icon::SpellPoison),
-            MagicCategory::Shadow => Some(Icon::SpellShadow),
-            MagicCategory::Shock => Some(Icon::SpellShock),
-            MagicCategory::ShockArc => Some(Icon::SpellArclight),
-            MagicCategory::Sun => Some(Icon::SpellHoly),
-            MagicCategory::Water => Some(Icon::SpellWater),
-            MagicCategory::Wind => Some(Icon::SpellWind),
-            _ => None,
-        } {
-            icon
+        } else if itemkwds.contains(SpellKeywords::SpellBound_Armor) {
+            Icon::ArmorShieldHeavy
+        } else if !itemkwds.is_disjoint(HEALING_SPELLS) {
+            Icon::SpellHeal
+        } else if !itemkwds.is_disjoint(STORM_SPELLS) {
+            Icon::SpellLightningBlast
+        } else if !itemkwds.is_disjoint(VAMPIRE_SPELLS) {
+            Icon::SpellVampire
+        // next icon packs
+        } else if !itemkwds.is_disjoint(DARENII_DESECRATION) {
+            Icon::SpellDesecration
+        } else if !itemkwds.is_disjoint(DARENII_STELLARIS) {
+            Icon::SpellStars
+        } else if !itemkwds.is_disjoint(DARENII_LUNARIS) {
+            Icon::SpellMoon
+        } else if !itemkwds.is_disjoint(CONSTELLATION_SPELLS) {
+            Icon::SpellConstellation
+        // next one-off vanilla spells
+        } else if itemkwds.contains(SpellKeywords::Archetype_Teleport) {
+            Icon::SpellTeleport
+        } else if itemkwds.contains(SpellKeywords::SpellTime) {
+            Icon::SpellTime
+        } else if itemkwds.contains(SpellKeywords::Archetype_Detect) {
+            Icon::SpellDetect
+        } else if itemkwds.contains(SpellKeywords::Archetype_WeaponBuff) {
+            Icon::SpellSharpen
+        } else if itemkwds.contains(SpellKeywords::Archetype_Guide) {
+            Icon::SpellWisp
+        } else if itemkwds.contains(SpellKeywords::Archetype_CarryWeight) {
+            Icon::SpellFeather
+        } else if itemkwds.contains(SpellKeywords::Archetype_Cure) {
+            Icon::SpellCure
+        } else if itemkwds.contains(SpellKeywords::SpellReanimate) {
+            Icon::SpellReanimate
+        } else if itemkwds.contains(SpellKeywords::Archetype_Reflect) {
+            Icon::SpellReflect
+        } else if itemkwds.contains(SpellKeywords::Archetype_Root) {
+            Icon::SpellRoot
+        } else if itemkwds.contains(SpellKeywords::MagicRune) {
+            Icon::SpellRune
+        } else if itemkwds.contains(SpellKeywords::Archetype_Silence) {
+            Icon::SpellSilence
+        } else if itemkwds.contains(SpellKeywords::SpellSoulTrap) {
+            Icon::SpellSoultrap
+        } else if itemkwds.contains(SpellKeywords::MagicSlow) {
+            Icon::SpellSlow
+        } else if itemkwds.contains(SpellKeywords::MagicNightEye) {
+            Icon::SpellDetect
+        } else if itemkwds.contains(SpellKeywords::MagicTurnUndead) {
+            Icon::SpellSun
+        } else if itemkwds.contains(SpellKeywords::MagicWard) {
+            Icon::SpellWard
+        } else if itemkwds.contains(SpellKeywords::MagicWeaponSpeed) {
+            Icon::SpellElementalFury
+        } else if itemkwds.contains(SpellKeywords::MagicSummonFamiliar) {
+            Icon::SpellSummon
+        } else if itemkwds.contains(SpellKeywords::MagicSummonUndead) {
+            Icon::SpellReanimate
+        } else if itemkwds.contains(SpellKeywords::SpellShapechange_Werebeast)
+            || itemkwds.contains(SpellKeywords::SpellShapechange)
+        {
+            Icon::PowerWerewolf
         } else {
             match data.school {
                 School::Alteration => Icon::Alteration,
@@ -304,13 +151,57 @@ impl SpellType {
                 School::Destruction => Icon::Destruction,
                 School::Illusion => Icon::Illusion,
                 School::Restoration => Icon::Restoration,
-                School::None => Icon::IconDefault,
+                School::None => {
+                    log::debug!("Fell back to default spell variant; data: {data:?}");
+                    log::debug!("    keywords: {tags:?}");
+                    Icon::IconDefault
+                }
             }
         };
 
-        if matches!(icon, Icon::IconDefault) {
-            log::debug!("Falling back to default spell variant; data: {data:?}");
-            log::debug!("    keywords: {tags:?}");
+        // Colors. We base this on damage type, mostly, but first we look to see
+        // if we have a color keyword.
+        let color_kwds = strings_to_keywords::<InvColor>(&tags);
+        let color = if let Some(assigned) = color_kwds.first() {
+            assigned.clone()
+        } else if !itemkwds.is_disjoint(COLOR_ASH) {
+            InvColor::Ash
+        } else if !itemkwds.is_disjoint(COLOR_BLOOD) {
+            InvColor::Blood
+        } else if !itemkwds.is_disjoint(COLOR_EARTH) {
+            InvColor::Brown
+        } else if !itemkwds.is_disjoint(COLOR_ELDRITCH) {
+            InvColor::Eldritch
+        } else if !itemkwds.is_disjoint(COLOR_FIRE) {
+            InvColor::Fire
+        } else if !itemkwds.is_disjoint(COLOR_FROST) {
+            InvColor::Frost
+        } else if !itemkwds.is_disjoint(HEALING_SPELLS) {
+            InvColor::Green
+        } else if !itemkwds.is_disjoint(COLOR_HOLY) {
+            InvColor::Holy
+        } else if !itemkwds.is_disjoint(COLOR_POISON) {
+            InvColor::Poison
+        } else if !itemkwds.is_disjoint(COLOR_SHADOW) {
+            InvColor::Shadow
+        } else if !itemkwds.is_disjoint(COLOR_SHOCK) {
+            InvColor::Shock
+        } else if !itemkwds.is_disjoint(COLOR_SUN) {
+            InvColor::Sun
+        } else if !itemkwds.is_disjoint(COLOR_WATER) {
+            InvColor::Water
+        } else if !itemkwds.is_disjoint(COLOR_WIND) {
+            InvColor::Gray
+        } else {
+            match data.school {
+                // TODO identify common colors for magical schools
+                School::Alteration => InvColor::Eldritch,
+                School::Conjuration => InvColor::Silver,
+                School::Destruction => InvColor::Fire,
+                School::Illusion => InvColor::Blue,
+                School::Restoration => InvColor::Green,
+                School::None => InvColor::default(),
+            }
         };
 
         Self { icon, color, data }

@@ -965,7 +965,7 @@ impl Controller {
         match item.kind() {
             BaseType::Ammo(_) => return self.update_slot(HudElement::Ammo, &empty),
             BaseType::Light(_) => return self.update_slot(HudElement::Left, &empty),
-            BaseType::Power => return self.update_slot(HudElement::Power, &empty),
+            BaseType::Power(_) => return self.update_slot(HudElement::Power, &empty),
             BaseType::Shout(_) => return self.update_slot(HudElement::Power, &empty),
             _ => {}
         }
