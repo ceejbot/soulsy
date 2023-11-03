@@ -500,6 +500,8 @@ pub mod plugin {
 
         /// Does the player have a bow or crossbow equipped?
         fn hasRangedEquipped() -> bool;
+        /// Get a vec of form specs for all relevant ammo in the player's inventory.
+        /// The vec is sorted by damage.
         fn getAmmoInventory() -> Vec<String>;
 
         /// Get a list of form specs for all equipped armor.
