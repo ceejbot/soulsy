@@ -5,7 +5,7 @@ use strum::EnumString;
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{HasIcon, HasKeywords, strings_to_keywords};
+use super::{strings_to_keywords, HasIcon, HasKeywords};
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, EnumString, Eq, Hash, PartialEq)]
@@ -84,8 +84,12 @@ impl HasKeywords for WeaponType {
                 Some(Icon::WeaponKatana)
             } else if LANCES.contains(*subtype) {
                 Some(Icon::WeaponLance)
+            } else if PIKES.contains(*subtype) {
+                Some(Icon::WeaponPike)
             } else if QUARTERSTAVES.contains(*subtype) {
                 Some(Icon::WeaponQuarterstaff)
+            } else if RAPIERS.contains(*subtype) {
+                Some(Icon::WeaponRapier)
             } else if SCYTHES.contains(*subtype) {
                 Some(Icon::WeaponScythe)
             } else if STAVES.contains(*subtype) {
@@ -245,7 +249,6 @@ const DAGGERS: EnumSet<WeaponTag> = enum_set!(
 );
 const GREATSWORDS: EnumSet<WeaponTag> = enum_set!(
     WeaponTag::OCF_WeapTypeMassiveSword2H
-        | WeaponTag::OCF_WeapTypeRapier2H
         | WeaponTag::OCF_WeapTypeSaber2H
         | WeaponTag::OCF_WeapTypeScimitar2H
         | WeaponTag::OCF_WeapTypeTwinblade2H
@@ -277,7 +280,6 @@ const HALBERDS: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeHalberd2H
         | WeaponTag::OCF_WeapTypePole1H_Swing
         | WeaponTag::OCF_WeapTypePole2H_Swing
-        | WeaponTag::OCF_WeapTypePole2H
 );
 const HAMMERS: EnumSet<WeaponTag> = enum_set!(
     WeaponTag::WeapTypeHammer
@@ -295,9 +297,6 @@ const LANCES: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeJavelin2H
         | WeaponTag::OCF_WeapTypeLance1H
         | WeaponTag::OCF_WeapTypeLance2H
-        | WeaponTag::OCF_WeapTypePike
-        | WeaponTag::OCF_WeapTypePike1H
-        | WeaponTag::OCF_WeapTypePike2H
         | WeaponTag::OCF_WeapTypePole1H_Thrust
         | WeaponTag::OCF_WeapTypePole2H_Thrust
         | WeaponTag::OCF_WeapTypeSpear1H
@@ -313,6 +312,15 @@ const MACES: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeClub2H
         | WeaponTag::OCF_WeapTypeMace2H
 );
+
+const PIKES: EnumSet<WeaponTag> = enum_set!(
+    WeaponTag::OCF_WeapTypePike
+        | WeaponTag::OCF_WeapTypePike1H
+        | WeaponTag::OCF_WeapTypePike2H
+        | WeaponTag::WeapTypePike
+        | WeaponTag::BoobiesWeapTypePike
+);
+
 const QUARTERSTAVES: EnumSet<WeaponTag> =
     enum_set!(WeaponTag::WeapTypeQtrStaff | WeaponTag::OCF_WeapTypeQuarterstaff1H);
 const SCYTHES: EnumSet<WeaponTag> = enum_set!(
@@ -322,9 +330,10 @@ const SCYTHES: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeScythe2H
         | WeaponTag::OCF_WeapTypeScythe1H
 );
+const RAPIERS: EnumSet<WeaponTag> =
+    enum_set!(WeaponTag::OCF_WeapTypeRapier1H | WeaponTag::OCF_WeapTypeRapier2H);
 const SWORDS: EnumSet<WeaponTag> = enum_set!(
-    WeaponTag::OCF_WeapTypeRapier1H
-        | WeaponTag::OCF_WeapTypeSaber1H
+    WeaponTag::OCF_WeapTypeSaber1H
         | WeaponTag::OCF_WeapTypeScimitar1H
         | WeaponTag::OCF_WeapTypeSword1H
         | WeaponTag::OCF_WeapTypeTwinblade1H

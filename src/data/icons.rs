@@ -154,6 +154,7 @@ pub enum Icon {
     WeaponLance,
     WeaponMace,
     WeaponPickaxe,
+    WeaponPike,
     WeaponQuarterstaff,
     WeaponRapier,
     WeaponScythe,
@@ -312,6 +313,7 @@ impl Icon {
             Icon::WeaponLance => "weapon_lance.svg".to_string(),
             Icon::WeaponMace => "weapon_mace.svg".to_string(),
             Icon::WeaponPickaxe => "weapon_pickaxe.svg".to_string(),
+            Icon::WeaponPike => "weapon_pike.svg".to_string(),
             Icon::WeaponQuarterstaff => "weapon_quarterstaff.svg".to_string(),
             Icon::WeaponRapier => "weapon_rapier.svg".to_string(),
             Icon::WeaponScythe => "weapon_scythe.svg".to_string(),
@@ -488,8 +490,9 @@ impl Icon {
             Icon::WeaponLance => Icon::WeaponHalberd,
             Icon::WeaponMace => Icon::WeaponMace, // core set
             Icon::WeaponPickaxe => Icon::WeaponAxeTwoHanded,
+            Icon::WeaponPike => Icon::WeaponAxeTwoHanded, // core set
             Icon::WeaponQuarterstaff => Icon::WeaponQuarterstaff, // core set
-            Icon::WeaponRapier => Icon::WeaponRapier,             // core set
+            Icon::WeaponRapier => Icon::WeaponRapier,     // core set
             Icon::WeaponScythe => Icon::WeaponHalberd,
             Icon::WeaponStaff => Icon::WeaponStaff, // core set
             Icon::WeaponSwordOneHanded => Icon::WeaponAxeOneHanded, // core set
