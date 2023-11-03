@@ -1,8 +1,8 @@
 use super::color::InvColor;
 use super::icons::Icon;
 use super::keywords::*;
-use super::HasIcon;
 use super::strings_to_keywords;
+use super::HasIcon;
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -108,18 +108,18 @@ impl ShoutType {
         };
 
         let icon = match variant {
-            ShoutVariant::AnimalAllegiance => Icon::SpellBear,
+            ShoutVariant::AnimalAllegiance => Icon::ShoutAnimalAllegiance,
             ShoutVariant::ClearSkies => Icon::SpellSun,
-            ShoutVariant::Cyclone => Icon::SpellTornado,
+            ShoutVariant::Cyclone => Icon::ShoutCyclone,
             ShoutVariant::Dismay => Icon::SpellFear,
             ShoutVariant::Dragonrend => Icon::SpellBleed,
             ShoutVariant::ElementalFury => Icon::SpellElementalFury,
-            ShoutVariant::FireBreath => Icon::SpellBreathAttack,
-            ShoutVariant::FrostBreath => Icon::SpellBreathAttack,
+            ShoutVariant::FireBreath => Icon::ShoutBreathAttack,
+            ShoutVariant::FrostBreath => Icon::ShoutBreathAttack,
             ShoutVariant::IceForm => Icon::SpellFreeze,
             ShoutVariant::MarkedForDeath => Icon::SpellDeath,
             ShoutVariant::Slowtime => Icon::SpellTime,
-            ShoutVariant::StormCall => Icon::SpellStormblast,
+            ShoutVariant::StormCall => Icon::ShoutStormblast,
             ShoutVariant::WhirlwindSprint => Icon::SpellSprint,
             _ => Icon::Shout,
         };

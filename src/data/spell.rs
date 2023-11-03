@@ -9,9 +9,9 @@
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{keywords::*, strings_to_keywords};
 use super::magic::{MagicCategory, School, SpellData};
 use super::HasIcon;
+use super::{keywords::*, strings_to_keywords};
 use crate::plugin::Color;
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
@@ -84,7 +84,7 @@ impl SpellType {
                 } else if matches!(data.damage, MagicCategory::Shock) {
                     Some(Icon::SpellLightningBall)
                 } else {
-                    Some(Icon::SpellStormblast)
+                    Some(Icon::ShoutStormblast)
                 }
             } else if matches!(xs, SpellEffectKeywords::ArtBlast) {
                 if matches!(data.damage, MagicCategory::Fire) {
@@ -92,7 +92,7 @@ impl SpellType {
                 } else if matches!(data.damage, MagicCategory::Shock) {
                     Some(Icon::SpellLightningBlast)
                 } else if matches!(data.damage, MagicCategory::Wind | MagicCategory::Water) {
-                    Some(Icon::SpellStormblast)
+                    Some(Icon::ShoutStormblast)
                 } else {
                     Some(Icon::SpellBlast)
                 }
@@ -105,7 +105,7 @@ impl SpellType {
                     None
                 }
             } else if matches!(xs, SpellEffectKeywords::ArtBreath) {
-                Some(Icon::SpellBreathAttack)
+                Some(Icon::ShoutBreathAttack)
             } else if matches!(xs, SpellEffectKeywords::ArtChainLightning) {
                 Some(Icon::SpellChainLightning)
             } else if matches!(xs, SpellEffectKeywords::ArtFlame) {
@@ -124,16 +124,16 @@ impl SpellType {
                     _ => None,
                 }
             } else if matches!(xs, SpellEffectKeywords::ArtStorm) {
-                Some(Icon::SpellStormblast)
+                Some(Icon::ShoutStormblast)
             } else if matches!(xs, SpellEffectKeywords::ArtTornado) {
-                Some(Icon::SpellTornado)
+                Some(Icon::ShoutCyclone)
             } else if matches!(xs, SpellEffectKeywords::ArtWall) {
                 if matches!(data.damage, MagicCategory::Fire) {
                     Some(Icon::SpellFireWall)
                 } else if matches!(data.damage, MagicCategory::Frost) {
                     Some(Icon::SpellFrostWall)
                 } else if matches!(data.damage, MagicCategory::Shock) {
-                    Some(Icon::SpellStormblast)
+                    Some(Icon::ShoutStormblast)
                 } else {
                     None
                 }
@@ -259,8 +259,10 @@ impl SpellType {
                         Some(Icon::ArmorShieldHeavy)
                     }
                     SpellEffectKeywords::SpellShapechange_Werebeast => Some(Icon::SpellWerewolf),
-                    SpellEffectKeywords::SpellShapechange_Creature => Some(Icon::SpellBear),
-                    SpellEffectKeywords::SpellShapechange => Some(Icon::SpellBear),
+                    SpellEffectKeywords::SpellShapechange_Creature => {
+                        Some(Icon::ShoutAnimalAllegiance)
+                    }
+                    SpellEffectKeywords::SpellShapechange => Some(Icon::ShoutAnimalAllegiance),
                     // SpellEffectKeywords::Archetype_Waterbreathing => None,
                     // SpellEffectKeywords::Archetype_Waterwalking => None,
                     // SpellEffectKeywords::Archetype_Resist => None,
