@@ -2,6 +2,7 @@ use super::color::InvColor;
 use super::icons::Icon;
 use super::keywords::*;
 use super::HasIcon;
+use super::strings_to_keywords;
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -33,7 +34,7 @@ impl HasIcon for ShoutType {
 
 impl ShoutType {
     pub fn new(tags: Vec<String>) -> Self {
-        let keywords = strings_to_keywords(&tags);
+        let keywords = strings_to_keywords::<SpellEffectKeywords>(&tags);
 
         let variant = if keywords.contains(&SpellEffectKeywords::Shout_AnimalAllegiance) {
             ShoutVariant::AnimalAllegiance

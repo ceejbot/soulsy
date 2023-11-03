@@ -5,7 +5,7 @@ use strum::EnumString;
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{HasIcon, HasKeywords};
+use super::{HasIcon, HasKeywords, strings_to_keywords};
 use crate::plugin::Color;
 
 /// Struct to hold the icon selection and the inventory color to use.
@@ -87,21 +87,6 @@ fn pickContainerIcon(containers: &[ContainerKeywords]) -> Option<Icon> {
             ContainerKeywords::OCF_VesselWaterskin => Icon::DrinkWater,
         })
         .next()
-}
-
-// TODO move to a higher level because this is generally useful.
-fn strings_to_keywords<T: for<'a> TryFrom<&'a str>>(tags: &[String]) -> Vec<T> {
-    let keywords: Vec<T> = tags
-        .iter()
-        .filter_map(|xs| {
-            if let Ok(subtype) = T::try_from(xs.as_str()) {
-                Some(subtype)
-            } else {
-                None
-            }
-        })
-        .collect();
-    keywords
 }
 
 #[derive(Debug, EnumString, Hash)]

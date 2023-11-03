@@ -188,6 +188,23 @@ pub trait HasKeywords {
     fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self;
 }
 
+// A generic convert keywords to enum variants function.
+pub fn strings_to_keywords<T: for<'a> TryFrom<&'a str>>(tags: &[String]) -> Vec<T> {
+    let keywords: Vec<T> = tags
+        .iter()
+        .filter_map(|xs| {
+            if let Ok(subtype) = T::try_from(xs.as_str()) {
+                Some(subtype)
+            } else {
+                log::debug!("Unknown keyword: '{xs}';");
+
+                None
+            }
+        })
+        .collect();
+    keywords
+}
+
 // ---------- Tests. I hear they're good.
 
 #[cfg(test)]

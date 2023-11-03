@@ -5,7 +5,7 @@ use strum::EnumString;
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{HasIcon, HasKeywords};
+use super::{HasIcon, HasKeywords, strings_to_keywords};
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, EnumString, Eq, Hash, PartialEq)]
@@ -68,29 +68,11 @@ impl HasKeywords for WeaponType {
             WeaponEquipType::EitherHand
         };
 
-        let tags: Vec<WeaponTag> = keywords
-            .iter()
-            .filter_map(|xs| {
-                if let Ok(subtype) = WeaponTag::try_from(xs.as_str()) {
-                    Some(subtype)
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let tags: Vec<WeaponTag> = strings_to_keywords::<WeaponTag>(&keywords);
 
+        // First we look for tags matching mod-added weapon categories.
         let maybe_icon = tags.iter().find_map(|subtype| {
-            if BATTLEAXES.contains(*subtype) {
-                Some(Icon::WeaponAxeTwoHanded)
-            } else if BOWS.contains(*subtype) {
-                Some(Icon::WeaponBow)
-            } else if CROSSBOWS.contains(*subtype) {
-                Some(Icon::WeaponCrossbow)
-            } else if DAGGERS.contains(*subtype) {
-                Some(Icon::WeaponDagger)
-            } else if GREATSWORDS.contains(*subtype) {
-                Some(Icon::WeaponSwordTwoHanded)
-            } else if GUNS.contains(*subtype) {
+            if GUNS.contains(*subtype) {
                 Some(Icon::WeaponGun)
             } else if HAMMERS.contains(*subtype) {
                 Some(Icon::WeaponHammer)
@@ -102,18 +84,12 @@ impl HasKeywords for WeaponType {
                 Some(Icon::WeaponKatana)
             } else if LANCES.contains(*subtype) {
                 Some(Icon::WeaponLance)
-            } else if MACES.contains(*subtype) {
-                Some(Icon::WeaponMace)
             } else if QUARTERSTAVES.contains(*subtype) {
                 Some(Icon::WeaponQuarterstaff)
             } else if SCYTHES.contains(*subtype) {
                 Some(Icon::WeaponScythe)
             } else if STAVES.contains(*subtype) {
                 Some(Icon::WeaponStaff)
-            } else if SWORDS.contains(*subtype) {
-                Some(Icon::WeaponSwordOneHanded)
-            } else if WARAXES.contains(*subtype) {
-                Some(Icon::WeaponAxeOneHanded)
             } else if WHIPS.contains(*subtype) {
                 Some(Icon::WeaponWhip)
             } else if matches!(subtype, WeaponTag::OCF_WeapTypePickaxe1H) {
@@ -144,8 +120,27 @@ impl HasKeywords for WeaponType {
         let maybe_icon = if maybe_icon.is_some() {
             maybe_icon
         } else {
+            // If we failed there, we look for tags that match built-in categories.
+            // We must do it in this order because mod-added weapons might have both
+            // very specific tags and fallback tags.
             tags.iter().find_map(|subtype| {
-                if FALLBACK_TYPES.contains(*subtype) {
+                if BATTLEAXES.contains(*subtype) {
+                    Some(Icon::WeaponAxeTwoHanded)
+                } else if BOWS.contains(*subtype) {
+                    Some(Icon::WeaponBow)
+                } else if CROSSBOWS.contains(*subtype) {
+                    Some(Icon::WeaponCrossbow)
+                } else if DAGGERS.contains(*subtype) {
+                    Some(Icon::WeaponDagger)
+                } else if GREATSWORDS.contains(*subtype) {
+                    Some(Icon::WeaponSwordTwoHanded)
+                } else if MACES.contains(*subtype) {
+                    Some(Icon::WeaponMace)
+                } else if SWORDS.contains(*subtype) {
+                    Some(Icon::WeaponSwordOneHanded)
+                } else if WARAXES.contains(*subtype) {
+                    Some(Icon::WeaponAxeOneHanded)
+                } else if FALLBACK_TYPES.contains(*subtype) {
                     match subtype {
                         WeaponTag::TwoHandSword => Some(Icon::WeaponSwordTwoHanded),
                         WeaponTag::Bow => Some(Icon::WeaponBow),
@@ -282,6 +277,7 @@ const HALBERDS: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeHalberd2H
         | WeaponTag::OCF_WeapTypePole1H_Swing
         | WeaponTag::OCF_WeapTypePole2H_Swing
+        | WeaponTag::OCF_WeapTypePole2H
 );
 const HAMMERS: EnumSet<WeaponTag> = enum_set!(
     WeaponTag::WeapTypeHammer
@@ -299,6 +295,7 @@ const LANCES: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeJavelin2H
         | WeaponTag::OCF_WeapTypeLance1H
         | WeaponTag::OCF_WeapTypeLance2H
+        | WeaponTag::OCF_WeapTypePike
         | WeaponTag::OCF_WeapTypePike1H
         | WeaponTag::OCF_WeapTypePike2H
         | WeaponTag::OCF_WeapTypePole1H_Thrust
@@ -412,10 +409,12 @@ pub enum WeaponTag {
     OCF_WeapTypeMace2H,
     OCF_WeapTypeMassiveSword2H,
     OCF_WeapTypePickaxe1H,
+    OCF_WeapTypePike,
     OCF_WeapTypePike1H,
     OCF_WeapTypePike2H,
     OCF_WeapTypePole1H_Swing,
     OCF_WeapTypePole1H_Thrust,
+    OCF_WeapTypePole2H,
     OCF_WeapTypePole2H_Swing,
     OCF_WeapTypePole2H_Thrust,
     OCF_WeapTypeQuarterstaff1H,
@@ -473,6 +472,7 @@ pub enum WeaponTag {
     WeapTypeHammer,
     WeapTypeLance,
     WeapTypeMace,
+    WeapTypePike,
     WeapTypeQtrStaff,
     WeapTypeScythe,
     WeapTypeStaff,
@@ -481,6 +481,7 @@ pub enum WeaponTag {
     WeapTypeWarhammer,
     WeapTypeWhip,
     HandToHandMelee,
+    BoobiesWeapTypePike,
     None,
 }
 

@@ -5,20 +5,6 @@
 use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::{Display, EnumIter, IntoEnumIterator};
 
-pub fn strings_to_keywords(tags: &[String]) -> Vec<SpellEffectKeywords> {
-    let keywords: Vec<SpellEffectKeywords> = tags
-        .iter()
-        .filter_map(|xs| {
-            if let Ok(subtype) = SpellEffectKeywords::try_from(xs.as_str()) {
-                Some(subtype)
-            } else {
-                None
-            }
-        })
-        .collect();
-    keywords
-}
-
 impl TryFrom<&str> for SpellEffectKeywords {
     type Error = anyhow::Error;
 

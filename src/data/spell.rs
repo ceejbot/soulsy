@@ -9,7 +9,7 @@
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::keywords::*;
+use super::{keywords::*, strings_to_keywords};
 use super::magic::{MagicCategory, School, SpellData};
 use super::HasIcon;
 use crate::plugin::Color;
@@ -23,8 +23,7 @@ pub struct SpellType {
 
 impl SpellType {
     pub fn new(data: SpellData, tags: Vec<String>) -> Self {
-        let keywords = strings_to_keywords(&tags);
-        // log::info!("{keywords:?}");
+        let keywords = strings_to_keywords::<SpellEffectKeywords>(&tags);
 
         let mut damage_category = keywords.iter().find_map(|xs| {
             if DAMAGE_ARCANE.contains(*xs) {
