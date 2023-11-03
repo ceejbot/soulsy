@@ -177,13 +177,13 @@ pub fn make_stamina_proxy() -> HudItem {
     )
 }
 
-// ---------- Things that have icons also have fallbacks.
-
+/// Contract adhered to by anything that has an icon.
 pub trait HasIcon {
     fn color(&self) -> Color;
     fn icon(&self) -> &Icon;
 }
 
+/// Trait for turning keywords into an item with an icon.
 pub trait HasKeywords {
     fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self;
 }

@@ -1,3 +1,14 @@
+//! The controller in the MVC way of thinking. The brains of the mod.
+//!
+//! This struct holds all runtime data for the HUD and its implementation
+//! along with associated types manage what happens when the user presses keys.
+//! It tracks key states, cycle contents (via CycleData), what needs to be drawn
+//! in the HUD, and manages a cache for items in use by the HUD.
+//! This is by far the most complex logic in the entire application.
+//!
+//! Functions of note: `handle_key_event()`, `handle_item_equipped()`, and
+//! `timer_expired()`.
+
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -887,19 +898,20 @@ impl Controller {
             self.left_hand_cached = left;
         } else if item.two_handed() {
             // Alt grip is now OFF and we are holding what is normally a two-hander.
-            self.update_slot(HudElement::Left, &HudItem::default());
-            unequipSlot(Action::Left);
+            self.switch_to_two_hander();
         } else {
             // Alt grip is now OFF and we are holding what is normally a one-hander.
             self.switch_to_one_hander();
         }
     }
 
+    /// The very tiny shared logic for switching from a two-hander to a one-hander.
     fn switch_to_two_hander(&mut self) {
         self.update_slot(HudElement::Left, &HudItem::default());
         unequipSlot(Action::Left);
     }
 
+    /// Shared logic for handling the switch to a one-handed weapon from a two-hander.
     fn switch_to_one_hander(&mut self) {
         log::debug!("entering switch_to_one_hander()");
         if !self.left_hand_cached.is_empty() {
@@ -927,10 +939,15 @@ impl Controller {
         }
     }
 
+    /// Helper functions for deciding if an item is two-handed in practice or
+    /// not. If you're NOT using CGO, this is the same as asking if an item is
+    /// two-handed or not. If you are using CGO, it's more complicated.
     fn treat_as_two_handed(&self, item: &HudItem) -> bool {
         (self.cgo_alt_grip && !item.two_handed()) || (!self.cgo_alt_grip && item.two_handed())
     }
 
+    /// An item that was equipped is no longer equipped. Empty out a HUD slot if
+    /// necessary. We take no other actions.
     pub fn handle_item_unequipped(
         &mut self,
         unequipped_spec: &String,
@@ -1546,6 +1563,7 @@ impl Controller {
         self.update_slot(HudElement::EquipSet, &set);
     }
 
+    /// Called by the MCM code when it is showing a list of all items in an equipment set.
     pub fn get_equipset_item_names(&mut self, id: u32) -> Vec<String> {
         if let Some(set) = self.cycles.equipset_by_id(id) {
             set.items
@@ -1560,7 +1578,9 @@ impl Controller {
         }
     }
 
-    /// The named item should be in the given equip set.
+    /// Use the icon assigned to a specific item as the icon to represent this
+    /// equipment set. The named item should be in the given equip set, but we
+    /// don't enforce that.
     pub fn set_equipset_icon(&mut self, id: u32, itemname: String) -> bool {
         let Some(set) = self.cycles.equipset_by_id(id) else {
             return false;
@@ -1629,7 +1649,7 @@ impl From<u32> for Action {
     }
 }
 
-/// What the controller did with a specific menu
+/// What the controller did with a specific menu press event.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum MenuEventResponse {
     Okay,
@@ -1642,12 +1662,15 @@ pub enum MenuEventResponse {
     TooManyItems,
 }
 
+/// TODO: derivable?
 impl Default for Controller {
     fn default() -> Self {
         Controller::new()
     }
 }
 
+/// Convenience function for doing the cxx macro boilerplate before
+/// calling C++ with a string.
 pub fn translated_key(key: &str) -> String {
     let_cxx_string!(cxxkey = key);
     lookupTranslation(&cxxkey)
@@ -1664,6 +1687,9 @@ const FMT_ITEM_LEFT_CYCLE: &str = "$SoulsyHUD_fmt_LeftHandCycle";
 const FMT_ITEM_RIGHT_CYCLE: &str = "$SoulsyHUD_fmt_RightHandCycle";
 const FMT_ITEM_BOTH_HANDS: &str = "$SoulsyHUD_fmt_BothHands";
 
+/// Possible actions requested when a user presses a cycle key.
+/// The action is determined using the key pressed, the presence of modifiers,
+/// and various user settings.
 pub enum RequestedAction {
     Advance,
     AdvanceAmmo,

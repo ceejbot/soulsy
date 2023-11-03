@@ -1,3 +1,6 @@
+//! Food and drink. These items are alchemy items in the game, but they
+//! get their own icons.
+
 use strum::EnumString;
 
 use super::color::InvColor;
@@ -5,15 +8,14 @@ use super::icons::Icon;
 use super::{HasIcon, HasKeywords};
 use crate::plugin::Color;
 
-/// Food variations that get their own icons.
+/// Struct to hold the icon selection and the inventory color to use.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Default)]
 pub struct FoodType {
     icon: Icon,
     color: InvColor,
 }
 
-/// Food variations that get their own icons.
-
+/// Quack quack icon trait.
 impl HasIcon for FoodType {
     fn color(&self) -> Color {
         self.color.color()
@@ -24,6 +26,7 @@ impl HasIcon for FoodType {
     }
 }
 
+/// We select color and icon from keywords, so we implement this trait.
 impl HasKeywords for FoodType {
     fn classify(_name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
         let color = super::base::color_from_keywords(&keywords);
@@ -64,6 +67,7 @@ impl HasKeywords for FoodType {
     }
 }
 
+/// A helper function to use the container type for many drink items.
 fn pickContainerIcon(containers: &[ContainerKeywords]) -> Option<Icon> {
     containers
         .iter()
@@ -85,6 +89,7 @@ fn pickContainerIcon(containers: &[ContainerKeywords]) -> Option<Icon> {
         .next()
 }
 
+// TODO move to a higher level because this is generally useful.
 fn strings_to_keywords<T: for<'a> TryFrom<&'a str>>(tags: &[String]) -> Vec<T> {
     let keywords: Vec<T> = tags
         .iter()

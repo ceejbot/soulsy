@@ -1,3 +1,8 @@
+//! User-controlled settings. Reads the INI file written by MCM.
+//! Provides an interface for all settings data to C++ and Rust both.
+//! Does some data validation and some translation from older versions,
+//! but this file is otherwise all fairly predictable.
+
 use std::sync::Mutex;
 
 use anyhow::Result;

@@ -1,3 +1,8 @@
+//! A bad name for a file containing a type for equipment sets plus
+//! traits for anything that might be in a cycle. Implements this trait
+//! for `Vec<String>` and `Vec<EquipSet>`, along with some other traits for
+//! each of those.
+
 use crate::data::base::BaseType;
 use crate::data::huditem::HudItem;
 use crate::data::icons::Icon;
@@ -57,6 +62,7 @@ impl EquipSet {
         self.name.clone()
     }
 
+    /// Give this equipment set a new name.
     pub fn set_name(&mut self, name: &str) {
         self.name = name.to_string()
     }
@@ -185,7 +191,7 @@ where
 }
 
 /// These functions are unique to item cycles. They're in a trait so we can
-/// supply them to Vec<String>.
+/// implement them for `Vec<String>`.
 pub trait HudItemCycle {
     fn filter_kind(&mut self, unwanted: &BaseType, cache: &mut ItemCache);
     fn advance_skipping(&mut self, skip: &HudItem) -> Option<String>;
