@@ -144,7 +144,6 @@ namespace hooks
 		int32_t count,
 		RE::TESObjectREFR* a_from_refr)
 	{
-		// TODO update counts for consumables if we need to, or otherwise update the controller
 		add_object_to_container_(a_this, object, extraDataList, count, a_from_refr);
 
 		if (object->IsInventoryObject())
@@ -152,6 +151,9 @@ namespace hooks
 			auto item_form = RE::TESForm::LookupByID(object->formID);
 			if (item_form)
 			{
+				// We don't add MISC or INGR to any cycles right now, so ignore them.
+				const auto formtype = item_form->GetFormType();
+				if (formtype == RE::FormType::Misc || formtype == RE::FormType::Ingredient) { return; }
 				std::string form_string = helpers::makeFormSpecString(item_form);
 				handle_inventory_changed(form_string, count);
 			}

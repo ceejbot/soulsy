@@ -196,7 +196,7 @@ pub fn strings_to_keywords<T: for<'a> TryFrom<&'a str>>(tags: &[String]) -> Vec<
             if let Ok(subtype) = T::try_from(xs.as_str()) {
                 Some(subtype)
             } else {
-                log::debug!("Unknown keyword: '{xs}';");
+                log::trace!("Unknown keyword: '{xs}';");
 
                 None
             }

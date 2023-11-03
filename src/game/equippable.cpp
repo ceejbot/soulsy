@@ -239,10 +239,10 @@ namespace equippable
 			}
 		}
 
-		const auto formtype = item_form->GetFormType();
-		const auto formstr  = RE::FormTypeToString(formtype);
+		const auto formtype    = item_form->GetFormType();
+		const auto formtypestr = RE::FormTypeToString(formtype);
 		logger::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
-			formstr,
+			formtypestr,
 			item_form->GetName(),
 			form_string);
 		return empty_huditem();

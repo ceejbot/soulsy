@@ -491,6 +491,8 @@ pub enum WeaponTag {
     WeapTypeWhip,
     HandToHandMelee,
     BoobiesWeapTypePike,
+    VendorItemWeapon, // not used for classification from here on
+    OCF_WeapTypeMelee,
     None,
 }
 
