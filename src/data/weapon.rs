@@ -137,32 +137,34 @@ impl HasKeywords for WeaponType {
             } else if matches!(subtype, WeaponTag::WAF_WeapTypeGrenade) {
                 Some(Icon::WeaponGrenade)
             } else {
-                // Now we look for more general tags. Fortunately these keyword lists are short.
-                keywords.iter().find_map(|xs| {
-                    let Ok(subtype) = WeaponTag::try_from(xs.as_str()) else {
-                        return None;
-                    };
-                    if FALLBACK_TYPES.contains(subtype) {
-                        match subtype {
-                            WeaponTag::TwoHandSword => Some(Icon::WeaponSwordTwoHanded),
-                            WeaponTag::Bow => Some(Icon::WeaponBow),
-                            WeaponTag::WeapTypeBow => Some(Icon::WeaponBow),
-                            WeaponTag::WeapTypeDagger => Some(Icon::WeaponDagger),
-                            WeaponTag::OneHandDagger => Some(Icon::WeaponDagger),
-                            WeaponTag::WeapTypeGreatsword => Some(Icon::WeaponSwordTwoHanded),
-                            WeaponTag::WeapTypeMace => Some(Icon::WeaponMace),
-                            WeaponTag::WeapTypeSword => Some(Icon::WeaponSwordOneHanded),
-                            WeaponTag::OneHandSword => Some(Icon::WeaponSwordOneHanded),
-                            WeaponTag::WeapTypeWarAxe => Some(Icon::WeaponAxeOneHanded),
-                            WeaponTag::TwoHandAxe => Some(Icon::WeaponAxeTwoHanded),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    }
-                })
+                None
             }
         });
+
+        let maybe_icon = if maybe_icon.is_some() {
+            maybe_icon
+        } else {
+            tags.iter().find_map(|subtype| {
+                if FALLBACK_TYPES.contains(*subtype) {
+                    match subtype {
+                        WeaponTag::TwoHandSword => Some(Icon::WeaponSwordTwoHanded),
+                        WeaponTag::Bow => Some(Icon::WeaponBow),
+                        WeaponTag::WeapTypeBow => Some(Icon::WeaponBow),
+                        WeaponTag::WeapTypeDagger => Some(Icon::WeaponDagger),
+                        WeaponTag::OneHandDagger => Some(Icon::WeaponDagger),
+                        WeaponTag::WeapTypeGreatsword => Some(Icon::WeaponSwordTwoHanded),
+                        WeaponTag::WeapTypeMace => Some(Icon::WeaponMace),
+                        WeaponTag::WeapTypeSword => Some(Icon::WeaponSwordOneHanded),
+                        WeaponTag::OneHandSword => Some(Icon::WeaponSwordOneHanded),
+                        WeaponTag::WeapTypeWarAxe => Some(Icon::WeaponAxeOneHanded),
+                        WeaponTag::TwoHandAxe => Some(Icon::WeaponAxeTwoHanded),
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
+            })
+        };
 
         let icon = if let Some(icon) = maybe_icon {
             icon
