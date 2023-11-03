@@ -270,7 +270,7 @@ impl Icon {
             Icon::SpellPoison => "spell_poison.svg".to_string(),
             Icon::SpellReanimate => "spell_reanimate.svg".to_string(),
             Icon::SpellReflect => "spell_reflect.svg".to_string(),
-            Icon::SpellRoot => "spell_root".to_string(),
+            Icon::SpellRoot => "spell_root.svg".to_string(),
             Icon::SpellRune => "spell_rune.svg".to_string(),
             Icon::SpellShadow => "spell_shadow.svg".to_string(),
             Icon::SpellSharpen => "spell_sharpen.svg".to_string(),
