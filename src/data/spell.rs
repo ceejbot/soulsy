@@ -2,8 +2,8 @@
 //! them, and the color used to draw the icon. Color is determined by damage type
 //! and spell "class" for spells that come from themed mods. The icon is
 //! determined by the spell archetype or in-game art. E.e., the wall spells are
-//! use wall-like icons. So we're pretty reductive. SpellType is a struct with
-//! two enums, one for each trait.
+//! use wall-like icons. So we're pretty reductive. We keep the spell data around
+//! to handle fallbacks like using the magic school if other icons aren't available.
 
 #![allow(non_snake_case, non_camel_case_types)]
 
