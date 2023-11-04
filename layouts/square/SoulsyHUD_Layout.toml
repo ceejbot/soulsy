@@ -15,7 +15,9 @@ anchor_name = "bottom_left"
 # anchor = { x = 2100.0, y = 825.0 }
 
 # The size of the hud background, before the global scaling factor is applied.
-size = { x = 300.0, y = 300.0 }
+# Does not clip anything if the HUD is larger than this in practice; it's just
+# the background.
+size = { x = 190.0, y = 250.0 }
 
 # The color of the HUD background file. Set alpha to 0 to skip drawing a background.
 bg_color = { r = 0, g = 0, b = 0, a = 64 }
@@ -60,12 +62,12 @@ size = { x = 100.0 , y = 100.0 }
 
 # How to align name and count text for this slot. IMPORTANT DOCUMENTATION!
 # The options are left, right, center.
-# Text alignment is, for cognitive ease reasons, also a statement about
+# Text alignment, for cognitive ease reasons, also controls
 # where the stated anchor point is.
 # Center alignment: the offset refers to the middle of the text box.
 # Left alignment: the offset refers to the middle of the left edge.
 # Right alignment: the offset refers to the middle of the right edge.
-align_text = "left"
+align_text = "center"
 
 # The color to use to draw this slot's background. Alpha of 0 means it's not visible.
 # Color is expressed as RGBA; values are 0-255.
@@ -79,7 +81,7 @@ icon_size = { x = 47.0, y = 47.0 }
 # Color for this HUD's hotkey. Alpha of 0 means it's not drawn.
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the hotkey. Gets scaled.
-hotkey_offset = { x = 0.0, y = 60.0 }
+hotkey_offset = { x = -50.0, y = 0.0 }
 # Size of the hotkey. Also scaled.
 hotkey_size = { x = 30.0, y = 30.0 }
 # Background color for the hotkey. Alpha means invisible.
@@ -95,7 +97,7 @@ count_font_size = 20.0
 # The color for the name text of any item in this slot.
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the item name. Gets scaled.
-name_offset = { x = 110.0, y = 110.0 }
+name_offset = { x = 0.0, y = 55.0 }
 # Font sized used for item name.
 name_font_size = 20.0
 
@@ -106,18 +108,18 @@ name = "Consumables"
 element = { repr = 1 }
 offset = { x = 125.0, y = 0.0 }
 size = { x = 100.0 , y = 100.0 }
-align_text = "left"
+align_text = "center"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 0.0, y = -60.0 }
+hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
-count_font_size = 20.0
-count_offset = { x = 65.0, y = -4.0 }
-name_offset = { x = 90.0, y = -4.0 }
+count_font_size = 30.0
+count_offset = { x = 25.0, y = 10.0 }
+name_offset = { x = 0, y = 55.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 20.0
 
@@ -126,19 +128,19 @@ name = "Left Hand"
 element = { repr = 2 }
 offset = { x = 250.0, y = 0.0 }
 size = { x = 100.0 , y = 100.0 }
-align_text = "left"
+align_text = "center"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
 icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 60.0, y = 0.0 }
+hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
 count_offset = { x = 125.0, y = 107.0 }
-name_offset = { x = 125.0, y = 107.0 }
+name_offset = { x = 0.0, y = 55.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 20.0
 
@@ -147,61 +149,61 @@ name = "Right Hand"
 element = { repr = 3 }
 offset = { x = 375.0, y = 0.0 }
 size = { x = 100.0 , y = 100.0 }
-align_text = "left"
+align_text = "center"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
 icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = -60.0, y = 0.0 }
+hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_offset = { x = 0.0, y = 0.0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 10.0, y = 52.0 }
+name_offset = { x = 0.0, y = 55.0 }
 name_font_size = 20.0
 
 
 [[layouts]]
 name = "Ammo"
 element = { repr = 4 }
-offset = { x = -83.0, y = 0.0 }
 offset = { x = 250.0, y = 0.0 }
-align_text = "left"
+size = { x = 100.0 , y = 100.0 }
+align_text = "center"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
 icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 60.0, y = 0.0 }
+hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 255, g = 255, b = 255, a = 255 }
-count_font_size = 20.0
-count_offset = { x = 125.0, y = 107.0 }
-name_offset = { x = 155.0, y = 107.0 }
+count_font_size = 30.0
+count_offset = { x = 25.0, y = 10.0 }
+name_offset = { x = 0, y =  55.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 20.0
 
 [[layouts]]
 name = "Equipsets"
-element = { repr = 4 }
-offset = { x = 500.0, y = 0.0 }
+element = { repr = 5 }
+offset = { x = 0.0, y = -125.0 }
 size = { x = 100.0 , y = 100.0 }
-align_text = "left"
+align_text = "center"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
 icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 60.0, y = 0.0 }
+hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_color = { r = 255, g = 255, b = 255, a = 255 }
+count_color = { r = 255, g = 255, b = 255, a = 0 }
 count_font_size = 20.0
-count_offset = { x = 125.0, y = 107.0 }
-name_offset = { x = 155.0, y = 107.0 }
+count_offset = { x = 250.0, y = -75.0 }
+name_offset = { x = 0.0, y = -75.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 20.0

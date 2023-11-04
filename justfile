@@ -169,11 +169,11 @@ layouts:
     cp -rp layouts/icon-pack/*.svg "$dest/"
 
     # build the THICC icon pack
-    dest="releases/THICC_icon_pack/SKSE/plugins/resources/icons"
+    dest="releases/SoulsyHUD_THICC_icon_pack/SKSE/plugins/resources/icons"
     mkdir -p "$dest"
     cp -rp layouts/thicc-icon-pack/*.svg "$dest/"
 
-    archive_dirs="SoulsyHUD_icon_pack THICC_icon_pack SoulsyHUD_layout_square"
+    archive_dirs="SoulsyHUD_icon_pack SoulsyHUD_THICC_icon_pack SoulsyHUD_layout_square"
     cd releases
     for i in $archive_dirs; do
          ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"
@@ -192,8 +192,7 @@ plugin-ser:
 
 # Remove archive files.
 @clean:
-    rm -f archive.7z
-    rm -rf archive/
+    rm -rf releases/
 
 # Remove archive files & all build artifacts.
 spotless: clean

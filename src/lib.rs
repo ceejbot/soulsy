@@ -85,8 +85,7 @@ pub mod plugin {
         size: Point,
         /// The color to draw the HUD bg image with; if zero will not be drawn.
         bg_color: Color,
-        /// Swap the ammo slot in and the left hand slot out when ranged weapon
-        /// equipped.
+        /// Hide the ammo slot if a ranged weapon is not equipped.
         #[serde(default)]
         hide_ammo_when_irrelevant: bool,
         /// Hide the left hand slot when a ranged weapon is equipped.

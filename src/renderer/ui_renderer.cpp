@@ -430,7 +430,7 @@ namespace ui
 			rust::Box<HudItem> entry = entry_to_show_in_slot(slotLayout.element);
 			if ((slotLayout.element == HudElement::EquipSet) && entry->name().empty())
 			{
-				// Do nothing for empty equipsets. Might reconsider this decision.
+				// Do nothing for empty equipsets. TODO draw as empty slot
 				continue;
 			}
 
