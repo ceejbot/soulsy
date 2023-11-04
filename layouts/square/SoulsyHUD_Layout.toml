@@ -33,7 +33,7 @@ font = "futura-book-bt.ttf"
 # A font sizing hint to the font loader about what size most of the text will use.
 # Text rendered at this size will look best. This value is scaled before the font is loaded.
 # Text alignment calculations are made using this font size.
-font_size = 20.0
+font_size = 18.0
 
 # Enable any of these you need text rendering for.
 # You will need to supply a true-type font with the glyphs; futura doesn't have them.
@@ -92,14 +92,14 @@ count_offset = { x = 0.0, y = 0.0 }
 # The color for any count displays. An alpha of 0 means not drawn.
 count_color = { r = 200, g = 200, b = 200, a = 0 }
 # Font size for item count.
-count_font_size = 20.0
+count_font_size = 18.0
 
 # The color for the name text of any item in this slot.
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 # Where to draw the item name. Gets scaled.
 name_offset = { x = 0.0, y = 55.0 }
 # Font sized used for item name.
-name_font_size = 20.0
+name_font_size = 18.0
 
 # The consumables slot. You can change all of these values
 # independently from the other slots.
@@ -108,7 +108,7 @@ name = "Consumables"
 element = { repr = 1 }
 offset = { x = 125.0, y = 0.0 }
 size = { x = 100.0 , y = 100.0 }
-align_text = "center"
+align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
@@ -117,18 +117,18 @@ hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
-count_font_size = 30.0
-count_offset = { x = 25.0, y = 10.0 }
-name_offset = { x = 0, y = 55.0 }
+count_font_size = 24.0
+count_offset = { x = 10.0, y = 15.0 }
+name_offset = { x = -50, y = 55.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_font_size = 20.0
+name_font_size = 18.0
 
 [[layouts]]
 name = "Left Hand"
 element = { repr = 2 }
 offset = { x = 250.0, y = 0.0 }
 size = { x = 100.0 , y = 100.0 }
-align_text = "center"
+align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
@@ -138,18 +138,18 @@ hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
-count_font_size = 20.0
+count_font_size = 18.0
 count_offset = { x = 125.0, y = 107.0 }
-name_offset = { x = 0.0, y = 55.0 }
+name_offset = { x = -50.0, y = 55.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_font_size = 20.0
+name_font_size = 18.0
 
 [[layouts]]
 name = "Right Hand"
 element = { repr = 3 }
 offset = { x = 375.0, y = 0.0 }
 size = { x = 100.0 , y = 100.0 }
-align_text = "center"
+align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
@@ -160,10 +160,10 @@ hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_offset = { x = 0.0, y = 0.0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
-count_font_size = 20.0
+count_font_size = 18.0
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 0.0, y = 55.0 }
-name_font_size = 20.0
+name_offset = { x = -50.0, y = 55.0 }
+name_font_size = 18.0
 
 
 [[layouts]]
@@ -171,7 +171,7 @@ name = "Ammo"
 element = { repr = 4 }
 offset = { x = 250.0, y = 0.0 }
 size = { x = 100.0 , y = 100.0 }
-align_text = "center"
+align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 icon_size = { x = 47.0, y = 47.0 }
@@ -180,12 +180,12 @@ hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_color = { r = 255, g = 255, b = 255, a = 255 }
-count_font_size = 30.0
-count_offset = { x = 25.0, y = 10.0 }
-name_offset = { x = 0, y =  55.0 }
+count_color = { r = 200, g = 200, b = 200, a = 255 }
+count_font_size = 24.0
+count_offset = { x = 0.0, y = 15.0 }
+name_offset = { x = -50, y =  55.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_font_size = 20.0
+name_font_size = 18.0
 
 [[layouts]]
 name = "Equipsets"
@@ -202,8 +202,8 @@ hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 255, g = 255, b = 255, a = 0 }
-count_font_size = 20.0
+count_font_size = 18.0
 count_offset = { x = 250.0, y = -75.0 }
 name_offset = { x = 0.0, y = -75.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_font_size = 20.0
+name_font_size = 18.0

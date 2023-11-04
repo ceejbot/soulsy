@@ -33,7 +33,9 @@ pub enum InvColor {
     Green,
     Holy,
     Legendary,
+    Lunar,
     Magenta,
+    Necrotic,
     Orange,
     Pink,
     Poison,
@@ -100,9 +102,11 @@ impl InvColor {
             InvColor::Gold => Color::rgb(218, 165, 32),
             InvColor::Gray => Color::rgb(128, 128, 128),
             InvColor::Green => Color::rgb(32, 223, 32),
-            InvColor::Holy => Color::rgb(223, 188, 32),
+            InvColor::Holy => Color::rgb(223, 188, 32), // same as sun for now
             InvColor::Legendary => Color::rgb(255, 175, 0),
+            InvColor::Lunar => Color::rgb(130, 185, 230), // light blue
             InvColor::Magenta => Color::rgb(255, 0, 255),
+            InvColor::Necrotic => Color::rgb(46, 252, 183), // blue-green
             InvColor::Orange => Color::rgb(255, 76, 0),
             InvColor::Pink => Color::rgb(219, 46, 114),
             InvColor::Poison => Color::rgb(160, 240, 2), // yellow-green
@@ -111,9 +115,9 @@ impl InvColor {
             InvColor::Shadow => Color::rgb(80, 0, 145), // dark purple
             InvColor::Shock => Color::rgb(255, 213, 0), // yellow
             InvColor::ShockArc => Color::rgb(255, 76, 0),
-            InvColor::Silver => Color::rgb(192, 192, 192),
+            InvColor::Silver => Color::rgb(192, 192, 192), // light gray
             InvColor::Sun => Color::rgb(223, 188, 32),
-            InvColor::Water => Color::rgb(212, 241, 249),
+            InvColor::Water => Color::rgb(152, 233, 255), // light blue
             InvColor::White => Color::default(),
             InvColor::Yellow => Color::rgb(255, 213, 0),
         }

@@ -438,7 +438,7 @@ pub enum SpellKeywords {
 
 // ----------- spell archetypes
 
-pub const BUFF_SPELLS: EnumSet<SpellKeywords> = enum_set!(
+pub const ICON_BUFF: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::SpellEnhance_Attack
         | SpellKeywords::SpellEnhance_Casting
         | SpellKeywords::SpellEnhance_CastingDruid
@@ -473,7 +473,7 @@ pub const BUFF_SPELLS: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellEnhance_WaterWalk
 );
 
-pub const CLOAK_SPELLS: EnumSet<SpellKeywords> = enum_set!(
+pub const ICON_CLOAK: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::MagicCloak
         | SpellKeywords::SpellAbsorb_MagickaCloak
         | SpellKeywords::SpellAbsorb_StaminaCloak
@@ -507,13 +507,124 @@ pub const CLOAK_SPELLS: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_WindCloak
 );
 
-pub const USE_FIRE_ICON: EnumSet<SpellKeywords> = enum_set!(
+pub const ICON_FIRE: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::SpellDamage_Fire
         | SpellKeywords::SpellDamage_FireCold
         | SpellKeywords::SpellDamage_FireArcane
         | SpellKeywords::SpellDamage_FireShock
         | SpellKeywords::SpellDamage_FrostFire
 );
+
+pub const ICON_CIRCLE: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::SpellHeal_LivingCircle
+        | SpellKeywords::SpellAbsorb_MagickaCircle
+        | SpellKeywords::SpellAbsorb_StaminaCircle
+        | SpellKeywords::SpellRestore_MagickaCircle
+        | SpellKeywords::SpellRestore_StaminaCircle
+);
+
+pub const ICON_DRUID: EnumSet<SpellKeywords> =
+    enum_set!(SpellKeywords::ClassDruid | SpellKeywords::SpellCounter_DruidHeal);
+
+pub const ICON_CONTROL: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::MagicInfluence
+        | SpellKeywords::MagicInfluenceCharm
+        | SpellKeywords::SpellControl
+        | SpellKeywords::SpellMind_Charm
+        | SpellKeywords::SpellMind_CharmImperial
+        | SpellKeywords::SpellMind_Control
+        | SpellKeywords::SpellMind_ControlBosmer
+        | SpellKeywords::SpellMind_ControlVampire
+);
+
+pub const ICON_EARTH: EnumSet<SpellKeywords> =
+    enum_set!(SpellKeywords::ClassEarth | SpellKeywords::SpellDamage_Earth);
+
+pub const ICON_FEAR: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::MagicInfluenceFear
+        | SpellKeywords::SpellMind_Fear
+        | SpellKeywords::SpellMind_FearNord
+        | SpellKeywords::SpellMind_FearVampire
+);
+
+pub const ICON_FROST: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::MagicDamageFrost | SpellKeywords::ClassFrost | SpellKeywords::SpellDamage_Frost
+);
+
+pub const ICON_HEALING: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::MagicRestoreHealth
+        | SpellKeywords::SpellHeal_Daedra
+        | SpellKeywords::SpellHeal_Living
+        | SpellKeywords::SpellHeal_LivingWater
+        | SpellKeywords::SpellHeal_Self
+        | SpellKeywords::SpellHeal_SelfCloak
+        | SpellKeywords::SpellHeal_Undead
+        | SpellKeywords::SpellCure
+);
+
+pub const ICON_HOLY: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::SpellDamage_Holy | SpellKeywords::ClassHoly | SpellKeywords::MagicTurnUndead
+);
+
+pub const ICON_INVISIBILITY: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::MagicInvisibility
+        | SpellKeywords::SpellStealth_Invisibility
+        | SpellKeywords::SpellStealth_InvisibilityDruid
+        | SpellKeywords::SpellStealth_InvisibilityDoomstone
+        | SpellKeywords::SpellStealth_InvisibilityVampire
+);
+
+pub const ICON_LIGHT: EnumSet<SpellKeywords> =
+    enum_set!(SpellKeywords::SpellLight | SpellKeywords::Archetype_Light);
+
+pub const ICON_PARALYZE: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::MagicParalysis
+        | SpellKeywords::SpellMind_Paralysis
+        | SpellKeywords::SpellParalysis
+        | SpellKeywords::SpellParalysis_Druid
+);
+
+pub const ICON_ROOT: EnumSet<SpellKeywords> =
+    enum_set!(SpellKeywords::Archetype_Root | SpellKeywords::SpellCurse_DruidRoot);
+
+// pub const RUNE_SPELLS: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::MagicRune);
+
+pub const ICON_SHOCK: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::MagicDamageShock
+        | SpellKeywords::ClassShock
+        | SpellKeywords::SpellDamage_Shock
+        | SpellKeywords::SpellDamage_BloodShock
+);
+
+pub const ICON_STORM: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::SpellDamage_ShockStorm);
+
+pub const ICON_SUMMON: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::MagicSummonFamiliar
+        | SpellKeywords::MagicSummonFire
+        | SpellKeywords::MagicSummonFrost
+        | SpellKeywords::MagicSummonShock
+        | SpellKeywords::MagicSummonUndead
+        | SpellKeywords::SpellSummon_Construct
+        | SpellKeywords::SpellSummon_Creature
+        | SpellKeywords::SpellSummon_Daedra
+        | SpellKeywords::SpellSummon_Object
+        | SpellKeywords::SpellSummon_Spirit
+);
+
+pub const ICON_VAMPIRE: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::ClassVampire);
+
+pub const ICON_VISION: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::SpellEnhance_Sight
+        | SpellKeywords::SpellEnhance_SightKhajiit
+        | SpellKeywords::SpellEnhance_SightVampireBlood
+        | SpellKeywords::SpellEnhance_SightVampireShadow
+        | SpellKeywords::SpellEnhance_SightWerebeast
+);
+
+// ----------- spell packs
+
+// Natura
+// ClassDruid is critter summons
 
 pub const DARENII_ABYSS: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::ClassShadow
@@ -533,106 +644,13 @@ pub const DARENII_DESECRATION: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_Necrotic
         | SpellKeywords::SpellDamage_NecroticFire
 );
-pub const DRUID_SPELLS: EnumSet<SpellKeywords> =
-    enum_set!(SpellKeywords::ClassDruid | SpellKeywords::SpellCounter_DruidHeal);
-
-pub const CONTROL_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::MagicInfluence
-        | SpellKeywords::MagicInfluenceCharm
-        | SpellKeywords::SpellControl
-        | SpellKeywords::SpellMind_Charm
-        | SpellKeywords::SpellMind_CharmImperial
-        | SpellKeywords::SpellMind_Control
-        | SpellKeywords::SpellMind_ControlBosmer
-        | SpellKeywords::SpellMind_ControlVampire
-);
-
-pub const EARTH_SPELLS: EnumSet<SpellKeywords> =
-    enum_set!(SpellKeywords::ClassEarth | SpellKeywords::SpellDamage_Earth);
-
-pub const FEAR_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::MagicInfluenceFear
-        | SpellKeywords::SpellMind_Fear
-        | SpellKeywords::SpellMind_FearNord
-        | SpellKeywords::SpellMind_FearVampire
-);
-
-pub const FROST_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::MagicDamageFrost | SpellKeywords::ClassFrost | SpellKeywords::SpellDamage_Frost
-);
-
-pub const HEALING_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::MagicRestoreHealth
-        | SpellKeywords::SpellHeal_Daedra
-        | SpellKeywords::SpellHeal_Living
-        | SpellKeywords::SpellHeal_LivingWater
-        | SpellKeywords::SpellHeal_Self
-        | SpellKeywords::SpellHeal_SelfCloak
-        | SpellKeywords::SpellHeal_Undead
-        | SpellKeywords::SpellCure
-);
-
-pub const INVISIBILITY_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::MagicInvisibility
-        | SpellKeywords::SpellStealth_Invisibility
-        | SpellKeywords::SpellStealth_InvisibilityDruid
-        | SpellKeywords::SpellStealth_InvisibilityDoomstone
-        | SpellKeywords::SpellStealth_InvisibilityVampire
-);
-
-pub const LIGHT_SPELLS: EnumSet<SpellKeywords> =
-    enum_set!(SpellKeywords::SpellLight | SpellKeywords::Archetype_Light);
-
-pub const PARALYZE_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::MagicParalysis
-        | SpellKeywords::SpellMind_Paralysis
-        | SpellKeywords::SpellParalysis
-        | SpellKeywords::SpellParalysis_Druid
-);
-
-pub const ROOT_SPELLS: EnumSet<SpellKeywords> =
-    enum_set!(SpellKeywords::Archetype_Root | SpellKeywords::SpellCurse_DruidRoot);
-
-pub const SHOCK_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::MagicDamageShock
-        | SpellKeywords::ClassShock
-        | SpellKeywords::SpellDamage_Shock
-        | SpellKeywords::SpellDamage_BloodShock
-);
-
-pub const STORM_SPELLS: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::SpellDamage_ShockStorm);
-
-pub const SUMMON_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::MagicSummonFamiliar
-        | SpellKeywords::MagicSummonFire
-        | SpellKeywords::MagicSummonFrost
-        | SpellKeywords::MagicSummonShock
-        | SpellKeywords::MagicSummonUndead
-        | SpellKeywords::SpellSummon_Construct
-        | SpellKeywords::SpellSummon_Creature
-        | SpellKeywords::SpellSummon_Daedra
-        | SpellKeywords::SpellSummon_Object
-        | SpellKeywords::SpellSummon_Spirit
-);
-
-pub const VAMPIRE_SPELLS: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::ClassVampire);
-
-pub const VISION_SPELLS: EnumSet<SpellKeywords> = enum_set!(
-    SpellKeywords::SpellEnhance_Sight
-        | SpellKeywords::SpellEnhance_SightKhajiit
-        | SpellKeywords::SpellEnhance_SightVampireBlood
-        | SpellKeywords::SpellEnhance_SightVampireShadow
-        | SpellKeywords::SpellEnhance_SightWerebeast
-);
-
-// ----------- spell packs
-
-// Natura
-// ClassDruid is critter summons
 
 pub const DARENII_INQUISITION: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::ClassHoly);
-pub const DARENII_LUNARIS: EnumSet<SpellKeywords> =
-    enum_set!(SpellKeywords::SpellDamage_HolyLunar | SpellKeywords::SpellDamage_HolyLunarCloak);
+pub const DARENII_LUNARIS: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::SpellDamage_HolyLunar
+        | SpellKeywords::SpellDamage_HolyLunarCloak
+        | SpellKeywords::SpellEnhance_DamageHolyLunar
+);
 // necrom should use tentacles
 pub const DARENII_NECROM: EnumSet<SpellKeywords> =
     enum_set!(SpellKeywords::SpellEnhance_Eldritch | SpellKeywords::SpellDamage_PoisonEldritch);
@@ -663,6 +681,13 @@ pub const COLOR_BLOOD: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_BloodCloak
         | SpellKeywords::SpellDamage_BloodShock
         | SpellKeywords::SpellDamage_BloodShockCloak
+);
+
+pub const COLOR_BOUND_ITEMS: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::SpellBound_Ammo
+        | SpellKeywords::SpellBound_Armor
+        | SpellKeywords::SpellBound_MiscItem
+        | SpellKeywords::SpellBound_Weapon
 );
 
 pub const COLOR_EARTH: EnumSet<SpellKeywords> = enum_set!(
@@ -709,6 +734,14 @@ pub const COLOR_HOLY: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_HolyAstralCloak
 );
 
+pub const COLOR_NECROTIC: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::SpellEnhance_Eldritch
+        | SpellKeywords::SpellDamage_Necrotic
+        | SpellKeywords::SpellDamage_NecroticCloak
+        | SpellKeywords::SpellDamage_NecroticFire
+        | SpellKeywords::SpellDamage_NecroticFireCloak
+);
+
 pub const COLOR_POISON: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::ClassPoison
         | SpellKeywords::SpellDamage_Poison
@@ -718,11 +751,6 @@ pub const COLOR_POISON: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_PoisonDoomstone
         | SpellKeywords::SpellDamage_PoisonEldritch
         | SpellKeywords::SpellDamage_PoisonEldritchCloak
-        | SpellKeywords::SpellDamage_Necrotic
-        | SpellKeywords::SpellDamage_Necrotic
-        | SpellKeywords::SpellDamage_NecroticCloak
-        | SpellKeywords::SpellDamage_NecroticFire
-        | SpellKeywords::SpellDamage_NecroticFireCloak
 );
 
 pub const COLOR_SHADOW: EnumSet<SpellKeywords> = enum_set!(

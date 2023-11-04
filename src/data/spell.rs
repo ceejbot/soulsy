@@ -39,21 +39,21 @@ impl SpellType {
         // a spell type, e.g. cloak spells, we use that. We then try to use an
         // icon for a mod spell pack, e.g., constellation. If all else fails,
         // we use the icon for the magic school.
-        let icon = if !itemkwds.is_disjoint(CLOAK_SPELLS) {
+        let icon = if !itemkwds.is_disjoint(ICON_CLOAK) {
             Icon::ArmorCloak
-        } else if !itemkwds.is_disjoint(BUFF_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_BUFF) {
             Icon::SpellStamina
-        } else if !itemkwds.is_disjoint(CONTROL_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_CONTROL) {
             Icon::SpellControl
-        } else if !itemkwds.is_disjoint(FEAR_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_FEAR) {
             Icon::SpellFear
-        } else if !itemkwds.is_disjoint(LIGHT_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_LIGHT) {
             Icon::SpellLight
-        } else if !itemkwds.is_disjoint(SUMMON_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_SUMMON) {
             Icon::SpellSummon
-        } else if !itemkwds.is_disjoint(PARALYZE_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_PARALYZE) {
             Icon::SpellParalyze
-        } else if !itemkwds.is_disjoint(VISION_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_VISION) {
             Icon::SpellEagleEye
             // bound weapons
         } else if itemkwds.contains(SpellKeywords::SpellBound_Weapon) {
@@ -80,35 +80,22 @@ impl SpellType {
             }
         } else if itemkwds.contains(SpellKeywords::SpellBound_Armor) {
             Icon::ArmorShieldHeavy
-        } else if !itemkwds.is_disjoint(HEALING_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_HEALING) {
             Icon::SpellHeal
-        } else if !itemkwds.is_disjoint(EARTH_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_EARTH) {
             Icon::SpellEarth
-        } else if !itemkwds.is_disjoint(STORM_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_STORM) {
             Icon::SpellLightningBlast
-        } else if !itemkwds.is_disjoint(VAMPIRE_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_VAMPIRE) {
             Icon::SpellVampire
-            // next icon packs
-        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
-            Icon::SpellArclight
-        } else if !itemkwds.is_disjoint(DARENII_DESECRATION) {
-            Icon::SpellDesecration
-        } else if !itemkwds.is_disjoint(DARENII_STELLARIS) {
-            Icon::SpellStars
-        } else if !itemkwds.is_disjoint(DARENII_LUNARIS) {
-            Icon::SpellMoon
-        } else if !itemkwds.is_disjoint(CONSTELLATION_SPELLS) {
-            Icon::SpellConstellation
-        } else if !itemkwds.is_disjoint(DRUID_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_DRUID) {
             Icon::SpellLeaves
-        } else if !itemkwds.is_disjoint(ROOT_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_ROOT) {
             Icon::SpellRoot
-        } else if !itemkwds.is_disjoint(USE_FIRE_ICON) {
-            Icon::SpellFire
-        } else if !itemkwds.is_disjoint(SHOCK_SPELLS) {
-            Icon::SpellShock
-        } else if !itemkwds.is_disjoint(FROST_SPELLS) {
-            Icon::SpellFrost
+        } else if !itemkwds.is_disjoint(ICON_CIRCLE) {
+            Icon::SpellCircle
+        } else if !itemkwds.is_disjoint(ICON_HOLY) {
+            Icon::SpellSun
         // next one-off vanilla spells
         } else if itemkwds.contains(SpellKeywords::Archetype_Teleport) {
             Icon::SpellTeleport
@@ -152,6 +139,24 @@ impl SpellType {
             || itemkwds.contains(SpellKeywords::SpellShapechange)
         {
             Icon::PowerWerewolf
+            // next icon packs
+        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
+            Icon::SpellArclight
+        } else if !itemkwds.is_disjoint(DARENII_DESECRATION) {
+            Icon::SpellDesecration
+        } else if !itemkwds.is_disjoint(DARENII_STELLARIS) {
+            Icon::SpellStars
+        } else if !itemkwds.is_disjoint(DARENII_LUNARIS) {
+            Icon::SpellMoon
+        } else if !itemkwds.is_disjoint(CONSTELLATION_SPELLS) {
+            Icon::SpellConstellation
+        // now really generic damage spells
+        } else if !itemkwds.is_disjoint(ICON_FIRE) {
+            Icon::SpellFire
+        } else if !itemkwds.is_disjoint(ICON_SHOCK) {
+            Icon::SpellShock
+        } else if !itemkwds.is_disjoint(ICON_FROST) {
+            Icon::SpellFrost
         } else {
             log::debug!("Falling back to magic school for spell; data: {data:?}");
             log::debug!("    keywords: {tags:?}");
@@ -176,12 +181,18 @@ impl SpellType {
             InvColor::Ash
         } else if !itemkwds.is_disjoint(COLOR_BLOOD) {
             InvColor::Blood
+        } else if !itemkwds.is_disjoint(COLOR_BOUND_ITEMS) {
+            InvColor::Bound
         } else if !itemkwds.is_disjoint(COLOR_EARTH) {
             InvColor::Brown
         } else if !itemkwds.is_disjoint(COLOR_ELDRITCH) {
             InvColor::Eldritch
         } else if !itemkwds.is_disjoint(COLOR_HOLY) {
             InvColor::Holy
+        } else if !itemkwds.is_disjoint(DARENII_LUNARIS) {
+            InvColor::Lunar
+        } else if !itemkwds.is_disjoint(COLOR_NECROTIC) {
+            InvColor::Necrotic
         } else if !itemkwds.is_disjoint(COLOR_POISON) {
             InvColor::Poison
         } else if !itemkwds.is_disjoint(COLOR_SHADOW) {
@@ -192,7 +203,7 @@ impl SpellType {
             InvColor::Water
         } else if !itemkwds.is_disjoint(COLOR_WIND) {
             InvColor::Gray
-        } else if !itemkwds.is_disjoint(HEALING_SPELLS) {
+        } else if !itemkwds.is_disjoint(ICON_HEALING) {
             InvColor::Green
         } else if !itemkwds.is_disjoint(COLOR_FIRE) {
             InvColor::Fire

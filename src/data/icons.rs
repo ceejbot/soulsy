@@ -90,6 +90,7 @@ pub enum Icon {
     SpellBleed,
     // SpellBolt,           // not yet used
     // SpellChainLightning, // not yet used
+    SpellCircle,
     SpellConstellation,
     SpellControl,
     SpellCure,
@@ -258,6 +259,7 @@ impl Icon {
             Icon::SpellBleed => "spell_bleed.svg".to_string(),
             // Icon::SpellBolt => "spell_bolt.svg".to_string(),
             // Icon::SpellChainLightning => "spell_chain_lightning.svg".to_string(),
+            Icon::SpellCircle => "spell_circle.svg".to_string(),
             Icon::SpellConstellation => "spell_constellation.svg".to_string(),
             Icon::SpellControl => "spell_control.svg".to_string(),
             Icon::SpellCure => "spell_cure.svg".to_string(),
@@ -445,6 +447,7 @@ impl Icon {
             Icon::SpellBleed => Icon::Destruction,
             // Icon::SpellBolt => Icon::Destruction,
             // Icon::SpellChainLightning => Icon::Destruction,
+            Icon::SpellCircle => Icon::Restoration,
             Icon::SpellConstellation => Icon::Destruction,
             Icon::SpellControl => Icon::Illusion,
             Icon::SpellCure => Icon::Restoration,

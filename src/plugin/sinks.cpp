@@ -43,7 +43,7 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 	auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 	auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 
-	if (form->IsAmmo())
+	if (form->IsAmmo() && !event->equipped)
 	{
 		// double-check that we really unequipped it and it's not just a count change.
 		auto* current_ammo = player->GetCurrentAmmo();
