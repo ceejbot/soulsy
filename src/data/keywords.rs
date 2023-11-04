@@ -633,6 +633,7 @@ pub const VISION_SPELLS: EnumSet<SpellKeywords> = enum_set!(
 pub const DARENII_INQUISITION: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::ClassHoly);
 pub const DARENII_LUNARIS: EnumSet<SpellKeywords> =
     enum_set!(SpellKeywords::SpellDamage_HolyLunar | SpellKeywords::SpellDamage_HolyLunarCloak);
+// necrom should use tentacles
 pub const DARENII_NECROM: EnumSet<SpellKeywords> =
     enum_set!(SpellKeywords::SpellEnhance_Eldritch | SpellKeywords::SpellDamage_PoisonEldritch);
 
@@ -722,7 +723,6 @@ pub const COLOR_POISON: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_NecroticCloak
         | SpellKeywords::SpellDamage_NecroticFire
         | SpellKeywords::SpellDamage_NecroticFireCloak
-
 );
 
 pub const COLOR_SHADOW: EnumSet<SpellKeywords> = enum_set!(

@@ -180,8 +180,6 @@ impl SpellType {
             InvColor::Brown
         } else if !itemkwds.is_disjoint(COLOR_ELDRITCH) {
             InvColor::Eldritch
-        } else if !itemkwds.is_disjoint(HEALING_SPELLS) {
-            InvColor::Green
         } else if !itemkwds.is_disjoint(COLOR_HOLY) {
             InvColor::Holy
         } else if !itemkwds.is_disjoint(COLOR_POISON) {
@@ -194,6 +192,8 @@ impl SpellType {
             InvColor::Water
         } else if !itemkwds.is_disjoint(COLOR_WIND) {
             InvColor::Gray
+        } else if !itemkwds.is_disjoint(HEALING_SPELLS) {
+            InvColor::Green
         } else if !itemkwds.is_disjoint(COLOR_FIRE) {
             InvColor::Fire
         } else if !itemkwds.is_disjoint(COLOR_FROST) {
