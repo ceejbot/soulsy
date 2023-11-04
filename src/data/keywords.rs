@@ -531,8 +531,7 @@ pub const DARENII_COLDHARBOUR: EnumSet<SpellKeywords> =
 pub const DARENII_DESECRATION: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::SpellDamage_Necrotic
         | SpellKeywords::SpellDamage_Necrotic
-        | SpellKeywords::SpellDamage_NecroticCloak
-        | SpellKeywords::SpellDamage_NecroticFireCloak
+        | SpellKeywords::SpellDamage_NecroticFire
 );
 pub const DRUID_SPELLS: EnumSet<SpellKeywords> =
     enum_set!(SpellKeywords::ClassDruid | SpellKeywords::SpellCounter_DruidHeal);
@@ -718,16 +717,18 @@ pub const COLOR_POISON: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_PoisonDoomstone
         | SpellKeywords::SpellDamage_PoisonEldritch
         | SpellKeywords::SpellDamage_PoisonEldritchCloak
+        | SpellKeywords::SpellDamage_Necrotic
+        | SpellKeywords::SpellDamage_Necrotic
+        | SpellKeywords::SpellDamage_NecroticCloak
+        | SpellKeywords::SpellDamage_NecroticFire
+        | SpellKeywords::SpellDamage_NecroticFireCloak
+
 );
 
 pub const COLOR_SHADOW: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::ClassNecromancy
         | SpellKeywords::ClassShadow
         | SpellKeywords::SpellCurse_Shadow
-        | SpellKeywords::SpellDamage_Necrotic
-        | SpellKeywords::SpellDamage_Necrotic
-        | SpellKeywords::SpellDamage_NecroticCloak
-        | SpellKeywords::SpellDamage_NecroticFireCloak
         | SpellKeywords::SpellDamage_Shadow
         | SpellKeywords::SpellDamage_ShadowCloak
 );

@@ -27,6 +27,7 @@ pub struct SpellType {
 
 impl SpellType {
     pub fn new(data: SpellData, tags: Vec<String>) -> Self {
+        log::debug!("tags: {tags:?};");
         let keywords = strings_to_keywords::<SpellKeywords>(&tags);
         let mut itemkwds: EnumSet<SpellKeywords> = EnumSet::new();
         keywords.iter().for_each(|xs| {
@@ -83,17 +84,13 @@ impl SpellType {
             Icon::SpellHeal
         } else if !itemkwds.is_disjoint(EARTH_SPELLS) {
             Icon::SpellEarth
-        } else if !itemkwds.is_disjoint(USE_FIRE_ICON) {
-            Icon::SpellFire
-        } else if !itemkwds.is_disjoint(SHOCK_SPELLS) {
-            Icon::SpellShock
-        } else if !itemkwds.is_disjoint(FROST_SPELLS) {
-            Icon::SpellFrost
         } else if !itemkwds.is_disjoint(STORM_SPELLS) {
             Icon::SpellLightningBlast
         } else if !itemkwds.is_disjoint(VAMPIRE_SPELLS) {
             Icon::SpellVampire
-        // next icon packs
+            // next icon packs
+        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
+            Icon::SpellArclight
         } else if !itemkwds.is_disjoint(DARENII_DESECRATION) {
             Icon::SpellDesecration
         } else if !itemkwds.is_disjoint(DARENII_STELLARIS) {
@@ -102,12 +99,16 @@ impl SpellType {
             Icon::SpellMoon
         } else if !itemkwds.is_disjoint(CONSTELLATION_SPELLS) {
             Icon::SpellConstellation
-        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
-            Icon::SpellArclight
         } else if !itemkwds.is_disjoint(DRUID_SPELLS) {
             Icon::SpellLeaves
         } else if !itemkwds.is_disjoint(ROOT_SPELLS) {
             Icon::SpellRoot
+        } else if !itemkwds.is_disjoint(USE_FIRE_ICON) {
+            Icon::SpellFire
+        } else if !itemkwds.is_disjoint(SHOCK_SPELLS) {
+            Icon::SpellShock
+        } else if !itemkwds.is_disjoint(FROST_SPELLS) {
+            Icon::SpellFrost
         // next one-off vanilla spells
         } else if itemkwds.contains(SpellKeywords::Archetype_Teleport) {
             Icon::SpellTeleport
@@ -169,6 +170,8 @@ impl SpellType {
         let color_kwds = strings_to_keywords::<InvColor>(&tags);
         let color = if let Some(assigned) = color_kwds.first() {
             assigned.clone()
+        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
+            InvColor::ShockArc
         } else if !itemkwds.is_disjoint(COLOR_ASH) {
             InvColor::Ash
         } else if !itemkwds.is_disjoint(COLOR_BLOOD) {
@@ -177,10 +180,6 @@ impl SpellType {
             InvColor::Brown
         } else if !itemkwds.is_disjoint(COLOR_ELDRITCH) {
             InvColor::Eldritch
-        } else if !itemkwds.is_disjoint(COLOR_FIRE) {
-            InvColor::Fire
-        } else if !itemkwds.is_disjoint(COLOR_FROST) {
-            InvColor::Frost
         } else if !itemkwds.is_disjoint(HEALING_SPELLS) {
             InvColor::Green
         } else if !itemkwds.is_disjoint(COLOR_HOLY) {
@@ -189,16 +188,18 @@ impl SpellType {
             InvColor::Poison
         } else if !itemkwds.is_disjoint(COLOR_SHADOW) {
             InvColor::Shadow
-        } else if !itemkwds.is_disjoint(COLOR_SHOCK) {
-            InvColor::Shock
         } else if !itemkwds.is_disjoint(COLOR_SUN) {
             InvColor::Sun
         } else if !itemkwds.is_disjoint(COLOR_WATER) {
             InvColor::Water
         } else if !itemkwds.is_disjoint(COLOR_WIND) {
             InvColor::Gray
-        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
-            InvColor::ShockArc
+        } else if !itemkwds.is_disjoint(COLOR_FIRE) {
+            InvColor::Fire
+        } else if !itemkwds.is_disjoint(COLOR_FROST) {
+            InvColor::Frost
+        } else if !itemkwds.is_disjoint(COLOR_SHOCK) {
+            InvColor::Shock
         } else {
             log::debug!("no color specified for spell; keywords={tags:?};");
             match data.school {
