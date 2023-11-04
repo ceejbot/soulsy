@@ -9,8 +9,6 @@
 //! if other icons aren't available. 90% of the classification work is done in `keywords.rs`,
 //! which creates enum sets to match keywords against.
 
-#![allow(non_snake_case, non_camel_case_types)]
-
 use enumset::EnumSet;
 
 use super::color::InvColor;
@@ -42,24 +40,21 @@ impl SpellType {
         // we use the icon for the magic school.
         let icon = if !itemkwds.is_disjoint(CLOAK_SPELLS) {
             Icon::ArmorCloak
-        // next pre-classified spells
-        } else if !itemkwds.is_disjoint(USE_FIRE_ICON) {
-            Icon::SpellFire
-        } else if !itemkwds.is_disjoint(SUMMON_SPELLS) {
-            Icon::SpellSummon
         } else if !itemkwds.is_disjoint(BUFF_SPELLS) {
             Icon::SpellStamina
         } else if !itemkwds.is_disjoint(CONTROL_SPELLS) {
             Icon::SpellControl
         } else if !itemkwds.is_disjoint(FEAR_SPELLS) {
             Icon::SpellFear
+        } else if !itemkwds.is_disjoint(LIGHT_SPELLS) {
+            Icon::SpellLight
+        } else if !itemkwds.is_disjoint(SUMMON_SPELLS) {
+            Icon::SpellSummon
         } else if !itemkwds.is_disjoint(PARALYZE_SPELLS) {
             Icon::SpellParalyze
         } else if !itemkwds.is_disjoint(VISION_SPELLS) {
             Icon::SpellEagleEye
-        } else if !itemkwds.is_disjoint(LIGHT_SPELLS) {
-            Icon::SpellLight
-        // bound weapons
+            // bound weapons
         } else if itemkwds.contains(SpellKeywords::SpellBound_Weapon) {
             if keywords.contains(&SpellKeywords::BoundBattleAxe) {
                 Icon::WeaponAxeTwoHanded
@@ -86,6 +81,14 @@ impl SpellType {
             Icon::ArmorShieldHeavy
         } else if !itemkwds.is_disjoint(HEALING_SPELLS) {
             Icon::SpellHeal
+        } else if !itemkwds.is_disjoint(EARTH_SPELLS) {
+            Icon::SpellEarth
+        } else if !itemkwds.is_disjoint(USE_FIRE_ICON) {
+            Icon::SpellFire
+        } else if !itemkwds.is_disjoint(SHOCK_SPELLS) {
+            Icon::SpellShock
+        } else if !itemkwds.is_disjoint(FROST_SPELLS) {
+            Icon::SpellFrost
         } else if !itemkwds.is_disjoint(STORM_SPELLS) {
             Icon::SpellLightningBlast
         } else if !itemkwds.is_disjoint(VAMPIRE_SPELLS) {
@@ -99,6 +102,12 @@ impl SpellType {
             Icon::SpellMoon
         } else if !itemkwds.is_disjoint(CONSTELLATION_SPELLS) {
             Icon::SpellConstellation
+        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
+            Icon::SpellArclight
+        } else if !itemkwds.is_disjoint(DRUID_SPELLS) {
+            Icon::SpellLeaves
+        } else if !itemkwds.is_disjoint(ROOT_SPELLS) {
+            Icon::SpellRoot
         // next one-off vanilla spells
         } else if itemkwds.contains(SpellKeywords::Archetype_Teleport) {
             Icon::SpellTeleport
@@ -118,8 +127,6 @@ impl SpellType {
             Icon::SpellReanimate
         } else if itemkwds.contains(SpellKeywords::Archetype_Reflect) {
             Icon::SpellReflect
-        } else if itemkwds.contains(SpellKeywords::Archetype_Root) {
-            Icon::SpellRoot
         } else if itemkwds.contains(SpellKeywords::MagicRune) {
             Icon::SpellRune
         } else if itemkwds.contains(SpellKeywords::Archetype_Silence) {
@@ -145,17 +152,15 @@ impl SpellType {
         {
             Icon::PowerWerewolf
         } else {
+            log::debug!("Falling back to magic school for spell; data: {data:?}");
+            log::debug!("    keywords: {tags:?}");
             match data.school {
                 School::Alteration => Icon::Alteration,
                 School::Conjuration => Icon::Conjuration,
                 School::Destruction => Icon::Destruction,
                 School::Illusion => Icon::Illusion,
                 School::Restoration => Icon::Restoration,
-                School::None => {
-                    log::debug!("Fell back to default spell variant; data: {data:?}");
-                    log::debug!("    keywords: {tags:?}");
-                    Icon::IconDefault
-                }
+                School::None => Icon::IconDefault,
             }
         };
 
@@ -192,7 +197,10 @@ impl SpellType {
             InvColor::Water
         } else if !itemkwds.is_disjoint(COLOR_WIND) {
             InvColor::Gray
+        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
+            InvColor::ShockArc
         } else {
+            log::debug!("no color specified for spell; keywords={tags:?};");
             match data.school {
                 // TODO identify common colors for magical schools
                 School::Alteration => InvColor::Eldritch,

@@ -22,15 +22,18 @@ pub enum InvColor {
     Brown,
     Copper,
     Daedric,
+    Druid,
     Dwarven,
     Eldritch,
     Fire,
+    FireVolcanic,
     Frost,
     Gold,
     Gray,
     Green,
     Holy,
     Legendary,
+    Magenta,
     Orange,
     Pink,
     Poison,
@@ -38,6 +41,7 @@ pub enum InvColor {
     Red,
     Shadow,
     Shock,
+    ShockArc,
     Silver,
     Sun,
     Water,
@@ -87,22 +91,26 @@ impl InvColor {
             InvColor::Brown => Color::rgb(165, 42, 42),
             InvColor::Copper => Color::rgb(184, 115, 51),
             InvColor::Daedric => Color::rgb(171, 35, 0),
+            InvColor::Druid => Color::rgb(118, 160, 113), // olive green
             InvColor::Dwarven => Color::rgb(255, 175, 0),
             InvColor::Eldritch => Color::rgb(150, 244, 200),
-            InvColor::Fire => Color::rgb(255, 76, 0), // orange
+            InvColor::Fire => Color::rgb(255, 40, 0), // red-orange
+            InvColor::FireVolcanic => Color::rgb(255, 40, 0), // same as fire; TODO
             InvColor::Frost => Color::rgb(0, 237, 255),
             InvColor::Gold => Color::rgb(218, 165, 32),
             InvColor::Gray => Color::rgb(128, 128, 128),
             InvColor::Green => Color::rgb(32, 223, 32),
             InvColor::Holy => Color::rgb(223, 188, 32),
             InvColor::Legendary => Color::rgb(255, 175, 0),
+            InvColor::Magenta => Color::rgb(255, 0, 255),
             InvColor::Orange => Color::rgb(255, 76, 0),
             InvColor::Pink => Color::rgb(219, 46, 114),
-            InvColor::Poison => Color::rgb(192, 128, 255), // purple
+            InvColor::Poison => Color::rgb(160, 240, 2), // yellow-green
             InvColor::Purple => Color::rgb(192, 128, 255),
             InvColor::Red => Color::rgb(255, 0, 0),
             InvColor::Shadow => Color::rgb(80, 0, 145), // dark purple
             InvColor::Shock => Color::rgb(255, 213, 0), // yellow
+            InvColor::ShockArc => Color::rgb(255, 76, 0),
             InvColor::Silver => Color::rgb(192, 192, 192),
             InvColor::Sun => Color::rgb(223, 188, 32),
             InvColor::Water => Color::rgb(212, 241, 249),
