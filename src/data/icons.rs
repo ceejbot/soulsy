@@ -82,7 +82,7 @@ pub enum Icon {
     ShoutMarkedForDeath,
     ShoutStormblast,
     Soulgem,
-    SpellArcane,
+    // SpellArcane,
     SpellArclight,
     // SpellBlast, // not yet used
     SpellBleed,
@@ -243,12 +243,12 @@ impl Icon {
             Icon::Shout => "shout.svg".to_string(),
             Icon::ShoutAnimalAllegiance => "shout_animal_allegiance.svg".to_string(),
             Icon::ShoutBreathAttack => "shout_breath_attack.svg".to_string(),
-            Icon::ShoutCyclone => "spell_cyclone.svg".to_string(),
+            Icon::ShoutCyclone => "shout_cyclone.svg".to_string(),
             Icon::ShoutIceForm => "shout_ice_form.svg".to_string(),
             Icon::ShoutMarkedForDeath => "shout_marked_death.svg".to_string(),
             Icon::ShoutStormblast => "shout_stormblast.svg".to_string(),
             Icon::Soulgem => "soulgem.svg".to_string(),
-            Icon::SpellArcane => "spell_arcane.svg".to_string(),
+            // Icon::SpellArcane => "spell_arcane.svg".to_string(),
             Icon::SpellArclight => "spell_arclight.svg".to_string(),
             // Icon::SpellBlast => "spell_blast.svg".to_string(),
             Icon::SpellBleed => "spell_bleed.svg".to_string(),
@@ -433,7 +433,7 @@ impl Icon {
 
             // Most spells won't ever reach this because they'll fall back to their
             // schools, but just in case.
-            Icon::SpellArcane => Icon::Destruction,
+            // Icon::SpellArcane => Icon::Destruction,
             Icon::SpellArclight => Icon::Destruction,
             // Icon::SpellBlast => Icon::Destruction,
             Icon::SpellBleed => Icon::Destruction,

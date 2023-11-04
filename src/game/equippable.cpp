@@ -170,8 +170,19 @@ namespace equippable
 				spell_type == RE::MagicSystem::SpellType::kPower)
 			{
 				logger::info("making HudItem for power: '{}'"sv, item_form->GetName());
-				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Power, std::move(chonker), form_string);
-				return item;
+				const auto* costliest = spell->GetCostliestEffectItem();
+				if (costliest)
+				{
+					const auto* effect = costliest->baseEffect;
+					if (effect)
+					{
+						effect->ForEachKeyword(KeywordAccumulator::collect);
+						auto& keywords          = KeywordAccumulator::mKeywords;
+						rust::Box<HudItem> item = hud_item_from_keywords(
+							ItemCategory::Power, *keywords, std::move(chonker), form_string, 1, false);
+						return item;
+					}
+				}
 			}
 
 			// Regular spells.
