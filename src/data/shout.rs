@@ -109,7 +109,8 @@ impl ShoutType {
 
         let icon = match variant {
             ShoutVariant::AnimalAllegiance => Icon::ShoutAnimalAllegiance,
-            ShoutVariant::ClearSkies => Icon::SpellSun,
+            ShoutVariant::CallDragon => Icon::ShoutCallDragon,
+            ShoutVariant::ClearSkies => Icon::ShoutClearSkies,
             ShoutVariant::Cyclone => Icon::ShoutCyclone,
             ShoutVariant::Dismay => Icon::SpellFear,
             ShoutVariant::Dragonrend => Icon::SpellBleed,
@@ -119,7 +120,7 @@ impl ShoutType {
             ShoutVariant::IceForm => Icon::ShoutIceForm,
             ShoutVariant::MarkedForDeath => Icon::ShoutMarkedForDeath,
             ShoutVariant::Slowtime => Icon::SpellTime,
-            ShoutVariant::StormCall => Icon::ShoutStormblast,
+            ShoutVariant::StormCall => Icon::ShoutStormcall,
             ShoutVariant::WhirlwindSprint => Icon::SpellSprint,
             _ => Icon::Shout,
         };
