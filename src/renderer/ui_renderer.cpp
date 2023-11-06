@@ -180,7 +180,7 @@ namespace ui
 		ID3D11Texture2D* p_texture = nullptr;
 		D3D11_SUBRESOURCE_DATA sub_resource;
 		sub_resource.pSysMem          = image_data;
-		sub_resource.SysMemPitch      = desc.Width;
+		sub_resource.SysMemPitch      = desc.Width * 4;
 		sub_resource.SysMemSlicePitch = 0;
 		device_->CreateTexture2D(&desc, &sub_resource, &p_texture);
 
