@@ -116,6 +116,7 @@ archive:
     cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}/SKSE/plugins/SoulsyHUD.pdb"
     rm "releases/${release_name}/scripts/source/TESV_Papyrus_Flags.flg"
     cd releases
+    rm -f "$release_name".7z
     7z a "$release_name".7z "$release_name"
     rm -rf "$release_name"
     cd ..
@@ -176,6 +177,7 @@ layouts:
     archive_dirs="SoulsyHUD_icon_pack SoulsyHUD_THICC_icon_pack SoulsyHUD_layout_square"
     cd releases
     for i in $archive_dirs; do
+        rm -f "$i.7z"
          ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"
         rm -rf "$i"
         echo "Built $i.7z"
