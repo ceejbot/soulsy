@@ -585,10 +585,11 @@ namespace ui
 
 	bool ui_renderer::lazyLoadIcon(std::string name)
 	{
-		auto target = ICON_MAP[iconFile];
+		auto key    = get_icon_key(name);
+		auto target = ICON_MAP[key];
 		if (target.width > 0) { return true; }
 
-		rust::Box<LoadedImage> img = load_icon_with_fallback(name, 512);
+		rust::Box<LoadedImage> img = load_icon_data(key, 512);
 
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)

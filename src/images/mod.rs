@@ -4,89 +4,90 @@ pub mod icons;
 use crate::plugin::LoadedImage;
 pub use icons::*;
 
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::sync::Mutex;
 
 use anyhow::{anyhow, Result};
+use once_cell::sync::Lazy;
 use resvg::usvg::TreeParsing;
 use resvg::*;
+
+static ICON_MAP: Lazy<Mutex<HashMap<Icon, Icon>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
+pub fn icon_map() -> std::sync::MutexGuard<'static, HashMap<Icon, Icon>> {
+    ICON_MAP
+        .lock()
+        .expect("Unrecoverable runtime problem: cannot acquire icon hashmap lock. Exiting.")
+}
 
 #[cfg(not(test))]
 const ICON_SVG_PATH: &str = "SKSE/plugins/resources/icons/";
 #[cfg(test)]
 const ICON_SVG_PATH: &str = "data/SKSE/plugins/resources/icons/";
 
-/// Called by C++, so it needs to handle all errors and signal its
-/// success or failure through some means other than a Result.
-/// In this case, a zero-length vector is a failure.
-pub fn load_icon_with_fallback(name: String, maxdim: u32) -> LoadedImage {
+/// C++ should call this before trying to load any icon data.
+pub fn get_icon_key(name: String) -> String {
     let icon: Icon = Icon::from_str(name.as_str()).unwrap_or_default();
-    icon_data_by_name(icon, maxdim)
+    key_for_icon(&icon).to_string()
 }
-
-/*
-struct LoadedImage {
-    width: u32,
-    height: u32,
-    buffer: Vec<u8>,
-}
-*/
 
 /// Called by C++, so it needs to handle all errors and signal its
 /// success or failure through some means other than a Result.
 /// In this case, a zero-length vector is a failure.
-fn icon_data_by_name(icon: Icon, maxdim: u32) -> LoadedImage {
-    let first_path = icon_to_path(&icon);
-    match load_and_rasterize(&first_path, maxdim) {
+pub fn load_icon_data(name: String, maxdim: u32) -> LoadedImage {
+    let icon: Icon = Icon::from_str(name.as_str()).unwrap_or_default();
+    match load_icon(&icon, maxdim) {
         Ok(v) => {
-            log::trace!("successfully rasterized icon image; icon='{icon:?}';");
+            log::trace!("successfully rasterized svg; icon={icon};");
             v
         }
         Err(e) => {
-            let fallback_path = icon_fallback_path(&icon);
-            log::error!("failed to load SVG; loading fallback; icon='{icon:?}'; error={e:?}");
-            load_and_rasterize(&fallback_path, maxdim).unwrap_or_else(|_| LoadedImage::default())
-        }
-    }
-}
-
-pub fn rasterize_svg(icon: Icon, maxdim: u32) -> LoadedImage {
-    let file_path = icon_to_path(&icon);
-    match load_and_rasterize(&file_path, maxdim) {
-        Ok(v) => {
-            log::trace!(
-                "successfully rasterized svg; path='{}';",
-                file_path.display()
-            );
-            v
-        }
-        Err(e) => {
-            log::error!(
-                "failed to load SVG; path='{}'; error={e:?}",
-                file_path.display()
-            );
+            log::error!("failed to load SVG; icon={icon}; error={e:?}");
             LoadedImage::default()
         }
     }
 }
 
-/// Rust wants to use this.
-pub fn load_icon(icon: Icon, maxdim: u32) -> Result<LoadedImage> {
-    let file_path = icon_to_path(&icon);
+/// Rust can call this to load rasterized icon image data.
+pub fn load_icon(icon: &Icon, maxdim: u32) -> Result<LoadedImage> {
+    let mapped = key_for_icon(icon);
+    let file_path = icon_to_path(&mapped);
     load_and_rasterize(&file_path, maxdim)
 }
 
+/// Look up the fallback-aware key for this icon.
+/// This allows us to load fallbacks once and hold at most one copy
+/// of that texture data in memory.
+fn key_for_icon(icon: &Icon) -> Icon {
+    let mut mapping = icon_map();
+    if let Some(result) = mapping.get(icon) {
+        return result.clone();
+    }
+
+    let first_path = icon_to_path(icon);
+    if first_path.exists() {
+        mapping.insert(icon.clone(), icon.clone());
+        icon.clone()
+    } else {
+        let fb = icon.fallback();
+        if icon_to_path(&fb).exists() {
+            mapping.insert(icon.clone(), fb.clone());
+            fb
+        } else {
+            mapping.insert(icon.clone(), Icon::IconDefault);
+            Icon::IconDefault
+        }
+    }
+}
+
+/// Turn an icon into a full path to its svg.
 fn icon_to_path(icon: &Icon) -> PathBuf {
     [ICON_SVG_PATH, icon.icon_file().as_str()].iter().collect()
 }
 
-fn icon_fallback_path(icon: &Icon) -> PathBuf {
-    [ICON_SVG_PATH, icon.fallback().icon_file().as_str()]
-        .iter()
-        .collect()
-}
-
-/// Internal shared implementation.
+/// Internal shared implementation: do the real work.
 fn load_and_rasterize(file_path: &PathBuf, maxdim: u32) -> Result<LoadedImage> {
     let buffer = std::fs::read(file_path)?;
     let opt = usvg::Options::default();
@@ -113,9 +114,9 @@ fn load_and_rasterize(file_path: &PathBuf, maxdim: u32) -> Result<LoadedImage> {
     rtree.render(transform, &mut pixmap.as_mut());
 
     Ok(LoadedImage {
-        buffer: pixmap.data().to_vec(),
         width: pixmap.width(),
         height: pixmap.height(),
+        buffer: pixmap.data().to_vec(),
     })
 }
 
