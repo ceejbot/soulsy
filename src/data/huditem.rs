@@ -92,6 +92,10 @@ impl HudItem {
         self.kind().icon().icon_file()
     }
 
+    pub fn icon_key(&self) -> String {
+        crate::images::key_for_icon(self.kind().icon()).to_string()
+    }
+
     pub fn icon_fallback(&self) -> String {
         self.kind().icon_fallback().icon_file()
     }

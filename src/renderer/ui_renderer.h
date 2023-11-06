@@ -104,7 +104,7 @@ namespace ui
 		static TextureData get_key_icon(uint32_t a_key);
 		static void load_font();
 
-		static void load_icon_images(std::map<std::string, TextureData>& a_struct, std::string& file_path);
+		// static void load_icon_images(std::map<std::string, TextureData>& a_struct, std::string& file_path);
 		static bool lazyLoadIcon(std::string name);
 
 	public:

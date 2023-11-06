@@ -465,16 +465,19 @@ namespace ui
 			if (slotLayout.icon_color.a > 0)
 			{
 				const auto iconColor = colorizeIcons ? entry->color() : slotLayout.icon_color;
-				auto iconFile        = std::string(entry->icon_file());
-				if (ICON_MAP[iconFile].width == 0) { iconFile = std::string(entry->icon_fallback()); }
-				const auto [texture, width, height] = ICON_MAP[iconFile];
-				const auto scale                    = width > height ? (slotLayout.icon_size.x * globalScale / width) :
-				                                                       (slotLayout.icon_size.y * globalScale / height);
-				const auto size                     = ImVec2(width * scale, height * scale);
-				const auto icon_pos                 = ImVec2(slot_center.x + slotLayout.icon_offset.x * globalScale,
-                    slot_center.y + slotLayout.icon_offset.y * globalScale);
+				auto iconkey         = std::string(entry->icon_key());
+				if (lazyLoadIcon(iconkey))
+				{
+					const auto [texture, width, height] = ICON_MAP[iconkey];
+					const auto scale    = width > height ? (slotLayout.icon_size.x * globalScale / width) :
+					                                       (slotLayout.icon_size.y * globalScale / height);
+					const auto size     = ImVec2(width * scale, height * scale);
+					const auto icon_pos = ImVec2(slot_center.x + slotLayout.icon_offset.x * globalScale,
+						slot_center.y + slotLayout.icon_offset.y * globalScale);
 
-				drawElement(texture, slot_center, size, 0.f, iconColor);
+					drawElement(texture, slot_center, size, 0.f, iconColor);
+				}
+				else { logger::debug("lazy load for icon key {} failed; not drawing icon.", iconkey); }
 			}
 
 			// Now decide if we should draw the text showing the item's name.
@@ -554,6 +557,7 @@ namespace ui
 		ImGui::End();
 	}
 
+	/*
 	void ui_renderer::load_icon_images(std::map<std::string, TextureData>& out_struct, std::string& icondir)
 	{
 		const auto needed_icons = icon_files();
@@ -582,14 +586,25 @@ namespace ui
 			else { logger::info("TODO: Add an icon to this pack for {}"sv, entrypath.filename().string().c_str()); }
 		}
 	}
+	*/
 
 	bool ui_renderer::lazyLoadIcon(std::string name)
 	{
-		auto key    = get_icon_key(name);
+		auto key    = std::string(get_icon_key(name));
 		auto target = ICON_MAP[key];
-		if (target.width > 0) { return true; }
+		if (target.width > 0)
+		{
+			logger::debug("cache hit for icon key {}", key);
+			return true;
+		}
 
-		rust::Box<LoadedImage> img = load_icon_data(key, 512);
+		LoadedImage loadedImg = load_icon_data(key, 512);
+		if (loadedImg.width == 0) { return false; }
+		logger::debug("Making a texture for {}; width={}; height={}; data len={}",
+			key,
+			loadedImg.width,
+			loadedImg.height,
+			loadedImg.buffer.size());
 
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)
@@ -602,8 +617,8 @@ namespace ui
 		// Create texture
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.Width            = img->width;
-		desc.Height           = img->height;
+		desc.Width            = loadedImg.width;
+		desc.Height           = loadedImg.height;
 		desc.MipLevels        = 1;
 		desc.ArraySize        = 1;
 		desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -614,9 +629,9 @@ namespace ui
 		desc.MiscFlags        = 0;
 
 		// copy image_data into the subresource
-		auto image_data = (unsigned char*)malloc(img->buffer.size());
+		auto image_data = (unsigned char*)malloc(loadedImg.buffer.size());
 		int counter     = 0;
-		for (auto byte : img->buffer) { image_data[counter++] = static_cast<char>(byte); }
+		for (auto byte : loadedImg.buffer) { image_data[counter++] = static_cast<unsigned char>(byte); }
 
 		ID3D11Texture2D* p_texture = nullptr;
 		D3D11_SUBRESOURCE_DATA sub_resource;
@@ -625,6 +640,8 @@ namespace ui
 		sub_resource.SysMemSlicePitch = 0;
 		device_->CreateTexture2D(&desc, &sub_resource, &p_texture);
 
+		if (p_texture == nullptr) { return false; }
+
 		// Create texture view
 		D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
 		ZeroMemory(&srv_desc, sizeof srv_desc);
@@ -632,13 +649,18 @@ namespace ui
 		srv_desc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srv_desc.Texture2D.MipLevels       = desc.MipLevels;
 		srv_desc.Texture2D.MostDetailedMip = 0;
-		forwarder->CreateShaderResourceView(p_texture, &srv_desc, out_srv);
+		forwarder->CreateShaderResourceView(p_texture, &srv_desc, &target.texture);
 		p_texture->Release();
 
 		free(image_data);
 
-		target.width  = image_width;
-		target.height = image_height;
+		target.width  = loadedImg.width;
+		target.height = loadedImg.height;
+
+		logger::debug("we think we succeeded making a texture for icon {}; width={}; data len={}",
+			key,
+			target.width,
+			sizeof(target.texture));
 
 		return true;
 	}
@@ -899,7 +921,7 @@ namespace ui
 		load_images(gamepad_ps_icon_name_map, PS5_BUTTON_MAP, key_directory);
 		load_images(gamepad_xbox_icon_name_map, XBOX_BUTTON_MAP, key_directory);
 
-		load_icon_images(ICON_MAP, icon_directory);
+		// load_icon_images(ICON_MAP, icon_directory);
 
 		load_animation_frames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());

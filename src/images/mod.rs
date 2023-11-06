@@ -22,9 +22,6 @@ pub fn icon_map() -> std::sync::MutexGuard<'static, HashMap<Icon, Icon>> {
         .expect("Unrecoverable runtime problem: cannot acquire icon hashmap lock. Exiting.")
 }
 
-#[cfg(not(test))]
-const ICON_SVG_PATH: &str = "SKSE/plugins/resources/icons/";
-#[cfg(test)]
 const ICON_SVG_PATH: &str = "data/SKSE/plugins/resources/icons/";
 
 /// C++ should call this before trying to load any icon data.
@@ -40,7 +37,7 @@ pub fn load_icon_data(name: String, maxdim: u32) -> LoadedImage {
     let icon: Icon = Icon::from_str(name.as_str()).unwrap_or_default();
     match load_icon(&icon, maxdim) {
         Ok(v) => {
-            log::trace!("successfully rasterized svg; icon={icon};");
+            log::debug!("successfully rasterized svg; icon={icon}; width={}; data len={};", v.width, v.buffer.len());
             v
         }
         Err(e) => {
@@ -60,7 +57,7 @@ pub fn load_icon(icon: &Icon, maxdim: u32) -> Result<LoadedImage> {
 /// Look up the fallback-aware key for this icon.
 /// This allows us to load fallbacks once and hold at most one copy
 /// of that texture data in memory.
-fn key_for_icon(icon: &Icon) -> Icon {
+pub fn key_for_icon(icon: &Icon) -> Icon {
     let mut mapping = icon_map();
     if let Some(result) = mapping.get(icon) {
         return result.clone();
@@ -71,11 +68,13 @@ fn key_for_icon(icon: &Icon) -> Icon {
         mapping.insert(icon.clone(), icon.clone());
         icon.clone()
     } else {
+        log::debug!("first path did not exist: {}", first_path.display());
         let fb = icon.fallback();
         if icon_to_path(&fb).exists() {
             mapping.insert(icon.clone(), fb.clone());
             fb
         } else {
+            log::debug!("second path did not exist: {}", icon_to_path(&fb).display());
             mapping.insert(icon.clone(), Icon::IconDefault);
             Icon::IconDefault
         }

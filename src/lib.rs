@@ -311,6 +311,7 @@ pub mod plugin {
         type HudItem;
         /// Which icon to use for diplaying this item.
         fn icon_file(self: &HudItem) -> String;
+        fn icon_key(self: &HudItem) -> String;
         fn icon_fallback(self: &HudItem) -> String;
         fn color(self: &HudItem) -> Color;
         /// Get the item name as a possibly-lossy utf8 string.
