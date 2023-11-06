@@ -180,7 +180,7 @@ namespace ui
 		ID3D11Texture2D* p_texture = nullptr;
 		D3D11_SUBRESOURCE_DATA sub_resource;
 		sub_resource.pSysMem          = image_data;
-		sub_resource.SysMemPitch      = desc.Width * 4;
+		sub_resource.SysMemPitch      = desc.Width;
 		sub_resource.SysMemSlicePitch = 0;
 		device_->CreateTexture2D(&desc, &sub_resource, &p_texture);
 
@@ -590,9 +590,8 @@ namespace ui
 
 	bool ui_renderer::lazyLoadIcon(std::string name)
 	{
-		auto key    = std::string(get_icon_key(name));
-		auto target = ICON_MAP[key];
-		if (target.width > 0)
+		auto key = std::string(get_icon_key(name));
+		if (ICON_MAP[key].width > 0)
 		{
 			logger::debug("cache hit for icon key {}", key);
 			return true;
@@ -649,18 +648,18 @@ namespace ui
 		srv_desc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srv_desc.Texture2D.MipLevels       = desc.MipLevels;
 		srv_desc.Texture2D.MostDetailedMip = 0;
-		forwarder->CreateShaderResourceView(p_texture, &srv_desc, &target.texture);
+		forwarder->CreateShaderResourceView(p_texture, &srv_desc, &ICON_MAP[key].texture);
 		p_texture->Release();
 
 		free(image_data);
 
-		target.width  = loadedImg.width;
-		target.height = loadedImg.height;
+		ICON_MAP[key].width  = loadedImg.width;
+		ICON_MAP[key].height = loadedImg.height;
 
 		logger::debug("we think we succeeded making a texture for icon {}; width={}; data len={}",
 			key,
-			target.width,
-			sizeof(target.texture));
+			ICON_MAP[key].width,
+			sizeof(ICON_MAP[key].texture));
 
 		return true;
 	}
