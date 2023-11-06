@@ -62,7 +62,7 @@ impl HasIcon for AmmoType {
     }
 
     fn icon(&self) -> &Icon {
-        &Icon::Arrow
+        &Icon::AmmoArrow
     }
 }
 

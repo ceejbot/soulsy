@@ -97,14 +97,14 @@ impl HasKeywords for WeaponType {
             } else if WHIPS.contains(*subtype) {
                 Some(Icon::WeaponWhip)
             } else if matches!(subtype, WeaponTag::OCF_WeapTypePickaxe1H) {
-                Some(Icon::WeaponPickaxe)
+                Some(Icon::ToolPickaxe)
             } else if matches!(
                 subtype,
                 WeaponTag::OCF_WeapTypeWoodaxe1H | WeaponTag::OCF_WeapTypeWoodHatchet1H
             ) {
                 Some(Icon::WeaponWoodAxe)
             } else if matches!(subtype, WeaponTag::OCF_WeapTypeFishingRod1H) {
-                Some(Icon::WeaponFishingRod)
+                Some(Icon::ToolFishingRod)
             } else if matches!(
                 subtype,
                 WeaponTag::WeapTypeClaw | WeaponTag::OCF_WeapTypeClaw1H

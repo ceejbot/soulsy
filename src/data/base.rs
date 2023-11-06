@@ -73,8 +73,8 @@ impl HasIcon for LightType {
 
     fn icon(&self) -> &Icon {
         match self {
-            LightType::Torch => &Icon::Torch,
-            LightType::Lantern => &Icon::Lantern,
+            LightType::Torch => &Icon::MiscTorch,
+            LightType::Lantern => &Icon::MiscLantern,
         }
     }
 }
@@ -110,11 +110,11 @@ impl BaseType {
     pub fn icon_fallback(&self) -> Icon {
         match self {
             BaseType::Empty => Icon::IconDefault,
-            BaseType::Ammo(_) => Icon::Arrow,
+            BaseType::Ammo(_) => Icon::AmmoArrow,
             BaseType::Armor(_) => Icon::ArmorHeavy,
             BaseType::Food(_) => Icon::Food,
             BaseType::HandToHand => Icon::HandToHand,
-            BaseType::Light(_) => Icon::Torch,
+            BaseType::Light(_) => Icon::MiscTorch,
             BaseType::Potion(_) => Icon::PotionDefault,
             BaseType::PotionProxy(_) => Icon::PotionDefault,
             BaseType::Power(_) => Icon::Power,
@@ -383,7 +383,7 @@ mod tests {
         assert!(!BaseType::Light(LightType::Torch).is_utility());
 
         // this is worn
-        let lantern = BaseType::Armor(ArmorType::new(Icon::Lantern, InvColor::Sun));
+        let lantern = BaseType::Armor(ArmorType::new(Icon::MiscLantern, InvColor::Sun));
         assert!(lantern.is_utility());
         assert!(!lantern.left_hand_ok());
     }

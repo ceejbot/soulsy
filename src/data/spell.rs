@@ -15,7 +15,7 @@ use super::color::InvColor;
 use super::icons::Icon;
 use super::keywords::*;
 use super::magic::{School, SpellData};
-use super::{strings_to_keywords, HasIcon};
+use super::{strings_to_enumset, strings_to_keywords, HasIcon};
 use crate::plugin::Color;
 
 #[derive(Default, Clone, Debug, Eq, Hash, PartialEq)]
@@ -28,134 +28,130 @@ pub struct SpellType {
 impl SpellType {
     pub fn new(data: SpellData, tags: Vec<String>) -> Self {
         log::debug!("tags: {tags:?};");
-        let keywords = strings_to_keywords::<SpellKeywords>(&tags);
-        let mut itemkwds: EnumSet<SpellKeywords> = EnumSet::new();
-        keywords.iter().for_each(|xs| {
-            itemkwds.insert(*xs);
-        });
+        let tagset: EnumSet<SpellKeywords> = strings_to_enumset(&tags);
 
         // Icons. We look to see if the keywords contain any of the words that
         // match certain known icon art sets. If we have a specific icon for
         // a spell type, e.g. cloak spells, we use that. We then try to use an
         // icon for a mod spell pack, e.g., constellation. If all else fails,
         // we use the icon for the magic school.
-        let icon = if !itemkwds.is_disjoint(ICON_CLOAK) {
+        let icon = if !tagset.is_disjoint(ICON_CLOAK) {
             Icon::ArmorCloak
-        } else if !itemkwds.is_disjoint(ICON_BUFF) {
+        } else if !tagset.is_disjoint(ICON_BUFF) {
             Icon::SpellStamina
-        } else if !itemkwds.is_disjoint(ICON_CONTROL) {
+        } else if !tagset.is_disjoint(ICON_CONTROL) {
             Icon::SpellControl
-        } else if !itemkwds.is_disjoint(ICON_FEAR) {
+        } else if !tagset.is_disjoint(ICON_FEAR) {
             Icon::SpellFear
-        } else if !itemkwds.is_disjoint(ICON_LIGHT) {
+        } else if !tagset.is_disjoint(ICON_LIGHT) {
             Icon::SpellLight
-        } else if !itemkwds.is_disjoint(ICON_SUMMON) {
+        } else if !tagset.is_disjoint(ICON_SUMMON) {
             Icon::SpellSummon
-        } else if !itemkwds.is_disjoint(ICON_PARALYZE) {
+        } else if !tagset.is_disjoint(ICON_PARALYZE) {
             Icon::SpellParalyze
-        } else if !itemkwds.is_disjoint(ICON_VISION) {
+        } else if !tagset.is_disjoint(ICON_VISION) {
             Icon::SpellEagleEye
             // bound weapons
-        } else if itemkwds.contains(SpellKeywords::SpellBound_Weapon) {
-            if keywords.contains(&SpellKeywords::BoundBattleAxe) {
+        } else if tagset.contains(SpellKeywords::SpellBound_Weapon) {
+            if tagset.contains(SpellKeywords::BoundBattleAxe) {
                 Icon::WeaponAxeTwoHanded
-            } else if keywords.contains(&SpellKeywords::BoundBow) {
+            } else if tagset.contains(SpellKeywords::BoundBow) {
                 Icon::WeaponBow
-            } else if keywords.contains(&SpellKeywords::BoundDagger) {
+            } else if tagset.contains(SpellKeywords::BoundDagger) {
                 Icon::WeaponDagger
-            } else if keywords.contains(&SpellKeywords::BoundGreatsword) {
+            } else if tagset.contains(SpellKeywords::BoundGreatsword) {
                 Icon::WeaponSwordTwoHanded
-            } else if keywords.contains(&SpellKeywords::BoundHammer) {
+            } else if tagset.contains(SpellKeywords::BoundHammer) {
                 Icon::WeaponHammer
-            } else if keywords.contains(&SpellKeywords::BoundMace) {
+            } else if tagset.contains(SpellKeywords::BoundMace) {
                 Icon::WeaponMace
-            } else if keywords.contains(&SpellKeywords::BoundShield) {
+            } else if tagset.contains(SpellKeywords::BoundShield) {
                 Icon::ArmorShieldHeavy
-            } else if keywords.contains(&SpellKeywords::BoundSword) {
+            } else if tagset.contains(SpellKeywords::BoundSword) {
                 Icon::WeaponSwordOneHanded
-            } else if keywords.contains(&SpellKeywords::BoundWarAxe) {
+            } else if tagset.contains(SpellKeywords::BoundWarAxe) {
                 Icon::WeaponAxeOneHanded
             } else {
                 Icon::WeaponSwordOneHanded
             }
-        } else if itemkwds.contains(SpellKeywords::SpellBound_Armor) {
+        } else if tagset.contains(SpellKeywords::SpellBound_Armor) {
             Icon::ArmorShieldHeavy
-        } else if !itemkwds.is_disjoint(ICON_HEALING) {
+        } else if !tagset.is_disjoint(ICON_HEALING) {
             Icon::SpellHeal
-        } else if !itemkwds.is_disjoint(ICON_EARTH) {
+        } else if !tagset.is_disjoint(ICON_EARTH) {
             Icon::SpellEarth
-        } else if !itemkwds.is_disjoint(ICON_STORM) {
+        } else if !tagset.is_disjoint(ICON_STORM) {
             Icon::SpellLightningBlast
-        } else if !itemkwds.is_disjoint(ICON_VAMPIRE) {
+        } else if !tagset.is_disjoint(ICON_VAMPIRE) {
             Icon::SpellVampire
-        } else if !itemkwds.is_disjoint(ICON_DRUID) {
+        } else if !tagset.is_disjoint(ICON_DRUID) {
             Icon::SpellLeaves
-        } else if !itemkwds.is_disjoint(ICON_ROOT) {
+        } else if !tagset.is_disjoint(ICON_ROOT) {
             Icon::SpellRoot
-        } else if !itemkwds.is_disjoint(ICON_CIRCLE) {
+        } else if !tagset.is_disjoint(ICON_CIRCLE) {
             Icon::SpellCircle
-        } else if !itemkwds.is_disjoint(ICON_HOLY) {
+        } else if !tagset.is_disjoint(ICON_HOLY) {
             Icon::SpellSun
         // next one-off vanilla spells
-        } else if itemkwds.contains(SpellKeywords::Archetype_Teleport) {
+        } else if tagset.contains(SpellKeywords::Archetype_Teleport) {
             Icon::SpellTeleport
-        } else if itemkwds.contains(SpellKeywords::SpellTime) {
+        } else if tagset.contains(SpellKeywords::SpellTime) {
             Icon::SpellTime
-        } else if itemkwds.contains(SpellKeywords::Archetype_Detect) {
+        } else if tagset.contains(SpellKeywords::Archetype_Detect) {
             Icon::SpellDetect
-        } else if itemkwds.contains(SpellKeywords::Archetype_WeaponBuff) {
+        } else if tagset.contains(SpellKeywords::Archetype_WeaponBuff) {
             Icon::SpellSharpen
-        } else if itemkwds.contains(SpellKeywords::Archetype_Guide) {
+        } else if tagset.contains(SpellKeywords::Archetype_Guide) {
             Icon::SpellWisp
-        } else if itemkwds.contains(SpellKeywords::Archetype_CarryWeight) {
+        } else if tagset.contains(SpellKeywords::Archetype_CarryWeight) {
             Icon::SpellFeather
-        } else if itemkwds.contains(SpellKeywords::Archetype_Cure) {
+        } else if tagset.contains(SpellKeywords::Archetype_Cure) {
             Icon::SpellCure
-        } else if itemkwds.contains(SpellKeywords::SpellReanimate) {
+        } else if tagset.contains(SpellKeywords::SpellReanimate) {
             Icon::SpellReanimate
-        } else if itemkwds.contains(SpellKeywords::Archetype_Reflect) {
+        } else if tagset.contains(SpellKeywords::Archetype_Reflect) {
             Icon::SpellReflect
-        } else if itemkwds.contains(SpellKeywords::MagicRune) {
+        } else if tagset.contains(SpellKeywords::MagicRune) {
             Icon::SpellRune
-        } else if itemkwds.contains(SpellKeywords::Archetype_Silence) {
+        } else if tagset.contains(SpellKeywords::Archetype_Silence) {
             Icon::SpellSilence
-        } else if itemkwds.contains(SpellKeywords::SpellSoulTrap) {
+        } else if tagset.contains(SpellKeywords::SpellSoulTrap) {
             Icon::SpellSoultrap
-        } else if itemkwds.contains(SpellKeywords::MagicSlow) {
+        } else if tagset.contains(SpellKeywords::MagicSlow) {
             Icon::SpellSlow
-        } else if itemkwds.contains(SpellKeywords::MagicNightEye) {
+        } else if tagset.contains(SpellKeywords::MagicNightEye) {
             Icon::SpellDetect
-        } else if itemkwds.contains(SpellKeywords::MagicTurnUndead) {
+        } else if tagset.contains(SpellKeywords::MagicTurnUndead) {
             Icon::SpellSun
-        } else if itemkwds.contains(SpellKeywords::MagicWard) {
+        } else if tagset.contains(SpellKeywords::MagicWard) {
             Icon::SpellWard
-        } else if itemkwds.contains(SpellKeywords::MagicWeaponSpeed) {
+        } else if tagset.contains(SpellKeywords::MagicWeaponSpeed) {
             Icon::SpellElementalFury
-        } else if itemkwds.contains(SpellKeywords::MagicSummonFamiliar) {
+        } else if tagset.contains(SpellKeywords::MagicSummonFamiliar) {
             Icon::SpellSummon
-        } else if itemkwds.contains(SpellKeywords::MagicSummonUndead) {
+        } else if tagset.contains(SpellKeywords::MagicSummonUndead) {
             Icon::SpellReanimate
-        } else if itemkwds.contains(SpellKeywords::SpellShapechange_Werebeast)
-            || itemkwds.contains(SpellKeywords::SpellShapechange)
+        } else if tagset.contains(SpellKeywords::SpellShapechange_Werebeast)
+            || tagset.contains(SpellKeywords::SpellShapechange)
         {
             Icon::PowerWerewolf
             // next icon packs
-        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
+        } else if !tagset.is_disjoint(DARENII_ARCLIGHT) {
             Icon::SpellArclight
-        } else if !itemkwds.is_disjoint(DARENII_DESECRATION) {
+        } else if !tagset.is_disjoint(DARENII_DESECRATION) {
             Icon::SpellDesecration
-        } else if !itemkwds.is_disjoint(DARENII_STELLARIS) {
+        } else if !tagset.is_disjoint(DARENII_STELLARIS) {
             Icon::SpellStars
-        } else if !itemkwds.is_disjoint(DARENII_LUNARIS) {
+        } else if !tagset.is_disjoint(DARENII_LUNARIS) {
             Icon::SpellMoon
-        } else if !itemkwds.is_disjoint(CONSTELLATION_SPELLS) {
+        } else if !tagset.is_disjoint(CONSTELLATION_SPELLS) {
             Icon::SpellConstellation
         // now really generic damage spells
-        } else if !itemkwds.is_disjoint(ICON_FIRE) {
+        } else if !tagset.is_disjoint(ICON_FIRE) {
             Icon::SpellFire
-        } else if !itemkwds.is_disjoint(ICON_SHOCK) {
+        } else if !tagset.is_disjoint(ICON_SHOCK) {
             Icon::SpellShock
-        } else if !itemkwds.is_disjoint(ICON_FROST) {
+        } else if !tagset.is_disjoint(ICON_FROST) {
             Icon::SpellFrost
         } else {
             log::debug!("Falling back to magic school for spell; data: {data:?}");
@@ -175,41 +171,41 @@ impl SpellType {
         let color_kwds = strings_to_keywords::<InvColor>(&tags);
         let color = if let Some(assigned) = color_kwds.first() {
             assigned.clone()
-        } else if !itemkwds.is_disjoint(DARENII_ARCLIGHT) {
+        } else if !tagset.is_disjoint(DARENII_ARCLIGHT) {
             InvColor::ShockArc
-        } else if !itemkwds.is_disjoint(COLOR_ASH) {
+        } else if !tagset.is_disjoint(COLOR_ASH) {
             InvColor::Ash
-        } else if !itemkwds.is_disjoint(COLOR_BLOOD) {
+        } else if !tagset.is_disjoint(COLOR_BLOOD) {
             InvColor::Blood
-        } else if !itemkwds.is_disjoint(COLOR_BOUND_ITEMS) {
+        } else if !tagset.is_disjoint(COLOR_BOUND_ITEMS) {
             InvColor::Bound
-        } else if !itemkwds.is_disjoint(COLOR_EARTH) {
+        } else if !tagset.is_disjoint(COLOR_EARTH) {
             InvColor::Brown
-        } else if !itemkwds.is_disjoint(COLOR_ELDRITCH) {
+        } else if !tagset.is_disjoint(COLOR_ELDRITCH) {
             InvColor::Eldritch
-        } else if !itemkwds.is_disjoint(COLOR_HOLY) {
+        } else if !tagset.is_disjoint(COLOR_HOLY) {
             InvColor::Holy
-        } else if !itemkwds.is_disjoint(DARENII_LUNARIS) {
+        } else if !tagset.is_disjoint(DARENII_LUNARIS) {
             InvColor::Lunar
-        } else if !itemkwds.is_disjoint(COLOR_NECROTIC) {
+        } else if !tagset.is_disjoint(COLOR_NECROTIC) {
             InvColor::Necrotic
-        } else if !itemkwds.is_disjoint(COLOR_POISON) {
+        } else if !tagset.is_disjoint(COLOR_POISON) {
             InvColor::Poison
-        } else if !itemkwds.is_disjoint(COLOR_SHADOW) {
+        } else if !tagset.is_disjoint(COLOR_SHADOW) {
             InvColor::Shadow
-        } else if !itemkwds.is_disjoint(COLOR_SUN) {
+        } else if !tagset.is_disjoint(COLOR_SUN) {
             InvColor::Sun
-        } else if !itemkwds.is_disjoint(COLOR_WATER) {
+        } else if !tagset.is_disjoint(COLOR_WATER) {
             InvColor::Water
-        } else if !itemkwds.is_disjoint(COLOR_WIND) {
+        } else if !tagset.is_disjoint(COLOR_WIND) {
             InvColor::Gray
-        } else if !itemkwds.is_disjoint(ICON_HEALING) {
+        } else if !tagset.is_disjoint(ICON_HEALING) {
             InvColor::Green
-        } else if !itemkwds.is_disjoint(COLOR_FIRE) {
+        } else if !tagset.is_disjoint(COLOR_FIRE) {
             InvColor::Fire
-        } else if !itemkwds.is_disjoint(COLOR_FROST) {
+        } else if !tagset.is_disjoint(COLOR_FROST) {
             InvColor::Frost
-        } else if !itemkwds.is_disjoint(COLOR_SHOCK) {
+        } else if !tagset.is_disjoint(COLOR_SHOCK) {
             InvColor::Shock
         } else {
             log::debug!("no color specified for spell; keywords={tags:?};");

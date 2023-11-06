@@ -5,7 +5,7 @@ use strum::{Display, EnumString};
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{strings_to_keywords, HasIcon, HasKeywords};
+use super::{strings_to_enumset, HasIcon, HasKeywords};
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -37,78 +37,66 @@ impl HasIcon for ArmorType {
 impl HasKeywords for ArmorType {
     fn classify(name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
         let color = super::color::color_from_keywords(&keywords);
-        let tags: Vec<ArmorTag> = strings_to_keywords::<ArmorTag>(&keywords);
+        let tagset: EnumSet<ArmorTag> = strings_to_enumset(&keywords);
 
-        let weight = if let Some(w) = tags.iter().find_map(|xs| {
-            if LIGHT.contains(*xs) {
-                Some(ArmorWeight::Light)
-            } else if HEAVY.contains(*xs) {
-                Some(ArmorWeight::Heavy)
-            } else if CLOTHES.contains(*xs) {
-                Some(ArmorWeight::Clothing)
-            } else {
-                None
-            }
-        }) {
-            w
+        let weight = if !WEIGHT_LIGHT.is_disjoint(tagset) {
+            ArmorWeight::Light
+        } else if !WEIGHT_HEAVY.is_disjoint(tagset) {
+            ArmorWeight::Heavy
         } else {
             ArmorWeight::Clothing
         };
 
-        let icon = if let Some(i) = tags.iter().find_map(|tag| {
-            if AMULETS.contains(*tag) {
-                Some(Icon::ArmorAmulet)
-            } else if CIRCLETS.contains(*tag) {
-                Some(Icon::ArmorCirclet)
-            } else if HEAD.contains(*tag) {
-                match weight {
-                    ArmorWeight::Clothing => Some(Icon::ArmorClothingHead),
-                    ArmorWeight::Light => Some(Icon::ArmorLightHead),
-                    ArmorWeight::Heavy => Some(Icon::ArmorHeavyHead),
-                }
-            } else if HANDS.contains(*tag) {
-                match weight {
-                    ArmorWeight::Clothing => Some(Icon::ArmorClothingHands),
-                    ArmorWeight::Light => Some(Icon::ArmorLightHands),
-                    ArmorWeight::Heavy => Some(Icon::ArmorHeavyHands),
-                }
-            } else if BODY.contains(*tag) {
-                match weight {
-                    ArmorWeight::Clothing => Some(Icon::ArmorClothing),
-                    ArmorWeight::Light => Some(Icon::ArmorLight),
-                    ArmorWeight::Heavy => Some(Icon::ArmorHeavy),
-                }
-            } else if FEET.contains(*tag) {
-                match weight {
-                    ArmorWeight::Clothing => Some(Icon::ArmorClothingFeet),
-                    ArmorWeight::Light => Some(Icon::ArmorLightFeet),
-                    ArmorWeight::Heavy => Some(Icon::ArmorHeavyFeet),
-                }
-            } else if SHIELDS.contains(*tag) {
-                match weight {
-                    ArmorWeight::Clothing => Some(Icon::ArmorShieldLight),
-                    ArmorWeight::Light => Some(Icon::ArmorShieldLight),
-                    ArmorWeight::Heavy => Some(Icon::ArmorShieldHeavy),
-                }
-            } else if RINGS.contains(*tag) {
-                Some(Icon::ArmorRing)
-            } else if CLOAKS.contains(*tag) {
-                Some(Icon::ArmorCloak)
-            } else if MASKS.contains(*tag) {
-                Some(Icon::ArmorMask)
-            } else if BELTS.contains(*tag) {
-                Some(Icon::ArmorBelt)
-            } else if LIGHTS.contains(*tag) {
-                Some(Icon::Lantern)
-            } else if JEWELRY.contains(*tag) {
-                Some(Icon::ArmorEarring)
-            } else if matches!(tag, ArmorTag::OCF_BagTypeBackpack) {
-                Some(Icon::ArmorBackpack)
-            } else {
-                None
+        let icon = if !tagset.is_disjoint(AMULETS) {
+            Icon::ArmorAmulet
+        } else if !CIRCLETS.is_disjoint(tagset) {
+            Icon::ArmorCirclet
+        } else if !HEAD.is_disjoint(tagset) {
+            match weight {
+                ArmorWeight::Clothing => Icon::ArmorClothingHead,
+                ArmorWeight::Light => Icon::ArmorLightHead,
+                ArmorWeight::Heavy => Icon::ArmorHeavyHead,
             }
-        }) {
-            i
+        } else if !HANDS.is_disjoint(tagset) {
+            match weight {
+                ArmorWeight::Clothing => Icon::ArmorClothingHands,
+                ArmorWeight::Light => Icon::ArmorLightHands,
+                ArmorWeight::Heavy => Icon::ArmorHeavyHands,
+            }
+        } else if !BODY.is_disjoint(tagset) {
+            match weight {
+                ArmorWeight::Clothing => Icon::ArmorClothing,
+                ArmorWeight::Light => Icon::ArmorLight,
+                ArmorWeight::Heavy => Icon::ArmorHeavy,
+            }
+        } else if !FEET.is_disjoint(tagset) {
+            match weight {
+                ArmorWeight::Clothing => Icon::ArmorClothingFeet,
+                ArmorWeight::Light => Icon::ArmorLightFeet,
+                ArmorWeight::Heavy => Icon::ArmorHeavyFeet,
+            }
+        } else if !SHIELDS.is_disjoint(tagset) {
+            match weight {
+                ArmorWeight::Clothing => Icon::ArmorShieldLight,
+                ArmorWeight::Light => Icon::ArmorShieldLight,
+                ArmorWeight::Heavy => Icon::ArmorShieldHeavy,
+            }
+        } else if !RINGS.is_disjoint(tagset) {
+            Icon::ArmorRing
+        } else if !CLOAKS.is_disjoint(tagset) {
+            Icon::ArmorCloak
+        } else if !MASKS.is_disjoint(tagset) {
+            Icon::ArmorMask
+        } else if !BELTS.is_disjoint(tagset) {
+            Icon::ArmorBelt
+        } else if !LIGHTS.is_disjoint(tagset) {
+            Icon::MiscLantern
+        } else if !JEWELRY.is_disjoint(tagset) {
+            Icon::ArmorEarring
+        } else if !BAGS.is_disjoint(tagset) {
+            Icon::ArmorBackpack
+        } else if tagset.contains(ArmorTag::OCF_MiscQuiver) {
+            Icon::ArmorQuiver
         } else {
             log::warn!("We couldn't classify this armor! name='{name}'; keywords: {keywords:?}");
             Icon::ArmorHeavy
@@ -125,27 +113,7 @@ pub enum ArmorWeight {
     Heavy,
 }
 
-const CLOTHES: EnumSet<ArmorTag> = enum_set!(
-    ArmorTag::ArmorClothing
-        | ArmorTag::ClothingBody
-        | ArmorTag::ClothingCirclet
-        | ArmorTag::ClothingCrown
-        | ArmorTag::ClothingEarrings
-        | ArmorTag::ClothingFeet
-        | ArmorTag::ClothingHands
-        | ArmorTag::ClothingNecklace
-        | ArmorTag::ClothingPanties
-        | ArmorTag::ClothingRing
-        | ArmorTag::ClothingStrapOn
-        | ArmorTag::FrostfallIsCloakCloth
-        | ArmorTag::VendorItemClothing
-        | ArmorTag::WAF_ClothingAccessories
-        | ArmorTag::WAF_ClothingCloak
-        | ArmorTag::WAF_ClothingMedicalHealing
-        | ArmorTag::WAF_ClothingPouch
-);
-
-const LIGHT: EnumSet<ArmorTag> = enum_set!(
+const WEIGHT_LIGHT: EnumSet<ArmorTag> = enum_set!(
     ArmorTag::OCF_AccessoryShield_Light
         | ArmorTag::OCF_ArmorBoots_Light
         | ArmorTag::OCF_ArmorCuirass_Light
@@ -153,7 +121,7 @@ const LIGHT: EnumSet<ArmorTag> = enum_set!(
         | ArmorTag::OCF_ArmorHelmet_Light
         | ArmorTag::OCF_ArmorShield_Light
 );
-const HEAVY: EnumSet<ArmorTag> = enum_set!(
+const WEIGHT_HEAVY: EnumSet<ArmorTag> = enum_set!(
     ArmorTag::OCF_ArmorBoots_Heavy
         | ArmorTag::OCF_ArmorCuirass_Heavy
         | ArmorTag::OCF_ArmorGauntlets_Heavy
@@ -372,6 +340,9 @@ const LIGHTS: EnumSet<ArmorTag> =
 const BELTS: EnumSet<ArmorTag> = enum_set!(
     ArmorTag::OCF_AccessoryBelt | ArmorTag::OCF_AccessoryBeltBook | ArmorTag::OCF_BagTypeBelt
 );
+const BAGS: EnumSet<ArmorTag> = enum_set!(
+    ArmorTag::OCF_BagTypeBackpack | ArmorTag::OCF_BagTypeBandolier | ArmorTag::OCF_BagTypeBelt
+);
 
 const SHIELDS: EnumSet<ArmorTag> = enum_set!(
     ArmorTag::ArmorShield
@@ -583,6 +554,7 @@ pub enum ArmorTag {
     OCF_MiscEmptyVessel_Jar,
     OCF_MiscHorseGear,
     OCF_MiscJarBug,
+    OCF_MiscQuiver,
     OCF_Placeholder_BuildingPart,
     OCF_Placeholder_Filter,
     OCF_Placeholder_Separate,

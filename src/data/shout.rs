@@ -1,8 +1,7 @@
 use super::color::InvColor;
 use super::icons::Icon;
 use super::keywords::*;
-use super::strings_to_keywords;
-use super::HasIcon;
+use super::{strings_to_keywords, HasIcon};
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

@@ -173,6 +173,7 @@ pub enum SpellKeywords {
     ClassWind,
     ClassWitcher,
     DeliverTouch,
+    OCF_MiscQuiver,
     PowerAction_Bag,
     PowerAction_Bard,
     PowerAction_Bathe,

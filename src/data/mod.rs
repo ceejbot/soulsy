@@ -20,15 +20,17 @@ pub mod spell;
 pub mod weapon;
 
 use cxx::{CxxString, CxxVector};
+use enumset::{EnumSet, EnumSetType};
 
+use self::ammo::AmmoType;
 pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
 use self::icons::Icon;
 use self::potion::PotionType;
+use self::power::PowerType;
 use self::shout::ShoutType;
 use self::spell::SpellType;
-use self::{ammo::AmmoType, power::PowerType};
 pub use super::magic::SpellData;
 #[cfg(not(test))]
 use crate::plugin::{healthPotionCount, magickaPotionCount, staminaPotionCount};
@@ -204,6 +206,21 @@ pub fn strings_to_keywords<T: for<'a> TryFrom<&'a str>>(tags: &[String]) -> Vec<
         })
         .collect();
     keywords
+}
+
+// Generic convert keywords to an enum set.
+pub fn strings_to_enumset<T: EnumSetType + for<'a> TryFrom<&'a str>>(
+    tags: &[String],
+) -> EnumSet<T> {
+    let mut tagset: EnumSet<T> = EnumSet::new();
+    tags.iter().for_each(|xs| {
+        if let Ok(subtype) = T::try_from(xs.as_str()) {
+            tagset.insert(subtype);
+        } else {
+            log::trace!("Unknown keyword: '{xs}';");
+        }
+    });
+    tagset
 }
 
 // ---------- Tests. I hear they're good.
