@@ -9,6 +9,8 @@ pub fn icon_files() -> Vec<String> {
 )]
 pub enum Icon {
     Alteration,
+    AmmoArrow,
+    AmmoBullet,
     ArmorAmulet,
     ArmorBackpack,
     ArmorBelt,
@@ -34,7 +36,6 @@ pub enum Icon {
     ArmorRobes,
     ArmorShieldHeavy,
     ArmorShieldLight,
-    AmmoArrow,
     Conjuration,
     Destruction,
     DrinkMead,
@@ -198,6 +199,8 @@ impl Icon {
             // Icon::SpellSmoke => "spell_smoke.svg".to_string(),
             // Icon::SpellWave => "spell_wave.svg".to_string(),
             Icon::Alteration => "alteration.svg".to_string(),
+            Icon::AmmoArrow => "ammo_arrow.svg".to_string(),
+            Icon::AmmoBullet => "ammo_bullet.svg".to_string(),
             Icon::ArmorAmulet => "armor_amulet.svg".to_string(),
             Icon::ArmorBackpack => "armor_backpack.svg".to_string(),
             Icon::ArmorBelt => "armor_belt.svg".to_string(),
@@ -223,7 +226,6 @@ impl Icon {
             Icon::ArmorRobes => "armor_robes.svg".to_string(),
             Icon::ArmorShieldHeavy => "armor_shield_heavy.svg".to_string(),
             Icon::ArmorShieldLight => "armor_shield_light.svg".to_string(),
-            Icon::AmmoArrow => "ammo_arrow.svg".to_string(),
             Icon::Conjuration => "conjuration.svg".to_string(),
             Icon::Destruction => "destruction.svg".to_string(),
             Icon::DrinkMead => "drink_mead.svg".to_string(),
@@ -370,6 +372,9 @@ impl Icon {
             Icon::Illusion => Icon::Scroll,
             Icon::Restoration => Icon::Scroll,
 
+            Icon::AmmoArrow => Icon::AmmoArrow,
+            Icon::AmmoBullet => Icon::AmmoArrow,
+
             // All armor becomes the heavy armor icon.
             Icon::ArmorAmulet => Icon::ArmorHeavy,
             Icon::ArmorBackpack => Icon::ArmorHeavy,
@@ -396,8 +401,6 @@ impl Icon {
             Icon::ArmorRobes => Icon::ArmorHeavy,
             Icon::ArmorShieldHeavy => Icon::ArmorHeavy,
             Icon::ArmorShieldLight => Icon::ArmorHeavy,
-
-            Icon::AmmoArrow => Icon::AmmoArrow,
 
             Icon::DrinkMead => Icon::Food,
             Icon::DrinkTea => Icon::Food,
