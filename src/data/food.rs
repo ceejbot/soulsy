@@ -54,39 +54,26 @@ impl HasKeywords for FoodType {
             Icon::FoodPie
         } else if !ICON_STEW.is_disjoint(tags) {
             Icon::FoodStew
-        } else if tags.contains(FoodKeywords::OCF_AlchDrinkAlcohol) {
-            if let Some(icon) = pickContainerIcon(containers) {
-                icon
-            } else {
-                Icon::Food
-            }
+        } else if !ICON_TEACUP.is_disjoint(containers) {
+            Icon::DrinkTea
+        } else if !ICON_WINE_BOTTLE.is_disjoint(containers) {
+            Icon::DrinkWine
+        } else if !ICON_MEAD.is_disjoint(containers) {
+            Icon::DrinkMead
+        } else if !ICON_SKOOMA.is_disjoint(containers) {
+            Icon::PotionSkooma
+        } else if !ICON_WATER_JUG.is_disjoint(containers) {
+            Icon::DrinkWater
+        } else if !ICON_STEW_BOWL.is_disjoint(containers) {
+            Icon::FoodStew
         } else {
             log::debug!("Falling back to default food icon: name='{name}'; keywords={keywords:?}");
             Icon::Food
         };
+        // ContainerKeywords::OCF_VesselBottlePotion => Icon::PotionDefault,
 
         Self { icon, color }
     }
-}
-
-/// A helper function to use the container type for many drink items.
-fn pickContainerIcon(containers: EnumSet<ContainerKeywords>) -> Option<Icon> {
-    if !ICON_TEACUP.is_disjoint(containers) {
-        Some(Icon::DrinkTea)
-    } else if !ICON_WINE_BOTTLE.is_disjoint(containers) {
-        Some(Icon::DrinkWine)
-    } else if !ICON_MEAD.is_disjoint(containers) {
-        Some(Icon::DrinkMead)
-    } else if !ICON_SKOOMA.is_disjoint(containers) {
-        Some(Icon::PotionSkooma)
-    } else if !ICON_WATER_JUG.is_disjoint(containers) {
-        Some(Icon::DrinkWater)
-    } else if !ICON_STEW_BOWL.is_disjoint(containers) {
-        Some(Icon::FoodStew)
-    } else {
-        None
-    }
-    // ContainerKeywords::OCF_VesselBottlePotion => Icon::PotionDefault,
 }
 
 const ICON_WINE_BOTTLE: EnumSet<ContainerKeywords> =
