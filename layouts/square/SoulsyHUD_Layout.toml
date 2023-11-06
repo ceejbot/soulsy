@@ -76,7 +76,7 @@ bg_color = { r = 255, g = 255, b = 255, a = 128 }
 # always centered in the slot.
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
 # Size of the icon for this slot, before scaling.
-icon_size = { x = 47.0, y = 47.0 }
+icon_size = { x = 60.0, y = 60.0 }
 
 # Color for this HUD's hotkey. Alpha of 0 means it's not drawn.
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
@@ -111,14 +111,14 @@ size = { x = 100.0 , y = 100.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 47.0, y = 47.0 }
+icon_size = { x = 60.0, y = 60.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = -50.0, y = 0.0 }
 hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 24.0
-count_offset = { x = 10.0, y = 15.0 }
+count_offset = { x = 15.0, y = 15.0 }
 name_offset = { x = -50, y = 55.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 18.0
@@ -131,7 +131,7 @@ size = { x = 100.0 , y = 100.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 47.0, y = 47.0 }
+icon_size = { x = 60.0, y = 60.0 }
 icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = -50.0, y = 0.0 }
@@ -152,7 +152,7 @@ size = { x = 100.0 , y = 100.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 47.0, y = 47.0 }
+icon_size = { x = 60.0, y = 60.0 }
 icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = -50.0, y = 0.0 }
@@ -174,7 +174,7 @@ size = { x = 100.0 , y = 100.0 }
 align_text = "left"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 47.0, y = 47.0 }
+icon_size = { x = 60.0, y = 60.0 }
 icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = -50.0, y = 0.0 }
@@ -182,7 +182,7 @@ hotkey_size = { x = 30.0, y = 30.0 }
 hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
 count_color = { r = 200, g = 200, b = 200, a = 255 }
 count_font_size = 24.0
-count_offset = { x = 0.0, y = 15.0 }
+count_offset = { x = 15.0, y = 15.0 }
 name_offset = { x = -50, y =  55.0 }
 name_color = { r = 255, g = 255, b = 255, a = 255 }
 name_font_size = 18.0
@@ -195,7 +195,7 @@ size = { x = 100.0 , y = 100.0 }
 align_text = "center"
 bg_color = { r = 255, g = 255, b = 255, a = 128 }
 icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 47.0, y = 47.0 }
+icon_size = { x = 60.0, y = 60.0 }
 icon_offset = { x = 0.0, y=0.0 }
 hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
 hotkey_offset = { x = -50.0, y = 0.0 }

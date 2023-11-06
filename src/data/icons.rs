@@ -241,7 +241,7 @@ impl Icon {
             Icon::HandToHand => "hand_to_hand.svg".to_string(),
             Icon::IconDefault => "icon_default.svg".to_string(),
             Icon::Illusion => "illusion.svg".to_string(),
-            Icon::MiscLantern => "lantern.svg".to_string(),
+            Icon::MiscLantern => "misc_lantern.svg".to_string(),
             Icon::MiscCampfire => "misc_campfire.svg".to_string(),
             Icon::MiscLute => "misc_lute.svg".to_string(),
             Icon::MiscTent => "misc_tent.svg".to_string(),

@@ -95,7 +95,7 @@ impl HasKeywords for ArmorType {
             Icon::ArmorEarring
         } else if !BAGS.is_disjoint(tagset) {
             Icon::ArmorBackpack
-        } else if tagset.contains(ArmorTag::OCF_MiscQuiver) {
+        } else if !QUIVERS.is_disjoint(tagset) {
             Icon::ArmorQuiver
         } else {
             log::warn!("We couldn't classify this armor! name='{name}'; keywords: {keywords:?}");
@@ -343,6 +343,7 @@ const BELTS: EnumSet<ArmorTag> = enum_set!(
 const BAGS: EnumSet<ArmorTag> = enum_set!(
     ArmorTag::OCF_BagTypeBackpack | ArmorTag::OCF_BagTypeBandolier | ArmorTag::OCF_BagTypeBelt
 );
+const QUIVERS: EnumSet<ArmorTag> = enum_set!(ArmorTag::ArmorQuiver | ArmorTag::OCF_MiscQuiver);
 
 const SHIELDS: EnumSet<ArmorTag> = enum_set!(
     ArmorTag::ArmorShield
@@ -374,6 +375,7 @@ pub enum ArmorTag {
     ArmorCrown,
     ArmorHelmet,
     ArmorMaterialHide,
+    ArmorQuiver,
     ArmorShield,
     ClavicusVileMask,
     ClothingBody,
