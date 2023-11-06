@@ -47,7 +47,7 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 	{
 		// double-check that we really unequipped it and it's not just a count change.
 		auto* current_ammo = player->GetCurrentAmmo();
-		if (current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
+		if (current_ammo && current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
 	}
 
 	std::string worn_right = helpers::makeFormSpecString(right_eq);
