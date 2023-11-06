@@ -223,7 +223,7 @@ impl SpellType {
         Self { icon, color, data }
     }
 
-    pub fn two_handed(&self) -> bool {
+    pub fn is_two_handed(&self) -> bool {
         self.data.twohanded
     }
 

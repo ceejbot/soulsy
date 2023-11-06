@@ -195,16 +195,17 @@ impl BaseType {
     pub fn is_one_handed(&self) -> bool {
         match self {
             BaseType::Weapon(t) => t.is_one_handed(),
-            BaseType::Spell(v) => !v.two_handed(),
+            BaseType::Spell(v) => !v.is_two_handed(),
             _ => true,
         }
     }
 
-    pub fn two_handed(&self) -> bool {
-        if matches!(self, BaseType::Armor(..)) {
-            false
-        } else {
-            !self.is_one_handed()
+    pub fn is_two_handed(&self) -> bool {
+        match self {
+            BaseType::Weapon(t) => t.is_two_handed(),
+            BaseType::Scroll(t) => t.is_two_handed(),
+            BaseType::Spell(t) => t.is_two_handed(),
+            _ => false,
         }
     }
 
@@ -220,9 +221,9 @@ impl BaseType {
             BaseType::Potion(_) => false,
             BaseType::PotionProxy(_) => false,
             BaseType::Power(_) => false,
-            BaseType::Scroll(t) => !t.two_handed(),
+            BaseType::Scroll(t) => !t.is_two_handed(),
             BaseType::Shout(_) => false,
-            BaseType::Spell(t) => !t.two_handed(),
+            BaseType::Spell(t) => !t.is_two_handed(),
             BaseType::Weapon(t) => t.left_hand_ok(),
         }
     }

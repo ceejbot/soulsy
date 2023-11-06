@@ -192,7 +192,7 @@ impl HudItem {
     }
 
     pub fn two_handed(&self) -> bool {
-        self.kind.two_handed()
+        self.kind.is_two_handed()
     }
 }
 

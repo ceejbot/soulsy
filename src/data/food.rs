@@ -1,11 +1,12 @@
 //! Food and drink. These items are alchemy items in the game, but they
 //! get their own icons.
 
+use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::EnumString;
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{strings_to_keywords, HasIcon, HasKeywords};
+use super::{strings_to_enumset, HasIcon, HasKeywords};
 use crate::plugin::Color;
 
 /// Struct to hold the icon selection and the inventory color to use.
@@ -28,38 +29,39 @@ impl HasIcon for FoodType {
 
 /// We select color and icon from keywords, so we implement this trait.
 impl HasKeywords for FoodType {
-    fn classify(_name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
+    fn classify(name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
         let color = super::color::color_from_keywords(&keywords);
-        let tags = strings_to_keywords::<FoodKeywords>(&keywords);
-        let containers = strings_to_keywords::<ContainerKeywords>(&keywords);
+        let tags = strings_to_enumset::<FoodKeywords>(&keywords);
+        let containers = strings_to_enumset::<ContainerKeywords>(&keywords);
 
-        let maybe_icon = tags.iter().find_map(|subtype| {
-            match subtype {
-                FoodKeywords::OCF_AlchDrink_Coffee => Some(Icon::DrinkTea), // heresy
-                FoodKeywords::OCF_AlchDrink_Juice => Some(Icon::DrinkWater),
-                FoodKeywords::OCF_AlchDrink_Milk => Some(Icon::DrinkWater),
-                FoodKeywords::OCF_AlchDrink_Tea => Some(Icon::DrinkTea),
-                FoodKeywords::OCF_AlchDrink_Water => Some(Icon::DrinkWater),
-                FoodKeywords::OCF_AlchDrinkAlcohol => pickContainerIcon(&containers),
-                FoodKeywords::OCF_AlchFood_Baked => Some(Icon::FoodPie),
-                FoodKeywords::OCF_AlchFood_Bread => Some(Icon::FoodBread),
-                FoodKeywords::OCF_AlchFood_Cheese => Some(Icon::FoodCheese),
-                FoodKeywords::OCF_AlchFood_Fish => Some(Icon::FoodFish),
-                FoodKeywords::OCF_AlchFood_Fruit => Some(Icon::Food),
-                FoodKeywords::OCF_AlchFood_Meal => Some(Icon::FoodPie),
-                FoodKeywords::OCF_AlchFood_Meat => Some(Icon::FoodMeat),
-                FoodKeywords::OCF_AlchFood_Seafood => Some(Icon::FoodFish),
-                FoodKeywords::OCF_AlchFood_Stew => Some(Icon::FoodStew),
-                FoodKeywords::OCF_AlchFood_Treat => Some(Icon::FoodPie),
-                FoodKeywords::OCF_AlchFood_Vegetable => Some(Icon::FoodCarrot),
-                FoodKeywords::MAG_FoodTypePie => Some(Icon::FoodPie),
-                FoodKeywords::MAG_FoodTypeWine => Some(Icon::DrinkWine),
+        let icon = if !ICON_TEA.is_disjoint(tags) {
+            Icon::DrinkTea
+        } else if !ICON_WATER.is_disjoint(tags) {
+            Icon::DrinkWater
+        } else if !ICON_WINE.is_disjoint(tags) {
+            Icon::DrinkWine
+        } else if !ICON_BREAD.is_disjoint(tags) {
+            Icon::FoodBread
+        } else if !ICON_CARROT.is_disjoint(tags) {
+            Icon::FoodCarrot
+        } else if !ICON_CHEESE.is_disjoint(tags) {
+            Icon::FoodCheese
+        } else if !ICON_FISH.is_disjoint(tags) {
+            Icon::FoodFish
+        } else if !ICON_MEAT.is_disjoint(tags) {
+            Icon::FoodMeat
+        } else if !ICON_PIE.is_disjoint(tags) {
+            Icon::FoodPie
+        } else if !ICON_STEW.is_disjoint(tags) {
+            Icon::FoodStew
+        } else if tags.contains(FoodKeywords::OCF_AlchDrinkAlcohol) {
+            if let Some(icon) = pickContainerIcon(containers) {
+                icon
+            } else {
+                Icon::Food
             }
-        });
-
-        let icon = if let Some(icon) = maybe_icon {
-            icon
         } else {
+            log::debug!("Falling back to default food icon: name='{name}'; keywords={keywords:?}");
             Icon::Food
         };
 
@@ -68,28 +70,90 @@ impl HasKeywords for FoodType {
 }
 
 /// A helper function to use the container type for many drink items.
-fn pickContainerIcon(containers: &[ContainerKeywords]) -> Option<Icon> {
-    containers
-        .iter()
-        .map(|xs| match xs {
-            ContainerKeywords::_SH_WineBottleKeyword => Icon::DrinkWine,
-            ContainerKeywords::_SH_MeadBottleKeyword => Icon::DrinkMead,
-            ContainerKeywords::OCF_VesselBottle => Icon::DrinkMead,
-            ContainerKeywords::OCF_VesselBottlePotion => Icon::PotionDefault,
-            ContainerKeywords::OCF_VesselBottleSkooma => Icon::PotionSkooma,
-            ContainerKeywords::OCF_VesselBowl => Icon::FoodStew,
-            ContainerKeywords::OCF_VesselCup => Icon::DrinkTea,
-            ContainerKeywords::OCF_VesselFlagon => Icon::DrinkMead,
-            ContainerKeywords::OCF_VesselFlask => Icon::DrinkWater,
-            ContainerKeywords::OCF_VesselJug => Icon::DrinkWater,
-            ContainerKeywords::OCF_VesselTankard => Icon::DrinkMead,
-            ContainerKeywords::OCF_VesselVial => Icon::PotionSkooma,
-            ContainerKeywords::OCF_VesselWaterskin => Icon::DrinkWater,
-        })
-        .next()
+fn pickContainerIcon(containers: EnumSet<ContainerKeywords>) -> Option<Icon> {
+    if !ICON_TEACUP.is_disjoint(containers) {
+        Some(Icon::DrinkTea)
+    } else if !ICON_WINE_BOTTLE.is_disjoint(containers) {
+        Some(Icon::DrinkWine)
+    } else if !ICON_MEAD.is_disjoint(containers) {
+        Some(Icon::DrinkMead)
+    } else if !ICON_SKOOMA.is_disjoint(containers) {
+        Some(Icon::PotionSkooma)
+    } else if !ICON_WATER_JUG.is_disjoint(containers) {
+        Some(Icon::DrinkWater)
+    } else if !ICON_STEW_BOWL.is_disjoint(containers) {
+        Some(Icon::FoodStew)
+    } else {
+        None
+    }
+    // ContainerKeywords::OCF_VesselBottlePotion => Icon::PotionDefault,
 }
 
-#[derive(Debug, EnumString, Hash)]
+const ICON_WINE_BOTTLE: EnumSet<ContainerKeywords> =
+    enum_set!(ContainerKeywords::_SH_WineBottleKeyword);
+const ICON_MEAD: EnumSet<ContainerKeywords> = enum_set!(
+    ContainerKeywords::_SH_MeadBottleKeyword
+        | ContainerKeywords::OCF_VesselBottle
+        | ContainerKeywords::OCF_VesselFlagon
+        | ContainerKeywords::OCF_VesselTankard
+);
+const ICON_SKOOMA: EnumSet<ContainerKeywords> =
+    enum_set!(ContainerKeywords::OCF_VesselBottleSkooma | ContainerKeywords::OCF_VesselVial);
+const ICON_STEW_BOWL: EnumSet<ContainerKeywords> = enum_set!(ContainerKeywords::OCF_VesselBowl);
+const ICON_WATER_JUG: EnumSet<ContainerKeywords> = enum_set!(
+    ContainerKeywords::OCF_VesselWaterskin
+        | ContainerKeywords::OCF_VesselFlask
+        | ContainerKeywords::OCF_VesselJug
+);
+const ICON_TEACUP: EnumSet<ContainerKeywords> = enum_set!(ContainerKeywords::OCF_VesselCup);
+
+const ICON_TEA: EnumSet<FoodKeywords> = enum_set!(
+    FoodKeywords::OCF_AlchDrink_Coffee // heresy!
+        | FoodKeywords::OCF_AlchDrink_Tea
+);
+
+const ICON_WATER: EnumSet<FoodKeywords> = enum_set!(
+    FoodKeywords::OCF_AlchDrink_Juice
+        | FoodKeywords::OCF_AlchDrink_Milk
+        | FoodKeywords::OCF_AlchDrink_Water
+        | FoodKeywords::OCF_AlchDrink_MilkRaw
+        | FoodKeywords::OCF_AlchDrink_WaterRaw
+);
+
+const ICON_WINE: EnumSet<FoodKeywords> = enum_set!(FoodKeywords::MAG_FoodTypeWine);
+
+const ICON_BREAD: EnumSet<FoodKeywords> = enum_set!(FoodKeywords::OCF_AlchFood_Bread);
+
+const ICON_CARROT: EnumSet<FoodKeywords> = enum_set!(FoodKeywords::OCF_AlchFood_Vegetable);
+
+const ICON_CHEESE: EnumSet<FoodKeywords> = enum_set!(FoodKeywords::OCF_AlchFood_Cheese);
+
+const ICON_FISH: EnumSet<FoodKeywords> = enum_set!(
+    FoodKeywords::OCF_AlchFood_Fish
+        | FoodKeywords::OCF_AlchFood_FishRaw
+        | FoodKeywords::OCF_AlchFood_Seafood
+        | FoodKeywords::OCF_AlchFood_SeafoodRaw
+);
+
+const ICON_MEAT: EnumSet<FoodKeywords> = enum_set!(
+    FoodKeywords::OCF_AlchFood_Meat
+        | FoodKeywords::OCF_AlchFood_MeatSmall
+        | FoodKeywords::OCF_AlchFood_MeatRaw
+);
+
+const ICON_PIE: EnumSet<FoodKeywords> = enum_set!(
+    FoodKeywords::OCF_AlchFood_Meal
+        | FoodKeywords::OCF_AlchFood_Treat
+        | FoodKeywords::MAG_FoodTypePie
+);
+
+const ICON_STEW: EnumSet<FoodKeywords> = enum_set!(
+    FoodKeywords::OCF_AlchFood_Stew
+        | FoodKeywords::OCF_AlchFood_Treat
+        | FoodKeywords::MAG_FoodTypePie
+);
+
+#[derive(Debug, EnumString, Hash, EnumSetType)]
 enum ContainerKeywords {
     OCF_VesselBottle,
     OCF_VesselBottlePotion,
@@ -107,25 +171,42 @@ enum ContainerKeywords {
     _SH_WineBottleKeyword,
 }
 
-#[derive(Debug, EnumString, Hash)]
+#[derive(Debug, EnumString, Hash, EnumSetType)]
 enum FoodKeywords {
     OCF_AlchDrink_Coffee,
     OCF_AlchDrink_Juice,
     OCF_AlchDrink_Milk,
+    OCF_AlchDrink_MilkRaw,
     OCF_AlchDrink_Tea,
     OCF_AlchDrink_Water,
+    OCF_AlchDrink_WaterRaw,
+    OCF_AlchDrink,
     OCF_AlchDrinkAlcohol,
+    OCF_AlchDrinkSoft,
     OCF_AlchFood_Baked,
     OCF_AlchFood_Bread,
     OCF_AlchFood_Cheese,
+    OCF_AlchFood_Egg,
+    OCF_AlchFood_EggMagic,
+    OCF_AlchFood_EggRaw,
     OCF_AlchFood_Fish,
+    OCF_AlchFood_FishRaw,
     OCF_AlchFood_Fruit,
+    OCF_AlchFood_Ingredient,
+    OCF_AlchFood_IngredientDry,
+    OCF_AlchFood_IngredientRaw,
+    OCF_AlchFood_IngredientWet,
     OCF_AlchFood_Meal,
     OCF_AlchFood_Meat,
+    OCF_AlchFood_MeatRaw,
+    OCF_AlchFood_MeatSmall,
     OCF_AlchFood_Seafood,
+    OCF_AlchFood_SeafoodRaw,
     OCF_AlchFood_Stew,
     OCF_AlchFood_Treat,
     OCF_AlchFood_Vegetable,
+    OCF_AlchFood,
+    OCF_AlchGreenPact,
     MAG_FoodTypePie,
     MAG_FoodTypeWine,
 }

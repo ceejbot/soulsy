@@ -1,3 +1,11 @@
+//! Weapon keywords and classification.
+//!
+//! We use the same enumset approach here as we did with armor.
+//! We group keywords into sets for each type we have an icon for,
+//! then use set operations to compare our incoming item keywords
+//! to types. We can't squeak out some more efficiency by testing for
+//! common types first, sadly, because the vanilla types need to be
+//! checked last as fallbacks.
 #![allow(non_snake_case, non_camel_case_types)]
 
 use enumset::{enum_set, EnumSet, EnumSetType};
@@ -5,7 +13,7 @@ use strum::EnumString;
 
 use super::color::InvColor;
 use super::icons::Icon;
-use super::{strings_to_keywords, HasIcon, HasKeywords};
+use super::{strings_to_enumset, HasIcon, HasKeywords};
 use crate::plugin::Color;
 
 #[derive(Clone, Debug, EnumString, Eq, Hash, PartialEq)]
@@ -59,115 +67,77 @@ impl WeaponType {
 }
 
 impl HasKeywords for WeaponType {
-    fn classify(_name: &str, keywords: Vec<String>, twohanded: bool) -> Self {
+    fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self {
         let color = super::color_from_keywords(&keywords);
+        let tagset: EnumSet<WeaponTag> = strings_to_enumset(&keywords);
 
+        // TODO This is not good enough.
         let equiptype = if twohanded {
             WeaponEquipType::TwoHanded
         } else {
             WeaponEquipType::EitherHand
         };
 
-        let tags: Vec<WeaponTag> = strings_to_keywords::<WeaponTag>(&keywords);
-
         // First we look for tags matching mod-added weapon categories.
-        let maybe_icon = tags.iter().find_map(|subtype| {
-            if GUNS.contains(*subtype) {
-                Some(Icon::WeaponGun)
-            } else if HAMMERS.contains(*subtype) {
-                Some(Icon::WeaponHammer)
-            } else if HALBERDS.contains(*subtype) {
-                Some(Icon::WeaponHalberd)
-            } else if HAND_TO_HAND.contains(*subtype) {
-                Some(Icon::HandToHand)
-            } else if KATANAS.contains(*subtype) {
-                Some(Icon::WeaponKatana)
-            } else if LANCES.contains(*subtype) {
-                Some(Icon::WeaponLance)
-            } else if PIKES.contains(*subtype) {
-                Some(Icon::WeaponPike)
-            } else if QUARTERSTAVES.contains(*subtype) {
-                Some(Icon::WeaponQuarterstaff)
-            } else if RAPIERS.contains(*subtype) {
-                Some(Icon::WeaponRapier)
-            } else if SCYTHES.contains(*subtype) {
-                Some(Icon::WeaponScythe)
-            } else if STAVES.contains(*subtype) {
-                Some(Icon::WeaponStaff)
-            } else if WHIPS.contains(*subtype) {
-                Some(Icon::WeaponWhip)
-            } else if matches!(subtype, WeaponTag::OCF_WeapTypePickaxe1H) {
-                Some(Icon::ToolPickaxe)
-            } else if matches!(
-                subtype,
-                WeaponTag::OCF_WeapTypeWoodaxe1H | WeaponTag::OCF_WeapTypeWoodHatchet1H
-            ) {
-                Some(Icon::WeaponWoodAxe)
-            } else if matches!(subtype, WeaponTag::OCF_WeapTypeFishingRod1H) {
-                Some(Icon::ToolFishingRod)
-            } else if matches!(
-                subtype,
-                WeaponTag::WeapTypeClaw | WeaponTag::OCF_WeapTypeClaw1H
-            ) {
-                Some(Icon::WeaponClaw)
-            } else if matches!(subtype, WeaponTag::WeapTypeFlail) {
-                Some(Icon::WeaponFlail)
-            } else if matches!(subtype, WeaponTag::WeapTypeStaff) {
-                Some(Icon::WeaponStaff)
-            } else if matches!(subtype, WeaponTag::WAF_WeapTypeGrenade) {
-                Some(Icon::WeaponGrenade)
-            } else {
-                None
-            }
-        });
-
-        let maybe_icon = if maybe_icon.is_some() {
-            maybe_icon
+        let icon = if !GUNS.is_disjoint(tagset) {
+            Icon::WeaponGun
+        } else if !HAMMERS.is_disjoint(tagset) {
+            Icon::WeaponHammer
+        } else if !HALBERDS.is_disjoint(tagset) {
+            Icon::WeaponHalberd
+        } else if !HAND_TO_HAND.is_disjoint(tagset) {
+            Icon::HandToHand
+        } else if !KATANAS.is_disjoint(tagset) {
+            Icon::WeaponKatana
+        } else if !LANCES.is_disjoint(tagset) {
+            Icon::WeaponLance
+        } else if !PIKES.is_disjoint(tagset) {
+            Icon::WeaponPike
+        } else if !QUARTERSTAVES.is_disjoint(tagset) {
+            Icon::WeaponQuarterstaff
+        } else if !RAPIERS.is_disjoint(tagset) {
+            Icon::WeaponRapier
+        } else if !SCYTHES.is_disjoint(tagset) {
+            Icon::WeaponScythe
+        } else if !STAVES.is_disjoint(tagset) {
+            Icon::WeaponStaff
+        } else if !WHIPS.is_disjoint(tagset) {
+            Icon::WeaponWhip
+        } else if !WOOD_AXES.is_disjoint(tagset) {
+            Icon::WeaponWoodAxe
+        } else if !PICKAXES.is_disjoint(tagset) {
+            Icon::ToolPickaxe
+        } else if !FISHING_RODS.is_disjoint(tagset) {
+            Icon::ToolFishingRod
+        } else if !CLAWS.is_disjoint(tagset) {
+            Icon::WeaponClaw
+        } else if !FLAILS.is_disjoint(tagset) {
+            Icon::WeaponFlail
+        } else if !STAVES.is_disjoint(tagset) {
+            Icon::WeaponStaff
+        } else if !BOMBS.is_disjoint(tagset) {
+            Icon::WeaponGrenade
+        // Now we match for vanilla weapons.
+        // We must do it in this order because mod-added weapons might have both
+        // very specific tags and fallback tags.
+        } else if !BATTLEAXES.is_disjoint(tagset) {
+            Icon::WeaponAxeTwoHanded
+        } else if !BOWS.is_disjoint(tagset) {
+            Icon::WeaponBow
+        } else if !CROSSBOWS.is_disjoint(tagset) {
+            Icon::WeaponCrossbow
+        } else if !DAGGERS.is_disjoint(tagset) {
+            Icon::WeaponDagger
+        } else if !GREATSWORDS.is_disjoint(tagset) {
+            Icon::WeaponSwordTwoHanded
+        } else if !MACES.is_disjoint(tagset) {
+            Icon::WeaponMace
+        } else if !SWORDS.is_disjoint(tagset) {
+            Icon::WeaponSwordOneHanded
+        } else if !WARAXES.is_disjoint(tagset) {
+            Icon::WeaponAxeOneHanded
         } else {
-            // If we failed there, we look for tags that match built-in categories.
-            // We must do it in this order because mod-added weapons might have both
-            // very specific tags and fallback tags.
-            tags.iter().find_map(|subtype| {
-                if BATTLEAXES.contains(*subtype) {
-                    Some(Icon::WeaponAxeTwoHanded)
-                } else if BOWS.contains(*subtype) {
-                    Some(Icon::WeaponBow)
-                } else if CROSSBOWS.contains(*subtype) {
-                    Some(Icon::WeaponCrossbow)
-                } else if DAGGERS.contains(*subtype) {
-                    Some(Icon::WeaponDagger)
-                } else if GREATSWORDS.contains(*subtype) {
-                    Some(Icon::WeaponSwordTwoHanded)
-                } else if MACES.contains(*subtype) {
-                    Some(Icon::WeaponMace)
-                } else if SWORDS.contains(*subtype) {
-                    Some(Icon::WeaponSwordOneHanded)
-                } else if WARAXES.contains(*subtype) {
-                    Some(Icon::WeaponAxeOneHanded)
-                } else if FALLBACK_TYPES.contains(*subtype) {
-                    match subtype {
-                        WeaponTag::TwoHandSword => Some(Icon::WeaponSwordTwoHanded),
-                        WeaponTag::Bow => Some(Icon::WeaponBow),
-                        WeaponTag::WeapTypeBow => Some(Icon::WeaponBow),
-                        WeaponTag::WeapTypeDagger => Some(Icon::WeaponDagger),
-                        WeaponTag::OneHandDagger => Some(Icon::WeaponDagger),
-                        WeaponTag::WeapTypeGreatsword => Some(Icon::WeaponSwordTwoHanded),
-                        WeaponTag::WeapTypeMace => Some(Icon::WeaponMace),
-                        WeaponTag::WeapTypeSword => Some(Icon::WeaponSwordOneHanded),
-                        WeaponTag::OneHandSword => Some(Icon::WeaponSwordOneHanded),
-                        WeaponTag::WeapTypeWarAxe => Some(Icon::WeaponAxeOneHanded),
-                        WeaponTag::TwoHandAxe => Some(Icon::WeaponAxeTwoHanded),
-                        _ => None,
-                    }
-                } else {
-                    None
-                }
-            })
-        };
-
-        let icon = if let Some(icon) = maybe_icon {
-            icon
-        } else {
+            log::debug!("Falling back to default icon for weapon '{name}'; keywords={keywords:?}");
             Icon::WeaponSwordOneHanded
         };
 
@@ -196,21 +166,6 @@ impl HasIcon for WeaponType {
 }
 
 // Enum sets to let us pluck out matches from keywords efficiently.
-
-const FALLBACK_TYPES: EnumSet<WeaponTag> = enum_set!(
-    WeaponTag::TwoHandSword
-        | WeaponTag::WeapTypeBow
-        | WeaponTag::Bow
-        | WeaponTag::Crossbow
-        | WeaponTag::WeapTypeDagger
-        | WeaponTag::OneHandDagger
-        | WeaponTag::WeapTypeGreatsword
-        | WeaponTag::WeapTypeSword
-        | WeaponTag::OneHandSword
-        | WeaponTag::WeapTypeWarAxe
-        | WeaponTag::WeapTypeMace
-        | WeaponTag::TwoHandAxe
-);
 
 const BATTLEAXES: EnumSet<WeaponTag> = enum_set!(
     WeaponTag::WeapTypeAxeTwoHanded
@@ -288,7 +243,7 @@ const HAMMERS: EnumSet<WeaponTag> = enum_set!(
         | WeaponTag::OCF_WeapTypeWarhammer2H
 );
 const HAND_TO_HAND: EnumSet<WeaponTag> =
-    enum_set!(WeaponTag::HandToHandMelee | WeaponTag::OCF_WeapTypeUnarmed | WeaponTag::None);
+    enum_set!(WeaponTag::HandToHandMelee | WeaponTag::OCF_WeapTypeUnarmed);
 const KATANAS: EnumSet<WeaponTag> =
     enum_set!(WeaponTag::OCF_WeapTypeKatana1H | WeaponTag::OCF_WeapTypeKatana2H);
 const LANCES: EnumSet<WeaponTag> = enum_set!(
@@ -332,6 +287,7 @@ const SCYTHES: EnumSet<WeaponTag> = enum_set!(
 );
 const RAPIERS: EnumSet<WeaponTag> =
     enum_set!(WeaponTag::OCF_WeapTypeRapier1H | WeaponTag::OCF_WeapTypeRapier2H);
+
 const SWORDS: EnumSet<WeaponTag> = enum_set!(
     WeaponTag::OCF_WeapTypeSaber1H
         | WeaponTag::OCF_WeapTypeScimitar1H
@@ -341,6 +297,7 @@ const SWORDS: EnumSet<WeaponTag> = enum_set!(
 );
 const STAVES: EnumSet<WeaponTag> =
     enum_set!(WeaponTag::Staff | WeaponTag::WeapTypeStaff | WeaponTag::OCF_WeapTypeBlankStaff);
+
 const WARAXES: EnumSet<WeaponTag> = enum_set!(
     WeaponTag::OCF_WeapTypeCleaver1H
         | WeaponTag::OCF_WeapTypeCrescent1H
@@ -353,121 +310,35 @@ const WARAXES: EnumSet<WeaponTag> = enum_set!(
 const WHIPS: EnumSet<WeaponTag> =
     enum_set!(WeaponTag::OCF_WeapTypeWhip1H | WeaponTag::WeapTypeWhip);
 
-// const TWO_HANDED: EnumSet<WeaponTag> = enum_set!();
+const WOOD_AXES: EnumSet<WeaponTag> =
+    enum_set!(WeaponTag::OCF_WeapTypeWoodaxe1H | WeaponTag::OCF_WeapTypeWoodHatchet1H);
+
+const PICKAXES: EnumSet<WeaponTag> =
+    enum_set!(WeaponTag::OCF_WeapTypePickaxe1H | WeaponTag::OCF_WeapTypePickaxe2H);
+const FISHING_RODS: EnumSet<WeaponTag> = enum_set!(WeaponTag::OCF_WeapTypeFishingRod1H);
+
+const CLAWS: EnumSet<WeaponTag> =
+    enum_set!(WeaponTag::WeapTypeClaw | WeaponTag::OCF_WeapTypeClaw1H);
+
+const FLAILS: EnumSet<WeaponTag> = enum_set!(WeaponTag::WeapTypeFlail);
+const BOMBS: EnumSet<WeaponTag> = enum_set!(WeaponTag::WAF_WeapTypeGrenade);
+
+// const WEAPONS: EnumSet<WeaponTag> = enum_set!();
 
 /// This enum represents all the keywords we expect for weapon types. We group
 /// the tags into sets for efficient subtype classification from the tags.
 #[derive(Debug, EnumString, Hash, EnumSetType)]
 pub enum WeaponTag {
+    BoobiesWeapTypePike,
     Bow,
     Crossbow,
     Gun,
-    OCF_WeapTypeBattleaxe2H,
-    OCF_WeapTypeBlankStaff,
-    OCF_WeapTypeBlowgun2H,
-    OCF_WeapTypeBoomerang1H,
-    OCF_WeapTypeBow,
-    OCF_WeapTypeBow2H,
-    OCF_WeapTypeCestus1H,
-    OCF_WeapTypeChakram1H,
-    OCF_WeapTypeClaw1H,
-    OCF_WeapTypeCleaver1H,
-    OCF_WeapTypeCleaver2H,
-    OCF_WeapTypeClub1H,
-    OCF_WeapTypeClub2H,
-    OCF_WeapTypeCrescent1H,
-    OCF_WeapTypeCrossbow,
-    OCF_WeapTypeCrossbow1H,
-    OCF_WeapTypeCrossbow2H,
-    OCF_WeapTypeCutlery1H,
-    OCF_WeapTypeDagger1H,
-    OCF_WeapTypeFishingRod1H,
-    OCF_WeapTypeGlaive1H,
-    OCF_WeapTypeGlaive2H,
-    OCF_WeapTypeGreatbow2H,
-    OCF_WeapTypeGreatsword2H,
-    OCF_WeapTypeGun,
-    OCF_WeapTypeGun1H,
-    OCF_WeapTypeGun1H_Axe,
-    OCF_WeapTypeGun1H_Basic,
-    OCF_WeapTypeGun1H_Gravity,
-    OCF_WeapTypeGun1H_Sword,
-    OCF_WeapTypeGun2H,
-    OCF_WeapTypeGun2H_Basic,
-    OCF_WeapTypeGun2H_Launcher,
-    OCF_WeapTypeGun2H_Shotgun,
-    OCF_WeapTypeGun2H_Spear,
-    OCF_WeapTypeGun2H_Special,
-    OCF_WeapTypeHalberd1H,
-    OCF_WeapTypeHalberd2H,
-    OCF_WeapTypeHammer1H,
-    OCF_WeapTypeHandBlade1H,
-    OCF_WeapTypeHatchet1H,
-    OCF_WeapTypeHuntingKnife1H,
-    OCF_WeapTypeJavelin1H,
-    OCF_WeapTypeJavelin2H,
-    OCF_WeapTypeKatana1H,
-    OCF_WeapTypeKatana2H,
-    OCF_WeapTypeKunai1H,
-    OCF_WeapTypeLance1H,
-    OCF_WeapTypeLance2H,
-    OCF_WeapTypeLightsaber1H,
-    OCF_WeapTypeLightsaber2H,
-    OCF_WeapTypeLongsword2H,
-    OCF_WeapTypeMace1H,
-    OCF_WeapTypeMace2H,
-    OCF_WeapTypeMassiveSword2H,
-    OCF_WeapTypePickaxe1H,
-    OCF_WeapTypePike,
-    OCF_WeapTypePike1H,
-    OCF_WeapTypePike2H,
-    OCF_WeapTypePole1H_Swing,
-    OCF_WeapTypePole1H_Thrust,
-    OCF_WeapTypePole2H,
-    OCF_WeapTypePole2H_Swing,
-    OCF_WeapTypePole2H_Thrust,
-    OCF_WeapTypeQuarterstaff1H,
-    OCF_WeapTypeRapier1H,
-    OCF_WeapTypeRapier2H,
-    OCF_WeapTypeRevDagger1H,
-    OCF_WeapTypeSaber1H,
-    OCF_WeapTypeSaber2H,
-    OCF_WeapTypeSai1H,
-    OCF_WeapTypeScimitar1H,
-    OCF_WeapTypeScimitar2H,
-    OCF_WeapTypeScythe1H,
-    OCF_WeapTypeScythe2H,
-    OCF_WeapTypeShiv1H,
-    OCF_WeapTypeShuriken1H,
-    OCF_WeapTypeSickle1H,
-    OCF_WeapTypeSlingshot2H,
-    OCF_WeapTypeSpear1H,
-    OCF_WeapTypeSpear2H,
-    OCF_WeapTypeSword1H,
-    OCF_WeapTypeTanto1H,
-    OCF_WeapTypeToolKnife1H,
-    OCF_WeapTypeTrident1H,
-    OCF_WeapTypeTrident2H,
-    OCF_WeapTypeTwinblade1H,
-    OCF_WeapTypeTwinblade2H,
-    OCF_WeapTypeTwinDagger1H,
-    OCF_WeapTypeUnarmed,
-    OCF_WeapTypeWarAxe1H,
-    OCF_WeapTypeWarhammer2H,
-    OCF_WeapTypeWarpick1H,
-    OCF_WeapTypeWarpick2H,
-    OCF_WeapTypeWarscythe1H,
-    OCF_WeapTypeWarscythe2H,
-    OCF_WeapTypeWhip1H,
-    OCF_WeapTypeWoodaxe1H,
-    OCF_WeapTypeWoodHatchet1H,
+    HandToHandMelee,
     OneHandDagger,
     OneHandSword,
     Staff,
     TwoHandAxe,
     TwoHandSword,
-    WAF_WeapTypeGrenade,
-    WAF_WeapTypeScalpel,
     WeapTypeAxeTwoHanded,
     WeapTypeBattleaxe,
     WeapTypeBow,
@@ -489,11 +360,128 @@ pub enum WeaponTag {
     WeapTypeWarAxe,
     WeapTypeWarhammer,
     WeapTypeWhip,
-    HandToHandMelee,
-    BoobiesWeapTypePike,
-    VendorItemWeapon, // not used for classification from here on
+    WAF_WeapTypeGrenade,
+    WAF_WeapTypeScalpel,
+    OCF_CanChopWood,
+    OCF_CanMineOre,
+    OCF_Tool,
+    OCF_WeapTypeBattleaxe2H,
+    OCF_WeapTypeBlankStaff,
+    OCF_WeapTypeBlowgun2H,
+    OCF_WeapTypeBoomerang1H,
+    OCF_WeapTypeBow,
+    OCF_WeapTypeBow2H,
+    OCF_WeapTypeBowblade2H,
+    OCF_WeapTypeCestus1H,
+    OCF_WeapTypeChakram1H,
+    OCF_WeapTypeClaw1H,
+    OCF_WeapTypeCleaver1H,
+    OCF_WeapTypeCleaver2H,
+    OCF_WeapTypeClub1H,
+    OCF_WeapTypeClub2H,
+    OCF_WeapTypeCrescent1H,
+    OCF_WeapTypeCrescent2H,
+    OCF_WeapTypeCrossbow,
+    OCF_WeapTypeCrossbow1H,
+    OCF_WeapTypeCrossbow2H,
+    OCF_WeapTypeCutlery1H,
+    OCF_WeapTypeDagger1H,
+    OCF_WeapTypeFishingRod1H,
+    OCF_WeapTypeGlaive1H,
+    OCF_WeapTypeGlaive2H,
+    OCF_WeapTypeGreatbow2H,
+    OCF_WeapTypeGreatsword2H,
+    OCF_WeapTypeGun,
+    OCF_WeapTypeGun1H_Axe,
+    OCF_WeapTypeGun1H_Basic,
+    OCF_WeapTypeGun1H_Gravity,
+    OCF_WeapTypeGun1H_Launcher,
+    OCF_WeapTypeGun1H_Shotgun,
+    OCF_WeapTypeGun1H_Special,
+    OCF_WeapTypeGun1H_Sword,
+    OCF_WeapTypeGun1H,
+    OCF_WeapTypeGun2H_Basic,
+    OCF_WeapTypeGun2H_Launcher,
+    OCF_WeapTypeGun2H_Shotgun,
+    OCF_WeapTypeGun2H_Spear,
+    OCF_WeapTypeGun2H_Special,
+    OCF_WeapTypeGun2H,
+    OCF_WeapTypeHalberd1H,
+    OCF_WeapTypeHalberd2H,
+    OCF_WeapTypeHammer1H,
+    OCF_WeapTypeHandBlade1H,
+    OCF_WeapTypeHatchet1H,
+    OCF_WeapTypeHuntingKnife1H,
+    OCF_WeapTypeJavelin1H,
+    OCF_WeapTypeJavelin2H,
+    OCF_WeapTypeKatana1H,
+    OCF_WeapTypeKatana2H,
+    OCF_WeapTypeKunai1H,
+    OCF_WeapTypeLance1H,
+    OCF_WeapTypeLance2H,
+    OCF_WeapTypeLightsaber1H_1Blade,
+    OCF_WeapTypeLightsaber1H_2Blade,
+    OCF_WeapTypeLightsaber1H,
+    OCF_WeapTypeLightsaber2H_1Blade,
+    OCF_WeapTypeLightsaber2H_2Blade,
+    OCF_WeapTypeLightsaber2H,
+    OCF_WeapTypeLongbow2H,
+    OCF_WeapTypeLongsword2H,
+    OCF_WeapTypeMace1H,
+    OCF_WeapTypeMace2H,
+    OCF_WeapTypeMassiveSword2H,
     OCF_WeapTypeMelee,
-    None,
+    OCF_WeapTypePickaxe1H,
+    OCF_WeapTypePickaxe2H,
+    OCF_WeapTypePike,
+    OCF_WeapTypePike1H,
+    OCF_WeapTypePike2H,
+    OCF_WeapTypePole1H_Swing,
+    OCF_WeapTypePole1H_Thrust,
+    OCF_WeapTypePole1H,
+    OCF_WeapTypePole2H_Swing,
+    OCF_WeapTypePole2H_Thrust,
+    OCF_WeapTypePole2H,
+    OCF_WeapTypeQuarterstaff1H,
+    OCF_WeapTypeQuarterstaff2H,
+    OCF_WeapTypeRapier1H,
+    OCF_WeapTypeRapier2H,
+    OCF_WeapTypeRevDagger1H,
+    OCF_WeapTypeSaber1H,
+    OCF_WeapTypeSaber2H,
+    OCF_WeapTypeSai1H,
+    OCF_WeapTypeScimitar1H,
+    OCF_WeapTypeScimitar2H,
+    OCF_WeapTypeScythe1H,
+    OCF_WeapTypeScythe2H,
+    OCF_WeapTypeShiv1H,
+    OCF_WeapTypeShortbow2H,
+    OCF_WeapTypeShuriken1H,
+    OCF_WeapTypeSickle1H,
+    OCF_WeapTypeSlingshot2H,
+    OCF_WeapTypeSpear1H,
+    OCF_WeapTypeSpear2H,
+    OCF_WeapTypeStaff,
+    OCF_WeapTypeSword1H,
+    OCF_WeapTypeTanto1H,
+    OCF_WeapTypeToolKnife1H,
+    OCF_WeapTypeTrident1H,
+    OCF_WeapTypeTrident2H,
+    OCF_WeapTypeTwinblade1H,
+    OCF_WeapTypeTwinblade2H,
+    OCF_WeapTypeTwinDagger1H,
+    OCF_WeapTypeUnarmed,
+    OCF_WeapTypeWarAxe1H,
+    OCF_WeapTypeWarhammer2H,
+    OCF_WeapTypeWarpick1H,
+    OCF_WeapTypeWarpick2H,
+    OCF_WeapTypeWarscythe1H,
+    OCF_WeapTypeWarscythe2H,
+    OCF_WeapTypeWhip1H,
+    OCF_WeapTypeWoodaxe1H,
+    OCF_WeapTypeWoodaxe2H,
+    OCF_WeapTypeWoodHatchet1H,
+    OCF_WeapTypeWoodHatchet2H,
 }
 
 #[cfg(test)]
