@@ -2,7 +2,7 @@
 
 namespace ui
 {
-	constexpr auto hud_name  = "soulsy_hud";
+	constexpr auto HUD_NAME  = "soulsy_hud";
 	constexpr auto draw_full = 255;
 
 	static std::string icon_directory                = R"(.\Data\SKSE\Plugins\resources\icons)";

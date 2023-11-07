@@ -10,10 +10,11 @@ struct HudLayout;
 struct SlotLayout;
 struct Point;
 struct Color;
+struct LoadedImage;
 
 namespace ui
 {
-	struct image
+	struct TextureData
 	{
 		ID3D11ShaderResourceView* texture = nullptr;
 		int32_t width                     = 0;
@@ -26,6 +27,7 @@ namespace ui
 	void startTimer(Action which, uint32_t duration);
 	void stopTimer(Action which);
 
+	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
 	{
 		struct wnd_proc_hook
@@ -36,31 +38,6 @@ namespace ui
 
 		ui_renderer();
 
-		static void draw_animations_frame();
-		static void draw_text(float a_x,
-			float a_y,
-			float a_offset_x,
-			float a_offset_y,
-			float a_offset_extra_x,
-			float a_offset_extra_y,
-			const char* a_text,
-			uint32_t a_alpha,
-			uint32_t a_red,
-			uint32_t a_green,
-			uint32_t a_blue,
-			float a_font_size    = 20.f,
-			bool a_center_text   = true,
-			bool a_deduct_text_x = false,
-			bool a_deduct_text_y = false,
-			bool a_add_text_x    = false,
-			bool a_add_text_y    = false);
-
-		static void draw_element(ID3D11ShaderResourceView* a_texture,
-			ImVec2 a_center,
-			ImVec2 a_size,
-			float a_angle,
-			ImU32 a_color = IM_COL32_WHITE);
-
 		// Oxidation section.
 		static void drawAllSlots();
 		static void drawElement(ID3D11ShaderResourceView* texture,
@@ -68,6 +45,11 @@ namespace ui
 			const ImVec2 size,
 			const float angle,
 			const Color color);
+		static void drawElementInner(ID3D11ShaderResourceView* texture,
+			const ImVec2 center,
+			const ImVec2 size,
+			const float angle,
+			const ImU32 im_color);  // retaining support for animations...
 		static void drawText(const std::string text,
 			const ImVec2 center,
 			const float font_size,
@@ -84,26 +66,32 @@ namespace ui
 			uint32_t a_modify,
 			uint32_t a_alpha,
 			float a_duration);
-		static void draw_ui();
+		static void drawHud();
 
-		static bool load_texture_from_file(const char* filename,
+		static bool lazyLoadIcon(std::string name);
+		static bool loadTextureFromFile(const char* filename,
 			ID3D11ShaderResourceView** out_srv,
 			std::int32_t& out_width,
 			std::int32_t& out_height);
+		static bool d3dTextureFromBuffer(LoadedImage* loadedImg,
+			ID3D11ShaderResourceView** out_srv,
+			int32_t& out_width,
+			int32_t& out_height);
 
 		static inline ID3D11Device* device_         = nullptr;
 		static inline ID3D11DeviceContext* context_ = nullptr;
 
 		template <typename T>
-		static void
-			load_images(std::map<std::string, T>& a_map, std::map<uint32_t, image>& a_struct, std::string& file_path);
+		static void loadImagesForMap(std::map<std::string, T>& a_map,
+			std::map<uint32_t, TextureData>& a_struct,
+			std::string& file_path);
 
-		static void load_animation_frames(std::string& file_path, std::vector<image>& frame_list);
+		static void load_animation_frames(std::string& file_path, std::vector<TextureData>& frame_list);
+		static void draw_animations_frame();
 
-		static image get_key_icon(uint32_t a_key);
-		static void load_font();
+		static TextureData get_key_icon(uint32_t a_key);
+		static void loadFont();
 
-		static void load_icon_images(std::map<std::string, image>& a_struct, std::string& file_path);
 
 	public:
 		static float get_resolution_scale_width();
@@ -113,7 +101,7 @@ namespace ui
 		static float easeInCubic(float progress);
 		static float easeOutCubic(float progress);
 
-		static void load_all_images();
+		static void preloadImages();
 
 		static void advanceTimers(float delta);
 		static void advanceTransition(float delta);

@@ -5,8 +5,8 @@
 
 use crate::data::base::BaseType;
 use crate::data::huditem::HudItem;
-use crate::data::icons::Icon;
 use crate::data::item_cache::ItemCache;
+use crate::images::icons::Icon;
 
 /// A single equipment set.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]

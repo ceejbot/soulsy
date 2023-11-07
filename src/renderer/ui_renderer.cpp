@@ -7,30 +7,21 @@
 #include "key_path.h"
 #include "keycodes.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4702)
-#define NANOSVG_IMPLEMENTATION
-#define NANOSVG_ALL_COLOR_KEYWORDS
-#include <nanosvg.h>
-#define NANOSVGRAST_IMPLEMENTATION
-#include <nanosvgrast.h>
-#pragma warning(pop)
-
 #include "lib.rs.h"
 
 namespace ui
 {
-	static std::map<animation_type, std::vector<image>> animation_frame_map = {};
+	static std::map<animation_type, std::vector<TextureData>> animation_frame_map = {};
 	static std::vector<std::pair<animation_type, std::unique_ptr<animation>>> animation_list;
 
 	static std::map<uint8_t, float> cycle_timers = {};
 
-	static std::map<uint32_t, image> image_struct;
-	static std::map<uint32_t, image> key_struct;
-	static std::map<uint32_t, image> default_key_struct;
-	static std::map<uint32_t, image> ps_key_struct;
-	static std::map<uint32_t, image> xbox_key_struct;
-	static std::map<std::string, image> icon_struct;
+	static std::map<uint32_t, TextureData> image_struct;
+	static std::map<uint32_t, TextureData> key_struct;
+	static std::map<uint32_t, TextureData> default_key_struct;
+	static std::map<uint32_t, TextureData> PS5_BUTTON_MAP;
+	static std::map<uint32_t, TextureData> XBOX_BUTTON_MAP;
+	static std::map<std::string, TextureData> ICON_MAP;
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 
@@ -44,7 +35,7 @@ namespace ui
 	bool gDoingBriefPeek    = false;
 
 	ImFont* imFont;
-	auto tried_font_load = false;
+	auto triedFontLoad = false;
 
 	LRESULT ui_renderer::wnd_proc_hook::thunk(const HWND h_wnd,
 		const UINT u_msg,
@@ -124,25 +115,54 @@ namespace ui
 
 		if (!d_3d_init_hook::initialized.load()) { return; }
 
-		if (!imFont && !tried_font_load) { load_font(); }
+		if (!imFont && !triedFontLoad) { loadFont(); }
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		draw_ui();
+		drawHud();
 
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
-	// Helper function to load an image into a DX11 texture with common settings
-	bool ui_renderer::load_texture_from_file(const char* filename,
+	bool ui_renderer::loadTextureFromFile(const char* filename,
 		ID3D11ShaderResourceView** out_srv,
 		int32_t& out_width,
 		int32_t& out_height)
 	{
+		auto loadedImg = rasterize_by_path(std::string(filename));
+		return d3dTextureFromBuffer(&loadedImg, out_srv, out_width, out_height);
+	}
+
+	bool ui_renderer::lazyLoadIcon(std::string name)
+	{
+		auto key = std::string(get_icon_key(name));
+		if (ICON_MAP[key].width > 0) { return true; }
+
+		LoadedImage loadedImg = rasterize_icon(key, 512);
+		if (loadedImg.width == 0) { return false; }
+		if (d3dTextureFromBuffer(&loadedImg, &ICON_MAP[key].texture, ICON_MAP[key].width, ICON_MAP[key].height))
+		{
+			logger::debug("Created D3D11 texture for icon '{}'; width={}; height={}",
+				key,
+				ICON_MAP[key].width,
+				ICON_MAP[key].height);
+			return true;
+		}
+		return false;
+	}
+
+	// Helper function to load an image into a DX11 texture with common settings
+	bool ui_renderer::d3dTextureFromBuffer(LoadedImage* loadedImg,
+		ID3D11ShaderResourceView** out_srv,
+		int32_t& out_width,
+		int32_t& out_height)
+	{
+		if (loadedImg->buffer.empty()) { return false; }
+
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)
 		{
@@ -151,23 +171,11 @@ namespace ui
 		}
 		const auto forwarder = renderer->data.forwarder;
 
-		// Load from disk into a raw RGBA buffer
-		auto* svg  = nsvgParseFromFile(filename, "px", 96.0f);
-		auto* rast = nsvgCreateRasterizer();
-
-		auto image_width  = static_cast<int>(svg->width);
-		auto image_height = static_cast<int>(svg->height);
-
-		auto image_data = (unsigned char*)malloc(image_width * image_height * 4);
-		nsvgRasterize(rast, svg, 0, 0, 1, image_data, image_width, image_height, image_width * 4);
-		nsvgDelete(svg);
-		nsvgDeleteRasterizer(rast);
-
 		// Create texture
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.Width            = image_width;
-		desc.Height           = image_height;
+		desc.Width            = loadedImg->width;
+		desc.Height           = loadedImg->height;
 		desc.MipLevels        = 1;
 		desc.ArraySize        = 1;
 		desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -176,6 +184,11 @@ namespace ui
 		desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags   = 0;
 		desc.MiscFlags        = 0;
+
+		// copy image_data into the subresource
+		auto image_data = (unsigned char*)malloc(loadedImg->buffer.size());
+		int counter     = 0;
+		for (auto byte : loadedImg->buffer) { image_data[counter++] = static_cast<unsigned char>(byte); }
 
 		ID3D11Texture2D* p_texture = nullptr;
 		D3D11_SUBRESOURCE_DATA sub_resource;
@@ -196,8 +209,8 @@ namespace ui
 
 		free(image_data);
 
-		out_width  = image_width;
-		out_height = image_height;
+		out_width  = loadedImg->width;
+		out_height = loadedImg->height;
 
 		return true;
 	}
@@ -212,7 +225,8 @@ namespace ui
 			if (!it->second->is_over())
 			{
 				auto* anim = it->second.get();
-				draw_element(animation_frame_map[it->first][anim->current_frame].texture,
+
+				drawElementInner(animation_frame_map[it->first][anim->current_frame].texture,
 					anim->center,
 					anim->size,
 					anim->angle,
@@ -259,74 +273,6 @@ namespace ui
 			font, font_size, aligned_loc, text_color, text.c_str(), nullptr, 0.0f, nullptr);
 	}
 
-
-	void ui_renderer::draw_text(const float a_x,
-		const float a_y,
-		const float a_offset_x,
-		const float a_offset_y,
-		const float a_offset_extra_x,
-		const float a_offset_extra_y,
-		const char* a_text,
-		uint32_t a_alpha,
-		uint32_t a_red,
-		uint32_t a_green,
-		uint32_t a_blue,
-		const float a_font_size,
-		bool a_center_text,
-		bool a_deduct_text_x,
-		bool a_deduct_text_y,
-		bool a_add_text_x,
-		bool a_add_text_y)
-	{
-		//it should center the text, it kind of does
-		auto text_x = 0.f;
-		auto text_y = 0.f;
-
-		if (!a_text || !*a_text || a_alpha == 0) { return; }
-
-		const ImU32 color = IM_COL32(a_red, a_green, a_blue, a_alpha * gHudAlpha);
-
-		const ImVec2 text_size = ImGui::CalcTextSize(a_text);
-		if (a_center_text)
-		{
-			text_x = -text_size.x * 0.5f;
-			text_y = -text_size.y * 0.5f;
-		}
-		if (a_deduct_text_x) { text_x = text_x - text_size.x; }
-		if (a_deduct_text_y) { text_y = text_y - text_size.y; }
-		if (a_add_text_x) { text_x = text_x + text_size.x; }
-		if (a_add_text_y) { text_y = text_y + text_size.y; }
-
-		const auto position =
-			ImVec2(a_x + a_offset_x + a_offset_extra_x + text_x, a_y + a_offset_y + a_offset_extra_y + text_y);
-
-		auto* font = imFont;
-		if (!font) { font = ImGui::GetDefaultFont(); }
-
-		ImGui::GetWindowDrawList()->AddText(font, a_font_size, position, color, a_text, nullptr, 0.0f, nullptr);
-	}
-
-	// Used only by draw_animations_frame
-	void ui_renderer::draw_element(ID3D11ShaderResourceView* a_texture,
-		const ImVec2 a_center,
-		const ImVec2 a_size,
-		const float a_angle,
-		const ImU32 a_color)
-	{
-		const float cos_a   = cosf(a_angle);
-		const float sin_a   = sinf(a_angle);
-		const ImVec2 pos[4] = { a_center + ImRotate(ImVec2(-a_size.x * 0.5f, -a_size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(+a_size.x * 0.5f, -a_size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(+a_size.x * 0.5f, +a_size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(-a_size.x * 0.5f, +a_size.y * 0.5f), cos_a, sin_a)
-
-		};
-		constexpr ImVec2 uvs[4] = { ImVec2(0.0f, 0.0f), ImVec2(1.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec2(0.0f, 1.0f) };
-
-		ImGui::GetWindowDrawList()->AddImageQuad(
-			a_texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], a_color);
-	}
-
 	void ui_renderer::init_animation(const animation_type animation_type,
 		const float a_screen_x,
 		const float a_screen_y,
@@ -368,7 +314,15 @@ namespace ui
 		const Color color)
 	{
 		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
+		drawElementInner(texture, center, size, angle, im_color);
+	}
 
+	void ui_renderer::drawElementInner(ID3D11ShaderResourceView* texture,
+		const ImVec2 center,
+		const ImVec2 size,
+		const float angle,
+		const ImU32 im_color)
+	{
 		const float cos_a   = cosf(angle);
 		const float sin_a   = sinf(angle);
 		const ImVec2 pos[4] = { center + ImRotate(ImVec2(-size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
@@ -465,16 +419,19 @@ namespace ui
 			if (slotLayout.icon_color.a > 0)
 			{
 				const auto iconColor = colorizeIcons ? entry->color() : slotLayout.icon_color;
-				auto iconFile        = std::string(entry->icon_file());
-				if (icon_struct[iconFile].width == 0) { iconFile = std::string(entry->icon_fallback()); }
-				const auto [texture, width, height] = icon_struct[iconFile];
-				const auto scale                    = width > height ? (slotLayout.icon_size.x * globalScale / width) :
-				                                                       (slotLayout.icon_size.y * globalScale / height);
-				const auto size                     = ImVec2(width * scale, height * scale);
-				const auto icon_pos                 = ImVec2(slot_center.x + slotLayout.icon_offset.x * globalScale,
-                    slot_center.y + slotLayout.icon_offset.y * globalScale);
+				auto iconkey         = std::string(entry->icon_key());
+				if (lazyLoadIcon(iconkey))
+				{
+					const auto [texture, width, height] = ICON_MAP[iconkey];
+					const auto scale    = width > height ? (slotLayout.icon_size.x * globalScale / width) :
+					                                       (slotLayout.icon_size.y * globalScale / height);
+					const auto size     = ImVec2(width * scale, height * scale);
+					const auto icon_pos = ImVec2(slot_center.x + slotLayout.icon_offset.x * globalScale,
+						slot_center.y + slotLayout.icon_offset.y * globalScale);
 
-				drawElement(texture, slot_center, size, 0.f, iconColor);
+					drawElement(texture, slot_center, size, 0.f, iconColor);
+				}
+				else { logger::debug("lazy load for icon key {} failed; not drawing icon.", iconkey); }
 			}
 
 			// Now decide if we should draw the text showing the item's name.
@@ -529,7 +486,7 @@ namespace ui
 		// draw_animations_frame();
 	}
 
-	void ui_renderer::draw_ui()
+	void ui_renderer::drawHud()
 	{
 		const auto timeDelta = ImGui::GetIO().DeltaTime;
 		advanceTimers(timeDelta);
@@ -547,45 +504,16 @@ namespace ui
 		ImGui::SetNextWindowSize(ImVec2(screen_size_x, screen_size_y));
 		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
 		ImGui::GetStyle().Alpha = gHudAlpha;
-		ImGui::Begin(hud_name, nullptr, window_flags);
+		ImGui::Begin(HUD_NAME, nullptr, window_flags);
 
 		drawAllSlots();
 
 		ImGui::End();
 	}
 
-	void ui_renderer::load_icon_images(std::map<std::string, image>& out_struct, std::string& icondir)
-	{
-		const auto needed_icons = icon_files();
-		for (auto icon_file_str : needed_icons)
-		{
-			auto icon_file = std::string(icon_file_str);
-			auto entrypath = std::filesystem::path(icondir);
-			entrypath /= icon_file;
-
-			std::error_code ec;
-			if (std::filesystem::exists(entrypath, ec))
-			{
-				if (load_texture_from_file(entrypath.string().c_str(),
-						&out_struct[icon_file].texture,
-						out_struct[icon_file].width,
-						out_struct[icon_file].height))
-				{
-					// nothing to do here but log and I don't want to log.
-					// logger::trace("loaded texture {}, type: {}, width: {}, height: {}"sv,
-					// 	entrypath.filename().string().c_str(),
-					// 	entrypath.filename().extension().string().c_str(),
-					// 	out_struct[icon_file].width,
-					// 	out_struct[icon_file].height);
-				}
-			}
-			else { logger::info("TODO: Add an icon to this pack for {}"sv, entrypath.filename().string().c_str()); }
-		}
-	}
-
 	template <typename T>
-	void ui_renderer::load_images(std::map<std::string, T>& a_map,
-		std::map<uint32_t, image>& a_struct,
+	void ui_renderer::loadImagesForMap(std::map<std::string, T>& a_map,
+		std::map<uint32_t, TextureData>& a_struct,
 		std::string& file_path)
 	{
 		const auto res_width  = get_resolution_scale_width();
@@ -602,7 +530,7 @@ namespace ui
 					continue;
 				}
 				const auto index = static_cast<int32_t>(a_map[entry.path().filename().string()]);
-				if (load_texture_from_file(entry.path().string().c_str(),
+				if (loadTextureFromFile(entry.path().string().c_str(),
 						&a_struct[index].texture,
 						a_struct[index].width,
 						a_struct[index].height))
@@ -623,7 +551,7 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::load_animation_frames(std::string& file_path, std::vector<image>& frame_list)
+	void ui_renderer::load_animation_frames(std::string& file_path, std::vector<TextureData>& frame_list)
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
@@ -637,10 +565,10 @@ namespace ui
 				continue;
 			}
 
-			load_texture_from_file(entry.path().string().c_str(), &texture, width, height);
+			loadTextureFromFile(entry.path().string().c_str(), &texture, width, height);
 
 			// logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
-			image img;
+			TextureData img;
 			img.texture = texture;
 			// img.width   = static_cast<int32_t>(width * get_resolution_scale_width());
 			// img.height  = static_cast<int32_t>(height * get_resolution_scale_height());
@@ -648,7 +576,7 @@ namespace ui
 		}
 	}
 
-	image ui_renderer::get_key_icon(const uint32_t a_key)
+	TextureData ui_renderer::get_key_icon(const uint32_t a_key)
 	{
 		const auto settings = user_settings();
 		auto return_image   = default_key_struct[static_cast<int32_t>(default_keys::key)];
@@ -657,9 +585,9 @@ namespace ui
 		{
 			if (settings->controller_kind() == static_cast<uint32_t>(controller_set::playstation))
 			{
-				return_image = ps_key_struct[a_key];
+				return_image = PS5_BUTTON_MAP[a_key];
 			}
-			else { return_image = xbox_key_struct[a_key]; }
+			else { return_image = XBOX_BUTTON_MAP[a_key]; }
 		}
 		else
 		{
@@ -668,7 +596,6 @@ namespace ui
 		return return_image;
 	}
 
-	// but y tho?
 	// float ui_renderer::get_resolution_scale_width() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
 	// float ui_renderer::get_resolution_scale_height() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
 
@@ -791,7 +718,7 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::load_font()
+	void ui_renderer::loadFont()
 	{
 		auto hud         = hud_layout();
 		auto fontfile    = std::string(hud.font);
@@ -800,7 +727,7 @@ namespace ui
 
 		logger::trace(
 			"about to try to load font; size={}; globalScale={}; path={}"sv, hud.font_size, hud.global_scale, path);
-		tried_font_load = true;
+		triedFontLoad = true;
 		if (std::filesystem::is_regular_file(file_path) &&
 			((file_path.extension() == ".ttf") || (file_path.extension() == ".otf")))
 		{
@@ -830,16 +757,13 @@ namespace ui
 		}
 	}
 
-	// TODO ceej: rewrite in rust
-	void ui_renderer::load_all_images()
+	void ui_renderer::preloadImages()
 	{
-		load_images(image_type_name_map, image_struct, img_directory);
-		load_images(key_icon_name_map, key_struct, key_directory);
-		load_images(default_key_icon_name_map, default_key_struct, key_directory);
-		load_images(gamepad_ps_icon_name_map, ps_key_struct, key_directory);
-		load_images(gamepad_xbox_icon_name_map, xbox_key_struct, key_directory);
-
-		load_icon_images(icon_struct, icon_directory);
+		loadImagesForMap(image_type_name_map, image_struct, img_directory);
+		loadImagesForMap(key_icon_name_map, key_struct, key_directory);
+		loadImagesForMap(default_key_icon_name_map, default_key_struct, key_directory);
+		loadImagesForMap(gamepad_ps_icon_name_map, PS5_BUTTON_MAP, key_directory);
+		loadImagesForMap(gamepad_xbox_icon_name_map, XBOX_BUTTON_MAP, key_directory);
 
 		load_animation_frames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());

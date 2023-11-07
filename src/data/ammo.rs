@@ -3,8 +3,8 @@
 use strum::Display;
 
 use super::color::InvColor;
-use super::icons::Icon;
 use super::{HasIcon, HasKeywords};
+use crate::images::icons::Icon;
 
 #[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum AmmoType {

@@ -9,7 +9,6 @@ pub mod color;
 pub mod food;
 pub mod game_enums;
 pub mod huditem;
-pub mod icons;
 pub mod item_cache;
 pub mod keywords;
 pub mod magic;
@@ -26,12 +25,12 @@ use self::ammo::AmmoType;
 pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
-use self::icons::Icon;
 use self::potion::PotionType;
 use self::power::PowerType;
 use self::shout::ShoutType;
 use self::spell::SpellType;
 pub use super::magic::SpellData;
+use crate::images::icons::Icon;
 #[cfg(not(test))]
 use crate::plugin::{healthPotionCount, magickaPotionCount, staminaPotionCount};
 use crate::plugin::{Color, ItemCategory};
@@ -228,8 +227,8 @@ pub fn strings_to_enumset<T: EnumSetType + for<'a> TryFrom<&'a str>>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::icons::Icon;
     use crate::data::weapon::{WeaponEquipType, WeaponType};
+    use crate::images::icons::Icon;
 
     #[test]
     fn can_classify_huditem() {

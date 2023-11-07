@@ -5,8 +5,8 @@ use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::EnumString;
 
 use super::color::InvColor;
-use super::icons::Icon;
 use super::{strings_to_enumset, HasIcon, HasKeywords};
+use crate::images::icons::Icon;
 use crate::plugin::Color;
 
 /// Struct to hold the icon selection and the inventory color to use.

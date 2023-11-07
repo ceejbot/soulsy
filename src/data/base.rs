@@ -6,13 +6,13 @@ use super::ammo::AmmoType;
 use super::armor::ArmorType;
 use super::color::InvColor;
 use super::food::FoodType;
-use super::icons::Icon;
 use super::potion::PotionType;
 use super::power::PowerType;
 use super::shout::ShoutType;
 use super::spell::SpellType;
 use super::weapon::WeaponType;
 use super::{HasIcon, HasKeywords};
+use crate::images::icons::Icon;
 use crate::plugin::{Color, ItemCategory};
 
 #[derive(Clone, Debug, Default, Display, Eq, Hash, PartialEq)]

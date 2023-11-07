@@ -25,7 +25,6 @@ The plugin requires the following vcpkg libraries, which will be installed for y
 
 - [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG)
 - [spdlog](https://github.com/gabime/spdlog)
-- [nanosvg](https://github.com/memononen/nanosvg)
 - [imgui](https://github.com/ocornut/imgui)
 
 There are a number of development conveniences in the [justfile](https://just.systems), including build recipes for Powershell. `cargo install just` if you do not have it. Because I am more comfortable on Unixes than on Windows, some recipes are written in Bash. The just recipes can build, copy to a test mod directory, update version numbers and tag a new release, and build archives for upload to the Nexus.
