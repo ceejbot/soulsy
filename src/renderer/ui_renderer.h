@@ -10,6 +10,7 @@ struct HudLayout;
 struct SlotLayout;
 struct Point;
 struct Color;
+struct LoadedImage;
 
 namespace ui
 {
