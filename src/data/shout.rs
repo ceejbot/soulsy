@@ -1,7 +1,6 @@
 use super::color::InvColor;
 use super::keywords::*;
-use super::strings_to_enumset;
-use super::HasIcon;
+use super::{strings_to_enumset, HasIcon};
 use crate::images::Icon;
 use crate::plugin::Color;
 

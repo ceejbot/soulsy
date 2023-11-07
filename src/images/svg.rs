@@ -1,8 +1,5 @@
 //! Rasterize svgs and provide them to the C++ side.
 //! Possibly read on the fly?
-use super::icons::Icon;
-use crate::plugin::LoadedImage;
-
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -12,6 +9,9 @@ use anyhow::{anyhow, Result};
 use once_cell::sync::Lazy;
 use resvg::usvg::TreeParsing;
 use resvg::*;
+
+use super::icons::Icon;
+use crate::plugin::LoadedImage;
 
 static ICON_MAP: Lazy<Mutex<HashMap<Icon, Icon>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 

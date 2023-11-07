@@ -225,7 +225,8 @@ namespace ui
 			if (!it->second->is_over())
 			{
 				auto* anim = it->second.get();
-				draw_element(animation_frame_map[it->first][anim->current_frame].texture,
+
+				drawElementInner(animation_frame_map[it->first][anim->current_frame].texture,
 					anim->center,
 					anim->size,
 					anim->angle,
@@ -272,27 +273,6 @@ namespace ui
 			font, font_size, aligned_loc, text_color, text.c_str(), nullptr, 0.0f, nullptr);
 	}
 
-	// Used only by draw_animations_frame
-	void ui_renderer::draw_element(ID3D11ShaderResourceView* a_texture,
-		const ImVec2 a_center,
-		const ImVec2 a_size,
-		const float a_angle,
-		const ImU32 a_color)
-	{
-		const float cos_a   = cosf(a_angle);
-		const float sin_a   = sinf(a_angle);
-		const ImVec2 pos[4] = { a_center + ImRotate(ImVec2(-a_size.x * 0.5f, -a_size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(+a_size.x * 0.5f, -a_size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(+a_size.x * 0.5f, +a_size.y * 0.5f), cos_a, sin_a),
-			a_center + ImRotate(ImVec2(-a_size.x * 0.5f, +a_size.y * 0.5f), cos_a, sin_a)
-
-		};
-		constexpr ImVec2 uvs[4] = { ImVec2(0.0f, 0.0f), ImVec2(1.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec2(0.0f, 1.0f) };
-
-		ImGui::GetWindowDrawList()->AddImageQuad(
-			a_texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], a_color);
-	}
-
 	void ui_renderer::init_animation(const animation_type animation_type,
 		const float a_screen_x,
 		const float a_screen_y,
@@ -334,7 +314,15 @@ namespace ui
 		const Color color)
 	{
 		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
+		drawElementInner(texture, center, size, angle, im_color);
+	}
 
+	void ui_renderer::drawElementInner(ID3D11ShaderResourceView* texture,
+		const ImVec2 center,
+		const ImVec2 size,
+		const float angle,
+		const ImU32 im_color)
+	{
 		const float cos_a   = cosf(angle);
 		const float sin_a   = sinf(angle);
 		const ImVec2 pos[4] = { center + ImRotate(ImVec2(-size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
@@ -516,7 +504,7 @@ namespace ui
 		ImGui::SetNextWindowSize(ImVec2(screen_size_x, screen_size_y));
 		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
 		ImGui::GetStyle().Alpha = gHudAlpha;
-		ImGui::Begin(hud_name, nullptr, window_flags);
+		ImGui::Begin(HUD_NAME, nullptr, window_flags);
 
 		drawAllSlots();
 

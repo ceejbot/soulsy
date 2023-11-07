@@ -27,6 +27,7 @@ namespace ui
 	void startTimer(Action which, uint32_t duration);
 	void stopTimer(Action which);
 
+	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
 	{
 		struct wnd_proc_hook
@@ -37,13 +38,6 @@ namespace ui
 
 		ui_renderer();
 
-		static void draw_animations_frame();
-		static void draw_element(ID3D11ShaderResourceView* a_texture,
-			ImVec2 a_center,
-			ImVec2 a_size,
-			float a_angle,
-			ImU32 a_color = IM_COL32_WHITE);
-
 		// Oxidation section.
 		static void drawAllSlots();
 		static void drawElement(ID3D11ShaderResourceView* texture,
@@ -51,6 +45,11 @@ namespace ui
 			const ImVec2 size,
 			const float angle,
 			const Color color);
+		static void drawElementInner(ID3D11ShaderResourceView* texture,
+			const ImVec2 center,
+			const ImVec2 size,
+			const float angle,
+			const ImU32 im_color);  // retaining support for animations...
 		static void drawText(const std::string text,
 			const ImVec2 center,
 			const float font_size,
@@ -88,6 +87,7 @@ namespace ui
 			std::string& file_path);
 
 		static void load_animation_frames(std::string& file_path, std::vector<TextureData>& frame_list);
+		static void draw_animations_frame();
 
 		static TextureData get_key_icon(uint32_t a_key);
 		static void loadFont();
