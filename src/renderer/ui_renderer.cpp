@@ -115,27 +115,53 @@ namespace ui
 
 		if (!d_3d_init_hook::initialized.load()) { return; }
 
-		if (!imFont && !triedFontLoad) { load_font(); }
+		if (!imFont && !triedFontLoad) { loadFont(); }
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		draw_ui();
+		drawHud();
 
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
-	// Helper function to load an image into a DX11 texture with common settings
-	bool ui_renderer::load_texture_from_file(const char* filename,
+	bool ui_renderer::loadTextureFromFile(const char* filename,
 		ID3D11ShaderResourceView** out_srv,
 		int32_t& out_width,
 		int32_t& out_height)
 	{
 		auto loadedImg = rasterize_by_path(std::string(filename));
-		if (loadedImg.buffer.empty()) { return false; }
+		return d3dTextureFromBuffer(&loadedImg, out_srv, out_width, out_height);
+	}
+
+	bool ui_renderer::lazyLoadIcon(std::string name)
+	{
+		auto key = std::string(get_icon_key(name));
+		if (ICON_MAP[key].width > 0) { return true; }
+
+		LoadedImage loadedImg = rasterize_icon(key, 512);
+		if (loadedImg.width == 0) { return false; }
+		if (d3dTextureFromBuffer(&loadedImg, &ICON_MAP[key].texture, ICON_MAP[key].width, ICON_MAP[key].height))
+		{
+			logger::debug("Created D3D11 texture for icon '{}'; width={}; height={}",
+				key,
+				ICON_MAP[key].width,
+				ICON_MAP[key].height);
+			return true;
+		}
+		return false;
+	}
+
+	// Helper function to load an image into a DX11 texture with common settings
+	bool ui_renderer::d3dTextureFromBuffer(LoadedImage* loadedImg,
+		ID3D11ShaderResourceView** out_srv,
+		int32_t& out_width,
+		int32_t& out_height)
+	{
+		if (loadedImg->buffer.empty()) { return false; }
 
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)
@@ -148,8 +174,8 @@ namespace ui
 		// Create texture
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.Width            = loadedImg.width;
-		desc.Height           = loadedImg.height;
+		desc.Width            = loadedImg->width;
+		desc.Height           = loadedImg->height;
 		desc.MipLevels        = 1;
 		desc.ArraySize        = 1;
 		desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -160,9 +186,9 @@ namespace ui
 		desc.MiscFlags        = 0;
 
 		// copy image_data into the subresource
-		auto image_data = (unsigned char*)malloc(loadedImg.buffer.size());
+		auto image_data = (unsigned char*)malloc(loadedImg->buffer.size());
 		int counter     = 0;
-		for (auto byte : loadedImg.buffer) { image_data[counter++] = static_cast<unsigned char>(byte); }
+		for (auto byte : loadedImg->buffer) { image_data[counter++] = static_cast<unsigned char>(byte); }
 
 		ID3D11Texture2D* p_texture = nullptr;
 		D3D11_SUBRESOURCE_DATA sub_resource;
@@ -183,8 +209,8 @@ namespace ui
 
 		free(image_data);
 
-		out_width  = loadedImg.width;
-		out_height = loadedImg.height;
+		out_width  = loadedImg->width;
+		out_height = loadedImg->height;
 
 		return true;
 	}
@@ -244,53 +270,6 @@ namespace ui
 
 		ImGui::GetWindowDrawList()->AddText(
 			font, font_size, aligned_loc, text_color, text.c_str(), nullptr, 0.0f, nullptr);
-	}
-
-
-	void ui_renderer::draw_text(const float a_x,
-		const float a_y,
-		const float a_offset_x,
-		const float a_offset_y,
-		const float a_offset_extra_x,
-		const float a_offset_extra_y,
-		const char* a_text,
-		uint32_t a_alpha,
-		uint32_t a_red,
-		uint32_t a_green,
-		uint32_t a_blue,
-		const float a_font_size,
-		bool a_center_text,
-		bool a_deduct_text_x,
-		bool a_deduct_text_y,
-		bool a_add_text_x,
-		bool a_add_text_y)
-	{
-		//it should center the text, it kind of does
-		auto text_x = 0.f;
-		auto text_y = 0.f;
-
-		if (!a_text || !*a_text || a_alpha == 0) { return; }
-
-		const ImU32 color = IM_COL32(a_red, a_green, a_blue, a_alpha * gHudAlpha);
-
-		const ImVec2 text_size = ImGui::CalcTextSize(a_text);
-		if (a_center_text)
-		{
-			text_x = -text_size.x * 0.5f;
-			text_y = -text_size.y * 0.5f;
-		}
-		if (a_deduct_text_x) { text_x = text_x - text_size.x; }
-		if (a_deduct_text_y) { text_y = text_y - text_size.y; }
-		if (a_add_text_x) { text_x = text_x + text_size.x; }
-		if (a_add_text_y) { text_y = text_y + text_size.y; }
-
-		const auto position =
-			ImVec2(a_x + a_offset_x + a_offset_extra_x + text_x, a_y + a_offset_y + a_offset_extra_y + text_y);
-
-		auto* font = imFont;
-		if (!font) { font = ImGui::GetDefaultFont(); }
-
-		ImGui::GetWindowDrawList()->AddText(font, a_font_size, position, color, a_text, nullptr, 0.0f, nullptr);
 	}
 
 	// Used only by draw_animations_frame
@@ -519,7 +498,7 @@ namespace ui
 		// draw_animations_frame();
 	}
 
-	void ui_renderer::draw_ui()
+	void ui_renderer::drawHud()
 	{
 		const auto timeDelta = ImGui::GetIO().DeltaTime;
 		advanceTimers(timeDelta);
@@ -544,75 +523,8 @@ namespace ui
 		ImGui::End();
 	}
 
-	bool ui_renderer::lazyLoadIcon(std::string name)
-	{
-		auto key = std::string(get_icon_key(name));
-		if (ICON_MAP[key].width > 0) { return true; }
-
-		LoadedImage loadedImg = rasterize_icon(key, 512);
-		if (loadedImg.width == 0) { return false; }
-
-		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
-		if (!renderer)
-		{
-			logger::error("Cannot find render manager. Initialization failed."sv);
-			return false;
-		}
-		const auto forwarder = renderer->data.forwarder;
-
-		// Create texture
-		D3D11_TEXTURE2D_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Width            = loadedImg.width;
-		desc.Height           = loadedImg.height;
-		desc.MipLevels        = 1;
-		desc.ArraySize        = 1;
-		desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.SampleDesc.Count = 1;
-		desc.Usage            = D3D11_USAGE_DEFAULT;
-		desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
-		desc.CPUAccessFlags   = 0;
-		desc.MiscFlags        = 0;
-
-		// copy image_data into the subresource
-		auto image_data = (unsigned char*)malloc(loadedImg.buffer.size());
-		int counter     = 0;
-		for (auto byte : loadedImg.buffer) { image_data[counter++] = static_cast<unsigned char>(byte); }
-
-		ID3D11Texture2D* p_texture = nullptr;
-		D3D11_SUBRESOURCE_DATA sub_resource;
-		sub_resource.pSysMem          = image_data;
-		sub_resource.SysMemPitch      = desc.Width * 4;
-		sub_resource.SysMemSlicePitch = 0;
-		device_->CreateTexture2D(&desc, &sub_resource, &p_texture);
-
-		if (p_texture == nullptr) { return false; }
-
-		// Create texture view
-		D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
-		ZeroMemory(&srv_desc, sizeof srv_desc);
-		srv_desc.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		srv_desc.ViewDimension             = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srv_desc.Texture2D.MipLevels       = desc.MipLevels;
-		srv_desc.Texture2D.MostDetailedMip = 0;
-		forwarder->CreateShaderResourceView(p_texture, &srv_desc, &ICON_MAP[key].texture);
-		p_texture->Release();
-
-		free(image_data);
-
-		ICON_MAP[key].width  = loadedImg.width;
-		ICON_MAP[key].height = loadedImg.height;
-
-		logger::debug("Created D3D11 texture for icon '{}'; width={}; data len={}",
-			key,
-			ICON_MAP[key].width,
-			sizeof(ICON_MAP[key].texture));
-
-		return true;
-	}
-
 	template <typename T>
-	void ui_renderer::load_images(std::map<std::string, T>& a_map,
+	void ui_renderer::loadImagesForMap(std::map<std::string, T>& a_map,
 		std::map<uint32_t, TextureData>& a_struct,
 		std::string& file_path)
 	{
@@ -630,7 +542,7 @@ namespace ui
 					continue;
 				}
 				const auto index = static_cast<int32_t>(a_map[entry.path().filename().string()]);
-				if (load_texture_from_file(entry.path().string().c_str(),
+				if (loadTextureFromFile(entry.path().string().c_str(),
 						&a_struct[index].texture,
 						a_struct[index].width,
 						a_struct[index].height))
@@ -665,7 +577,7 @@ namespace ui
 				continue;
 			}
 
-			load_texture_from_file(entry.path().string().c_str(), &texture, width, height);
+			loadTextureFromFile(entry.path().string().c_str(), &texture, width, height);
 
 			// logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
 			TextureData img;
@@ -696,7 +608,6 @@ namespace ui
 		return return_image;
 	}
 
-	// but y tho?
 	// float ui_renderer::get_resolution_scale_width() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
 	// float ui_renderer::get_resolution_scale_height() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
 
@@ -819,7 +730,7 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::load_font()
+	void ui_renderer::loadFont()
 	{
 		auto hud         = hud_layout();
 		auto fontfile    = std::string(hud.font);
@@ -858,16 +769,13 @@ namespace ui
 		}
 	}
 
-	// TODO ceej: rewrite in rust
-	void ui_renderer::load_all_images()
+	void ui_renderer::preloadImages()
 	{
-		load_images(image_type_name_map, image_struct, img_directory);
-		load_images(key_icon_name_map, key_struct, key_directory);
-		load_images(default_key_icon_name_map, default_key_struct, key_directory);
-		load_images(gamepad_ps_icon_name_map, PS5_BUTTON_MAP, key_directory);
-		load_images(gamepad_xbox_icon_name_map, XBOX_BUTTON_MAP, key_directory);
-
-		// load_icon_images(ICON_MAP, icon_directory);
+		loadImagesForMap(image_type_name_map, image_struct, img_directory);
+		loadImagesForMap(key_icon_name_map, key_struct, key_directory);
+		loadImagesForMap(default_key_icon_name_map, default_key_struct, key_directory);
+		loadImagesForMap(gamepad_ps_icon_name_map, PS5_BUTTON_MAP, key_directory);
+		loadImagesForMap(gamepad_xbox_icon_name_map, XBOX_BUTTON_MAP, key_directory);
 
 		load_animation_frames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
