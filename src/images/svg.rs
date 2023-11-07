@@ -32,19 +32,22 @@ pub fn get_icon_key(name: String) -> String {
 /// Called by C++, so it needs to handle all errors and signal its
 /// success or failure through some means other than a Result.
 /// In this case, a zero-length vector is a failure.
-pub fn load_icon_data(name: String, maxdim: u32) -> LoadedImage {
+pub fn rasterize_icon(name: String, maxdim: u32) -> LoadedImage {
     let icon: Icon = Icon::from_str(name.as_str()).unwrap_or_default();
     match load_icon(&icon, maxdim) {
-        Ok(v) => {
-            log::debug!(
-                "successfully rasterized svg; icon={icon}; width={}; data len={};",
-                v.width,
-                v.buffer.len()
-            );
-            v
-        }
+        Ok(v) => v,
         Err(e) => {
-            log::error!("failed to load SVG; icon={icon}; error={e:?}");
+            log::error!("failed to load icon SVG; icon={icon}; error={e:?}");
+            LoadedImage::default()
+        }
+    }
+}
+
+pub fn rasterize_by_path(fpath: String) -> LoadedImage {
+    match load_and_rasterize(&fpath.clone().into(), None) {
+        Ok(v) => v,
+        Err(e) => {
+            log::error!("failed to load svg by path; icon={fpath}; error={e:?}");
             LoadedImage::default()
         }
     }
@@ -54,7 +57,7 @@ pub fn load_icon_data(name: String, maxdim: u32) -> LoadedImage {
 pub fn load_icon(icon: &Icon, maxdim: u32) -> Result<LoadedImage> {
     let mapped = key_for_icon(icon);
     let file_path = icon_to_path(&mapped);
-    load_and_rasterize(&file_path, maxdim)
+    load_and_rasterize(&file_path, Some(maxdim))
 }
 
 /// Look up the fallback-aware key for this icon.
@@ -71,13 +74,16 @@ pub fn key_for_icon(icon: &Icon) -> Icon {
         mapping.insert(icon.clone(), icon.clone());
         icon.clone()
     } else {
-        log::debug!("first path did not exist: {}", first_path.display());
+        log::info!("TODO: add svg data for {icon} to this icon pack.");
         let fb = icon.fallback();
         if icon_to_path(&fb).exists() {
             mapping.insert(icon.clone(), fb.clone());
             fb
         } else {
-            log::debug!("second path did not exist: {}", icon_to_path(&fb).display());
+            log::debug!(
+                "Fallback icon {fb} failed! path='{}';",
+                icon_to_path(&fb).display()
+            );
             mapping.insert(icon.clone(), Icon::IconDefault);
             Icon::IconDefault
         }
@@ -90,29 +96,33 @@ fn icon_to_path(icon: &Icon) -> PathBuf {
 }
 
 /// Internal shared implementation: do the real work.
-fn load_and_rasterize(file_path: &PathBuf, maxdim: u32) -> Result<LoadedImage> {
+fn load_and_rasterize(file_path: &PathBuf, maxsize: Option<u32>) -> Result<LoadedImage> {
     let buffer = std::fs::read(file_path)?;
     let opt = usvg::Options::default();
     let tree = usvg::Tree::from_data(&buffer, &opt)?;
     let rtree = resvg::Tree::from_usvg(&tree);
 
-    let size = if rtree.size.width() > rtree.size.height() {
-        rtree.size.to_int_size().scale_to_width(maxdim)
+    let (size, transform) = if let Some(maxdim) = maxsize {
+        let size = if rtree.size.width() > rtree.size.height() {
+            rtree.size.to_int_size().scale_to_width(maxdim)
+        } else {
+            rtree.size.to_int_size().scale_to_height(maxdim)
+        };
+        if let Some(size) = size {
+            let transform = tiny_skia::Transform::from_scale(
+                size.width() as f32 / rtree.size.width() as f32,
+                size.height() as f32 / rtree.size.height() as f32,
+            );
+            (size, transform)
+        } else {
+            (rtree.size.to_int_size(), tiny_skia::Transform::default())
+        }
     } else {
-        rtree.size.to_int_size().scale_to_height(maxdim)
+        (rtree.size.to_int_size(), tiny_skia::Transform::default())
     };
-
-    let Some(size) = size else {
-        return Err(anyhow!("surprising failure to build a new size object"));
-    };
-
-    let transform = tiny_skia::Transform::from_scale(
-        size.width() as f32 / rtree.size.width() as f32,
-        size.height() as f32 / rtree.size.height() as f32,
-    );
 
     let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())
-        .ok_or(anyhow!("unable to allocate first pixmap"))?;
+        .ok_or(anyhow!("unable to allocate pixmap to render into"))?;
     rtree.render(transform, &mut pixmap.as_mut());
 
     Ok(LoadedImage {
@@ -127,16 +137,42 @@ mod tests {
     use super::*;
 
     #[test]
-    fn load_one() {
+    fn can_rasterize() {
         let icon = Icon::WeaponSwordOneHanded;
         let full = icon_to_path(&icon);
         assert_eq!(
             full.clone().to_string_lossy(),
             "data/SKSE/plugins/resources/icons/weapon_sword_one_handed.svg".to_string()
         );
-        let loaded =
-            load_and_rasterize(&full, 128).expect("should return okay for a known-present file");
+        let loaded = load_and_rasterize(&full, Some(128))
+            .expect("should return okay for a known-present file");
         assert!(!loaded.buffer.is_empty());
         assert_eq!(loaded.buffer.len(), 128 * 128 * 4); // expected size given dimensions & square image
+    }
+
+    #[test]
+    fn rasterize_icon_by_variant() {
+        let loaded = load_icon(&Icon::Food, 256).expect("this icon should exist");
+        assert!(!loaded.buffer.is_empty());
+        assert_eq!(loaded.buffer.len(), 256 * 256 * 4); // expected size given dimensions & square image
+    }
+
+    #[test]
+    fn rasterize_unscaled() {
+        let previous = "data/SKSE/plugins/resources/icons/weapon_sword_one_handed.svg".to_string();
+        let loaded = rasterize_by_path(previous);
+        assert!(!loaded.buffer.is_empty());
+        assert_eq!(
+            loaded.buffer.len(),
+            loaded.width as usize * loaded.height as usize * 4
+        );
+
+        let full = "layouts/icon-pack/shout_call_dragon.svg".to_string();
+        let loaded = rasterize_by_path(full);
+        assert!(!loaded.buffer.is_empty());
+        assert_eq!(
+            loaded.buffer.len(),
+            loaded.width as usize * loaded.height as usize * 4
+        );
     }
 }

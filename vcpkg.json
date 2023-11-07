@@ -5,13 +5,9 @@
     "homepage": "https://github.com/ceejbot/soulsy",
     "license": "GPL-2.0-or-later",
     "dependencies": [
-        "nanosvg",
         {
             "name": "imgui",
-            "features": [
-                "dx11-binding",
-                "win32-binding"
-            ]
+            "features": ["dx11-binding", "win32-binding"]
         },
         "fmt",
         "spdlog",

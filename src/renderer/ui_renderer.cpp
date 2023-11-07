@@ -7,15 +7,6 @@
 #include "key_path.h"
 #include "keycodes.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4702)
-#define NANOSVG_IMPLEMENTATION
-#define NANOSVG_ALL_COLOR_KEYWORDS
-#include <nanosvg.h>
-#define NANOSVGRAST_IMPLEMENTATION
-#include <nanosvgrast.h>
-#pragma warning(pop)
-
 #include "lib.rs.h"
 
 namespace ui
@@ -143,6 +134,9 @@ namespace ui
 		int32_t& out_width,
 		int32_t& out_height)
 	{
+		auto loadedImg = rasterize_by_path(std::string(filename));
+		if (loadedImg.buffer.empty()) { return false; }
+
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)
 		{
@@ -151,23 +145,11 @@ namespace ui
 		}
 		const auto forwarder = renderer->data.forwarder;
 
-		// Load from disk into a raw RGBA buffer
-		auto* svg  = nsvgParseFromFile(filename, "px", 96.0f);
-		auto* rast = nsvgCreateRasterizer();
-
-		auto image_width  = static_cast<int>(svg->width);
-		auto image_height = static_cast<int>(svg->height);
-
-		auto image_data = (unsigned char*)malloc(image_width * image_height * 4);
-		nsvgRasterize(rast, svg, 0, 0, 1, image_data, image_width, image_height, image_width * 4);
-		nsvgDelete(svg);
-		nsvgDeleteRasterizer(rast);
-
 		// Create texture
 		D3D11_TEXTURE2D_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
-		desc.Width            = image_width;
-		desc.Height           = image_height;
+		desc.Width            = loadedImg.width;
+		desc.Height           = loadedImg.height;
 		desc.MipLevels        = 1;
 		desc.ArraySize        = 1;
 		desc.Format           = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -176,6 +158,11 @@ namespace ui
 		desc.BindFlags        = D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags   = 0;
 		desc.MiscFlags        = 0;
+
+		// copy image_data into the subresource
+		auto image_data = (unsigned char*)malloc(loadedImg.buffer.size());
+		int counter     = 0;
+		for (auto byte : loadedImg.buffer) { image_data[counter++] = static_cast<unsigned char>(byte); }
 
 		ID3D11Texture2D* p_texture = nullptr;
 		D3D11_SUBRESOURCE_DATA sub_resource;
@@ -557,53 +544,13 @@ namespace ui
 		ImGui::End();
 	}
 
-	/*
-	void ui_renderer::load_icon_images(std::map<std::string, TextureData>& out_struct, std::string& icondir)
-	{
-		const auto needed_icons = icon_files();
-		for (auto icon_file_str : needed_icons)
-		{
-			auto icon_file = std::string(icon_file_str);
-			auto entrypath = std::filesystem::path(icondir);
-			entrypath /= icon_file;
-
-			std::error_code ec;
-			if (std::filesystem::exists(entrypath, ec))
-			{
-				if (load_texture_from_file(entrypath.string().c_str(),
-						&out_struct[icon_file].texture,
-						out_struct[icon_file].width,
-						out_struct[icon_file].height))
-				{
-					// nothing to do here but log and I don't want to log.
-					// logger::trace("loaded texture {}, type: {}, width: {}, height: {}"sv,
-					// 	entrypath.filename().string().c_str(),
-					// 	entrypath.filename().extension().string().c_str(),
-					// 	out_struct[icon_file].width,
-					// 	out_struct[icon_file].height);
-				}
-			}
-			else { logger::info("TODO: Add an icon to this pack for {}"sv, entrypath.filename().string().c_str()); }
-		}
-	}
-	*/
-
 	bool ui_renderer::lazyLoadIcon(std::string name)
 	{
 		auto key = std::string(get_icon_key(name));
-		if (ICON_MAP[key].width > 0)
-		{
-			logger::debug("cache hit for icon key {}", key);
-			return true;
-		}
+		if (ICON_MAP[key].width > 0) { return true; }
 
-		LoadedImage loadedImg = load_icon_data(key, 512);
+		LoadedImage loadedImg = rasterize_icon(key, 512);
 		if (loadedImg.width == 0) { return false; }
-		logger::debug("Making a texture for {}; width={}; height={}; data len={}",
-			key,
-			loadedImg.width,
-			loadedImg.height,
-			loadedImg.buffer.size());
 
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)
@@ -656,7 +603,7 @@ namespace ui
 		ICON_MAP[key].width  = loadedImg.width;
 		ICON_MAP[key].height = loadedImg.height;
 
-		logger::debug("we think we succeeded making a texture for icon {}; width={}; data len={}",
+		logger::debug("Created D3D11 texture for icon '{}'; width={}; data len={}",
 			key,
 			ICON_MAP[key].width,
 			sizeof(ICON_MAP[key].texture));

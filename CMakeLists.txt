@@ -101,7 +101,6 @@ set(GameVersion "Skyrim")
 # find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(spdlog REQUIRED CONFIG)
 find_package(imgui REQUIRED)
-find_package(nanosvg CONFIG REQUIRED)
 
 include(cmake/sourcelist.cmake)
 
@@ -235,8 +234,6 @@ target_link_libraries(
     CommonLibSSE::CommonLibSSE
     spdlog::spdlog
     imgui::imgui
-    NanoSVG::nanosvg 
-    NanoSVG::nanosvgrast
     wsock32
     ws2_32
     bcrypt

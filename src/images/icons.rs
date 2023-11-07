@@ -1,12 +1,6 @@
-use strum::{Display, EnumIter, EnumString, EnumVariantNames, IntoEnumIterator};
+use strum::{Display, EnumString, EnumVariantNames};
 
-pub fn icon_files() -> Vec<String> {
-    Icon::iter().map(|xs| xs.icon_file()).collect()
-}
-
-#[derive(
-    Debug, Clone, Default, Hash, PartialEq, Eq, EnumIter, EnumString, EnumVariantNames, Display,
-)]
+#[derive(Debug, Clone, Default, Hash, PartialEq, Eq, EnumString, EnumVariantNames, Display)]
 pub enum Icon {
     Alteration,
     AmmoArrow,

@@ -7,7 +7,7 @@ pub mod images;
 
 use controller::*;
 use data::{HudItem, SpellData, *};
-use images::{get_icon_key, load_icon_data};
+use images::{get_icon_key, rasterize_by_path, rasterize_icon};
 
 /// Rust defines the bridge between it and C++ in this mod, using the
 /// affordances of the `cxx` crate. At build time `cxx_build` generates the
@@ -310,9 +310,10 @@ pub mod plugin {
         /// NEW cycle entry type. This is opaque.
         type HudItem;
         /// Which icon to use for diplaying this item.
-        fn icon_file(self: &HudItem) -> String;
         fn icon_key(self: &HudItem) -> String;
+        /// Get the fallback for this hud item's icon.
         fn icon_fallback(self: &HudItem) -> String;
+        /// Get the color to use to draw this item's icon.
         fn color(self: &HudItem) -> Color;
         /// Get the item name as a possibly-lossy utf8 string.
         fn name(self: &HudItem) -> String;
@@ -320,11 +321,12 @@ pub mod plugin {
         fn name_is_utf8(self: &HudItem) -> bool;
         /// Get the underlying bytes of a possibly non-utf8 name for this item.
         fn name_bytes(self: &HudItem) -> Vec<u8>;
+        /// Get the form spec string for this item; format is `Plugin.esp|0xdeadbeef`
         fn form_string(self: &HudItem) -> String;
         /// Get how many of this item the player has. Updated on inventory changes.
         fn count(self: &HudItem) -> u32;
+        /// Check if this item has a meaningful count.
         fn count_matters(self: &HudItem) -> bool;
-        fn is_magic(self: &HudItem) -> bool;
 
         type SpellData;
         fn fill_out_spell_data(
@@ -374,7 +376,9 @@ pub mod plugin {
         /// Call this to get the fallback-aware key for an icon.
         fn get_icon_key(name: String) -> String;
         /// Load a rasterized image for an icon given its key.
-        fn load_icon_data(key: String, maxdim: u32) -> LoadedImage;
+        fn rasterize_icon(key: String, maxdim: u32) -> LoadedImage;
+        /// Rasterize an SVG by path.
+        fn rasterize_by_path(fpath: String) -> LoadedImage;
 
         // These are called by plugin hooks and sinks.
 
@@ -403,24 +407,25 @@ pub mod plugin {
         fn handle_grip_change(use_alt_grip: bool);
         /// Clear all cycles on player request.
         fn clear_cycles();
-        /// Get the names of the entries in the given cycle as a string.
+        /// Get the names of the entries in the given cycle as a vec of strings. Used in MCM.
         fn get_cycle_names(which: i32) -> Vec<String>;
+        /// Get a list of form spec strings for the given cycle. Used in MCM.
         fn get_cycle_formids(which: i32) -> Vec<String>;
-        /// Get equip set names in order by id.
+        /// Get equip set names in order by id. Used in MCM.
         fn get_equipset_names() -> Vec<String>;
-        /// Get equip set ids.
+        /// Get equip set ids. Used in MCM.
         fn get_equipset_ids() -> Vec<String>;
         /// Turn a string representation of an index into the above array into the id as int.
         fn equipset_index_to_id(idx: String) -> i32;
-        /// Create a new equipment set.
+        /// Create a new equipment set. Used in MCM.
         fn handle_create_equipset(name: String) -> bool;
-        /// Save an equipment set.
+        /// Save an equipment set. Used in MCM.
         fn handle_update_equipset(id: u32) -> bool;
-        /// Rename an equipment set.
+        /// Rename an equipment set. Used in MCM.
         fn handle_rename_equipset(id: u32, name: String) -> bool;
-        /// Remove an equipment set.
+        /// Remove an equipment set. Used in MCM.
         fn handle_remove_equipset(id: u32) -> bool;
-        /// For papyrus: parse a string as an int.
+        /// For papyrus: parse a string as an int. Used in MCM.
         fn string_to_int(number: String) -> i32;
         fn equipped_data(items: Vec<String>, empty: Vec<u8>) -> Box<EquippedData>;
         fn get_equipset_item_names(id: u32) -> Vec<String>;
