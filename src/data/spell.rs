@@ -27,7 +27,6 @@ pub struct SpellType {
 
 impl SpellType {
     pub fn new(data: SpellData, tags: Vec<String>) -> Self {
-        log::debug!("tags: {tags:?};");
         let tagset: EnumSet<SpellKeywords> = strings_to_enumset(&tags);
 
         // Icons. We look to see if the keywords contain any of the words that

@@ -132,13 +132,11 @@ const ICON_PIE: EnumSet<FoodKeywords> = enum_set!(
     FoodKeywords::OCF_AlchFood_Meal
         | FoodKeywords::OCF_AlchFood_Treat
         | FoodKeywords::MAG_FoodTypePie
+        | FoodKeywords:OCF_AlchFood_Baked
 );
 
-const ICON_STEW: EnumSet<FoodKeywords> = enum_set!(
-    FoodKeywords::OCF_AlchFood_Stew
-        | FoodKeywords::OCF_AlchFood_Treat
-        | FoodKeywords::MAG_FoodTypePie
-);
+const ICON_STEW: EnumSet<FoodKeywords> =
+    enum_set!(FoodKeywords::OCF_AlchFood_Stew | FoodKeywords::OCF_AlchFood_Treat);
 
 #[derive(Debug, EnumString, Hash, EnumSetType)]
 enum ContainerKeywords {
