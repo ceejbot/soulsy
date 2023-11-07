@@ -183,8 +183,8 @@ namespace ui
 
 		free(image_data);
 
-		out_width  = image_width;
-		out_height = image_height;
+		out_width  = loadedImg.width;
+		out_height = loadedImg.height;
 
 		return true;
 	}
