@@ -12,7 +12,7 @@
 namespace ui
 {
 	static std::map<animation_type, std::vector<TextureData>> animation_frame_map = {};
-	static std::vector<std::pair<animation_type, std::unique_ptr<animation>>> animation_list;
+	static std::vector<std::pair<animation_type, std::unique_ptr<Animation>>> animation_list;
 
 	static std::map<uint8_t, float> cycle_timers = {};
 
@@ -293,7 +293,7 @@ namespace ui
 		// const auto width  = static_cast<uint32_t>(animation_frame_map[animation_type][0].width);
 		// const auto height = static_cast<uint32_t>(animation_frame_map[animation_type][0].height);
 
-		std::unique_ptr<animation> anim =
+		std::unique_ptr<Animation> anim =
 			std::make_unique<FadeFramedOutAnimation>(ImVec2(a_screen_x + a_offset_x, a_screen_y + a_offset_y),
 				ImVec2(width, height),
 				angle,
@@ -596,131 +596,6 @@ namespace ui
 		return return_image;
 	}
 
-	// These values scale the UI from the resolution the mod author used to the resolution
-	// of the player's screen. The effect is to make things not over-large for smaller resolutions.
-	// TODO this should be restored BUT as a lookup from the layout file. The designer can
-	// state their intent.
-	// float ui_renderer::resolutionScaleWidth() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
-	// float ui_renderer::resolutionScaleHeight() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
-
-	float ui_renderer::resolutionScaleWidth() { return 1.0f; }
-	float ui_renderer::resolutionScaleHeight() { return 1.0f; }
-
-	float resolutionWidth() { return ImGui::GetIO().DisplaySize.x; }
-	float resolutionHeight() { return ImGui::GetIO().DisplaySize.y; }
-
-	void ui_renderer::showBriefly()
-	{
-		if (gDoingBriefPeek || gHudAlpha == 1.0f || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
-
-		gDoingBriefPeek = true;
-		ui_renderer::startAlphaTransition(true, 1.0f);
-	}
-
-	void ui_renderer::startAlphaTransition(const bool becomeVisible, const float goal)
-	{
-		if (becomeVisible && gHudAlpha == 1.0f) { return; }
-		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
-		logger::debug(
-			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomeVisible, goal, gHudAlpha);
-
-		gGoalAlpha = std::clamp(goal, 0.0f, 1.0f);
-		doFadeIn   = becomeVisible;
-
-		// The game will report that the player has sheathed weapons when
-		// the player has merely equipped something new. So we give it some
-		// time to decide that the weapons are truly gone. This number is the
-		// how long we'll wait before actually fading.
-		if (!doFadeIn) { delayBeforeFadeout = FADEOUT_HYSTERESIS; }
-
-		auto settings   = user_settings();
-		float fade_time = static_cast<float>(settings->fade_time()) / 1000.0f;
-		if (gDoingBriefPeek)
-		{
-			fade_time = fade_time / 2.0f;  // fastest fade-in in the west
-		}
-		gFullFadeDuration = doFadeIn ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
-
-		// We must allow for the transition starting while the alpha is not pinned.
-		// Scale the transition time for how much of the shift remains.
-		auto alphaGap     = std::fabs(gGoalAlpha - gHudAlpha);
-		gFadeDurRemaining = alphaGap * gFullFadeDuration;
-		if (gFadeDurRemaining < 0.005f)
-		{
-			// Not enough time to bother fading. Just snap to the goal.
-			gHudAlpha         = gGoalAlpha;
-			gFadeDurRemaining = 0.0f;
-			return;
-		}
-
-		gIsFading = true;
-	}
-
-	void ui_renderer::makeFadeDecision()
-	{
-		if (helpers::hudShouldAutoFadeOut())
-		{
-			if (gDoingBriefPeek)
-			{
-				if (gHudAlpha < 1.0f) { return; }
-				else { gDoingBriefPeek = false; }
-			}
-
-			if ((gHudAlpha > 0.0f && !gIsFading) || (gIsFading && doFadeIn)) { startAlphaTransition(false, 0.0f); }
-		}
-		else if (helpers::hudShouldAutoFadeIn())
-		{
-			if ((gHudAlpha < 1.0f && !gIsFading) || (gIsFading && !doFadeIn)) { startAlphaTransition(true, 1.0f); }
-		}
-	}
-
-	float ui_renderer::easeInCubic(float progress)
-	{
-		if (progress >= 1.0f) return 1.0f;
-		if (progress <= 0.0f) return 0.0f;
-		return static_cast<float>(pow(progress, 3));
-	}
-
-	float ui_renderer::easeOutCubic(float progress)
-	{
-		if (progress >= 1.0f) return 1.0f;
-		if (progress <= 0.0f) return 0.0f;
-		return static_cast<float>(1.0f - pow(1 - progress, 3));
-	}
-
-	void ui_renderer::advanceTransition(float timeDelta)
-	{
-		// This fading code is triggered by the toggle hud shortcut even if autofade
-		// is off. This is maybe the only place where bug #44 might be caused.
-		if (doFadeIn && gIsFading)
-		{
-			if (gHudAlpha >= 1.0f)
-			{
-				gHudAlpha         = 1.0f;
-				gFadeDurRemaining = 0.0f;
-				gIsFading         = false;
-				return;
-			}
-			if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
-			gHudAlpha = ui_renderer::easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
-		}
-		else if (!doFadeIn && gIsFading)
-		{
-			if (delayBeforeFadeout > 0.0f) { delayBeforeFadeout -= timeDelta; }
-			else
-			{
-				if (gHudAlpha <= 0.0f)
-				{
-					gHudAlpha         = 0.0f;
-					gFadeDurRemaining = 0.0f;
-					gIsFading         = false;
-				}
-				delayBeforeFadeout = 0.0f;
-				if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
-				gHudAlpha = 1.0f - ui_renderer::easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
-			}
-		}
-	}
 
 	void ui_renderer::loadFont()
 	{
@@ -773,11 +648,137 @@ namespace ui
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
 	}
 
+	// These values scale the UI from the resolution the mod author used to the resolution
+	// of the player's screen. The effect is to make things not over-large for smaller resolutions.
+	// TODO this should be restored BUT as a lookup from the layout file. The designer can
+	// state their intent.
+	// float ui_renderer::resolutionScaleWidth() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
+	// float ui_renderer::resolutionScaleHeight() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
+
+	float resolutionScaleWidth() { return 1.0f; }
+	float resolutionScaleHeight() { return 1.0f; }
+
+	float resolutionWidth() { return ImGui::GetIO().DisplaySize.x; }
+	float resolutionHeight() { return ImGui::GetIO().DisplaySize.y; }
+
+	void showBriefly()
+	{
+		if (gDoingBriefPeek || gHudAlpha == 1.0f || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
+
+		gDoingBriefPeek = true;
+		startAlphaTransition(true, 1.0f);
+	}
+
+	void startAlphaTransition(const bool becomeVisible, const float goal)
+	{
+		if (becomeVisible && gHudAlpha == 1.0f) { return; }
+		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
+		logger::debug(
+			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomeVisible, goal, gHudAlpha);
+
+		gGoalAlpha = std::clamp(goal, 0.0f, 1.0f);
+		doFadeIn   = becomeVisible;
+
+		// The game will report that the player has sheathed weapons when
+		// the player has merely equipped something new. So we give it some
+		// time to decide that the weapons are truly gone. This number is the
+		// how long we'll wait before actually fading.
+		if (!doFadeIn) { delayBeforeFadeout = FADEOUT_HYSTERESIS; }
+
+		auto settings   = user_settings();
+		float fade_time = static_cast<float>(settings->fade_time()) / 1000.0f;
+		if (gDoingBriefPeek)
+		{
+			fade_time = fade_time / 2.0f;  // fastest fade-in in the west
+		}
+		gFullFadeDuration = doFadeIn ? (fade_time / 2.0f) : fade_time;  // fade in is faster than fade out
+
+		// We must allow for the transition starting while the alpha is not pinned.
+		// Scale the transition time for how much of the shift remains.
+		auto alphaGap     = std::fabs(gGoalAlpha - gHudAlpha);
+		gFadeDurRemaining = alphaGap * gFullFadeDuration;
+		if (gFadeDurRemaining < 0.005f)
+		{
+			// Not enough time to bother fading. Just snap to the goal.
+			gHudAlpha         = gGoalAlpha;
+			gFadeDurRemaining = 0.0f;
+			return;
+		}
+
+		gIsFading = true;
+	}
+
+	void makeFadeDecision()
+	{
+		if (helpers::hudShouldAutoFadeOut())
+		{
+			if (gDoingBriefPeek)
+			{
+				if (gHudAlpha < 1.0f) { return; }
+				else { gDoingBriefPeek = false; }
+			}
+
+			if ((gHudAlpha > 0.0f && !gIsFading) || (gIsFading && doFadeIn)) { startAlphaTransition(false, 0.0f); }
+		}
+		else if (helpers::hudShouldAutoFadeIn())
+		{
+			if ((gHudAlpha < 1.0f && !gIsFading) || (gIsFading && !doFadeIn)) {startAlphaTransition(true, 1.0f); }
+		}
+	}
+
+	float easeInCubic(float progress)
+	{
+		if (progress >= 1.0f) return 1.0f;
+		if (progress <= 0.0f) return 0.0f;
+		return static_cast<float>(pow(progress, 3));
+	}
+
+	float easeOutCubic(float progress)
+	{
+		if (progress >= 1.0f) return 1.0f;
+		if (progress <= 0.0f) return 0.0f;
+		return static_cast<float>(1.0f - pow(1 - progress, 3));
+	}
+
+	void advanceTransition(float timeDelta)
+	{
+		// This fading code is triggered by the toggle hud shortcut even if autofade
+		// is off. This is maybe the only place where bug #44 might be caused.
+		if (doFadeIn && gIsFading)
+		{
+			if (gHudAlpha >= 1.0f)
+			{
+				gHudAlpha         = 1.0f;
+				gFadeDurRemaining = 0.0f;
+				gIsFading         = false;
+				return;
+			}
+			if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
+			gHudAlpha = easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
+		}
+		else if (!doFadeIn && gIsFading)
+		{
+			if (delayBeforeFadeout > 0.0f) { delayBeforeFadeout -= timeDelta; }
+			else
+			{
+				if (gHudAlpha <= 0.0f)
+				{
+					gHudAlpha         = 0.0f;
+					gFadeDurRemaining = 0.0f;
+					gIsFading         = false;
+				}
+				delayBeforeFadeout = 0.0f;
+				if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
+				gHudAlpha = 1.0f - easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
+			}
+		}
+	}
+
 	// We implement timers using UI ticks. We don't need them to be
 	// particularly accurate, just good-feeling to humans. Because we only
 	// manage timers here, this is the right decision point for going into
 	// and out of slow motion.
-	void ui_renderer::advanceTimers(float delta)
+	void advanceTimers(float delta)
 	{
 		std::vector<uint8_t> to_remove;
 		std::map<uint8_t, float>::iterator iter;

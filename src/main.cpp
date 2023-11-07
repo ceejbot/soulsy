@@ -51,10 +51,6 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			if (ui::ui_renderer::d_3d_init_hook::initialized)
 			{
 				logger::debug("SKSE data loaded callback; UI is initialized."sv);
-				logger::trace("Loading images with scale values width={}; height={};"sv,
-					ui::ui_renderer::resolutionScaleWidth(),
-					ui::ui_renderer::resolutionScaleHeight());
-
 				ui::ui_renderer::preloadImages();
 				hooks::install_hooks();
 				papyrus::registerPapyrusFunctions();

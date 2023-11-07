@@ -69,7 +69,7 @@ namespace ui
 			uint32_t a_b_color,
 			float a_duration,
 			uint32_t a_length)
-			: animation(a_center, a_size, a_angle, a_alpha, a_r_color, a_g_color, a_b_color, a_duration, a_length){};
+			: Animation(a_center, a_size, a_angle, a_alpha, a_r_color, a_g_color, a_b_color, a_duration, a_length){};
 		void animate_action(float a_delta_time) override
 		{
 			if (!is_over())

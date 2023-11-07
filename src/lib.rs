@@ -477,8 +477,6 @@ pub mod plugin {
         fn notifyPlayer(message: &CxxString);
         /// Look up a translation for a format string.
         fn lookupTranslation(key: &CxxString) -> String;
-        /// Start the HUD widget fading in or out to the goal transparency.
-        fn startAlphaTransition(fade_in: bool, alpha: f32);
         /// Play an activation failed UI sound.
         fn honk();
         /// Make a full HUD-drawing-ready item from a form spec string.
@@ -499,6 +497,9 @@ pub mod plugin {
         fn stopTimer(which: Action);
         /// Show the hud very briefly on a cycle change.
         fn showBriefly();
+        /// Start the HUD widget fading in or out to the goal transparency.
+        fn startAlphaTransition(fade_in: bool, alpha: f32);
+
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.

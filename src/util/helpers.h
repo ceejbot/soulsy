@@ -21,7 +21,6 @@ namespace helpers
 	void notifyPlayer(const std::string& message);
 	rust::String lookupTranslation(const std::string& key);
 
-	void startAlphaTransition(const bool shift, const float target);
 	bool hudAllowedOnScreen();  // the authority on whether we should show the hud or not
 	bool hudShouldAutoFadeOut();
 	bool hudShouldAutoFadeIn();

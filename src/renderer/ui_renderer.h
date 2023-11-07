@@ -33,6 +33,10 @@ namespace ui
 	void stopTimer(Action which);
 	void advanceTimers(float delta);
 	void advanceTransition(float delta);
+	void startAlphaTransition(bool a_in, float a_value);
+	float easeInCubic(float progress);
+	float easeOutCubic(float progress);
+
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
@@ -101,10 +105,6 @@ namespace ui
 
 
 	public:
-		static void startAlphaTransition(bool a_in, float a_value);
-		static float easeInCubic(float progress);
-		static float easeOutCubic(float progress);
-
 		static void preloadImages();
 
 		struct d_3d_init_hook

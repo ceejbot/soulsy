@@ -142,13 +142,6 @@ namespace helpers
 		return translated;
 	}
 
-	void startAlphaTransition(const bool shift, const float target)
-	{
-		ui::ui_renderer::startAlphaTransition(shift, target);
-	}
-
-	void showBriefly() { ui::ui_renderer::showBriefly(); }
-
 	std::string makeFormSpecString(RE::TESForm* form)
 	{
 		std::string form_string;
