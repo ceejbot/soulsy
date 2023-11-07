@@ -70,16 +70,19 @@ impl Controller {
         }
     }
 
+    /// Called after a save load to initialize state. The validate function logs out cycles.
     pub fn refresh_after_load(&mut self) {
         self.cycles.validate(&mut self.cache);
         self.update_hud();
     }
 
+    /// Called by the MCM cycle clear button.
     pub fn clear_cycles(&mut self) {
         log::info!("Clearing all cycles. Turning off targeting computer.");
         self.cycles.clear();
     }
 
+    /// Get the names of all items in the given cycle
     // needs to be mut because the cache might have items added to it when we fetch
     pub fn cycle_names(&mut self, which: i32) -> Vec<String> {
         match which {
@@ -91,6 +94,7 @@ impl Controller {
         }
     }
 
+    /// Get form IDs for all items in the given cycle.
     pub fn cycle_formids(&self, which: i32) -> Vec<String> {
         match which {
             0 => self.cycles.formids(&CycleSlot::Power),
@@ -101,6 +105,7 @@ impl Controller {
         }
     }
 
+    /// Called after any settings file read to enforce them.
     pub fn apply_settings(&mut self) {
         let settings = settings();
 
@@ -346,6 +351,7 @@ impl Controller {
         }
     }
 
+    /// Advance the utilities/consumables cycle.
     fn handle_cycle_utility(&mut self) -> KeyEventResponse {
         // Same comment about long presses.
         let settings = settings();
@@ -374,6 +380,7 @@ impl Controller {
         KeyEventResponse::default()
     }
 
+    /// Shared code path for simple cycles like powers and utilities.
     fn advance_simple_cycle(&mut self, which: &CycleSlot) -> KeyEventResponse {
         // Programmer error to call this for left/right.
         if !matches!(which, CycleSlot::Power | CycleSlot::Utility) {
@@ -410,6 +417,7 @@ impl Controller {
         }
     }
 
+    /// Figure out what is supposed to happen on a key up, given settings and keystate.
     fn requested_keyup_action(&self, hotkey: &Hotkey) -> RequestedAction {
         let settings = settings();
         let tracked = self.get_tracked_key(hotkey);
@@ -443,12 +451,14 @@ impl Controller {
         }
     }
 
+    /// Handle the right hand hotkey.
     fn handle_cycle_right(&mut self, hotkey: &Hotkey) -> KeyEventResponse {
         let requested_action = self.requested_keyup_action(hotkey);
         // The left hand needs these two steps separated. See next function.
         self.do_hand_action(requested_action, Action::Right, CycleSlot::Right)
     }
 
+    /// Hande the left hand hotkey.
     fn handle_cycle_left(&mut self, hotkey: &Hotkey) -> KeyEventResponse {
         let settings = settings();
         let cycle_ammo = settings.cycle_ammo();
@@ -465,6 +475,7 @@ impl Controller {
         }
     }
 
+    /// Do what the user requested for the given hand.
     fn do_hand_action(
         &mut self,
         requested: RequestedAction,
@@ -492,6 +503,8 @@ impl Controller {
         }
     }
 
+    /// Match hands to each other; that is, dual-wield whatever is in the hand we
+    /// were asked to match, if possible.
     fn match_hands(&mut self, action: Action) -> KeyEventResponse {
         let (equipped, other_hand) = if matches!(action, Action::Left) {
             (specEquippedLeft(), Action::Right)
@@ -519,6 +532,7 @@ impl Controller {
         }
     }
 
+    /// Advance the left or right hand cycle.
     fn advance_hand_cycle(&mut self, which: &CycleSlot) -> KeyEventResponse {
         // This is one of two tricky decision points in the mod. (The other
         // is when timers expire and we have to act on decisions made here.)
@@ -542,8 +556,7 @@ impl Controller {
             };
 
             let candidate = self.cache.get(&form_string);
-
-            if candidate.two_handed() {
+            if self.treat_as_two_handed(&candidate) {
                 // no problem. just cycle to it.
                 self.cycles.advance(which, 1);
                 return self.update_and_record(which, &candidate);
@@ -611,7 +624,7 @@ impl Controller {
             };
 
             let candidate = self.cache.get(&form_string);
-            if candidate.two_handed() {
+            if self.treat_as_two_handed(&candidate) {
                 // How lucky we are. We equip it and don't fuss.
                 return self.update_and_record(which, &candidate);
             } else {
@@ -913,7 +926,6 @@ impl Controller {
 
     /// Shared logic for handling the switch to a one-handed weapon from a two-hander.
     fn switch_to_one_hander(&mut self) {
-        log::debug!("entering switch_to_one_hander()");
         if !self.left_hand_cached.is_empty() {
             let unarmed = HudItem::make_unarmed_proxy();
             let prev_left = self.left_hand_cached.clone();
@@ -1029,7 +1041,7 @@ impl Controller {
         }
 
         if item.is_utility() {
-            // We do nothing. We are the source of truth for non-ammo on the utility view.
+            // We do nothing. We are the source of truth for non-ammo in the utility view.
             return false;
         }
 
@@ -1073,7 +1085,7 @@ impl Controller {
         if treat_as_two_hander && right {
             let changed = self.update_slot(HudElement::Right, &item);
             if changed {
-                // Change was out of band. We need to react.
+                // Change was out of band. We need to react by spinning the cycle around if possible.
                 self.cycles.set_top(&CycleSlot::Right, &item.form_string());
             }
             self.update_slot(HudElement::Left, &HudItem::default());
@@ -1085,7 +1097,7 @@ impl Controller {
             return false;
         }
 
-        // It's a one-hander. Does it match an earlier decision?
+        // It's a one-hander (effectively). Does it match an earlier decision?
 
         let rightie = specEquippedRight();
         let leftie = specEquippedLeft();
@@ -1129,15 +1141,18 @@ impl Controller {
         let unarmed = HudItem::make_unarmed_proxy();
 
         if right {
-            // This function is CGO-aware.
+            // This function is re-used for the right hand.
             self.switch_to_one_hander();
         }
 
-        if left && !self.cgo_alt_grip {
-            // CGO does not care about the left hand.
+        if left {
+            // The item is effectively a one-hander, and it's now in our left hand.
             if !self.right_hand_cached.is_empty() {
                 let prev_right = self.right_hand_cached.clone();
-                log::debug!("considering re-requipping RIGHT; {prev_right}");
+                log::debug!(
+                    "re-requipping what we previously had in the right hand; spec={};",
+                    prev_right
+                );
                 if prev_right == unarmed.form_string() {
                     unequipSlot(Action::Right);
                     self.update_slot(HudElement::Right, &unarmed);
