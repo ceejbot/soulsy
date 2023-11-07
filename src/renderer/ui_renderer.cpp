@@ -294,7 +294,7 @@ namespace ui
 		// const auto height = static_cast<uint32_t>(animation_frame_map[animation_type][0].height);
 
 		std::unique_ptr<animation> anim =
-			std::make_unique<fade_framed_out_animation>(ImVec2(a_screen_x + a_offset_x, a_screen_y + a_offset_y),
+			std::make_unique<FadeFramedOutAnimation>(ImVec2(a_screen_x + a_offset_x, a_screen_y + a_offset_y),
 				ImVec2(width, height),
 				angle,
 				a_alpha,
@@ -476,7 +476,7 @@ namespace ui
 					drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_bg_color);
 				}
 
-				const auto [texture, width, height] = get_key_icon(hotkey);
+				const auto [texture, width, height] = iconForHotkey(hotkey);
 				const auto size = ImVec2(static_cast<float>(slotLayout.hotkey_size.x * globalScale - 2.0f),
 					static_cast<float>(slotLayout.hotkey_size.y * globalScale - 2.0f));
 				drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_color);
@@ -512,16 +512,16 @@ namespace ui
 	}
 
 	template <typename T>
-	void ui_renderer::loadImagesForMap(std::map<std::string, T>& a_map,
-		std::map<uint32_t, TextureData>& a_struct,
-		std::string& file_path)
+	void ui_renderer::loadImagesForMap(std::map<std::string, T>& imagesMap,
+		std::map<uint32_t, TextureData>& textureCache,
+		std::string& imgDirectory)
 	{
-		const auto res_width  = get_resolution_scale_width();
-		const auto res_height = get_resolution_scale_height();
+		const auto res_width  = resolutionScaleWidth();
+		const auto res_height = resolutionScaleHeight();
 
-		for (const auto& entry : std::filesystem::directory_iterator(file_path))
+		for (const auto& entry : std::filesystem::directory_iterator(imgDirectory))
 		{
-			if (a_map.contains(entry.path().filename().string()))
+			if (imagesMap.contains(entry.path().filename().string()))
 			{
 				if (entry.path().filename().extension() != ".svg")
 				{
@@ -529,29 +529,29 @@ namespace ui
 						entry.path().filename().string().c_str());
 					continue;
 				}
-				const auto index = static_cast<int32_t>(a_map[entry.path().filename().string()]);
+				const auto index = static_cast<int32_t>(imagesMap[entry.path().filename().string()]);
 				if (loadTextureFromFile(entry.path().string().c_str(),
-						&a_struct[index].texture,
-						a_struct[index].width,
-						a_struct[index].height))
+						&textureCache[index].texture,
+						textureCache[index].width,
+						textureCache[index].height))
 				{
 					/*
 					logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
 						entry.path().filename().string().c_str(),
 						entry.path().filename().extension().string().c_str(),
-						a_struct[index].width,
-						a_struct[index].height);
-						*/
+						textureCache[index].width,
+						textureCache[index].height);
+					*/
 				}
 				else { logger::error("failed to load texture {}"sv, entry.path().filename().string().c_str()); }
 
-				a_struct[index].width  = static_cast<int32_t>(a_struct[index].width * res_width);
-				a_struct[index].height = static_cast<int32_t>(a_struct[index].height * res_height);
+				textureCache[index].width  = static_cast<int32_t>(textureCache[index].width * res_width);
+				textureCache[index].height = static_cast<int32_t>(textureCache[index].height * res_height);
 			}
 		}
 	}
 
-	void ui_renderer::load_animation_frames(std::string& file_path, std::vector<TextureData>& frame_list)
+	void ui_renderer::loadAnimationFrames(std::string& file_path, std::vector<TextureData>& frame_list)
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
@@ -570,13 +570,13 @@ namespace ui
 			// logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
 			TextureData img;
 			img.texture = texture;
-			// img.width   = static_cast<int32_t>(width * get_resolution_scale_width());
-			// img.height  = static_cast<int32_t>(height * get_resolution_scale_height());
+			// img.width   = static_cast<int32_t>(width * resolutionScaleWidth());
+			// img.height  = static_cast<int32_t>(height * resolutionScaleHeight());
 			frame_list.push_back(img);
 		}
 	}
 
-	TextureData ui_renderer::get_key_icon(const uint32_t a_key)
+	TextureData ui_renderer::iconForHotkey(const uint32_t a_key)
 	{
 		const auto settings = user_settings();
 		auto return_image   = default_key_struct[static_cast<int32_t>(default_keys::key)];
@@ -596,16 +596,20 @@ namespace ui
 		return return_image;
 	}
 
-	// float ui_renderer::get_resolution_scale_width() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
-	// float ui_renderer::get_resolution_scale_height() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
+	// These values scale the UI from the resolution the mod author used to the resolution
+	// of the player's screen. The effect is to make things not over-large for smaller resolutions.
+	// TODO this should be restored BUT as a lookup from the layout file. The designer can
+	// state their intent.
+	// float ui_renderer::resolutionScaleWidth() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
+	// float ui_renderer::resolutionScaleHeight() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
 
-	float ui_renderer::get_resolution_scale_width() { return 1.0f; }
-	float ui_renderer::get_resolution_scale_height() { return 1.0f; }
+	float ui_renderer::resolutionScaleWidth() { return 1.0f; }
+	float ui_renderer::resolutionScaleHeight() { return 1.0f; }
 
 	float resolutionWidth() { return ImGui::GetIO().DisplaySize.x; }
 	float resolutionHeight() { return ImGui::GetIO().DisplaySize.y; }
 
-	void ui_renderer::show_briefly()
+	void ui_renderer::showBriefly()
 	{
 		if (gDoingBriefPeek || gHudAlpha == 1.0f || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
 
@@ -759,13 +763,13 @@ namespace ui
 
 	void ui_renderer::preloadImages()
 	{
-		loadImagesForMap(image_type_name_map, image_struct, img_directory);
+		loadImagesForMap(ImageFileToType, image_struct, img_directory);
 		loadImagesForMap(key_icon_name_map, key_struct, key_directory);
 		loadImagesForMap(default_key_icon_name_map, default_key_struct, key_directory);
 		loadImagesForMap(gamepad_ps_icon_name_map, PS5_BUTTON_MAP, key_directory);
 		loadImagesForMap(gamepad_xbox_icon_name_map, XBOX_BUTTON_MAP, key_directory);
 
-		load_animation_frames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
+		loadAnimationFrames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
 		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
 	}
 

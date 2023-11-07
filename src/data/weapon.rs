@@ -24,6 +24,18 @@ pub enum WeaponEquipType {
     EitherHand,
 }
 
+impl From<i32> for WeaponEquipType {
+    fn from(value: i32) -> Self {
+        match value {
+            0 => WeaponEquipType::TwoHanded,
+            1 => WeaponEquipType::LeftHand,
+            2 => WeaponEquipType::RightHand,
+            3 => WeaponEquipType::EitherHand,
+            _ => WeaponEquipType::EitherHand,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct WeaponType {
     icon: Icon,

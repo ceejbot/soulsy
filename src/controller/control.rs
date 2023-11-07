@@ -301,7 +301,7 @@ impl Controller {
 
         let le_options = settings();
         if le_options.autofade() {
-            show_briefly();
+            showBriefly();
         }
 
         match hotkey {
@@ -1182,14 +1182,14 @@ impl Controller {
             return Box::<HudItem>::default();
         };
 
-        Box::new(candidate.clone()) // TODO this clone is in a hot path
+        Box::new(candidate.clone()) // this clone is in a hot path
     }
 
     /// Call when loading or otherwise needing to reinitialize the HUD.
     ///
     /// Updates will only happen here if the player changed equipment
     /// out of band, e.g., by using a menu, and only then if we screwed
-    /// up an equip event.
+    /// up an equip event. So don't call it except at initialization.
     fn update_hud(&mut self) {
         self.cgo_alt_grip = useCGOAltGrip();
         let right_spec = specEquippedRight();

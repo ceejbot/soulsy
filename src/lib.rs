@@ -1,3 +1,7 @@
+//! Entry point for the Rust chunk of the mod DLL. lib.rs defines the bridge
+//! between C++ and Rust. C++ drives the plugin (see main.cpp) and answers
+//! questions about game state, but Rust provides all the logic and data manipulation.
+
 #![deny(future_incompatible, clippy::unwrap_used)]
 #![warn(rust_2018_idioms, trivial_casts)]
 
@@ -9,7 +13,7 @@ use controller::*;
 use data::{HudItem, SpellData, *};
 use images::{get_icon_key, rasterize_by_path, rasterize_icon};
 
-/// Rust defines the bridge between it and C++ in this mod, using the
+/// Rust defines the bridge between it and C++ in the `plugin` mod, using the
 /// affordances of the `cxx` crate. At build time `cxx_build` generates the
 /// header files required by the C++ side. The macros expand in-line to generate
 /// the matching Rust code.
@@ -209,6 +213,8 @@ pub mod plugin {
         Equipment,
     }
 
+    /// A high-level item category, used to jump-start item categorization via keywords & form data.
+    /// These categories make sense to the HUD and do not have to map to form types.
     #[derive(Debug, Clone, Hash)]
     enum ItemCategory {
         Ammo,
@@ -242,12 +248,14 @@ pub mod plugin {
         stop_timer: Action,
     }
 
+    /// What the player has equipped, and which armor slots are empty.
     #[derive(Debug, Clone, PartialEq, Eq)]
     struct EquippedData {
         items: Vec<String>,
         empty_slots: Vec<u8>,
     }
 
+    /// Struct passing rasterized SVG data around.
     #[derive(Debug, Default, Clone)]
     struct LoadedImage {
         width: u32,
@@ -307,7 +315,7 @@ pub mod plugin {
         /// current screen size and layout data.
         fn anchor_point(self: &HudLayout) -> Point;
 
-        /// NEW cycle entry type. This is opaque.
+        /// Cached data for items displayed in cycles. This is opaque to C++.
         type HudItem;
         /// Which icon to use for diplaying this item.
         fn icon_key(self: &HudItem) -> String;
@@ -326,6 +334,7 @@ pub mod plugin {
         /// Check if this item has a meaningful count.
         fn count_matters(self: &HudItem) -> bool;
 
+        /// See src/data/magic.rs for this struct. It's used to classify spells.
         type SpellData;
         fn fill_out_spell_data(
             hostile: bool,
@@ -343,6 +352,8 @@ pub mod plugin {
             form_string: String,
             count: u32,
         ) -> Box<HudItem>;
+
+        /// Build a HUD item from a rough category and a list of keywords from OCF and other mods.
         fn hud_item_from_keywords(
             category: ItemCategory,
             keywords: &CxxVector<CxxString>,
@@ -351,6 +362,7 @@ pub mod plugin {
             count: u32,
             twohanded: bool,
         ) -> Box<HudItem>;
+        /// Build a HUD item for a potion from its major effect and a hint about whether it's poison or not.
         fn potion_from_formdata(
             is_poison: bool,
             effect: i32,
@@ -358,17 +370,14 @@ pub mod plugin {
             bytes_ffi: &CxxVector<u8>,
             form_string: String,
         ) -> Box<HudItem>;
-        fn make_base_ammo(
-            count: u32,
-            bytes_ffi: &CxxVector<u8>,
-            form_string: String,
-        ) -> Box<HudItem>;
+        /// Build a very simple item, one where the rough category can specify everything. Only used
+        /// now for lights & shouts as a fallback.
         fn simple_from_formdata(
             kind: ItemCategory,
             bytes_ffi: &CxxVector<u8>,
             form_string: String,
         ) -> Box<HudItem>;
-        fn make_unarmed_proxy() -> Box<HudItem>;
+        /// Build an empty HUD item.
         fn empty_huditem() -> Box<HudItem>;
 
         /// Call this to get the fallback-aware key for an icon.
@@ -425,9 +434,13 @@ pub mod plugin {
         fn handle_remove_equipset(id: u32) -> bool;
         /// For papyrus: parse a string as an int. Used in MCM.
         fn string_to_int(number: String) -> i32;
+        /// Make the Rust equipped data struct from the given data.
         fn equipped_data(items: Vec<String>, empty: Vec<u8>) -> Box<EquippedData>;
+        /// Get a vec of the names of all items in this equip set. Called by MCM.
         fn get_equipset_item_names(id: u32) -> Vec<String>;
+        /// Set which item's icon to use for this equipset. Called by MCM.
         fn set_equipset_icon(id: u32, itemname: String) -> bool;
+        /// Given the selected equipset name, get its integer id. Called by MCM.
         fn look_up_equipset_by_name(name: String) -> u32;
     }
 
@@ -460,21 +473,15 @@ pub mod plugin {
     unsafe extern "C++" {
         include!("helpers.h");
 
-        /// Display a debug notification on the screen. Used as hacky action confirmation.
+        /// Display a notification on the screen. You must format and translate in advance.
         fn notifyPlayer(message: &CxxString);
         /// Look up a translation for a format string.
         fn lookupTranslation(key: &CxxString) -> String;
         /// Start the HUD widget fading in or out to the goal transparency.
         fn startAlphaTransition(fade_in: bool, alpha: f32);
-        /// Enter slow time while cycling.
-        fn enterSlowMotion();
-        /// Exit slow time.
-        fn exitSlowMotion();
-        /// Show the hud very briefly on a cycle change.
-        fn show_briefly();
         /// Play an activation failed UI sound.
         fn honk();
-        /// Make a full rust-side item from a form spec string.
+        /// Make a full HUD-drawing-ready item from a form spec string.
         fn formSpecToHudItem(form_spec: &CxxString) -> Box<HudItem>;
     }
 
@@ -482,10 +489,16 @@ pub mod plugin {
     unsafe extern "C++" {
         include!("ui_renderer.h");
 
+        /// Get the display width in pixels.
         fn resolutionWidth() -> f32;
+        /// Get the display height in pixels.
         fn resolutionHeight() -> f32;
+        /// Start the named timer. Duretion is looked up from settings.
         fn startTimer(which: Action, duration: u32);
+        /// Stop the named timer.
         fn stopTimer(which: Action);
+        /// Show the hud very briefly on a cycle change.
+        fn showBriefly();
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
@@ -493,7 +506,7 @@ pub mod plugin {
     unsafe extern "C++" {
         include!("player.h");
 
-        /// Get the player's name.
+        /// Get the player's name as a vec of wide bytes. Might not be valid utf8.
         fn playerName() -> Vec<u16>;
 
         /// Is the player in combat?
@@ -519,7 +532,7 @@ pub mod plugin {
         /// The vec is sorted by damage.
         fn getAmmoInventory() -> Vec<String>;
 
-        /// Get a list of form specs for all equipped armor.
+        /// Get a list of form specs for all equipped armor. Used to build an equipset.
         fn getEquippedItems() -> Box<EquippedData>;
 
         /// Unequip the relevant slot.
@@ -547,15 +560,17 @@ pub mod plugin {
         fn chooseMagickaPotion();
         /// Choose a life. Choose a job. Choose a career. Choose a family.
         fn chooseHealthPotion();
-        /// Choose a big television. Choose washing machines, cars, etc.
+        /// Choose a big television. Choose washing machines, cars, you know the rest.
         fn chooseStaminaPotion();
-        /// Potion counts for the auto-select item display.
+        /// How many restore stamina potions the player has in inventory. For grouped potions.
         fn staminaPotionCount() -> u32;
+        /// How many restore health potions the player has in inventory. For grouped potions.
         fn healthPotionCount() -> u32;
+        /// How many restore magicka potions the player has in inventory. For grouped potions.
         fn magickaPotionCount() -> u32;
         /// Get a count for items with this form spec.
         fn itemCount(form_spec: &CxxString) -> u32;
-        /// Is the player using CGO's alt-grip mode? (Always false if not using CGO.)
+        /// Is the player using CGO's alt-grip mode? (Always false if not using CGO or compatible mod.)
         fn useCGOAltGrip() -> bool;
     }
 }

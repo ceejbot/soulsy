@@ -52,8 +52,8 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			{
 				logger::debug("SKSE data loaded callback; UI is initialized."sv);
 				logger::trace("Loading images with scale values width={}; height={};"sv,
-					ui::ui_renderer::get_resolution_scale_width(),
-					ui::ui_renderer::get_resolution_scale_height());
+					ui::ui_renderer::resolutionScaleWidth(),
+					ui::ui_renderer::resolutionScaleHeight());
 
 				ui::ui_renderer::preloadImages();
 				hooks::install_hooks();

@@ -23,9 +23,16 @@ namespace ui
 
 	float resolutionWidth();
 	float resolutionHeight();
+	float resolutionScaleWidth();
+	float resolutionScaleHeight();
+
+	void makeFadeDecision();
+	void showBriefly();
 
 	void startTimer(Action which, uint32_t duration);
 	void stopTimer(Action which);
+	void advanceTimers(float delta);
+	void advanceTransition(float delta);
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
@@ -86,27 +93,19 @@ namespace ui
 			std::map<uint32_t, TextureData>& a_struct,
 			std::string& file_path);
 
-		static void load_animation_frames(std::string& file_path, std::vector<TextureData>& frame_list);
+		static void loadAnimationFrames(std::string& file_path, std::vector<TextureData>& frame_list);
 		static void draw_animations_frame();
 
-		static TextureData get_key_icon(uint32_t a_key);
+		static TextureData iconForHotkey(uint32_t a_key);
 		static void loadFont();
 
 
 	public:
-		static float get_resolution_scale_width();
-		static float get_resolution_scale_height();
-
 		static void startAlphaTransition(bool a_in, float a_value);
 		static float easeInCubic(float progress);
 		static float easeOutCubic(float progress);
 
 		static void preloadImages();
-
-		static void advanceTimers(float delta);
-		static void advanceTransition(float delta);
-		static void makeFadeDecision();
-		static void show_briefly();
 
 		struct d_3d_init_hook
 		{

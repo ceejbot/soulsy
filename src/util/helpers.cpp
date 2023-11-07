@@ -147,7 +147,7 @@ namespace helpers
 		ui::ui_renderer::startAlphaTransition(shift, target);
 	}
 
-	void show_briefly() { ui::ui_renderer::show_briefly(); }
+	void showBriefly() { ui::ui_renderer::showBriefly(); }
 
 	std::string makeFormSpecString(RE::TESForm* form)
 	{

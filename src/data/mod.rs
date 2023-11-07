@@ -1,5 +1,5 @@
 #![allow(non_snake_case, non_camel_case_types)]
-//! This mod defines types that allow us to connect Object Categorization
+//! This module defines types that allow us to connect Object Categorization
 //! Framework keywords to our internal item categorizations.
 
 pub mod ammo;
@@ -21,7 +21,6 @@ pub mod weapon;
 use cxx::{CxxString, CxxVector};
 use enumset::{EnumSet, EnumSetType};
 
-use self::ammo::AmmoType;
 pub use self::base::{BaseType, Proxy};
 use self::color::*;
 pub use self::huditem::HudItem;
@@ -127,17 +126,6 @@ pub fn potion_from_formdata(
     let kind = PotionType::from_effect(is_poison, effect.into());
     let result = HudItem::preclassified(name_bytes, form_string, count, BaseType::Potion(kind));
     Box::new(result)
-}
-
-pub fn make_base_ammo(count: u32, bytes_ffi: &CxxVector<u8>, form_string: String) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
-    let kind = AmmoType::Arrow(InvColor::default());
-    let result = HudItem::preclassified(name_bytes, form_string, count, BaseType::Ammo(kind));
-    Box::new(result)
-}
-
-pub fn make_unarmed_proxy() -> Box<HudItem> {
-    Box::new(HudItem::make_unarmed_proxy())
 }
 
 pub fn make_magicka_proxy() -> HudItem {

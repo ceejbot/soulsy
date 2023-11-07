@@ -7,12 +7,12 @@ namespace ui
 		highlight = 0
 	};
 
-	class animation
+	class Animation
 	{
 	public:
-		animation(const animation&)            = delete;
-		animation& operator=(const animation&) = delete;
-		animation(ImVec2 a_center,
+		Animation(const Animation&)            = delete;
+		Animation& operator=(const Animation&) = delete;
+		Animation(ImVec2 a_center,
 			ImVec2 a_size,
 			float a_angle,
 			uint32_t a_alpha,
@@ -55,12 +55,12 @@ namespace ui
 		float single_frame_time;
 	};
 
-	class fade_framed_out_animation : public animation
+	class FadeFramedOutAnimation : public Animation
 	{
 	public:
-		fade_framed_out_animation(const fade_framed_out_animation&)            = delete;
-		fade_framed_out_animation& operator=(const fade_framed_out_animation&) = delete;
-		fade_framed_out_animation(ImVec2 a_center,
+		FadeFramedOutAnimation(const FadeFramedOutAnimation&)            = delete;
+		FadeFramedOutAnimation& operator=(const FadeFramedOutAnimation&) = delete;
+		FadeFramedOutAnimation(ImVec2 a_center,
 			ImVec2 a_size,
 			float a_angle,
 			uint32_t a_alpha,
