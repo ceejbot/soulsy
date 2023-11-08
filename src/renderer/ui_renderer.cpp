@@ -34,6 +34,8 @@ namespace ui
 	auto delayBeforeFadeout = 0.33f;  // seconds
 	bool gDoingBriefPeek    = false;
 
+	// ID3D11BlendState* gBlendState = nullptr;
+
 	ImFont* imFont;
 	auto triedFontLoad = false;
 
@@ -104,6 +106,20 @@ namespace ui
 		initialized.store(true);
 		logger::info("Ready to draw the HUD.");
 
+		// Make our blend state for re-use.
+		// D3D11_BLEND_DESC desc;
+		// ZeroMemory(&desc, sizeof(desc));
+		// desc.AlphaToCoverageEnable                 = false;
+		// desc.RenderTarget[0].BlendEnable           = true;
+		// desc.RenderTarget[0].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
+		// desc.RenderTarget[0].DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
+		// desc.RenderTarget[0].BlendOp               = D3D11_BLEND_OP_ADD;
+		// desc.RenderTarget[0].SrcBlendAlpha         = D3D11_BLEND_INV_DEST_ALPHA;
+		// desc.RenderTarget[0].DestBlendAlpha        = D3D11_BLEND_ONE;
+		// desc.RenderTarget[0].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+		// desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		// device_->CreateBlendState(&desc, &gBlendState);
+
 		wnd_proc_hook::func = reinterpret_cast<WNDPROC>(
 			SetWindowLongPtrA(sd.OutputWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wnd_proc_hook::thunk)));
 		if (!wnd_proc_hook::func) { logger::error("SetWindowLongPtrA failed"sv); }
@@ -120,6 +136,10 @@ namespace ui
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+
+		// float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		// UINT sampleMask = 0xffffffff;
+		// context_->OMSetBlendState(gBlendState, blendFactor, sampleMask);
 
 		drawHud();
 
@@ -504,19 +524,6 @@ namespace ui
 		ImGui::SetNextWindowSize(ImVec2(screen_size_x, screen_size_y));
 		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
 		ImGui::GetStyle().Alpha = gHudAlpha;
-
-		D3D11_BLEND_DESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.AlphaToCoverageEnable                 = false;
-		desc.RenderTarget[0].BlendEnable           = true;
-		desc.RenderTarget[0].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
-		desc.RenderTarget[0].DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
-		desc.RenderTarget[0].BlendOp               = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].SrcBlendAlpha         = D3D11_BLEND_INV_DEST_ALPHA;
-		desc.RenderTarget[0].DestBlendAlpha        = D3D11_BLEND_ONE;
-		desc.RenderTarget[0].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
-		desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-		device_->CreateBlendState(&desc, &g_pBlendState);
 
 		ImGui::Begin(HUD_NAME, nullptr, window_flags);
 
