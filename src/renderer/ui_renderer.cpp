@@ -504,6 +504,20 @@ namespace ui
 		ImGui::SetNextWindowSize(ImVec2(screen_size_x, screen_size_y));
 		ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
 		ImGui::GetStyle().Alpha = gHudAlpha;
+
+		D3D11_BLEND_DESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.AlphaToCoverageEnable                 = false;
+		desc.RenderTarget[0].BlendEnable           = true;
+		desc.RenderTarget[0].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
+		desc.RenderTarget[0].DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
+		desc.RenderTarget[0].BlendOp               = D3D11_BLEND_OP_ADD;
+		desc.RenderTarget[0].SrcBlendAlpha         = D3D11_BLEND_INV_DEST_ALPHA;
+		desc.RenderTarget[0].DestBlendAlpha        = D3D11_BLEND_ONE;
+		desc.RenderTarget[0].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+		desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		device_->CreateBlendState(&desc, &g_pBlendState);
+
 		ImGui::Begin(HUD_NAME, nullptr, window_flags);
 
 		drawAllSlots();
@@ -722,7 +736,7 @@ namespace ui
 		}
 		else if (helpers::hudShouldAutoFadeIn())
 		{
-			if ((gHudAlpha < 1.0f && !gIsFading) || (gIsFading && !doFadeIn)) {startAlphaTransition(true, 1.0f); }
+			if ((gHudAlpha < 1.0f && !gIsFading) || (gIsFading && !doFadeIn)) { startAlphaTransition(true, 1.0f); }
 		}
 	}
 
