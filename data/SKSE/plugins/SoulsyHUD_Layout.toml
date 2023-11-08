@@ -18,7 +18,7 @@ anchor_name = "bottom_left"
 size = { x = 300.0, y = 300.0 }
 
 # The color of the HUD background file. Set alpha to 0 to skip drawing a background.
-bg_color = { r = 0, g = 0, b = 0, a = 64 }
+bg_color = { r = 0, g = 0, b = 0, a = 256 }
 
 # Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
 hide_ammo_when_irrelevant = true
