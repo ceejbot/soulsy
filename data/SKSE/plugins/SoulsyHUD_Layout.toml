@@ -12,13 +12,13 @@ anchor_name = "bottom_left"
 
 # You can also specify the anchor point like this if a named anchor point
 # doesn't work for your layout. These values are NOT scaled.
-# anchor = { x = 2100.0, y = 825.0 }
+#anchor = { x = 2100.0, y = 825.0 }
 
 # The size of the hud, before the global scaling factor is applied.
 size = { x = 300.0, y = 300.0 }
 
 # The color of the HUD background file. Set alpha to 0 to skip drawing a background.
-bg_color = { r = 0, g = 0, b = 0, a = 256 }
+bg_color = { r = 0, g = 0, b = 0, a = 64 }
 
 # Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
 hide_ammo_when_irrelevant = true
