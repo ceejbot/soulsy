@@ -36,6 +36,7 @@ impl HasIcon for ArmorType {
 
 impl HasKeywords for ArmorType {
     fn classify(name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
+        // log::debug!("ARMOR KWDS: {keywords:?}");
         let color = super::color::color_from_keywords(&keywords);
         let tagset: EnumSet<ArmorTag> = strings_to_enumset(&keywords);
 

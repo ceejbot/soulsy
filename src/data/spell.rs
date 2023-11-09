@@ -207,7 +207,6 @@ impl SpellType {
         } else if !tagset.is_disjoint(COLOR_SHOCK) {
             InvColor::Shock
         } else {
-            log::debug!("no color specified for spell; keywords={tags:?};");
             match data.school {
                 // TODO identify common colors for magical schools
                 School::Alteration => InvColor::Eldritch,
@@ -215,7 +214,10 @@ impl SpellType {
                 School::Destruction => InvColor::Fire,
                 School::Illusion => InvColor::Blue,
                 School::Restoration => InvColor::Green,
-                School::None => InvColor::default(),
+                School::None => {
+                    log::debug!("no color specified for spell; keywords={tags:?};");
+                    InvColor::default()
+                }
             }
         };
 

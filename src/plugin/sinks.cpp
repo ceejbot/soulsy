@@ -131,7 +131,7 @@ void AnimGraphListener::registerListener()
 	auto* player = RE::PlayerCharacter::GetSingleton();
 	auto okay    = player->AddAnimationGraphEventSink(AnimGraphListener::get_singleton());
 	if (okay) { logger::info("Now listening for animation graph events."sv); }
-	else { logger::warn("Surprising: failed to add an event listener for animation graph events."); }
+	// else { logger::warn("Surprising: failed to add an event listener for animation graph events."); }
 }
 
 RE::BSEventNotifyControl AnimGraphListener::ProcessEvent(const RE::BSAnimationGraphEvent* event,

@@ -80,6 +80,7 @@ impl WeaponType {
 
 impl HasKeywords for WeaponType {
     fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self {
+        // log::debug!("WEAPON KWDS: {keywords:?}");
         let color = super::color_from_keywords(&keywords);
         let tagset: EnumSet<WeaponTag> = strings_to_enumset(&keywords);
 

@@ -41,7 +41,7 @@ namespace papyrus
 		a_vm->RegisterFunction("GetResolutionWidth", MCM_NAME, get_resolution_width);
 		a_vm->RegisterFunction("GetResolutionHeight", MCM_NAME, get_resolution_height);
 
-		logger::info("Registered papyrus functions for the MCM; classname {}."sv, MCM_NAME);
+		logger::info("Registered papyrus functions for the MCM; classname='{}'."sv, MCM_NAME);
 		return true;
 	}
 

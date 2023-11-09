@@ -138,6 +138,15 @@ namespace hooks
 		add_item_functor_ = trampoline.write_call<5>(add_item_functor_hook.address() + 0x15D, add_item_functor);
 	}
 
+	inline const std::set<RE::FormType> relevantFormTypes{
+		RE::FormType::AlchemyItem,
+		RE::FormType::Ammo,
+		RE::FormType::Armor,
+		RE::FormType::Light,
+		RE::FormType::Scroll,
+		RE::FormType::Weapon,
+	};
+
 	void PlayerHook::add_object_to_container(RE::Actor* a_this,
 		RE::TESBoundObject* object,
 		RE::ExtraDataList* extraDataList,
@@ -151,9 +160,10 @@ namespace hooks
 			auto item_form = RE::TESForm::LookupByID(object->formID);
 			if (item_form)
 			{
-				// We don't add MISC or INGR to any cycles right now, so ignore them.
+				// We do not pass along all inventory changes to the HUD, only changes
+				// for the kinds of items the HUD is used to show.
 				const auto formtype = item_form->GetFormType();
-				if (formtype == RE::FormType::Misc || formtype == RE::FormType::Ingredient) { return; }
+				if (!relevantFormTypes.contains(formtype)) { return; }
 				std::string form_string = helpers::makeFormSpecString(item_form);
 				handle_inventory_changed(form_string, count);
 			}
@@ -173,6 +183,10 @@ namespace hooks
 			if (lookup == 0) { lookup = object->GetBaseObject()->formID; }
 			auto item_form = RE::TESForm::LookupByID(lookup);
 			if (!item_form) { return; }
+
+			const auto formtype = item_form->GetFormType();
+			if (!relevantFormTypes.contains(formtype)) { return; }
+
 			std::string form_string = helpers::makeFormSpecString(item_form);
 			handle_inventory_changed(form_string, count);
 		}
@@ -192,8 +206,12 @@ namespace hooks
 			auto* item_form = RE::TESForm::LookupByID(object->formID);
 			if (item_form)
 			{
-				std::string form_string = helpers::makeFormSpecString(item_form);
-				handle_inventory_changed(form_string, -count);
+				const auto formtype = item_form->GetFormType();
+				if (relevantFormTypes.contains(formtype))
+				{
+					std::string form_string = helpers::makeFormSpecString(item_form);
+					handle_inventory_changed(form_string, -count);
+				}
 			}
 		}
 

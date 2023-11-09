@@ -273,7 +273,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		logger::debug("player has: {}; name='{}'; formID={};"sv,
+		logger::trace("player has: {}; name='{}'; formID={};"sv,
 			has_it,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
