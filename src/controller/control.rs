@@ -286,8 +286,9 @@ impl Controller {
 
         // log::trace!("incoming key={}; state={};", hotkey, state);
 
-        // We want all updates so we can track long presses.
-        let keep_handling = self.update_tracked_key(&hotkey, button);
+        // We want all updates so we can track mod keys & long presses.
+        // This call starts and stops long-press timers as well.
+        let keep_handling = self.update_tracked_key(&hotkey, button, false);
 
         // For mod keys, we're done.
         if hotkey.is_modifier_key() || !keep_handling {
@@ -1399,7 +1400,7 @@ impl Controller {
             return false;
         }
 
-        self.update_tracked_key(&hotkey, button);
+        self.update_tracked_key(&hotkey, button, true);
         if !hotkey.is_cycle_key() || !button.IsUp() {
             return false;
         }
@@ -1475,9 +1476,9 @@ impl Controller {
 
     // Update the state of a tracked key so we can handle modifier keys and long-presses.
     // Returns whether the calling level should continue handling this key.
-    fn update_tracked_key(&mut self, hotkey: &Hotkey, button: &ButtonEvent) -> bool {
+    fn update_tracked_key(&mut self, hotkey: &Hotkey, button: &ButtonEvent, in_menu: bool) -> bool {
         let mut retval = true;
-        let tracking_long_presses = settings().start_long_press_timer(hotkey);
+        let tracking_long_presses = settings().start_long_press_timer(hotkey) && !in_menu;
         let tracked = if let Some(previous) = self.tracked_keys.get_mut(hotkey) {
             // We have seen this key before.
             // Did this key just have a long-press event? if so, ignore a key-up.
