@@ -14,6 +14,26 @@ namespace hooks
 		MenuHook::install();
 	}
 
+	inline const std::set<RE::FormType> RELEVANT_FORMTYPES_INVENTORY{
+		RE::FormType::AlchemyItem,
+		RE::FormType::Ammo,
+		RE::FormType::Armor,
+		RE::FormType::Light,
+		RE::FormType::Scroll,
+		RE::FormType::Weapon,
+	};
+
+	inline const std::set<RE::FormType> RELEVANT_FORMTYPES_ALL{
+		RE::FormType::AlchemyItem,
+		RE::FormType::Ammo,
+		RE::FormType::Armor,
+		RE::FormType::Light,
+		RE::FormType::Scroll,
+		RE::FormType::Shout,
+		RE::FormType::Spell,
+		RE::FormType::Weapon,
+	};
+
 	// ---------- MenuHook
 
 	void MenuHook::install()
@@ -46,8 +66,8 @@ namespace hooks
 
 		rust::Box<UserSettings> settings = user_settings();
 		bool link_favorites              = settings->link_to_favorites();
-		auto favconst                    = userEvents->togglePOV;  // m&k shortcut
-		auto favtoggle                   = userEvents->jump;       // controller shortcut
+		auto keyboardShortcut            = userEvents->togglePOV;  // m&k shortcut
+		auto gamepadShortcut             = userEvents->jump;       // controller shortcut
 
 		// TODO consider treating the favorites menu completely differently.
 		if (eventPtr && *eventPtr)
@@ -61,31 +81,27 @@ namespace hooks
 				auto key = keycodes::get_key_id(button);
 				// I'm not getting button UP events for the inventory menu. Why? IDK.
 				// I used to get those events.
-				auto check_favorites = link_favorites && (inMagicMenu ? button->IsUp() : button->IsDown());
+				auto check_favorites = link_favorites && !inFavoritesMenu && (inMagicMenu ? button->IsUp() : button->IsDown());
 
 				if (check_favorites)
 				{
-					if (buttonMatchesEvent(controlMap, favconst, button) ||
-						buttonMatchesEvent(controlMap, favtoggle, button))
+					if (button->GetDevice() == RE::INPUT_DEVICES::kGamepad ?
+							buttonMatchesEvent(controlMap, gamepadShortcut, button) :
+							buttonMatchesEvent(controlMap, keyboardShortcut, button))
 					{
 						helpers::MenuSelection* selection = nullptr;
 						auto menu_form                    = helpers::MenuSelection::getSelectionFromMenu(ui, selection);
 						if (!menu_form) continue;
 
-						logger::debug("Got toggled favorite: form_id={}; is-favorited={}"sv,
+						logger::debug("Got toggled favorite: form_id={}; form_type={}; is-favorited={};"sv,
 							util::string_util::int_to_hex(selection->form_id),
+							selection->formType,
 							selection->favorite);
 
-						if (selection->bound_obj)
-						{
-							auto entry = equippable::hudItemFromForm(selection->bound_obj);
-							// logger::trace("got bound object; name='{}';"sv, selection->bound_obj->GetName());
-							handle_favorite_event(*button, selection->favorite, std::move(entry));
-						}
-						else if (selection->form)
+						if (!RELEVANT_FORMTYPES_ALL.contains(selection->formType)) { continue; }
+						if (selection->form)
 						{
 							auto entry = equippable::hudItemFromForm(selection->form);
-							// logger::trace("got form; name='{}'"sv, selection->form->GetName());
 							handle_favorite_event(*button, selection->favorite, std::move(entry));
 						}
 						continue;
@@ -118,7 +134,7 @@ namespace hooks
 	{
 		auto the_device = button->GetDevice();
 		auto key        = controlMap->GetMappedKey(eventID, the_device, static_cast<RE::ControlMap::InputContextID>(0));
-		// logger::debug("favorites detection: looking for {} ? = {}"sv, key, button->GetIDCode());
+		//  logger::debug("favorites detection: looking for {} ? = {}"sv, key, button->GetIDCode());
 		return key == button->GetIDCode();
 	}
 
@@ -138,15 +154,6 @@ namespace hooks
 		add_item_functor_ = trampoline.write_call<5>(add_item_functor_hook.address() + 0x15D, add_item_functor);
 	}
 
-	inline const std::set<RE::FormType> relevantFormTypes{
-		RE::FormType::AlchemyItem,
-		RE::FormType::Ammo,
-		RE::FormType::Armor,
-		RE::FormType::Light,
-		RE::FormType::Scroll,
-		RE::FormType::Weapon,
-	};
-
 	void PlayerHook::add_object_to_container(RE::Actor* a_this,
 		RE::TESBoundObject* object,
 		RE::ExtraDataList* extraDataList,
@@ -163,7 +170,7 @@ namespace hooks
 				// We do not pass along all inventory changes to the HUD, only changes
 				// for the kinds of items the HUD is used to show.
 				const auto formtype = item_form->GetFormType();
-				if (!relevantFormTypes.contains(formtype)) { return; }
+				if (!RELEVANT_FORMTYPES_INVENTORY.contains(formtype)) { return; }
 				std::string form_string = helpers::makeFormSpecString(item_form);
 				handle_inventory_changed(form_string, count);
 			}
@@ -185,7 +192,7 @@ namespace hooks
 			if (!item_form) { return; }
 
 			const auto formtype = item_form->GetFormType();
-			if (!relevantFormTypes.contains(formtype)) { return; }
+			if (!RELEVANT_FORMTYPES_INVENTORY.contains(formtype)) { return; }
 
 			std::string form_string = helpers::makeFormSpecString(item_form);
 			handle_inventory_changed(form_string, count);
@@ -207,7 +214,7 @@ namespace hooks
 			if (item_form)
 			{
 				const auto formtype = item_form->GetFormType();
-				if (relevantFormTypes.contains(formtype))
+				if (RELEVANT_FORMTYPES_INVENTORY.contains(formtype))
 				{
 					std::string form_string = helpers::makeFormSpecString(item_form);
 					handle_inventory_changed(form_string, -count);

@@ -46,16 +46,18 @@ namespace helpers
 	struct MenuSelection
 	{
 		static uint32_t getSelectionFromMenu(RE::UI*& a_ui, MenuSelection*& outSelection);
-		static void makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelection*& outSelection);
+		static uint32_t makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelection*& outSelection);
 		static void makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSelection);
 		static void makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection*& outSelection);
 
 		MenuSelection(RE::FormID formid);
+		MenuSelection(RE::TESBoundObject* boundObject);
 
 		RE::FormID form_id;
 		bool favorite;
 		bool poisoned;
 		bool equipped;
+		RE::FormType formType;
 		uint32_t count;
 		RE::TESBoundObject* bound_obj;
 		RE::TESForm* form;

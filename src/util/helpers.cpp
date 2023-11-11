@@ -32,6 +32,7 @@ namespace helpers
 
 	std::vector<uint8_t> chars_to_vec(const char* input)
 	{
+		if (!input) { return std::move(std::vector<uint8_t>()); }
 		auto incoming_len = strlen(input);
 		if (incoming_len == 0) { return std::move(std::vector<uint8_t>()); }
 
@@ -227,11 +228,40 @@ namespace helpers
 		return equippable::hudItemFromForm(form_item);
 	}
 
-	MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid) {}
-
-	void MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelection*& outSelection)
+	MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid)
 	{
-		if (!menu) return;
+		if (formid == 0) { return; }
+		auto* item_form = RE::TESForm::LookupByID(formid);
+		if (!item_form) { return; }
+
+		this->form = item_form;
+
+		auto* player   = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* boundObject = nullptr;
+		RE::ExtraDataList* extra      = nullptr;
+		game::boundObjectForForm(item_form, player, boundObject, extra);
+
+		if (boundObject) {
+			this->bound_obj = boundObject;
+			this->formType = boundObject->GetFormType();
+		}
+		else {
+			this->formType = item_form->GetFormType();
+		}
+	}
+
+	MenuSelection::MenuSelection(RE::TESBoundObject* boundObject) : bound_obj(boundObject)
+	{
+		if (!boundObject) { return; }
+		this->formType = boundObject->GetFormType();
+		this->form_id = boundObject->GetFormID();
+		this->form = boundObject->As<RE::TESForm>();
+	}
+
+
+	uint32_t MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelection*& outSelection)
+	{
+		if (!menu) return 0;
 
 		RE::FormID form_id = 0;
 		RE::GFxValue result;
@@ -239,8 +269,9 @@ namespace helpers
 		if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 		{
 			form_id = static_cast<std::uint32_t>(result.GetNumber());
-			logger::debug("favorites menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
+			// logger::debug("favorites menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
 		}
+		if (form_id == 0) { return 0; }
 
 		auto favorites = menu->GetRuntimeData().favorites;
 		for (auto favorite : favorites)
@@ -263,9 +294,11 @@ namespace helpers
 				}
 
 				outSelection = selection;
+				return selection->form_id;
 			}
 		}
 		logger::debug("fell through without finding our object.");
+		return 0;
 	}
 
 	void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection*& outSelection)
@@ -371,7 +404,7 @@ namespace helpers
 		selection->bound_obj = nullptr;
 		selection->form      = RE::TESForm::LookupByID(form_id);
 
-		outSelection = selection;
+		outSelection = std::move(selection);
 	}
 
 	uint32_t MenuSelection::getSelectionFromMenu(RE::UI*& ui, MenuSelection*& outSelection)
@@ -403,8 +436,7 @@ namespace helpers
 			auto* favorite_menu = static_cast<RE::FavoritesMenu*>(ui->GetMenu(RE::FavoritesMenu::MENU_NAME).get());
 			if (favorite_menu)
 			{
-				MenuSelection::makeFromFavoritesMenu(favorite_menu, outSelection);
-				if (outSelection) return outSelection->form_id;
+				return MenuSelection::makeFromFavoritesMenu(favorite_menu, outSelection);
 			}
 		}
 
