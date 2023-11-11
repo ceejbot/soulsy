@@ -749,7 +749,7 @@ checksum = "942b4a808e05215192e39f4ab80813e599068285906cc91aa64f923db842bd5a"
 
 [[package]]
 name = "soulsy"
-version = "0.11.0"
+version = "0.11.1"
 dependencies = [
  "anyhow",
  "bincode",
