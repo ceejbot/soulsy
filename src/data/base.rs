@@ -177,7 +177,7 @@ impl BaseType {
             BaseType::Equipset(_) => false,
             BaseType::Food(_) => true,
             BaseType::HandToHand => false,
-            BaseType::Light(_) => false, // These are held lights, not worn lights.
+            BaseType::Light(_) => false, // These are held lights, not worn lights. Worn lights are armor.
             BaseType::Potion(_) => true,
             BaseType::PotionProxy(_) => true,
             BaseType::Power(_) => false,

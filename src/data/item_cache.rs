@@ -36,7 +36,9 @@ impl ItemCache {
     /// Print interesting information about the cache contents to the log.
     pub fn introspect(&self) {
         log::debug!("cache contains {} items; ", self.lru.len());
-        log::debug!("    least recently-used item is: {:?}", self.lru.peek_lru());
+        if let Some(entry) = self.lru.peek_lru() {
+            log::debug!("    least recently-used item is: {}", entry.1);
+        }
     }
 
     /// On load from save, we do not bother attempting to reconcile what
