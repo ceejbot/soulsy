@@ -8,6 +8,9 @@
 //!
 //! Functions of note: `handle_key_event()`, `handle_item_equipped()`, and
 //! `timer_expired()`.
+//!
+//! I apologies for what a mess this is. It grew organically and the feature
+//! set is itself complex.
 
 use std::collections::HashMap;
 use std::sync::Mutex;
@@ -82,7 +85,7 @@ impl Controller {
         self.cycles.clear();
     }
 
-    /// Get the names of all items in the given cycle
+    /// Get the names of all items in the given cycle. Papyrus support.
     // needs to be mut because the cache might have items added to it when we fetch
     pub fn cycle_names(&mut self, which: i32) -> Vec<String> {
         match which {
@@ -94,7 +97,7 @@ impl Controller {
         }
     }
 
-    /// Get form IDs for all items in the given cycle.
+    /// Get form IDs for all items in the given cycle. Papyrus support.
     pub fn cycle_formids(&self, which: i32) -> Vec<String> {
         match which {
             0 => self.cycles.formids(&CycleSlot::Power),
@@ -109,7 +112,7 @@ impl Controller {
     pub fn apply_settings(&mut self) {
         let settings = settings();
 
-        match settings.unarmed_handling() {
+        match settings.unequip_method() {
             UnarmedMethod::AddToCycles => {
                 let h2h = HudItem::make_unarmed_proxy();
                 self.cache.record(h2h.clone());
@@ -240,6 +243,9 @@ impl Controller {
             return;
         }
 
+        // The count of the inventory item went to zero. We need to check
+        // if we must equip/ready something else now.
+
         if kind.is_utility() {
             if let Some(vis) = self.visible.get(&HudElement::Utility) {
                 if vis.form_string() == *form_spec {
@@ -273,7 +279,7 @@ impl Controller {
         }
     }
 
-    /// Handle a key-press event that the event system decided we need to know about.
+    /// Handle a gameplay key-press event that the event system decided we need to know about.
     ///
     /// Returns an enum indicating what we did in response, so that the C++ layer can
     /// start a tick timer for cycle delay.
@@ -312,7 +318,7 @@ impl Controller {
             Hotkey::Right => self.handle_cycle_right(&hotkey),
             Hotkey::Equipment => self.handle_equipset_cycle(&hotkey),
             Hotkey::Activate => {
-                let activation_method = le_options.how_to_activate();
+                let activation_method = le_options.utility_activation_method();
                 if matches!(activation_method, ActivationMethod::Hotkey) {
                     self.use_utility_item()
                 } else {
@@ -333,17 +339,17 @@ impl Controller {
         }
     }
 
-    // Just implementing these without worrying about generalizations yet.
+    /// Handle the power/shouts key being pressed.
     fn handle_cycle_power(&mut self) -> KeyEventResponse {
         // We don't need to worry about long presses here: those are handled by timers.
         let settings = settings();
-        let cycle_method = settings.how_to_cycle();
+        let cycle_method = settings.cycle_advance_method();
         if matches!(cycle_method, ActivationMethod::Hotkey) {
-            self.advance_simple_cycle(&CycleSlot::Power)
+            self.advance_cycle_power()
         } else if matches!(cycle_method, ActivationMethod::Modifier) {
             let hotkey = self.get_tracked_key(&Hotkey::CycleModifier);
             if hotkey.is_pressed() {
-                self.advance_simple_cycle(&CycleSlot::Power)
+                self.advance_cycle_power()
             } else {
                 KeyEventResponse::default()
             }
@@ -352,12 +358,41 @@ impl Controller {
         }
     }
 
-    /// Advance the utilities/consumables cycle.
+    /// The power/shouts keypress resulted in advancing the cycle.
+    fn advance_cycle_power(&mut self) -> KeyEventResponse {
+        let current_not_in_cycle = if let Some(visible) = self.visible.get(&HudElement::Power) {
+            !self.cycles.includes(&CycleSlot::Power, visible)
+        } else {
+            false
+        };
+        let candidate = if current_not_in_cycle {
+            self.cycles.get_top(&CycleSlot::Power)
+        } else {
+            self.cycles.advance(&CycleSlot::Power, 1)
+        };
+
+        if let Some(next) = candidate {
+            let item = self.cache.get_with_refresh(&next);
+            self.update_slot(HudElement::Power, &item);
+            KeyEventResponse {
+                handled: true,
+                start_timer: Action::from(CycleSlot::Power),
+                stop_timer: Action::None,
+            }
+        } else {
+            KeyEventResponse::handled()
+        }
+    }
+
+    /// Hande the utilities/consumable key being pressed.
     fn handle_cycle_utility(&mut self) -> KeyEventResponse {
         // Same comment about long presses.
         let settings = settings();
 
-        if matches!(settings.how_to_activate(), ActivationMethod::Modifier) {
+        if matches!(
+            settings.utility_activation_method(),
+            ActivationMethod::Modifier
+        ) {
             let modifier = self.get_tracked_key(&Hotkey::ActivateModifier);
             if modifier.is_pressed() {
                 log::debug!("activating utilities/consumables");
@@ -365,52 +400,41 @@ impl Controller {
             }
         }
 
-        let cycle_method = settings.how_to_cycle();
+        let cycle_method = settings.cycle_advance_method();
         if matches!(cycle_method, ActivationMethod::Hotkey) {
             log::debug!("cycling utilities/consumables");
-            return self.advance_simple_cycle(&CycleSlot::Utility);
+            return self.advance_cycle_utilities();
         }
         if matches!(cycle_method, ActivationMethod::Modifier) {
             let modifier = self.get_tracked_key(&Hotkey::CycleModifier);
             if modifier.is_pressed() {
                 log::debug!("cycling utilities/consumables");
-                return self.advance_simple_cycle(&CycleSlot::Utility);
+                return self.advance_cycle_utilities();
             }
         }
 
         KeyEventResponse::default()
     }
 
-    /// Shared code path for simple cycles like powers and utilities.
-    fn advance_simple_cycle(&mut self, which: &CycleSlot) -> KeyEventResponse {
-        // Programmer error to call this for left/right.
-        if !matches!(which, CycleSlot::Power | CycleSlot::Utility) {
-            log::info!("Programmer error! This is not a simple cycle. cycle={which:?}",);
-            return KeyEventResponse::default();
-        }
-
-        let hud = HudElement::from(which);
-        let current_not_in_cycle = if let Some(visible) = self.visible.get(&hud) {
-            !self.cycles.includes(which, visible)
+    /// Advance the utilities/consumables cycle.
+    fn advance_cycle_utilities(&mut self) -> KeyEventResponse {
+        let current_not_in_cycle = if let Some(visible) = self.visible.get(&HudElement::Utility) {
+            !self.cycles.includes(&CycleSlot::Utility, visible)
         } else {
             false
         };
         let candidate = if current_not_in_cycle {
-            self.cycles.get_top(which)
+            self.cycles.get_top(&CycleSlot::Utility)
         } else {
-            self.cycles.advance(which, 1)
+            self.cycles.advance(&CycleSlot::Utility, 1)
         };
 
         if let Some(next) = candidate {
             let item = self.cache.get_with_refresh(&next);
-            self.update_slot(hud, &item);
+            self.update_slot(HudElement::Utility, &item);
             KeyEventResponse {
                 handled: true,
-                start_timer: if !matches!(which, CycleSlot::Utility) {
-                    Action::from(which.clone())
-                } else {
-                    Action::None
-                },
+                start_timer: Action::None,
                 stop_timer: Action::None,
             }
         } else {
@@ -419,12 +443,13 @@ impl Controller {
     }
 
     /// Figure out what is supposed to happen on a key up, given settings and keystate.
+    /// Only used for right and left hand.
     fn requested_keyup_action(&self, hotkey: &Hotkey) -> RequestedAction {
         let settings = settings();
         let tracked = self.get_tracked_key(hotkey);
         let is_long_press = tracked.is_long_press();
 
-        let unequip_requested = match settings.unarmed_handling() {
+        let unequip_requested = match settings.unequip_method() {
             UnarmedMethod::None => false,
             UnarmedMethod::LongPress => tracked.is_long_press(),
             UnarmedMethod::Modifier => {
@@ -436,9 +461,9 @@ impl Controller {
 
         if unequip_requested {
             RequestedAction::Unequip
-        } else if is_long_press && settings.long_press_matches() {
+        } else if is_long_press && settings.long_press_to_dual_wield() {
             RequestedAction::Match
-        } else if match settings.how_to_cycle() {
+        } else if match settings.cycle_advance_method() {
             ActivationMethod::Hotkey => true,
             ActivationMethod::LongPress => is_long_press,
             ActivationMethod::Modifier => {
@@ -497,7 +522,7 @@ impl Controller {
                 }
             }
             RequestedAction::Advance => self.advance_hand_cycle(&slot),
-            RequestedAction::AdvanceAmmo => self.advance_ammo(),
+            RequestedAction::AdvanceAmmo => self.advance_ammo(), // pretty sure we never hit this
             RequestedAction::Match => self.match_hands(hand),
             RequestedAction::Consume => KeyEventResponse::default(),
             RequestedAction::None => KeyEventResponse::default(),
@@ -529,7 +554,11 @@ impl Controller {
             }
         } else {
             log::info!("Can't dual-wield '{}' item!", item.name());
-            KeyEventResponse::default()
+            KeyEventResponse {
+                handled: true,
+                start_timer: Action::None,
+                stop_timer: action,
+            }
         }
     }
 
@@ -841,7 +870,7 @@ impl Controller {
             }
             Action::LongPressPower => match Hotkey::Power.long_press_action() {
                 RequestedAction::Advance => {
-                    self.advance_simple_cycle(&CycleSlot::Power);
+                    self.advance_cycle_power();
                     stopTimer(Action::Power);
                 }
                 RequestedAction::Unequip => {
@@ -1408,7 +1437,6 @@ impl Controller {
         let options = settings();
         let menu_method = options.how_to_toggle();
 
-        // TODO: this entry into the controller does NOT start long-press timers.
         match menu_method {
             ActivationMethod::Hotkey => true,
             ActivationMethod::LongPress => {
@@ -1478,7 +1506,7 @@ impl Controller {
     // Returns whether the calling level should continue handling this key.
     fn update_tracked_key(&mut self, hotkey: &Hotkey, button: &ButtonEvent, in_menu: bool) -> bool {
         let mut retval = true;
-        let tracking_long_presses = settings().start_long_press_timer(hotkey) && !in_menu;
+        let tracking_long_presses = !in_menu && settings().start_long_press_timer(hotkey);
         let tracked = if let Some(previous) = self.tracked_keys.get_mut(hotkey) {
             // We have seen this key before.
             // Did this key just have a long-press event? if so, ignore a key-up.
@@ -1503,7 +1531,7 @@ impl Controller {
             tracked
         };
 
-        // long press timers
+        // long press timers; not started if we're in a menu
         if tracking_long_presses {
             if matches!(tracked.state, KeyState::Down) {
                 let duration = settings().long_press_ms();

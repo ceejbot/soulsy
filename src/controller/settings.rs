@@ -282,7 +282,7 @@ impl UserSettings {
         // hiding the implementation here, possibly pointlessly
         self.unequip_modifier > 0
     }
-    pub fn unarmed_handling(&self) -> &UnarmedMethod {
+    pub fn unequip_method(&self) -> &UnarmedMethod {
         &self.unarmed_handling
     }
     pub fn unequip_modifier(&self) -> i32 {
@@ -295,7 +295,7 @@ impl UserSettings {
 
         // These three should be mutually exclusive, so order shouldn't matter.
         // "should" ha ha ha
-        if self.long_press_matches() && is_hand_cycle {
+        if self.long_press_to_dual_wield() && is_hand_cycle {
             return true;
         }
         if matches!(self.how_to_activate, ActivationMethod::LongPress)
@@ -323,7 +323,7 @@ impl UserSettings {
         self.link_to_favorites
     }
 
-    pub fn how_to_cycle(&self) -> &ActivationMethod {
+    pub fn cycle_advance_method(&self) -> &ActivationMethod {
         &self.how_to_cycle
     }
     pub fn cycle_with_modifier(&self) -> bool {
@@ -333,7 +333,7 @@ impl UserSettings {
         self.cycle_modifier
     }
 
-    pub fn long_press_matches(&self) -> bool {
+    pub fn long_press_to_dual_wield(&self) -> bool {
         self.long_press_matches
     }
 
@@ -368,7 +368,7 @@ impl UserSettings {
         self.equip_sets_unequip
     }
 
-    pub fn how_to_activate(&self) -> &ActivationMethod {
+    pub fn utility_activation_method(&self) -> &ActivationMethod {
         &self.how_to_activate
     }
     pub fn activate_modifier(&self) -> i32 {

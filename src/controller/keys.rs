@@ -56,8 +56,8 @@ impl Hotkey {
 
     pub fn long_press_action(&self) -> RequestedAction {
         let settings = settings();
-        let advance = matches!(settings.how_to_cycle(), ActivationMethod::LongPress);
-        let unequip = matches!(settings.unarmed_handling(), UnarmedMethod::LongPress);
+        let advance = matches!(settings.cycle_advance_method(), ActivationMethod::LongPress);
+        let unequip = matches!(settings.unequip_method(), UnarmedMethod::LongPress);
 
         if matches!(self, Hotkey::Power) {
             if unequip {
@@ -68,7 +68,10 @@ impl Hotkey {
                 RequestedAction::None
             }
         } else if matches!(self, Hotkey::Utility) {
-            let consume = matches!(settings.how_to_activate(), ActivationMethod::LongPress);
+            let consume = matches!(
+                settings.utility_activation_method(),
+                ActivationMethod::LongPress
+            );
             if consume {
                 RequestedAction::Consume
             } else if advance {
@@ -77,7 +80,7 @@ impl Hotkey {
                 RequestedAction::None
             }
         } else if matches!(self, Hotkey::Left | Hotkey::Right) {
-            let dual_wield = settings.long_press_matches();
+            let dual_wield = settings.long_press_to_dual_wield();
             if unequip {
                 RequestedAction::Unequip
             } else if dual_wield {
