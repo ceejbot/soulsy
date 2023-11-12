@@ -81,7 +81,8 @@ namespace hooks
 				auto key = keycodes::get_key_id(button);
 				// I'm not getting button UP events for the inventory menu. Why? IDK.
 				// I used to get those events.
-				auto check_favorites = link_favorites && !inFavoritesMenu && (inMagicMenu ? button->IsUp() : button->IsDown());
+				auto check_favorites =
+					link_favorites && !inFavoritesMenu && (inMagicMenu ? button->IsUp() : button->IsDown());
 
 				if (check_favorites)
 				{

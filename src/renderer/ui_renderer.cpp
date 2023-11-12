@@ -24,7 +24,7 @@ namespace ui
 	static std::map<std::string, TextureData> ICON_MAP;
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
-	static const uint32_t MAX_ICON_DIM = 300; // rasterized at 96 dpi
+	static const uint32_t MAX_ICON_DIM    = 300;   // rasterized at 96 dpi
 
 	auto gHudAlpha          = 0.0f;
 	auto gGoalAlpha         = 1.0f;
@@ -167,10 +167,7 @@ namespace ui
 		if (loadedImg.width == 0) { return false; }
 		if (d3dTextureFromBuffer(&loadedImg, &ICON_MAP[key].texture, ICON_MAP[key].width, ICON_MAP[key].height))
 		{
-			logger::info("Lazy-loaded icon '{}'; width={}; height={}",
-				key,
-				ICON_MAP[key].width,
-				ICON_MAP[key].height);
+			logger::info("Lazy-loaded icon '{}'; width={}; height={}", key, ICON_MAP[key].width, ICON_MAP[key].height);
 			return true;
 		}
 		return false;

@@ -236,26 +236,25 @@ namespace helpers
 
 		this->form = item_form;
 
-		auto* player   = RE::PlayerCharacter::GetSingleton();
+		auto* player                    = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* boundObject = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
+		RE::ExtraDataList* extra        = nullptr;
 		game::boundObjectForForm(item_form, player, boundObject, extra);
 
-		if (boundObject) {
+		if (boundObject)
+		{
 			this->bound_obj = boundObject;
-			this->formType = boundObject->GetFormType();
+			this->formType  = boundObject->GetFormType();
 		}
-		else {
-			this->formType = item_form->GetFormType();
-		}
+		else { this->formType = item_form->GetFormType(); }
 	}
 
 	MenuSelection::MenuSelection(RE::TESBoundObject* boundObject) : bound_obj(boundObject)
 	{
 		if (!boundObject) { return; }
 		this->formType = boundObject->GetFormType();
-		this->form_id = boundObject->GetFormID();
-		this->form = boundObject->As<RE::TESForm>();
+		this->form_id  = boundObject->GetFormID();
+		this->form     = boundObject->As<RE::TESForm>();
 	}
 
 
@@ -434,10 +433,7 @@ namespace helpers
 		if (ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
 		{
 			auto* favorite_menu = static_cast<RE::FavoritesMenu*>(ui->GetMenu(RE::FavoritesMenu::MENU_NAME).get());
-			if (favorite_menu)
-			{
-				return MenuSelection::makeFromFavoritesMenu(favorite_menu, outSelection);
-			}
+			if (favorite_menu) { return MenuSelection::makeFromFavoritesMenu(favorite_menu, outSelection); }
 		}
 
 		return 0;
