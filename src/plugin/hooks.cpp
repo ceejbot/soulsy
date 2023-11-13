@@ -158,90 +158,73 @@ namespace hooks
 	void PlayerHook::add_object_to_container(RE::Actor* a_this,
 		RE::TESBoundObject* object,
 		RE::ExtraDataList* extraDataList,
-		int32_t count,
+		int32_t delta,
 		RE::TESObjectREFR* a_from_refr)
 	{
-		add_object_to_container_(a_this, object, extraDataList, count, a_from_refr);
-
+		add_object_to_container_(a_this, object, extraDataList, delta, a_from_refr);
 		if (object->IsInventoryObject())
 		{
 			auto item_form = RE::TESForm::LookupByID(object->formID);
-			if (item_form)
-			{
-				// We do not pass along all inventory changes to the HUD, only changes
-				// for the kinds of items the HUD is used to show.
-				const auto formtype = item_form->GetFormType();
-				if (!RELEVANT_FORMTYPES_INVENTORY.contains(formtype)) { return; }
-				std::string form_string = helpers::makeFormSpecString(item_form);
-				handle_inventory_changed(form_string, count);
-			}
+			notifyInventoryChanged(item_form);
 		}
 	}
 
 	void PlayerHook::pick_up_object(RE::Actor* actor,
 		RE::TESObjectREFR* object,
-		uint32_t count,
+		uint32_t delta,
 		bool a_arg3,
 		bool a_play_sound)
 	{
-		pick_up_object_(actor, object, count, a_arg3, a_play_sound);
+		pick_up_object_(actor, object, delta, a_arg3, a_play_sound);
 		if (object->GetBaseObject()->IsInventoryObject())
 		{
 			auto lookup = object->formID;
 			if (lookup == 0) { lookup = object->GetBaseObject()->formID; }
 			auto item_form = RE::TESForm::LookupByID(lookup);
-			if (!item_form) { return; }
-
-			const auto formtype = item_form->GetFormType();
-			if (!RELEVANT_FORMTYPES_INVENTORY.contains(formtype)) { return; }
-
-			std::string form_string = helpers::makeFormSpecString(item_form);
-			handle_inventory_changed(form_string, count);
+			notifyInventoryChanged(item_form);
 		}
 	}
 
 	RE::ObjectRefHandle PlayerHook::remove_item(RE::Actor* actor,
 		RE::TESBoundObject* object,
-		std::int32_t count,
+		std::int32_t delta,
 		RE::ITEM_REMOVE_REASON a_reason,
 		RE::ExtraDataList* extraDataList,
 		RE::TESObjectREFR* a_move_to_ref,
 		const RE::NiPoint3* a_drop_loc,
 		const RE::NiPoint3* a_rotate)
 	{
+		auto retval = remove_item_(actor, object, delta, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
 		if (object->IsInventoryObject())
 		{
 			auto* item_form = RE::TESForm::LookupByID(object->formID);
-			if (item_form)
-			{
-				const auto formtype = item_form->GetFormType();
-				if (RELEVANT_FORMTYPES_INVENTORY.contains(formtype))
-				{
-					std::string form_string = helpers::makeFormSpecString(item_form);
-					handle_inventory_changed(form_string, -count);
-				}
-			}
+			notifyInventoryChanged(item_form);
 		}
-
-		return remove_item_(actor, object, count, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
+		return retval;
 	}
 
 	void PlayerHook::add_item_functor(RE::TESObjectREFR* a_this,
 		RE::TESObjectREFR* object,
-		int32_t count,
+		int32_t delta,
 		bool a4,
 		bool a5)
 	{
-		add_item_functor_(a_this, object, count, a4, a5);
+		add_item_functor_(a_this, object, delta, a4, a5);
+		auto item_form = RE::TESForm::LookupByID(object->GetBaseObject()->formID);
+		notifyInventoryChanged(item_form);
+	}
 
-		if (object->GetBaseObject()->IsInventoryObject())
-		{
-			auto item_form = RE::TESForm::LookupByID(object->GetBaseObject()->formID);
-			if (item_form)
-			{
-				std::string form_string = helpers::makeFormSpecString(item_form);
-				handle_inventory_changed(form_string, count);
-			}
-		}
+	void PlayerHook::notifyInventoryChanged(RE::TESForm* item_form)
+	{
+		if (!item_form) { return; }
+
+		// We do not pass along all inventory changes to the HUD, only changes
+		// for the kinds of items the HUD is used to show.
+		const auto formtype = item_form->GetFormType();
+		if (!RELEVANT_FORMTYPES_INVENTORY.contains(formtype)) { return; }
+
+		auto count              = player::getInventoryCountByForm(item_form);
+		std::string form_string = helpers::makeFormSpecString(item_form);
+		handle_inventory_changed(form_string, count);
 	}
 }

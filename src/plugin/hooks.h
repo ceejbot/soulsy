@@ -27,6 +27,8 @@ namespace hooks
 		static void install();
 
 	private:
+		static void notifyInventoryChanged(RE::TESForm* item_form);
+
 		static void add_object_to_container(RE::Actor* a_this,
 			RE::TESBoundObject* a_object,
 			RE::ExtraDataList* a_extra_list,

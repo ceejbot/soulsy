@@ -176,8 +176,8 @@ impl Controller {
     }
 
     /// The player's inventory changed! Act on it if we need to.
-    pub fn handle_inventory_changed(&mut self, form_spec: &String, delta: i32) {
-        let Some(item) = self.cache.update_count(form_spec.as_str(), delta) else {
+    pub fn handle_inventory_changed(&mut self, form_spec: &String, new_count: u32) {
+        let Some(item) = self.cache.update_count(form_spec.as_str(), new_count) else {
             return;
         };
 
@@ -185,9 +185,8 @@ impl Controller {
         // holds this would be a lot less work, but I am stupid.
 
         let kind = item.kind().clone();
-        let new_count = item.count();
         log::debug!(
-            "inventory count update: name='{}'; delta={delta}; count={new_count}",
+            "inventory count update: name='{}'; count={new_count}",
             item.name()
         );
 

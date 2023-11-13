@@ -109,7 +109,7 @@ impl ItemCache {
 
     /// Update the count for a cached item. If the item is not in the
     /// cache, no action is taken.
-    pub fn update_count(&mut self, form_spec: &str, delta: i32) -> Option<&HudItem> {
+    pub fn update_count(&mut self, form_spec: &str, new_count: u32) -> Option<&HudItem> {
         if !self.contains(form_spec) {
             let fetched = fetch_game_item(form_spec);
             self.record(fetched);
@@ -118,16 +118,6 @@ impl ItemCache {
             return None;
         };
 
-        let current = item.count();
-        let new_count = if delta.is_negative() {
-            if delta.unsigned_abs() >= current {
-                0
-            } else {
-                current - delta.unsigned_abs()
-            }
-        } else {
-            current + delta as u32
-        };
         item.set_count(new_count);
         Some(item)
     }
