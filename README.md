@@ -23,9 +23,10 @@ Soulsy is a Rust and C++ project, using CMake to drive Cargo to build the Rust p
 
 The plugin requires the following vcpkg libraries, which will be installed for you:
 
-- [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG)
 - [spdlog](https://github.com/gabime/spdlog)
 - [imgui](https://github.com/ocornut/imgui)
+
+Finally, [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG) is pulled in as a git submodule and built. The repo used is [my fork](https://github.com/ceejbot/CommonLibSSE-NG) of CommonLib, which has some minor fixes in addition to the upstream.
 
 There are a number of development conveniences in the [justfile](https://just.systems), including build recipes for Powershell. `cargo install just` if you do not have it. Because I am more comfortable on Unixes than on Windows, some recipes are written in Bash. The just recipes can build, copy to a test mod directory, update version numbers and tag a new release, and build archives for upload to the Nexus.
 
