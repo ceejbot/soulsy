@@ -8,7 +8,7 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 set(NAME "SoulsyHUD")
-set(VERSION 0.11.2.0)
+set(VERSION 0.12.0.0)
 
 project(
     ${NAME}
