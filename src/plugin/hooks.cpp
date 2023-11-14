@@ -46,6 +46,14 @@ namespace hooks
 		logger::info("Menus hooked."sv);
 	}
 
+	bool MenuHook::buttonMatchesEvent(RE::ControlMap* controlMap, RE::BSFixedString eventID, RE::ButtonEvent* button)
+	{
+		auto the_device = button->GetDevice();
+		auto key        = controlMap->GetMappedKey(eventID, the_device, static_cast<RE::ControlMap::InputContextID>(0));
+		//  logger::debug("favorites detection: looking for {} ? = {}"sv, key, button->GetIDCode());
+		return key == button->GetIDCode();
+	}
+
 	RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 		RE::BSTEventSource<RE::InputEvent*>* eventSource)
 	{
@@ -77,7 +85,7 @@ namespace hooks
 				if (event->eventType != RE::INPUT_EVENT_TYPE::kButton || !event->HasIDCode()) { continue; }
 
 				auto* button = static_cast<RE::ButtonEvent*>(event);
-				if (button->idCode == keycodes::k_invalid) { continue; }
+				if (button->idCode == keycodes::kInvalid) { continue; }
 				auto key = keycodes::get_key_id(button);
 				// I'm not getting button UP events for the inventory menu. Why? IDK.
 				// I used to get those events.
@@ -109,20 +117,25 @@ namespace hooks
 					}
 				}
 
-				// we send all key events to this handler because it needs to track modifiers
-				auto do_toggle = handle_menu_event(key, *button);
-				if (do_toggle)
-				{
-					helpers::MenuSelection* selection = nullptr;
-					auto menu_form                    = helpers::MenuSelection::getSelectionFromMenu(ui, selection);
-					if (!menu_form) continue;
+				// We send all key events to this handler because it needs to track modifiers.
+				// It returns true if we should act on this event.
+				if (!handle_menu_event(key, *button)) { continue; }
 
-					auto* item_form = selection->form;
-					if (!item_form) continue;
+				helpers::MenuSelection* selection = nullptr;
+				auto menu_form                    = helpers::MenuSelection::getSelectionFromMenu(ui, selection);
+				if (!menu_form) { continue; }
 
-					auto entry = equippable::hudItemFromForm(item_form);
-					toggle_item(key, std::move(entry));
-				}
+				auto* item_form = selection->form;
+				if (!item_form) { continue; }
+
+				auto entry = equippable::hudItemFromForm(item_form);
+				toggle_item(key, std::move(entry));
+
+				// We know this event was something we acted on. We suppress it so downstream
+				// handlers do not also act upon it by doing something annoying like changing what's
+				// shown in the menu.
+				button->idCode    = keycodes::kInvalid;
+				button->userEvent = "";
 			}
 		}
 
@@ -130,14 +143,6 @@ namespace hooks
 	}
 
 	using INPUT_CONTEXT_ID = RE::UserEvents::INPUT_CONTEXT_IDS::INPUT_CONTEXT_ID;
-
-	bool MenuHook::buttonMatchesEvent(RE::ControlMap* controlMap, RE::BSFixedString eventID, RE::ButtonEvent* button)
-	{
-		auto the_device = button->GetDevice();
-		auto key        = controlMap->GetMappedKey(eventID, the_device, static_cast<RE::ControlMap::InputContextID>(0));
-		//  logger::debug("favorites detection: looking for {} ? = {}"sv, key, button->GetIDCode());
-		return key == button->GetIDCode();
-	}
 
 	// ---------- PlayerHook
 

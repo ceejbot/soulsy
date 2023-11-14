@@ -600,7 +600,7 @@ namespace ui
 		const auto settings = user_settings();
 		auto return_image   = default_key_struct[static_cast<int32_t>(default_keys::key)];
 		// todo rework this logic at some point, no rush
-		if (a_key >= keycodes::k_gamepad_offset)
+		if (a_key >= keycodes::kGamepadOffset)
 		{
 			if (settings->controller_kind() == static_cast<uint32_t>(controller_set::playstation))
 			{

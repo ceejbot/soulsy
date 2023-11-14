@@ -7,8 +7,8 @@ namespace keycodes
 		uint32_t key = button->idCode;
 		switch (button->device.get())
 		{
-			case RE::INPUT_DEVICE::kMouse: key += k_mouse_offset; break;
-			case RE::INPUT_DEVICE::kKeyboard: key += k_keyboard_offset; break;
+			case RE::INPUT_DEVICE::kMouse: key += kMouseOffset; break;
+			case RE::INPUT_DEVICE::kKeyboard: key += kKeyboardOffset; break;
 			case RE::INPUT_DEVICE::kGamepad:
 				key = get_gamepad_index(static_cast<RE::BSWin32GamepadDevice::Key>(key));
 				break;
@@ -46,10 +46,10 @@ namespace keycodes
 			case key::kLeftTrigger: index = 14; break;
 			case key::kRightTrigger: index = 15; break;
 			default:  // NOLINT(clang-diagnostic-covered-switch-default)
-				index = k_invalid;
+				index = kInvalid;
 				break;
 		}
 
-		return index != k_invalid ? index + k_gamepad_offset : k_invalid;
+		return index != kInvalid ? index + kGamepadOffset : kInvalid;
 	}
 }

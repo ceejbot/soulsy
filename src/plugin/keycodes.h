@@ -7,10 +7,10 @@ namespace keycodes
 
 	enum : uint32_t
 	{
-		k_invalid         = static_cast<uint32_t>(-1),
-		k_keyboard_offset = 0,
-		k_mouse_offset    = 256,
-		k_gamepad_offset  = 266
+		kInvalid        = static_cast<uint32_t>(-1),
+		kKeyboardOffset = 0,
+		kMouseOffset    = 256,
+		kGamepadOffset  = 266
 	};
 
 	uint32_t get_key_id(const RE::ButtonEvent* button);

@@ -162,6 +162,7 @@ Event OnSettingChange(String changedID)
     elseif (changedID == "uHowToUnequip:Controls")
         int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
         pEnableUnequipModifier = (unequipEnum == 2)
+        pEnableLongPressMatchOption = (unequipEnum != 1)
         if unequipEnum == 1
             SetModSettingBool("bLongPressMatches:Controls", false)
         endif

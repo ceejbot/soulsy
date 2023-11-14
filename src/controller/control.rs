@@ -1428,8 +1428,16 @@ impl Controller {
             return false;
         }
 
+        // You want a fun bug? I'll give you a fun bug. If these two keys are the
+        // same, which they might be, we suddenly have to become context-aware.
+        let hotkey = if matches!(hotkey, Hotkey::ActivateModifier) {
+            Hotkey::MenuModifier
+        } else {
+            hotkey
+        };
+
         self.update_tracked_key(&hotkey, button, true);
-        if !hotkey.is_cycle_key() || !button.IsUp() {
+        if !hotkey.is_cycle_key() || !button.IsDown() {
             return false;
         }
 
