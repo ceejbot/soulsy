@@ -108,6 +108,7 @@ pub mod plugin {
     #[derive(Clone, Debug)]
     pub struct SlotFlattened {
         element: HudElement,
+        offset: Point,
         bg_size: Point,
         bg_color: Color,
         bg_image: String,

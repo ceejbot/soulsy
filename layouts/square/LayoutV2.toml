@@ -1,6 +1,26 @@
+# A square layout that can show equip sets.
+# This layout uses the new layout design.
+#
+# All SoulsyHUD layouts are written in TOML. To learn more about TOML,
+# visit its official website: https://toml.io/
+#
+# Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
+
+# A named location for the HUD. Use this as a shortcut for common anchor
+# points. These work no matter what the player's screen resolution is, because this
+# is turned into a location point at run-time.
+# Values: bottom_left, bottom_right, top_left, top_right, center,
+# center_top, center_bottom, left_center, right_center
 anchor_name = "bottom_left"
+
+# You can also specify the anchor point like this if a named anchor point
+# doesn't work for your layout. These values are NOT scaled.
 # anchor = { x = 2100.0, y = 825.0 }
+
+# The size of the HUD bounding box. This is used to help place the HUD on the screen
+# but is not enforced in any way. (The HUD isn't clipped to this region, for instance.)
+size = { x = 350.0, y = 350.0 }
 
 # Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
 hide_ammo_when_irrelevant = true
@@ -8,7 +28,7 @@ hide_ammo_when_irrelevant = true
 # use the same location as the left hand to show ammo.
 hide_left_when_irrelevant = true
 
-# Typeface to use. Must be truetype. Must be in resources/fonts.
+# The file containing the typeface to use. Must be truetype. Must be in resources/fonts.
 font = "futura-book-bt.ttf"
 # A font sizing hint to the font loader about what size most of the text will use.
 # Text rendered at this size will look best. This value is scaled before the font is loaded.
@@ -26,11 +46,15 @@ korean_glyphs = false
 thai_glyphs = false
 vietnamese_glyphs = false
 
-# Optional background image. All image elements look like this.
+# An optional background image. If your layout doesn't have an overall background, you
+# can safely leave this out. All image elements look like this.
 [background]
+# This is the file name of an SVG that must be in resources/backgrounds.
 svg = "hud_bg.svg"
-size = { x = 300.0 , y = 300.0}
-color = { r = 255, g = 255, b = 255, a = 128 }
+# The size to draw the image.
+size = { x = 190.0 , y = 250.0}
+# The color to draw the image with. If alpha is zero, the background is not drawn.
+color = { r = 0, g = 0, b = 0, a = 64 }
 
 # ----- right hand slot
 
@@ -39,9 +63,10 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 # Where the center of this element is relative to the HUD anchor.
 offset = { x = 375.0, y = 0.0 }
 
-# Optional slot background image: if not present, not drawn
+# Optional slot background image: if not present, not drawn. You can have
+# different background images for different slots if you like.
 [right.background]
-svg = "right_bg.svg"
+svg = "slot_bg.svg"
 size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
@@ -50,42 +75,55 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 [right.icon]
 size = { x = 60.0, y = 60.0 }
 offset = { x = 0.0, y = 0.0 }
-color = {r = 200, g = 200, b = 200, a = 255}
+color = { r = 200, g = 200, b = 200, a = 255 }
 
 # Optional display for the slot's hotkey. All hotkey elements look like this.
 [right.hotkey]
 size = { x = 30.0, y = 30.0 }
 offset = { x = -50.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
-# optional background image for the hotkey. If not present, not drawn.
+# An optional background image for the hotkey. You can leave this out to not
+# draw a background for the hotkey display.
 [right.hotkey.background]
 svg = "hotkey_bg.svg"
 size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
-# Each of these is a different text element.
-# Text data: count, name, ??
+# An array of text elements for this slot. You can have as many
+# as you want, but each one costs time to draw so keep the count low.
+# The text can include values filled in from the item's info. To
+# fill in a value, name it surrounded with curly braces, like the
+# example.
+# Possible values: count, name, kind,
 [[right.text]]
 alignment = "right"
 offset = { x = 0.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 0 }
 font_size = 18.0
-contents = "{count}"
-
-[[right.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
-color = { r = 255, g = 255, b = 255, a = 255 }
-font_size = 18.0
-contents = "{name}"
+contents = "{count} {name}"
 
 # Optional burn time/enchant charge bar. NOT YET IMPLEMENTED.
 [right.progress_bar]
 offset = { x = 20.0, y = 20.0 }
 background = "bar_bg.svg"
 color = { r = 255, g = 255, b = 255, a = 255 }
-size = { x = 10.0 , y = 100.0 } # this is
+size = { x = 10.0 , y = 100.0 } # this is how to scale the bar, irrespective of orientation
 orientation = "horizontal" # defaults to vertical
+
+# NOT YET IMPLEMENTED.
+[right.progress_arc]
+# this might be an option
+
+# NOT YET IMPLEMENTED.
+[right.progress_circle]
+# same
+
+# NOT YET IMPLEMENTED.
+[right.poison]
+offset = { x = 20.0, y = 20.0 }
+svg = "poison.svg"
+color = {r = 160, g = 240, b = 2, a = 255 } # same color as poison. consider using the color names?
+size = { x = 10.0, y = 10.0 }
 
 # ----- left hand slot
 
@@ -93,7 +131,7 @@ orientation = "horizontal" # defaults to vertical
 offset = { x = 250.0, y = 0.0 }
 
 [left.background]
-svg = "left_bg.svg"
+svg = "slot_bg.svg"
 size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
@@ -195,6 +233,8 @@ offset = { x = 0.0, y=0.0 }
 size = { x = 30.0, y = 30.0 }
 offset = { x = -50.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
+# Note that this slot separates count and name, and uses
+# a text element for each.
 [[ammo.text]]
 alignment = "left"
 contents = "{count}"

@@ -217,7 +217,42 @@ mod tests {
     use super::*;
 
     #[test]
-    fn can_deserialize_layouts() {
+    fn can_lazy_load_layouts() {
+        let layout = hud_layout();
+        assert_eq!(layout.anchor.x, 150.0);
+        assert_eq!(layout.anchor.y, 1290.0);
+    }
+
+    #[test]
+    fn can_load_v2_layouts() {
+        let squarev1 = Layout::read_from_file("layouts/square/SoulsyHUD_Layout.toml")
+            .expect("the original square layout can be loaded");
+        let squarev2 = Layout::read_from_file("layouts/square/LayoutV2.toml")
+            .expect("the square layout has been ported");
+        let flat1 = squarev1.flatten();
+        let flat2 = squarev2.flatten();
+        assert_eq!(flat1.bg_size, flat2.bg_size);
+        assert_eq!(flat1.anchor, flat2.anchor);
+        assert_eq!(
+            flat1.hide_ammo_when_irrelevant,
+            flat2.hide_ammo_when_irrelevant
+        );
+
+        assert_eq!(flat1.slots.len(), flat2.slots.len());
+        assert_eq!(flat1.slots.len(), 6);
+
+        // This is fragile, because it depends on both the order of flattening &
+        // the order things are in the layout file.
+        let power1 = flat1.slots.first().expect("wat");
+        let power2 = flat2.slots.first().expect("wat");
+        assert_eq!(power1.element, power2.element);
+        assert_eq!(power1.offset, power2.offset);
+        assert_eq!(power1.icon_offset, power2.icon_offset);
+        assert_eq!(power1.hotkey_offset, power2.hotkey_offset);
+    }
+
+    #[test]
+    fn default_layout_exists() {
         // TODO
     }
 

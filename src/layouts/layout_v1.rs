@@ -154,36 +154,37 @@ impl From<&HudLayout1> for LayoutFlattened {
 }
 
 impl From<&SlotLayout> for SlotFlattened {
-    fn from(xs: &SlotLayout) -> Self {
+    fn from(slot: &SlotLayout) -> Self {
         let text = vec![
             TextFlattened {
-                offset: xs.name_offset.clone(),
-                color: xs.name_color.clone(),
-                alignment: xs.align_text,
+                offset: slot.name_offset.clone(),
+                color: slot.name_color.clone(),
+                alignment: slot.align_text,
                 contents: "{name}".to_string(),
-                font_size: xs.name_font_size,
+                font_size: slot.name_font_size,
             },
             TextFlattened {
-                offset: xs.count_offset.clone(),
-                color: xs.count_color.clone(),
-                alignment: xs.align_text,
+                offset: slot.count_offset.clone(),
+                color: slot.count_color.clone(),
+                alignment: slot.align_text,
                 contents: "{count}".to_string(),
-                font_size: xs.count_font_size,
+                font_size: slot.count_font_size,
             },
         ];
         SlotFlattened {
-            element: xs.element,
-            bg_size: xs.size.clone(),
-            bg_color: xs.bg_color.clone(),
+            element: slot.element,
+            offset: slot.offset.clone(),
+            bg_size: slot.size.clone(),
+            bg_color: slot.bg_color.clone(),
             bg_image: "slot_bg.svg".to_string(),
-            icon_size: xs.icon_size.clone(),
-            icon_offset: xs.icon_offset.clone(),
-            icon_color: xs.icon_color.clone(),
-            hotkey_size: xs.hotkey_size.clone(),
-            hotkey_offset: xs.hotkey_offset.clone(),
-            hotkey_color: xs.hotkey_color.clone(),
-            hotkey_bg_size: xs.hotkey_size.clone(),
-            hotkey_bg_color: xs.hotkey_bg_color.clone(),
+            icon_size: slot.icon_size.clone(),
+            icon_offset: slot.icon_offset.clone(),
+            icon_color: slot.icon_color.clone(),
+            hotkey_size: slot.hotkey_size.clone(),
+            hotkey_offset: slot.hotkey_offset.clone(),
+            hotkey_color: slot.hotkey_color.clone(),
+            hotkey_bg_size: slot.hotkey_size.clone(),
+            hotkey_bg_color: slot.hotkey_bg_color.clone(),
             hotkey_bg_image: "key_bg.svg".to_string(),
             text,
         }

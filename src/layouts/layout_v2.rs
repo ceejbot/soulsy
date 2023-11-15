@@ -16,6 +16,7 @@ pub struct HudLayout2 {
     /// Where to draw the HUD; an offset from the top left corner.
     #[serde(default)]
     anchor: Point,
+    /// A background image.
     #[serde(default, deserialize_with = "deserialize_named_anchor")]
     anchor_name: NamedAnchor,
     background: ImageElement,
@@ -194,6 +195,7 @@ fn flatten(slot: &SlotElement, element: HudElement) -> SlotFlattened {
 
     SlotFlattened {
         element,
+        offset: slot.offset.clone(),
         bg_size: bg.size,
         bg_color: bg.color,
         bg_image: bg.svg,
