@@ -59,7 +59,7 @@ pub fn initialize_hud() {
     let hud = hud_layout();
     ctrl.apply_settings();
 
-    HudLayout::refresh();
+    HudLayout1::refresh();
     if settings.autofade() {
         log::info!("The HUD is in autofade mode and ready to go.");
     } else {

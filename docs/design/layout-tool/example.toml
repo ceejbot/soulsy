@@ -70,14 +70,14 @@ alignment = "right"
 offset = { x = 0.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 0 }
 font_size = 18.0
-format = "{count}"
+contents = "{count}"
 
 [[right.text]]
 alignment = "left"
 offset = { x = -50.0, y = 55.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
-format = "{name}"
+contents = "{name}"
 
 # Optional burn time/enchant charge bar. NOT YET IMPLEMENTED.
 [right.progress_bar]
@@ -116,7 +116,7 @@ alignment = "left"
 offset = { x = -50.0, y = 55.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
-format = "{count} {name}"
+contents = "{count} {name}"
 
 # ----- utility slot
 
@@ -143,13 +143,13 @@ alignment = "left"
 offset = { x = 15.0, y = 15.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 24.0
-format = "{count}"
+contents = "{count}"
 [[utility.text]]
 alignment = "left"
 offset = { x = -50.0, y = 55.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
-format = "{name}"
+contents = "{name}"
 
 # ----- power slot
 
@@ -177,7 +177,7 @@ alignment = "center"
 offset = { x = 0.0, y = 55.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
-format = "{name}"
+contents = "{name}"
 
 # ----- ammo slot
 
@@ -197,13 +197,13 @@ offset = { x = -50.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 [[ammo.text]]
 alignment = "left"
-format = "{count}"
+contents = "{count}"
 color = { r = 200, g = 200, b = 200, a = 255 }
 font_size = 24.0
 offset = { x = 15.0, y = 15.0 }
 [[ammo.text]]
 alignment = "left"
-format = "{name}"
+contents = "{name}"
 offset = { x = -50, y =  55.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
@@ -226,7 +226,7 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -50.0, y = 0.0 }
 size = { x = 30.0, y = 30.0 }
 [[equipset.text]]
-format = "{name}"
+contents = "{name}"
 offset = { x = 0.0, y = -75.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0

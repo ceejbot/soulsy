@@ -10,6 +10,17 @@ impl Color {
     }
 }
 
+impl Default for Color {
+    fn default() -> Self {
+        Self {
+            r: 255,
+            g: 255,
+            b: 255,
+            a: 255,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Display, EnumIter, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]
 pub enum InvColor {

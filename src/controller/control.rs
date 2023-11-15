@@ -325,7 +325,7 @@ impl Controller {
                 }
             }
             Hotkey::Refresh => {
-                HudLayout::refresh();
+                HudLayout1::refresh();
                 KeyEventResponse::handled()
             }
             Hotkey::ShowHide => {

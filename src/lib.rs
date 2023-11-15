@@ -8,7 +8,9 @@
 pub mod controller;
 pub mod data;
 pub mod images;
+pub mod layouts;
 
+use crate::layouts::layout_v1::hud_layout;
 use controller::*;
 use data::{HudItem, SpellData, *};
 use images::{get_icon_key, rasterize_by_path, rasterize_icon};
@@ -78,14 +80,17 @@ pub mod plugin {
     ///
     /// This data is serialized to the SoulsyHUD_HudLayout.toml file.
     #[derive(Deserialize, Serialize, Debug, Clone)]
-    struct HudLayout {
+    struct HudLayout1 {
         #[serde(default)]
         /// A global scaling factor for the entire hud.
         global_scale: f32,
         /// Where to draw the HUD; an offset from the top left corner.
         #[serde(default)]
         anchor: Point,
-        #[serde(default, deserialize_with = "crate::deserialize_named_anchor")]
+        #[serde(
+            default,
+            deserialize_with = "crate::layouts::shared::deserialize_named_anchor"
+        )]
         anchor_name: NamedAnchor,
         /// The dimensions of a bounding box for the HUD.
         size: Point,
@@ -138,7 +143,10 @@ pub mod plugin {
         /// The name of the hud element this layout is for. For humans.
         name: String,
         /// How to align any text associated with this slot.
-        #[serde(default, deserialize_with = "crate::deserialize_align")]
+        #[serde(
+            default,
+            deserialize_with = "crate::layouts::shared::deserialize_align"
+        )]
         align_text: Align,
         /// An offset from the overall hud anchor point to draw this element at.
         offset: Point,
@@ -310,10 +318,10 @@ pub mod plugin {
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
         /// Fetch a read-only copy of our current layout.
-        fn hud_layout() -> HudLayout;
+        fn hud_layout() -> HudLayout1;
         /// Get the hud's anchor point, computed on the fly from the
         /// current screen size and layout data.
-        fn anchor_point(self: &HudLayout) -> Point;
+        fn anchor_point(self: &HudLayout1) -> Point;
 
         /// Cached data for items displayed in cycles. This is opaque to C++.
         type HudItem;
