@@ -77,11 +77,7 @@ impl LayoutFlattened {}
 
 impl From<HudLayout1> for LayoutFlattened {
     fn from(v: HudLayout1) -> Self {
-        let slots = v
-            .layouts
-            .iter()
-            .map(|xs| SlotFlattened::from(*xs))
-            .collect();
+        let slots = v.layouts.iter().map(|xs| SlotFlattened::from(xs)).collect();
 
         LayoutFlattened {
             global_scale: v.global_scale,
@@ -105,8 +101,8 @@ impl From<HudLayout1> for LayoutFlattened {
     }
 }
 
-impl From<SlotLayout> for SlotFlattened {
-    fn from(xs: SlotLayout) -> Self {
+impl From<&SlotLayout> for SlotFlattened {
+    fn from(xs: &SlotLayout) -> Self {
         let mut text = Vec::new();
         text.push(TextFlattened {
             offset: xs.name_offset.clone(),
@@ -144,12 +140,12 @@ impl From<SlotLayout> for SlotFlattened {
 impl From<HudLayout2> for LayoutFlattened {
     fn from(v: HudLayout2) -> Self {
         let mut slots = Vec::new();
-        slots.push(SlotFlattened::from(v.power);
-        slots.push(SlotFlattened::from(v.utility);
-        slots.push(SlotFlattened::from(v.left);
-        slots.push(SlotFlattened::from(v.right);
-        slots.push(SlotFlattened::from(v.ammo);
-        slots.push(SlotFlattened::from(v.equipset);
+        slots.push(SlotFlattened::from(&v.power));
+        slots.push(SlotFlattened::from(&v.utility));
+        slots.push(SlotFlattened::from(&v.left));
+        slots.push(SlotFlattened::from(&v.right));
+        slots.push(SlotFlattened::from(&v.ammo));
+        slots.push(SlotFlattened::from(&v.equipset));
 
         LayoutFlattened {
             global_scale: v.global_scale,
@@ -173,8 +169,8 @@ impl From<HudLayout2> for LayoutFlattened {
     }
 }
 
-impl From<SlotElement> for SlotFlattened {
-    fn from(value: SlotElement) -> Self {
+impl From<&SlotElement> for SlotFlattened {
+    fn from(value: &SlotElement) -> Self {
         todo!()
     }
 }

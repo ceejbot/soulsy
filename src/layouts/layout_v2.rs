@@ -21,6 +21,7 @@ pub struct HudLayout2 {
     pub left: SlotElement,
     pub power: SlotElement,
     pub utility: SlotElement,
+    pub ammo: SlotElement,
     pub equipset: SlotElement,
     /// Hide the ammo slot if a ranged weapon is not equipped.
     #[serde(default)]
