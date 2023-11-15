@@ -14,9 +14,10 @@ use simplelog::*;
 
 use super::cycles::*;
 use super::settings::{settings, UserSettings};
+use crate::control;
 use crate::data::*;
+use crate::layouts::hud_layout;
 use crate::plugin::*;
-use crate::{control, hud_layout};
 
 // ---------- logging
 
@@ -59,7 +60,6 @@ pub fn initialize_hud() {
     let hud = hud_layout();
     ctrl.apply_settings();
 
-    HudLayout1::refresh();
     if settings.autofade() {
         log::info!("The HUD is in autofade mode and ready to go.");
     } else {
@@ -68,8 +68,7 @@ pub fn initialize_hud() {
             ctrl.cycles.hud_visible()
         );
     }
-    let anchor = hud.anchor_point();
-    log::info!("HUD location is: x={}; y={};", anchor.x, anchor.y);
+    log::info!("HUD location is: x={}; y={};", hud.anchor.x, hud.anchor.y);
 }
 
 /// Function for C++ to call to send a relevant button event to us.

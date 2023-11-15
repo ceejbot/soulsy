@@ -26,6 +26,7 @@ use crate::cycleentries::*;
 use crate::data::item_cache::ItemCache;
 use crate::data::potion::PotionType;
 use crate::data::*;
+use crate::layouts::Layout;
 use crate::plugin::*;
 
 /// There can be only one. Not public because we want access managed.
@@ -325,7 +326,7 @@ impl Controller {
                 }
             }
             Hotkey::Refresh => {
-                HudLayout1::refresh();
+                Layout::refresh();
                 KeyEventResponse::handled()
             }
             Hotkey::ShowHide => {

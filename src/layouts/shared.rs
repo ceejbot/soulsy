@@ -3,7 +3,7 @@ use std::fmt::Display;
 use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
 
-use crate::plugin::{Action, Align, HudElement, NamedAnchor};
+use crate::plugin::{Action, Align, HudElement};
 
 // ---------- Align
 
@@ -49,10 +49,20 @@ where
 
 // ---------- NamedAnchor
 
-impl Default for NamedAnchor {
-    fn default() -> Self {
-        NamedAnchor::None
-    }
+/// Named HUD anchor points.
+#[derive(Debug, Default, Clone, Hash, PartialEq)]
+pub enum NamedAnchor {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+    Center,
+    CenterTop,    // top edge
+    CenterBottom, // bottom edge
+    LeftCenter,   // left edge midway down
+    RightCenter,  // right edge
+    #[default]
+    None,
 }
 
 impl Display for NamedAnchor {
@@ -152,6 +162,8 @@ impl Display for HudElement {
 
 #[cfg(test)]
 mod tests {
+    use crate::layouts::HudLayout1;
+
     use super::*;
 
     #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -174,6 +186,7 @@ mod tests {
     #[test]
     fn parses_anchor_points() {
         let data = include_str!("../../layouts/SoulsyHUD_topleft.toml");
+        let layout: HudLayout1 =
         let layout: HudLayout = toml::from_str(data).expect("layout should be valid toml");
         assert_eq!(layout.anchor_name, NamedAnchor::None);
         assert_eq!(layout.anchor_point().x, 150.0);
@@ -193,25 +206,27 @@ mod tests {
     #[test]
     fn other_layouts_parse() {
         let data = include_str!("../../layouts/SoulsyHUD_centered.toml");
-        let centered: HudLayout = toml::from_str(data).expect("layout should be valid toml");
+        let centered: HudLayout1 =
+            toml::from_str(data).expect("layout should be valid toml");
         assert_eq!(centered.anchor_name, NamedAnchor::Center);
         assert_eq!(centered.anchor_point().x, 1720.0);
         assert_eq!(centered.anchor_point().y, 720.0);
 
         let data = include_str!("../../layouts/hexagons/SoulsyHUD_hexagons_lr.toml");
-        let hexa1: HudLayout = toml::from_str(data).expect("layout should be valid toml");
+        let hexa1: HudLayout1 = toml::from_str(data).expect("layout should be valid toml");
         assert_eq!(hexa1.anchor_name, NamedAnchor::TopRight);
         assert_eq!(hexa1.anchor_point().x, 3290.0);
         assert_eq!(hexa1.anchor_point().y, 150.0);
 
         let data = include_str!("../../layouts/hexagons/SoulsyHUD_hexagons_tb.toml");
-        let hexa2: HudLayout = toml::from_str(data).expect("layout should be valid toml");
+        let hexa2: HudLayout1 = toml::from_str(data).expect("layout should be valid toml");
         assert_eq!(hexa2.anchor_name, NamedAnchor::BottomRight);
         assert_eq!(hexa2.anchor_point().x, 3290.0);
         assert_eq!(hexa2.anchor_point().y, 1290.0);
 
         let data = include_str!("../../layouts/SoulsyHUD_minimal.toml");
-        let layout: HudLayout = toml::from_str(data).expect("layout should be valid toml");
+        let layout: HudLayout1 =
+            toml::from_str(data).expect("layout should be valid toml");
         assert_eq!(layout.anchor_name, NamedAnchor::BottomLeft);
         assert_eq!(layout.anchor_point().x, 150.0);
         assert_eq!(layout.anchor_point().y, 1315.0);

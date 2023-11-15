@@ -10,10 +10,10 @@ pub mod data;
 pub mod images;
 pub mod layouts;
 
-use crate::layouts::layout_v1::hud_layout;
 use controller::*;
 use data::{HudItem, SpellData, *};
 use images::{get_icon_key, rasterize_by_path, rasterize_icon};
+use layouts::hud_layout;
 
 /// Rust defines the bridge between it and C++ in the `plugin` mod, using the
 /// affordances of the `cxx` crate. At build time `cxx_build` generates the
@@ -43,21 +43,6 @@ pub mod plugin {
         Center,
     }
 
-    /// Named HUD anchor points.
-    #[derive(Debug, Clone, Hash)]
-    enum NamedAnchor {
-        TopLeft,
-        TopRight,
-        BottomLeft,
-        BottomRight,
-        Center,
-        CenterTop,    // top edge
-        CenterBottom, // bottom edge
-        LeftCenter,   // left edge midway down
-        RightCenter,  // right edge
-        None,
-    }
-
     /// An x,y coordinate used to indicate size or an offset.
     #[derive(Deserialize, Serialize, Debug, Clone, Default, PartialEq)]
     struct Point {
@@ -78,114 +63,76 @@ pub mod plugin {
 
     /// Where to arrange the HUD elements and what color to draw them in.
     ///
-    /// This data is serialized to the SoulsyHUD_HudLayout.toml file.
-    #[derive(Deserialize, Serialize, Debug, Clone)]
-    struct HudLayout1 {
-        #[serde(default)]
+    /// This data is an unrolled version of the data from our two layout schema
+    /// versions, intended to make the render loop easier to implement. Translation:
+    /// no Option<T> types and no expensive calculations in the loop.
+    #[derive(Clone, Debug)]
+    pub struct LayoutFlattened {
         /// A global scaling factor for the entire hud.
         global_scale: f32,
         /// Where to draw the HUD; an offset from the top left corner.
-        #[serde(default)]
         anchor: Point,
-        #[serde(
-            default,
-            deserialize_with = "crate::layouts::shared::deserialize_named_anchor"
-        )]
-        anchor_name: NamedAnchor,
-        /// The dimensions of a bounding box for the HUD.
-        size: Point,
-        /// The color to draw the HUD bg image with; if zero will not be drawn.
-        bg_color: Color,
         /// Hide the ammo slot if a ranged weapon is not equipped.
-        #[serde(default)]
         hide_ammo_when_irrelevant: bool,
         /// Hide the left hand slot when a ranged weapon is equipped.
-        #[serde(default)]
         hide_left_when_irrelevant: bool,
-        /// One slot layout for each element. This wants to be map, not a vec,
-        /// but the map types are not shareable.
-        layouts: Vec<SlotLayout>,
+        /// The ttf file to load the font fromt.
         font: String,
         /// The font size for most things; a hint to the font loader.
         font_size: f32,
         /// Whether to buld glyphs for full Chinese text display.
-        #[serde(default)]
         chinese_full_glyphs: bool,
         /// Whether to build glyphs for simplified Chinese text display.
-        #[serde(default)]
         simplified_chinese_glyphs: bool,
         /// Whether to build glyphs for simplified Chinese text display.
-        #[serde(default)]
         cyrillic_glyphs: bool,
         /// Whether to build glyphs for Cyrillic text display.
-        #[serde(default)]
         japanese_glyphs: bool,
         /// Whether to build glyphs for Japanese text display.
-        #[serde(default)]
         korean_glyphs: bool,
         /// Whether to build glyphs for Thai text display.
-        #[serde(default)]
         thai_glyphs: bool,
         /// Whether to build glyphs for Vietnamese text display.
-        #[serde(default)]
         vietnamese_glyphs: bool,
+        /// The dimensions of a bounding box for the HUD.
+        bg_size: Point,
+        /// The color to draw the HUD bg image with; if zero will not be drawn.
+        bg_color: Color,
+        bg_image: String,
+        /// One slot layout for each element. This wants to be map, not a vec,
+        /// but the map types are not shareable.
+        slots: Vec<SlotFlattened>,
     }
 
     /// Layout variables for a single HUD slot, e.g, the power slot.
-    ///
-    /// This has all the same data as the previous slot settings struct, but rearranges
-    /// it into more subtypes. The current logic uses the alpha level of an item to decide
-    /// if it should be drawn or not. I might go for an explict boolean for that.
-    #[derive(Deserialize, Serialize, Debug, Clone)]
-    struct SlotLayout {
-        /// The hud element this layout is for.
+    #[derive(Clone, Debug)]
+    pub struct SlotFlattened {
         element: HudElement,
-        /// The name of the hud element this layout is for. For humans.
-        name: String,
-        /// How to align any text associated with this slot.
-        #[serde(
-            default,
-            deserialize_with = "crate::layouts::shared::deserialize_align"
-        )]
-        align_text: Align,
-        /// An offset from the overall hud anchor point to draw this element at.
-        offset: Point,
-        /// The size of this element, to scale everything to.
-        size: Point,
-        /// The color of any background for this element. If its alpha is 0, the bg is not drawn.
+        bg_size: Point,
         bg_color: Color,
+        bg_image: String,
 
-        /// The color of any icon for this element. If its alpha is 0, the icon is not drawn.
-        icon_color: Color,
-        /// The size of the icon to draw in this slot.
         icon_size: Point,
-        /// Where to draw the icon; a center point relative to the center of this slot.
-        #[serde(default)]
         icon_offset: Point,
+        icon_color: Color,
 
-        /// The color to use for this element's hotkey, if it has one. If alpha is zero, it's not drawn.
-        hotkey_color: Color,
-        /// Where to draw this hotkey, relative to the anchor point.
-        hotkey_offset: Point,
-        /// Scale for any hotkey icon.
         hotkey_size: Point,
-        /// The color to use to draw the key. Not drawn if the alpha is zero.
+        hotkey_offset: Point,
+        hotkey_color: Color,
+        hotkey_bg_size: Point,
         hotkey_bg_color: Color,
+        hotkey_bg_image: String,
 
-        /// If text is drawn in this element, where to draw it.
-        count_offset: Point,
-        /// If this element has to show a count, the font size to use.
-        count_font_size: f32,
-        /// The color of any count size text; 0 alpha means not to draw it at all.
-        count_color: Color,
+        text: Vec<TextFlattened>,
+    }
 
-        /// The color of any item name text; 0 alpha means not to draw it at all.
-        name_color: Color,
-        /// Where to draw the item name.
-        name_offset: Point,
-        /// The font size to use for this item's name.
-        #[serde(default)]
-        name_font_size: f32,
+    #[derive(Clone, Debug)]
+    pub struct TextFlattened {
+        offset: Point,
+        color: Color,
+        alignment: Align,
+        contents: String,
+        font_size: f32,
     }
 
     /// This enum maps key presses to the desired action. More like a C/java
@@ -318,10 +265,7 @@ pub mod plugin {
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
         /// Fetch a read-only copy of our current layout.
-        fn hud_layout() -> HudLayout1;
-        /// Get the hud's anchor point, computed on the fly from the
-        /// current screen size and layout data.
-        fn anchor_point(self: &HudLayout1) -> Point;
+        fn hud_layout() -> LayoutFlattened;
 
         /// Cached data for items displayed in cycles. This is opaque to C++.
         type HudItem;
