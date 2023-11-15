@@ -4,9 +4,12 @@
 //!
 //! The struct should move into the plugin module so it is not opaque to C++,
 //! but we'll get started on it here.
-use crate::plugin::{Action, Align, Color, HudElement, NamedAnchor, Point, SlotLayout};
+use crate::plugin::{Align, Color, HudElement, Point, SlotLayout};
 
-use super::{layout_v2::SlotElement, HudLayout1, HudLayout2};
+use super::{
+    layout_v2::{SlotElement, TextElement},
+    HudLayout1, HudLayout2,
+};
 
 pub struct LayoutFlattened {
     /// A global scaling factor for the entire hud.
@@ -140,12 +143,12 @@ impl From<&SlotLayout> for SlotFlattened {
 impl From<HudLayout2> for LayoutFlattened {
     fn from(v: HudLayout2) -> Self {
         let mut slots = Vec::new();
-        slots.push(SlotFlattened::from(&v.power));
-        slots.push(SlotFlattened::from(&v.utility));
-        slots.push(SlotFlattened::from(&v.left));
-        slots.push(SlotFlattened::from(&v.right));
-        slots.push(SlotFlattened::from(&v.ammo));
-        slots.push(SlotFlattened::from(&v.equipset));
+        slots.push(flatten(&v.power, HudElement::Power));
+        slots.push(flatten(&v.utility, HudElement::Utility));
+        slots.push(flatten(&v.left, HudElement::Left));
+        slots.push(flatten(&v.right, HudElement::Right));
+        slots.push(flatten(&v.ammo, HudElement::Ammo));
+        slots.push(flatten(&v.equipset, HudElement::EquipSet));
 
         LayoutFlattened {
             global_scale: v.global_scale,
@@ -169,8 +172,38 @@ impl From<HudLayout2> for LayoutFlattened {
     }
 }
 
-impl From<&SlotElement> for SlotFlattened {
-    fn from(value: &SlotElement) -> Self {
-        todo!()
+fn flatten(slot: &SlotElement, element: HudElement) -> SlotFlattened {
+    let bg = slot.background.clone().unwrap_or_default();
+    let hotkey = slot.hotkey.clone().unwrap_or_default();
+    let hkbg = hotkey.background.unwrap_or_default();
+    let text = slot.text.iter().map(|xs| TextFlattened::from(xs)).collect();
+
+    SlotFlattened {
+        element,
+        bg_size: bg.size,
+        bg_color: bg.color,
+        bg_image: bg.svg,
+        icon_size: slot.icon.size.clone(),
+        icon_offset: slot.icon.offset.clone(),
+        icon_color: slot.icon.color.clone(),
+        hotkey_size: hotkey.size,
+        hotkey_offset: hotkey.offset,
+        hotkey_color: hotkey.color,
+        hotkey_bg_size: hkbg.size,
+        hotkey_bg_color: hkbg.color,
+        hotkey_bg_image: hkbg.svg,
+        text,
+    }
+}
+
+impl From<&TextElement> for TextFlattened {
+    fn from(v: &TextElement) -> Self {
+        TextFlattened {
+            offset: v.offset.clone(),
+            color: v.color.clone(),
+            alignment: v.alignment.clone(),
+            contents: v.contents.clone(),
+            font_size: v.font_size,
+        }
     }
 }

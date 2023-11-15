@@ -58,11 +58,11 @@ pub struct HudLayout2 {
 
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct SlotElement {
-    offset: Point,
-    background: Option<ImageElement>,
-    icon: IconElement,
-    hotkey: Option<HotkeyElement>,
-    text: Vec<TextElement>,
+    pub offset: Point,
+    pub background: Option<ImageElement>,
+    pub icon: IconElement,
+    pub hotkey: Option<HotkeyElement>,
+    pub text: Vec<TextElement>,
     progress_bar: Option<ProgressElement>,
 }
 
@@ -131,11 +131,26 @@ impl HudLayout2 {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct ImageElement {
     pub svg: String,
     pub size: Point,
     pub color: Color,
+}
+
+impl Default for ImageElement {
+    fn default() -> Self {
+        ImageElement {
+            svg: "".to_string(),
+            size: Point { x: 0.0, y: 0.0 },
+            color: Color {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 0,
+            },
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
@@ -151,6 +166,22 @@ pub struct HotkeyElement {
     pub offset: Point,
     pub color: Color,
     pub background: Option<ImageElement>,
+}
+
+impl Default for HotkeyElement {
+    fn default() -> Self {
+        HotkeyElement {
+            offset: Point { x: 0.0, y: 0.0 },
+            size: Point { x: 0.0, y: 0.0 },
+            color: Color {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 0,
+            },
+            background: None,
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
