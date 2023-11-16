@@ -16,7 +16,7 @@ use super::cycles::*;
 use super::settings::{settings, UserSettings};
 use crate::control;
 use crate::data::*;
-use crate::layouts::hud_layout;
+use crate::layouts::{hud_layout, Layout};
 use crate::plugin::*;
 
 // ---------- logging
@@ -57,6 +57,7 @@ pub fn initialize_hud() {
     let mut ctrl = control::get();
     log::info!("{settings}");
 
+    Layout::refresh();
     let hud = hud_layout();
     ctrl.apply_settings();
 

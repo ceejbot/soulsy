@@ -16,6 +16,7 @@ pub struct HudLayout2 {
     /// Where to draw the HUD; an offset from the top left corner.
     #[serde(default)]
     anchor: Point,
+    size: Point,
     /// A background image.
     #[serde(default, deserialize_with = "deserialize_named_anchor")]
     anchor_name: NamedAnchor,
@@ -81,6 +82,48 @@ impl HudLayout2 {
             &self.anchor_name,
             None,
         )
+    }
+
+    fn flatten_slot(&self, slot: &SlotElement, element: HudElement) -> SlotFlattened {
+        let bg = slot.background.clone().unwrap_or_default();
+        let hotkey = slot.hotkey.clone().unwrap_or_default();
+        let hkbg = hotkey.background.unwrap_or_default();
+
+        let anchor = self.anchor_point();
+        let center = slot.offset.translate(&anchor).scale(self.global_scale);
+        let text = slot
+            .text
+            .iter()
+            .map(|xs| self.flatten_text(xs, &center))
+            .collect();
+
+        SlotFlattened {
+            element,
+            center: center.clone(),
+            bg_size: bg.size,
+            bg_color: bg.color,
+            bg_image: bg.svg,
+            icon_size: slot.icon.size.scale(self.global_scale),
+            icon_center: slot.icon.offset.scale(self.global_scale).translate(&center),
+            icon_color: slot.icon.color.clone(),
+            hotkey_size: hotkey.size.scale(self.global_scale),
+            hotkey_center: hotkey.offset.scale(self.global_scale).translate(&center),
+            hotkey_color: hotkey.color,
+            hotkey_bg_size: hkbg.size.scale(self.global_scale),
+            hotkey_bg_color: hkbg.color,
+            hotkey_bg_image: hkbg.svg,
+            text,
+        }
+    }
+
+    fn flatten_text(&self, text: &TextElement, center: &Point) -> TextFlattened {
+        TextFlattened {
+            anchor: text.offset.scale(self.global_scale).translate(center),
+            color: text.color.clone(),
+            alignment: text.alignment,
+            contents: text.contents.clone(),
+            font_size: text.font_size,
+        }
     }
 }
 
@@ -157,17 +200,18 @@ pub struct ProgressElement {
 impl From<&HudLayout2> for LayoutFlattened {
     fn from(v: &HudLayout2) -> Self {
         let slots = vec![
-            flatten(&v.power, HudElement::Power),
-            flatten(&v.utility, HudElement::Utility),
-            flatten(&v.left, HudElement::Left),
-            flatten(&v.right, HudElement::Right),
-            flatten(&v.ammo, HudElement::Ammo),
-            flatten(&v.equipset, HudElement::EquipSet),
+            v.flatten_slot(&v.power, HudElement::Power),
+            v.flatten_slot(&v.utility, HudElement::Utility),
+            v.flatten_slot(&v.left, HudElement::Left),
+            v.flatten_slot(&v.right, HudElement::Right),
+            v.flatten_slot(&v.ammo, HudElement::Ammo),
+            v.flatten_slot(&v.equipset, HudElement::EquipSet),
         ];
 
         LayoutFlattened {
             global_scale: v.global_scale,
             anchor: v.anchor_point(),
+            size: v.size.clone(),
             bg_size: v.background.size.clone(),
             bg_color: v.background.color.clone(),
             bg_image: v.background.svg.clone(),
@@ -184,30 +228,5 @@ impl From<&HudLayout2> for LayoutFlattened {
             vietnamese_glyphs: v.vietnamese_glyphs,
             slots,
         }
-    }
-}
-
-fn flatten(slot: &SlotElement, element: HudElement) -> SlotFlattened {
-    let bg = slot.background.clone().unwrap_or_default();
-    let hotkey = slot.hotkey.clone().unwrap_or_default();
-    let hkbg = hotkey.background.unwrap_or_default();
-    let text = slot.text.iter().map(TextFlattened::from).collect();
-
-    SlotFlattened {
-        element,
-        offset: slot.offset.clone(),
-        bg_size: bg.size,
-        bg_color: bg.color,
-        bg_image: bg.svg,
-        icon_size: slot.icon.size.clone(),
-        icon_offset: slot.icon.offset.clone(),
-        icon_color: slot.icon.color.clone(),
-        hotkey_size: hotkey.size,
-        hotkey_offset: hotkey.offset,
-        hotkey_color: hotkey.color,
-        hotkey_bg_size: hkbg.size,
-        hotkey_bg_color: hkbg.color,
-        hotkey_bg_image: hkbg.svg,
-        text,
     }
 }

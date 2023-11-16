@@ -65,13 +65,16 @@ pub mod plugin {
     ///
     /// This data is an unrolled version of the data from our two layout schema
     /// versions, intended to make the render loop easier to implement. Translation:
-    /// no Option<T> types and no expensive calculations in the loop.
+    /// no Option<T> types and no expensive calculations in the loop. The global
+    /// scale factor has already been applied.
     #[derive(Clone, Debug)]
     pub struct LayoutFlattened {
         /// A global scaling factor for the entire hud.
         global_scale: f32,
         /// Where to draw the HUD; an offset from the top left corner.
         anchor: Point,
+        /// HUD size after scaling.
+        size: Point,
         /// Hide the ammo slot if a ranged weapon is not equipped.
         hide_ammo_when_irrelevant: bool,
         /// Hide the left hand slot when a ranged weapon is equipped.
@@ -108,17 +111,17 @@ pub mod plugin {
     #[derive(Clone, Debug)]
     pub struct SlotFlattened {
         element: HudElement,
-        offset: Point,
+        center: Point,
         bg_size: Point,
         bg_color: Color,
         bg_image: String,
 
         icon_size: Point,
-        icon_offset: Point,
+        icon_center: Point,
         icon_color: Color,
 
         hotkey_size: Point,
-        hotkey_offset: Point,
+        hotkey_center: Point,
         hotkey_color: Color,
         hotkey_bg_size: Point,
         hotkey_bg_color: Color,
@@ -129,7 +132,7 @@ pub mod plugin {
 
     #[derive(Clone, Debug)]
     pub struct TextFlattened {
-        offset: Point,
+        anchor: Point,
         color: Color,
         alignment: Align,
         contents: String,
@@ -286,6 +289,8 @@ pub mod plugin {
         fn count(self: &HudItem) -> u32;
         /// Check if this item has a meaningful count.
         fn count_matters(self: &HudItem) -> bool;
+        /// Render a format string for the HUD.
+        fn fmtstr(self: &HudItem, format: String) -> String;
 
         /// See src/data/magic.rs for this struct. It's used to classify spells.
         type SpellData;

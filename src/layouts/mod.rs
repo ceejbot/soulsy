@@ -12,14 +12,13 @@ use std::fs;
 use std::io::Write;
 use std::sync::Mutex;
 
-use crate::plugin::{LayoutFlattened, Point, TextFlattened};
 use anyhow::Result;
 pub use layout_v1::HudLayout1;
 pub use layout_v2::{HudLayout2, TextElement};
-
 use once_cell::sync::Lazy;
 
 use self::shared::NamedAnchor;
+use crate::plugin::{LayoutFlattened, Point};
 
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
@@ -178,21 +177,25 @@ pub fn anchor_point(
     }
 }
 
-impl From<&TextElement> for TextFlattened {
-    fn from(v: &TextElement) -> Self {
-        TextFlattened {
-            offset: v.offset.clone(),
-            color: v.color.clone(),
-            alignment: v.alignment,
-            contents: v.contents.clone(),
-            font_size: v.font_size,
-        }
-    }
-}
-
 impl Default for LayoutFlattened {
     fn default() -> Self {
         todo!()
+    }
+}
+
+impl Point {
+    pub fn scale(&self, factor: f32) -> Point {
+        Point {
+            x: self.x * factor,
+            y: self.y * factor,
+        }
+    }
+
+    pub fn translate(&self, other: &Point) -> Point {
+        Point {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
     }
 }
 
@@ -246,9 +249,9 @@ mod tests {
         let power1 = flat1.slots.first().expect("wat");
         let power2 = flat2.slots.first().expect("wat");
         assert_eq!(power1.element, power2.element);
-        assert_eq!(power1.offset, power2.offset);
-        assert_eq!(power1.icon_offset, power2.icon_offset);
-        assert_eq!(power1.hotkey_offset, power2.hotkey_offset);
+        assert_eq!(power1.center, power2.center);
+        assert_eq!(power1.icon_center, power2.icon_center);
+        assert_eq!(power1.hotkey_center, power2.hotkey_center);
     }
 
     #[test]

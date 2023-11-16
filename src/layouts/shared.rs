@@ -162,9 +162,8 @@ impl Display for HudElement {
 
 #[cfg(test)]
 mod tests {
-    use crate::layouts::HudLayout1;
-
     use super::*;
+    use crate::layouts::HudLayout1;
 
     #[derive(Deserialize, Serialize, Debug, Clone)]
     struct TestAnchor {

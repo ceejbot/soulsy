@@ -125,22 +125,79 @@ impl HudLayout1 {
             Some(&self.anchor),
         )
     }
+
+    fn flatten(&self, slot: &SlotLayout) -> SlotFlattened {
+        let anchor = self.anchor_point();
+        let center = slot.offset.translate(&anchor).scale(self.global_scale);
+
+        let mut text = Vec::new();
+        if slot.name_color.a > 0 {
+            text.push(TextFlattened {
+                anchor: slot.name_offset.scale(self.global_scale).translate(&center),
+                color: slot.name_color.clone(),
+                alignment: slot.align_text,
+                contents: "{name}".to_string(),
+                font_size: slot.name_font_size * self.global_scale,
+            });
+        }
+        if slot.count_color.a > 0 {
+            text.push(TextFlattened {
+                anchor: slot
+                    .count_offset
+                    .scale(self.global_scale)
+                    .translate(&center),
+                color: slot.count_color.clone(),
+                alignment: slot.align_text,
+                contents: "{count}".to_string(),
+                font_size: slot.count_font_size * self.global_scale,
+            });
+        }
+
+        SlotFlattened {
+            element: slot.element,
+            center: center.clone(),
+            bg_size: slot.size.scale(self.global_scale),
+            bg_color: slot.bg_color.clone(),
+            bg_image: "slot_bg.svg".to_string(),
+
+            icon_size: slot.icon_size.scale(self.global_scale),
+            icon_center: slot.icon_offset.scale(self.global_scale).translate(&center),
+            icon_color: slot.icon_color.clone(),
+
+            hotkey_size: slot.hotkey_size.scale(self.global_scale),
+            hotkey_center: slot
+                .hotkey_offset
+                .scale(self.global_scale)
+                .translate(&center),
+            hotkey_color: slot.hotkey_color.clone(),
+
+            hotkey_bg_size: slot.hotkey_size.scale(self.global_scale),
+            hotkey_bg_color: slot.hotkey_bg_color.clone(),
+            hotkey_bg_image: "key_bg.svg".to_string(),
+            text,
+        }
+    }
 }
 
 impl From<&HudLayout1> for LayoutFlattened {
     fn from(v: &HudLayout1) -> Self {
-        let slots = v.layouts.iter().map(SlotFlattened::from).collect();
+        let slots = v.layouts.iter().map(|xs| v.flatten(xs)).collect();
 
         LayoutFlattened {
             global_scale: v.global_scale,
             anchor: v.anchor_point(),
-            bg_size: v.size.clone(),
+            size: v.size.clone(),
+            bg_size: Point {
+                x: v.size.x * v.global_scale,
+                y: v.size.y * v.global_scale,
+            },
             bg_color: v.bg_color.clone(),
             bg_image: "hud_bg.svg".to_string(),
             hide_ammo_when_irrelevant: v.hide_ammo_when_irrelevant,
             hide_left_when_irrelevant: v.hide_left_when_irrelevant,
             font: v.font.clone(),
-            font_size: v.font_size,
+            font_size: v.font_size * v.global_scale,
+            // glyphs requested
             chinese_full_glyphs: v.chinese_full_glyphs,
             simplified_chinese_glyphs: v.simplified_chinese_glyphs,
             cyrillic_glyphs: v.cyrillic_glyphs,
@@ -148,45 +205,8 @@ impl From<&HudLayout1> for LayoutFlattened {
             korean_glyphs: v.korean_glyphs,
             thai_glyphs: v.thai_glyphs,
             vietnamese_glyphs: v.vietnamese_glyphs,
+            // layout slots
             slots,
-        }
-    }
-}
-
-impl From<&SlotLayout> for SlotFlattened {
-    fn from(slot: &SlotLayout) -> Self {
-        let text = vec![
-            TextFlattened {
-                offset: slot.name_offset.clone(),
-                color: slot.name_color.clone(),
-                alignment: slot.align_text,
-                contents: "{name}".to_string(),
-                font_size: slot.name_font_size,
-            },
-            TextFlattened {
-                offset: slot.count_offset.clone(),
-                color: slot.count_color.clone(),
-                alignment: slot.align_text,
-                contents: "{count}".to_string(),
-                font_size: slot.count_font_size,
-            },
-        ];
-        SlotFlattened {
-            element: slot.element,
-            offset: slot.offset.clone(),
-            bg_size: slot.size.clone(),
-            bg_color: slot.bg_color.clone(),
-            bg_image: "slot_bg.svg".to_string(),
-            icon_size: slot.icon_size.clone(),
-            icon_offset: slot.icon_offset.clone(),
-            icon_color: slot.icon_color.clone(),
-            hotkey_size: slot.hotkey_size.clone(),
-            hotkey_offset: slot.hotkey_offset.clone(),
-            hotkey_color: slot.hotkey_color.clone(),
-            hotkey_bg_size: slot.hotkey_size.clone(),
-            hotkey_bg_color: slot.hotkey_bg_color.clone(),
-            hotkey_bg_image: "key_bg.svg".to_string(),
-            text,
         }
     }
 }
