@@ -167,12 +167,12 @@ layouts:
     # build the Soulsy icon pack
     dest="releases/SoulsyHUD_icon_pack/SKSE/plugins/resources/icons"
     mkdir -p "$dest"
-    cp -rp layouts/icon-pack/*.svg "$dest/"
+    cp -rp layouts/icon-pack-soulsy/*.svg "$dest/"
 
     # build the THICC icon pack
     dest="releases/SoulsyHUD_THICC_icon_pack/SKSE/plugins/resources/icons"
     mkdir -p "$dest"
-    cp -rp layouts/thicc-icon-pack/*.svg "$dest/"
+    cp -rp layouts/icon-pack-thicc/*.svg "$dest/"
 
     archive_dirs="SoulsyHUD_icon_pack SoulsyHUD_THICC_icon_pack SoulsyHUD_layout_square"
     cd releases

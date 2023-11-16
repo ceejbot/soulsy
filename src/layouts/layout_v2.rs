@@ -63,10 +63,10 @@ pub struct HudLayout2 {
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct SlotElement {
     pub offset: Point,
-    pub background: Option<ImageElement>,
     pub icon: IconElement,
-    pub hotkey: Option<HotkeyElement>,
     pub text: Vec<TextElement>,
+    pub background: Option<ImageElement>,
+    pub hotkey: Option<HotkeyElement>,
     progress_bar: Option<ProgressElement>,
 }
 
