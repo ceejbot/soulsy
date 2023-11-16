@@ -70,7 +70,7 @@ svg = "slot_bg.svg"
 size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
-# Optional icon: if not present, not drawn. Color might be overridden if
+# the icon element of this slot. Color might be overridden if
 # the user has "colorize icons" enabled.
 [right.icon]
 size = { x = 60.0, y = 60.0 }
