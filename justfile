@@ -147,8 +147,7 @@ layouts:
         font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
         if [[ "$font" =~ "Inter" ]]; then
             mkdir -p "$dest/resources/fonts"
-            cp -p "layouts/${font}" "$dest/resources/fonts"
-            cp -p "layouts/${font}" "$dest/resources/fonts"
+            cp -p "layouts/fonts/${font}" "$dest/resources/fonts"
         fi
 
         cd releases

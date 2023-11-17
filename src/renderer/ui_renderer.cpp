@@ -419,7 +419,7 @@ namespace ui
 			const auto hotkey      = settings->hotkey_for(slotLayout.element);
 			const auto slot_center = ImVec2(slotLayout.center.x, slotLayout.center.y);
 
-			const auto slotbg = std::string(topLayout.bg_image);
+			const auto slotbg = std::string(slotLayout.bg_image);
 			if (slotLayout.bg_color.a > 0 && lazyLoadHudImage(slotbg))
 			{
 				const auto [texture, width, height] = HUD_IMAGES_MAP[slotbg];
@@ -602,9 +602,9 @@ namespace ui
 				HUD_IMAGES_MAP[key].height);
 			return true;
 		}
+		logger::warn("Failed to load requested hud image '{}'; double-check the svg name in the layout file!", key);
 		return false;
 	}
-
 
 	void ui_renderer::loadFont()
 	{
