@@ -26,7 +26,7 @@ pub struct HudLayout2 {
     power: SlotElement,
     utility: SlotElement,
     ammo: SlotElement,
-    equipset: SlotElement,
+    equipset: Option<SlotElement>,
     /// Hide the ammo slot if a ranged weapon is not equipped.
     #[serde(default)]
     hide_ammo_when_irrelevant: bool,
@@ -199,14 +199,16 @@ pub struct ProgressElement {
 
 impl From<&HudLayout2> for LayoutFlattened {
     fn from(v: &HudLayout2) -> Self {
-        let slots = vec![
+        let mut slots = vec![
             v.flatten_slot(&v.power, HudElement::Power),
             v.flatten_slot(&v.utility, HudElement::Utility),
             v.flatten_slot(&v.left, HudElement::Left),
             v.flatten_slot(&v.right, HudElement::Right),
             v.flatten_slot(&v.ammo, HudElement::Ammo),
-            v.flatten_slot(&v.equipset, HudElement::EquipSet),
         ];
+        if let Some(equipset) = v.equipset.as_ref() {
+            slots.push(v.flatten_slot(&equipset, HudElement::EquipSet));
+        }
 
         LayoutFlattened {
             global_scale: v.global_scale,
@@ -228,5 +230,21 @@ impl From<&HudLayout2> for LayoutFlattened {
             vietnamese_glyphs: v.vietnamese_glyphs,
             slots,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn centered_layout_valid() {
+        let data =
+            std::fs::read_to_string("layouts/SoulsyHUD_centered.toml").expect("file not found?");
+        let centered: HudLayout2 =
+            toml::from_str(data.as_str()).expect("layout should be valid toml");
+        assert_eq!(centered.anchor_name, NamedAnchor::Center);
+        assert_eq!(centered.anchor_point().x, 1720.0);
+        assert_eq!(centered.anchor_point().y, 720.0);
     }
 }

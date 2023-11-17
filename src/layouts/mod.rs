@@ -291,19 +291,15 @@ mod tests {
     fn parses_named_anchors() {
         let data = std::fs::read_to_string("data/SKSE/plugins/SoulsyHUD_layout.toml")
             .expect("file not found?");
-        let builtin: HudLayout1 =
-            toml::from_str(data.as_str()).expect("layout should be valid toml");
-        assert_eq!(builtin.anchor_name, NamedAnchor::BottomLeft);
-        assert_eq!(builtin.anchor_point().x, 150.0);
-        assert_eq!(builtin.anchor_point().y, 1290.0);
-
-        let data =
-            std::fs::read_to_string("layouts/SoulsyHUD_centered.toml").expect("file not found?");
-        let centered: HudLayout1 =
-            toml::from_str(data.as_str()).expect("layout should be valid toml");
-        assert_eq!(centered.anchor_name, NamedAnchor::Center);
-        assert_eq!(centered.anchor_point().x, 1720.0);
-        assert_eq!(centered.anchor_point().y, 720.0);
+        let builtin: Layout = toml::from_str(data.as_str()).expect("layout should be valid toml");
+        match builtin {
+            Layout::Version1(v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
+                assert_eq!(v.anchor_point().x, 150.0);
+                assert_eq!(v.anchor_point().y, 1290.0);
+            }
+            Layout::Version2(_) => assert!(false),
+        }
 
         let data = std::fs::read_to_string("layouts/hexagons/SoulsyHUD_hexagons_lr.toml")
             .expect("file not found?");

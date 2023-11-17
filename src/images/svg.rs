@@ -167,7 +167,7 @@ mod tests {
             loaded.width as usize * loaded.height as usize * 4
         );
 
-        let full = "layouts/icon-pack/shout_call_dragon.svg".to_string();
+        let full = "layouts/icon-pack-soulsy/shout_call_dragon.svg".to_string();
         let loaded = rasterize_by_path(full);
         assert!(!loaded.buffer.is_empty());
         assert_eq!(
