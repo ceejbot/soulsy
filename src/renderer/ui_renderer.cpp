@@ -16,12 +16,12 @@ namespace ui
 
 	static std::map<uint8_t, float> cycle_timers = {};
 
-	static std::map<uint32_t, TextureData> image_struct;
 	static std::map<uint32_t, TextureData> key_struct;
 	static std::map<uint32_t, TextureData> default_key_struct;
 	static std::map<uint32_t, TextureData> PS5_BUTTON_MAP;
 	static std::map<uint32_t, TextureData> XBOX_BUTTON_MAP;
 	static std::map<std::string, TextureData> ICON_MAP;
+	static std::map<std::string, TextureData> HUD_IMAGES_MAP;
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 	static const uint32_t MAX_ICON_DIM    = 300;   // rasterized at 96 dpi
@@ -375,11 +375,12 @@ namespace ui
 		anchor.y = std::clamp(anchor.y, hudsize.y / 2.0f, screenHeight - hudsize.y / 2.0f);
 
 		// Draw the HUD background if requested.
-		if (topLayout.bg_color.a > 0)
+		const auto bgimg = std::string(topLayout.bg_image);
+		if (topLayout.bg_color.a > 0 && lazyLoadHudImage(bgimg))
 		{
 			constexpr auto angle                = 0.f;
 			const auto center                   = ImVec2(anchor.x, anchor.y);
-			const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::hud)];
+			const auto [texture, width, height] = HUD_IMAGES_MAP[bgimg];
 			const auto size                     = ImVec2(hudsize.x, hudsize.y);
 			drawElement(texture, center, size, angle, topLayout.bg_color);
 		}
@@ -418,9 +419,10 @@ namespace ui
 			const auto hotkey      = settings->hotkey_for(slotLayout.element);
 			const auto slot_center = ImVec2(slotLayout.center.x, slotLayout.center.y);
 
-			if (slotLayout.bg_color.a > 0)
+			const auto slotbg = std::string(topLayout.bg_image);
+			if (slotLayout.bg_color.a > 0 && lazyLoadHudImage(slotbg))
 			{
-				const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::slot)];
+				const auto [texture, width, height] = HUD_IMAGES_MAP[slotbg];
 				const auto size                     = ImVec2(slotLayout.bg_size.x, slotLayout.bg_size.y);
 				drawElement(texture, slot_center, size, 0.f, slotLayout.bg_color);
 			}
@@ -447,8 +449,8 @@ namespace ui
 			for (auto label : slotLayout.text)
 			{
 				if (label.color.a == 0) { continue; }
-				const auto textPos  = ImVec2(label.anchor.x, label.anchor.y);
-				auto entrytxt = std::string(entry->fmtstr(label.contents));
+				const auto textPos = ImVec2(label.anchor.x, label.anchor.y);
+				auto entrytxt      = std::string(entry->fmtstr(label.contents));
 				drawText(entrytxt, textPos, label.font_size, label.color, label.alignment);
 			}
 
@@ -456,9 +458,10 @@ namespace ui
 			{
 				const auto hk_im_center = ImVec2(slotLayout.hotkey_center.x, slotLayout.hotkey_center.y);
 
-				if (slotLayout.hotkey_bg_color.a > 0)
+				const auto hotkeybg = std::string(slotLayout.hotkey_bg_image);
+				if (slotLayout.hotkey_bg_color.a > 0 && lazyLoadHudImage(hotkeybg))
 				{
-					const auto [texture, width, height] = image_struct[static_cast<uint32_t>(image_type::key)];
+					const auto [texture, width, height] = HUD_IMAGES_MAP[hotkeybg];
 					const auto size                     = ImVec2(slotLayout.hotkey_size.x, slotLayout.hotkey_size.y);
 					drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_bg_color);
 				}
@@ -584,6 +587,24 @@ namespace ui
 		return return_image;
 	}
 
+	bool ui_renderer::lazyLoadHudImage(std::string key)
+	{
+		if (HUD_IMAGES_MAP[key].width > 0) { return true; }
+		std::string path      = R"(Data\SKSE\Plugins\resources\backgrounds\)" + key;
+		LoadedImage loadedImg = rasterize_by_path(path);
+		if (loadedImg.width == 0) { return false; }
+		if (d3dTextureFromBuffer(
+				&loadedImg, &HUD_IMAGES_MAP[key].texture, HUD_IMAGES_MAP[key].width, HUD_IMAGES_MAP[key].height))
+		{
+			logger::info("Lazy-loaded hud bg image '{}'; width={}; height={}",
+				key,
+				HUD_IMAGES_MAP[key].width,
+				HUD_IMAGES_MAP[key].height);
+			return true;
+		}
+		return false;
+	}
+
 
 	void ui_renderer::loadFont()
 	{
@@ -626,7 +647,6 @@ namespace ui
 
 	void ui_renderer::preloadImages()
 	{
-		loadImagesForMap(ImageFileToType, image_struct, img_directory);
 		loadImagesForMap(key_icon_name_map, key_struct, key_directory);
 		loadImagesForMap(default_key_icon_name_map, default_key_struct, key_directory);
 		loadImagesForMap(gamepad_ps_icon_name_map, PS5_BUTTON_MAP, key_directory);
