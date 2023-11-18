@@ -78,15 +78,6 @@ size = { x = 100.0 , y = 100.0}
 # you don't want to draw a background image.
 color = { r = 255, g = 255, b = 255, a = 128 }
 
-# The icon element of this slot. This element is *not* optional.
-[power.icon]
-# Color for this HUD's icon. Alpha of 0 means it's not drawn. The icon is
-# always centered in the slot.
-color = { r = 200, g = 200, b = 200, a = 255 }
-# Size of the icon for this slot, before scaling.
-size = { x = 43.0, y = 43.0 }
-# Where to draw the icon, relative to the center of the slot.
-offset = { x = 0.0, y = 0.0 }
 
 # Optional display for the slot's hotkey. All hotkey elements look like this.
 [power.hotkey]

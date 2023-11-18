@@ -17,10 +17,10 @@ pub struct HudLayout2 {
     #[serde(default)]
     anchor: Point,
     size: Point,
-    /// A background image.
     #[serde(default, deserialize_with = "deserialize_named_anchor")]
     anchor_name: NamedAnchor,
-    background: ImageElement,
+    /// A background image.
+    background: Option<ImageElement>,
     right: SlotElement,
     left: SlotElement,
     power: SlotElement,
@@ -76,12 +76,7 @@ impl HudLayout2 {
     }
 
     pub fn anchor_point(&self) -> Point {
-        super::anchor_point(
-            self.global_scale,
-            &self.background.size,
-            &self.anchor_name,
-            None,
-        )
+        super::anchor_point(self.global_scale, &self.size, &self.anchor_name, None)
     }
 
     fn flatten_slot(&self, slot: &SlotElement, element: HudElement) -> SlotFlattened {
@@ -209,14 +204,15 @@ impl From<&HudLayout2> for LayoutFlattened {
         if let Some(equipset) = v.equipset.as_ref() {
             slots.push(v.flatten_slot(&equipset, HudElement::EquipSet));
         }
+        let bg = v.background.clone().unwrap_or_default();
 
         LayoutFlattened {
             global_scale: v.global_scale,
             anchor: v.anchor_point(),
             size: v.size.clone(),
-            bg_size: v.background.size.clone(),
-            bg_color: v.background.color.clone(),
-            bg_image: v.background.svg.clone(),
+            bg_size: bg.size.clone(),
+            bg_color: bg.color.clone(),
+            bg_image: bg.svg.clone(),
             hide_ammo_when_irrelevant: v.hide_ammo_when_irrelevant,
             hide_left_when_irrelevant: v.hide_left_when_irrelevant,
             font: v.font.clone(),
@@ -236,6 +232,22 @@ impl From<&HudLayout2> for LayoutFlattened {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::layouts::Layout;
+
+    #[test]
+    fn default_layout_valid() {
+        let data = std::fs::read_to_string("data/SKSE/plugins/SoulsyHUD_layout.toml")
+            .expect("file not found?");
+        let builtin: Layout = toml::from_str(data.as_str()).expect("layout should be valid toml");
+        match builtin {
+            Layout::Version1(_) => assert!(false),
+            Layout::Version2(v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
+                assert_eq!(v.anchor_point().x, 150.0);
+                assert_eq!(v.anchor_point().y, 1290.0);
+            }
+        }
+    }
 
     #[test]
     fn centered_layout_valid() {
@@ -246,5 +258,24 @@ mod tests {
         assert_eq!(centered.anchor_name, NamedAnchor::Center);
         assert_eq!(centered.anchor_point().x, 1720.0);
         assert_eq!(centered.anchor_point().y, 720.0);
+    }
+
+    #[test]
+    fn minimal_layout_valid() {
+        let data =
+            std::fs::read_to_string("layouts/SoulsyHUD_minimal.toml").expect("file not found?");
+        let specific: HudLayout2 =
+            toml::from_str(data.as_str()).expect("minimal layout should be valid toml");
+        assert_eq!(specific.anchor_name, NamedAnchor::BottomLeft);
+        let minimal: Layout =
+            toml::from_str(data.as_str()).expect("serde should figure out which layout schema");
+        match minimal {
+            Layout::Version1(_) => assert!(false),
+            Layout::Version2(v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
+                assert_eq!(v.anchor_point().x, 150.0);
+                assert_eq!(v.anchor_point().y, 1315.0);
+            }
+        }
     }
 }

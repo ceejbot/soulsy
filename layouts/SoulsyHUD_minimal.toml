@@ -1,4 +1,7 @@
 # A minimal layout in the lower left corner.
+#
+# All SoulsyHUD layouts are written in TOML. To learn more about TOML,
+# visit its official website: https://toml.io/
 
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
@@ -14,8 +17,6 @@ anchor_name = "bottom_left"
 # The size of the hud, before the global scaling factor is applied.
 size = { x = 300.0, y = 250.0 }
 
-# The color of the HUD background file. Set alpha to 0 to skip drawing a background.
-bg_color = { r = 0, g = 0, b = 0, a = 0 }
 # Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
 hide_ammo_when_irrelevant = true
 # Hide the left hand slot when a ranged weapon is equipped. This lets you
@@ -25,7 +26,7 @@ hide_left_when_irrelevant = true
 # Typeface to use. Must be truetype. Must be in resources/fonts.
 font = "futura-book-bt.ttf"
 # A font sizing hint to the font loader about what size most of the text will use.
-# Text rendered at this size will look best. 
+# Text rendered at this size will look best.
 font_size = 20.0
 
 # Enable any of these you need text rendering for.
@@ -37,136 +38,69 @@ korean_glyphs = false
 thai_glyphs = false
 vietnamese_glyphs = false
 
-# This is the sub-layout for the shouts and powers slot.
-[[layouts]]
-# This name is to help humans editing this file figure out which slot they're on.
-# It's not drawn in the HUD.
-name = "Shouts/Powers"
-# Used to help the hud renderer figure out which slot this is. Complicated
-# handwave about serializing TOML. You must not change this number, but you can ignore it.
-element = { repr = 0 }
+# ---------- SHOUTS & POWERS
+[power]
+
 # The offset of the center of this slot relative to the center of the HUD.
 # This gets scaled when the global scaling factor is applied.
 offset = { x = -110.0, y = 0.0 }
-# Size of this slot, before scaling.
-size = { x = 75.0, y = 75.0 }
-# How to align name and count text for this slot.
-align_text = "left"
+# This slot doesn't have any text elements.
+text = []
 
-# The color to use to draw this slot's background. Alpha of 0 means it's not visible.
-# Color is expressed as RGBA; values are 0-255.
-bg_color = { r = 255, g = 255, b = 255, a = 0 }
+# The icon element of this slot. This element is *not* optional.
+[power.icon]
 # Color for this HUD's icon. Alpha of 0 means it's not drawn. The icon is
 # always centered in the slot.
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
+color = { r = 200, g = 200, b = 200, a = 255 }
 # Size of the icon for this slot, before scaling.
-icon_size = { x = 50.0, y = 50.0 }
+size = { x = 50.0, y = 50.0 }
+# Where to draw the icon, relative to the center of the slot.
+offset = { x = 0.0, y = 0.0 }
 
-# Color for this HUD's hotkey. Alpha of 0 means it's not drawn.
-hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
-# Where to draw the hotkey. Gets scaled.
-hotkey_offset = { x = 0.0, y = 60.0 }
-# Size of the hotkey. Also scaled.
-hotkey_size = { x = 30.0, y = 30.0 }
-# Background color for the hotkey. Alpha means invisible.
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-
-# Offset for any count text. Gets scaled.
-count_offset = { x = 0.0, y = 0.0 }
-# The color for any count displays. An alpha of 0 means not drawn.
-count_color = { r = 200, g = 200, b = 200, a = 0 }
-# Font size for item count.
-count_font_size = 20.0
-
-# The color for the name text of any item in this slot.
-name_color = { r = 255, g = 255, b = 255, a = 0 }
-# Where to draw the item name. Gets scaled.
-name_offset = { x = -25.0, y = 50.0 }
-# Font size for the item name.
-name_font_size = 15.0
-
-
+# ---------- UTILITIES AND CONSUMABLES
 # The consumables slot. You can change all of these values
 # independently from the other slots.
-[[layouts]]
-name = "Consumables"
-element = { repr = 1 }
+[utility]
 offset = { x = -35.0, y = 0.0 }
-size = { x = 75.0, y = 75.0 }
-align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 0 }
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 50.0, y = 50.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
-hotkey_offset = { x = 50.0, y = 0.0 }
-hotkey_size = { x = 30.0, y = 30.0 }
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_color = { r = 200, g = 200, b = 200, a = 255 }
-count_font_size = 20.0
-count_offset = { x = 30.0, y = 0.0 }
-name_offset = { x = 60.0, y = 0.0 }
-name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_font_size = 20.0
+[utility.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 50.0, y = 50.0 }
+offset = { x = 0.0, y = 0.0 }
+[[utility.text]]
+color = { r = 200, g = 200, b = 200, a = 255 }
+font_size = 20.0
+offset = { x = 30.0, y = 0.0 }
+alignment = "left"
+contents = "{count} {name}"
 
-[[layouts]]
-name = "Left Hand"
-element = { repr = 2 }
+# ---------- LEFT HAND
+[left]
 offset = { x = -35.0, y = -75.0 }
-size = { x = 75.0, y = 75.0 }
-align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 0 }
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 50.0, y = 50.0 }
-icon_offset = { x = 0.0, y = 0.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
-hotkey_offset = { x = 60.0, y = 0.0 }
-hotkey_size = { x = 30.0, y = 30.0 }
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
-count_color = { r = 255, g = 255, b = 255, a = 0 }
-count_font_size = 20.0
-name_color = { r = 255, g = 255, b = 255, a = 0 }
-name_offset = { x = 175.0, y = 50.0 }
-name_font_size = 20.0
+text = [] # empty text list
+[left.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 50.0, y = 50.0 }
+offset = { x = 0.0, y = 0.0 }
 
-[[layouts]]
-name = "Right Hand"
-element = { repr = 3 }
+# ---------- RIGHT HAND
+[right]
 offset = { x = -110.0, y = -75.0 }
-size = { x = 75.0, y = 75.0 }
-align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 0 }
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 50.0, y = 50.0 }
-icon_offset = { x = 0.0, y = 0.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
-hotkey_offset = { x = -60.0, y = 0.0 }
-hotkey_size = { x = 30.0, y = 30.0 }
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
-count_color = { r = 255, g = 255, b = 255, a = 0 }
-count_font_size = 20.0
-name_color = { r = 255, g = 255, b = 255, a = 0 }
-name_offset = { x = -15.0, y = 75.0 }
-name_font_size = 20.0
+text = [] # empty text list
+[right.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 50.0, y = 50.0 }
+offset = { x = 0.0, y = 0.0 }
 
-[[layouts]]
-name = "Ammo"
-element = { repr = 4 }
+# ---------- AMMO
+[ammo]
 offset = { x = -35.0, y = -75.0 }
-size = { x = 75.0, y = 75.0 }
-align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 0 }
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 50.0, y = 50.0 }
-icon_offset = { x = 0.0, y = 0.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 0 }
-hotkey_offset = { x = 60.0, y = 0.0 }
-hotkey_size = { x = 30.0, y = 30.0 }
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
-count_color = { r = 255, g = 255, b = 255, a = 255 }
-count_font_size = 20.0
-name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 30.0, y = 0.0 }
-name_font_size = 20.0
+[ammo.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 50.0, y = 50.0 }
+offset = { x = 0.0, y = 0.0 }
+[[ammo.text]]
+font_size = 20.0
+offset = { x = 0.0, y = 0.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+alignment = "left"
+contents = "{count} {name}"
