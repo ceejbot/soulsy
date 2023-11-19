@@ -1,0 +1,45 @@
+name: "Test the Rust code"
+on:
+    push:
+        branches: ["latest"]
+        paths:
+            - src/**.rs
+            - Cargo.toml
+            - Cargo.lock
+            - .github/workflows/test.yaml
+    pull_request:
+        branches: ["latest"]
+    workflow_dispatch:
+
+env:
+    CARGO_TERM_COLOR: always
+
+jobs:
+    test:
+        name: test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  override: true
+
+            - uses: actions/cache@v3
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      target
+                  key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-cargo-
+
+            - name: get cargo-nextest on path
+              run: |
+                  curl -sL https://get.nexte.st/latest/linux -o nextest.tgz
+                  tar xfz nextest.tgz
+                  mv cargo-nextest /home/runner/.cargo/bin
+
+            - name: run the tests
+              run: cargo nextest run
