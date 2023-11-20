@@ -163,7 +163,6 @@ impl Display for HudElement {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::layouts::HudLayout1;
 
     #[derive(Deserialize, Serialize, Debug, Clone)]
     struct TestAnchor {
@@ -180,54 +179,5 @@ mod tests {
         let input = r#"anchor = "bottom_center""#;
         let parsed: TestAnchor = toml::from_str(input).expect("this should be parseable");
         assert_eq!(parsed.anchor, NamedAnchor::CenterBottom);
-    }
-
-    #[test]
-    fn parses_anchor_points() {
-        let data = include_str!("../../layouts/SoulsyHUD_topleft.toml");
-        let layout: HudLayout1 =
-        let layout: HudLayout = toml::from_str(data).expect("layout should be valid toml");
-        assert_eq!(layout.anchor_name, NamedAnchor::None);
-        assert_eq!(layout.anchor_point().x, 150.0);
-        assert_eq!(layout.anchor_point().y, 150.0);
-    }
-
-    #[cfg(not(target_os = "linux"))]
-    #[test]
-    fn default_layout_parses() {
-        let data = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
-        let builtin: HudLayout = toml::from_str(data).expect("layout should be valid toml");
-        assert_eq!(builtin.anchor_name, NamedAnchor::BottomLeft);
-        assert_eq!(builtin.anchor_point().x, 150.0);
-        assert_eq!(builtin.anchor_point().y, 1290.0);
-    }
-
-    #[test]
-    fn other_layouts_parse() {
-        let data = include_str!("../../layouts/SoulsyHUD_centered.toml");
-        let centered: HudLayout1 =
-            toml::from_str(data).expect("layout should be valid toml");
-        assert_eq!(centered.anchor_name, NamedAnchor::Center);
-        assert_eq!(centered.anchor_point().x, 1720.0);
-        assert_eq!(centered.anchor_point().y, 720.0);
-
-        let data = include_str!("../../layouts/hexagons/SoulsyHUD_hexagons_lr.toml");
-        let hexa1: HudLayout1 = toml::from_str(data).expect("layout should be valid toml");
-        assert_eq!(hexa1.anchor_name, NamedAnchor::TopRight);
-        assert_eq!(hexa1.anchor_point().x, 3290.0);
-        assert_eq!(hexa1.anchor_point().y, 150.0);
-
-        let data = include_str!("../../layouts/hexagons/SoulsyHUD_hexagons_tb.toml");
-        let hexa2: HudLayout1 = toml::from_str(data).expect("layout should be valid toml");
-        assert_eq!(hexa2.anchor_name, NamedAnchor::BottomRight);
-        assert_eq!(hexa2.anchor_point().x, 3290.0);
-        assert_eq!(hexa2.anchor_point().y, 1290.0);
-
-        let data = include_str!("../../layouts/SoulsyHUD_minimal.toml");
-        let layout: HudLayout1 =
-            toml::from_str(data).expect("layout should be valid toml");
-        assert_eq!(layout.anchor_name, NamedAnchor::BottomLeft);
-        assert_eq!(layout.anchor_point().x, 150.0);
-        assert_eq!(layout.anchor_point().y, 1315.0);
     }
 }

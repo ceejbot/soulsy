@@ -228,9 +228,9 @@ mod tests {
 
     #[test]
     fn can_load_v2_layouts() {
-        let squarev1 = Layout::read_from_file("layouts/square/SoulsyHUD_Layout.toml")
+        let squarev1 = Layout::read_from_file("layouts/square/LayoutV1.toml")
             .expect("the original square layout can be loaded");
-        let squarev2 = Layout::read_from_file("layouts/square/LayoutV2.toml")
+        let squarev2 = Layout::read_from_file("layouts/square/SoulsyHUD_Layout.toml")
             .expect("the square layout has been ported");
         let flat1 = squarev1.flatten();
         let flat2 = squarev2.flatten();
@@ -245,7 +245,7 @@ mod tests {
         assert_eq!(flat1.slots.len(), 6);
 
         // This is fragile, because it depends on both the order of flattening &
-        // the order things are in the layout file.
+        // the order things are in the layout file. Consider sorting.
         let power1 = flat1.slots.first().expect("wat");
         let power2 = flat2.slots.first().expect("wat");
         assert_eq!(power1.element, power2.element);
@@ -274,17 +274,6 @@ mod tests {
         let input = r#"anchor = "bottom_center""#;
         let parsed: TestAnchor = toml::from_str(input).expect("this should be parseable");
         assert_eq!(parsed.anchor, NamedAnchor::CenterBottom);
-    }
-
-    #[test]
-    fn parses_anchor_points() {
-        let data =
-            std::fs::read_to_string("layouts/SoulsyHUD_topleft.toml").expect("file not found?");
-        let layout: HudLayout1 =
-            toml::from_str(data.as_str()).expect("layout should be valid toml");
-        assert_eq!(layout.anchor_name, NamedAnchor::None);
-        assert_eq!(layout.anchor_point().x, 150.0);
-        assert_eq!(layout.anchor_point().y, 150.0);
     }
 
     #[test]

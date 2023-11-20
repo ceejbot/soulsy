@@ -261,6 +261,17 @@ mod tests {
     }
 
     #[test]
+    fn topleft_layout_valid() {
+        let data =
+            std::fs::read_to_string("layouts/SoulsyHUD_topleft.toml").expect("file not found?");
+        let layout: HudLayout2 =
+            toml::from_str(data.as_str()).expect("layout should be valid toml");
+        assert_eq!(layout.anchor_name, NamedAnchor::None);
+        assert_eq!(layout.anchor_point().x, 150.0);
+        assert_eq!(layout.anchor_point().y, 150.0);
+    }
+
+    #[test]
     fn minimal_layout_valid() {
         let data =
             std::fs::read_to_string("layouts/SoulsyHUD_minimal.toml").expect("file not found?");
