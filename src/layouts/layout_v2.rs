@@ -289,4 +289,36 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn curvy_left_top_valid() {
+        let data = std::fs::read_to_string("layouts/curvy/SoulsyHUD_curvy_left_top.toml")
+            .expect("file not found?");
+        let parsed: Layout =
+            toml::from_str(data.as_str()).expect("serde should figure out which layout schema");
+        match parsed {
+            Layout::Version1(_) => assert!(false),
+            Layout::Version2(v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::TopLeft);
+                assert_eq!(v.anchor_point().x, 160.0);
+                assert_eq!(v.anchor_point().y, 160.0);
+            }
+        }
+    }
+
+    #[test]
+    fn curvy_left_bottom_valid() {
+        let data = std::fs::read_to_string("layouts/curvy/SoulsyHUD_curvy_left_bottom.toml")
+            .expect("file not found?");
+        let parsed: Layout =
+            toml::from_str(data.as_str()).expect("serde should figure out which layout schema");
+        match parsed {
+            Layout::Version1(_) => assert!(false),
+            Layout::Version2(v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
+                assert_eq!(v.anchor_point().x, 160.0);
+                assert_eq!(v.anchor_point().y, 1280.0);
+            }
+        }
+    }
 }
