@@ -26,7 +26,7 @@ static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 static LAYOUT: Lazy<Mutex<LayoutFlattened>> = Lazy::new(|| Mutex::new(Layout::initialize()));
 
 /// Lazy parsing of the compile-time include of the default layout, as a fallback.
-static DEFAULT_LAYOUT: Lazy<HudLayout2> = Lazy::new(HudLayout2::default);
+static DEFAULT_LAYOUT: Lazy<HudLayout2> = Lazy::new(HudLayout2::fallback);
 
 /// The accessor for anybody who needs to use the layout.
 pub fn hud_layout() -> LayoutFlattened {
@@ -55,7 +55,7 @@ impl Layout {
         let layout = match Layout::read_from_file(LAYOUT_PATH) {
             Ok(v) => v,
             Err(e) => {
-                log::warn!("Problem reading the default layout file! {e:?}");
+                log::warn!("Problem reading the enabled layout file! {e}");
                 Layout::default()
             }
         };
@@ -73,7 +73,7 @@ impl Layout {
             }
             Err(e) => {
                 log::warn!("Problem reading the default layout file! Not updating.");
-                log::warn!("{e:?}");
+                log::warn!("{e}");
             }
         };
     }

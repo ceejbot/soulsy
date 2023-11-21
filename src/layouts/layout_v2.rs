@@ -75,6 +75,18 @@ impl HudLayout2 {
         Self::default()
     }
 
+    pub fn fallback() -> Self {
+        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_Layout.toml");
+        match toml::from_str::<HudLayout2>(buf) {
+            Ok(v) => v,
+            Err(e) => {
+                log::warn!("The built-in default layout is broken. Please file a bug.");
+                log::warn!("{e}");
+                HudLayout2::default()
+            }
+        }
+    }
+
     pub fn anchor_point(&self) -> Point {
         super::anchor_point(self.global_scale, &self.size, &self.anchor_name, None)
     }
@@ -202,7 +214,7 @@ impl From<&HudLayout2> for LayoutFlattened {
             v.flatten_slot(&v.ammo, HudElement::Ammo),
         ];
         if let Some(equipset) = v.equipset.as_ref() {
-            slots.push(v.flatten_slot(&equipset, HudElement::EquipSet));
+            slots.push(v.flatten_slot(equipset, HudElement::EquipSet));
         }
         let bg = v.background.clone().unwrap_or_default();
 
@@ -278,8 +290,8 @@ mod tests {
         let specific: HudLayout2 =
             toml::from_str(data.as_str()).expect("minimal layout should be valid toml");
         assert_eq!(specific.anchor_name, NamedAnchor::BottomLeft);
-        let minimal: Layout =
-            toml::from_str(data.as_str()).expect("serde should figure out which layout schema");
+        let minimal = Layout::read_from_file("layouts/SoulsyHUD_minimal.toml")
+            .expect("serde should figure out which layout schema");
         match minimal {
             Layout::Version1(_) => assert!(false),
             Layout::Version2(v) => {

@@ -471,7 +471,7 @@ pub mod cosave_v2 {
             }
             Err(e) => {
                 log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
-                log::error!("{e:?}");
+                log::error!("{e}");
                 None
             }
         }
@@ -605,7 +605,7 @@ pub mod cosave_v1 {
             }
             Err(e) => {
                 log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
-                log::error!("{e:?}");
+                log::error!("{e}");
                 None
             }
         }
@@ -706,7 +706,7 @@ pub mod cosave_v0 {
             }
             Err(e) => {
                 log::error!("Bincode cannot decode the cosave data. len={}", bytes.len());
-                log::error!("{e:?}");
+                log::error!("{e}");
                 None
             }
         }
