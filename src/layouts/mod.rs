@@ -12,7 +12,7 @@ use std::fs;
 use std::io::Write;
 use std::sync::Mutex;
 
-use anyhow::Result;
+use eyre::Result;
 pub use layout_v1::HudLayout1;
 pub use layout_v2::{HudLayout2, TextElement};
 use once_cell::sync::Lazy;

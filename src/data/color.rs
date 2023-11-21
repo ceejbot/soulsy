@@ -1,5 +1,6 @@
 //! OCF color keywords associated with specific colors.
 
+use eyre::{eyre, Result};
 use strum::{Display, EnumIter, EnumVariantNames, IntoEnumIterator};
 
 use crate::plugin::Color;
@@ -76,7 +77,7 @@ pub fn color_from_keywords(keywords: &[String]) -> InvColor {
 }
 
 impl TryFrom<&str> for InvColor {
-    type Error = anyhow::Error;
+    type Error = eyre::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let color_name = value
@@ -87,7 +88,7 @@ impl TryFrom<&str> for InvColor {
         if let Some(c) = color {
             Ok(c)
         } else {
-            Err(anyhow::anyhow!("not a valid color type"))
+            Err(eyre!("not a valid color type"))
         }
     }
 }

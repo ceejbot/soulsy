@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
 
-use anyhow::{anyhow, Result};
+use eyre::{eyre, Result};
 use once_cell::sync::Lazy;
 use resvg::usvg::TreeParsing;
 use resvg::*;
@@ -122,7 +122,7 @@ fn load_and_rasterize(file_path: &PathBuf, maxsize: Option<u32>) -> Result<Loade
     };
 
     let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())
-        .ok_or(anyhow!("unable to allocate pixmap to render into"))?;
+        .ok_or(eyre!("unable to allocate pixmap to render into"))?;
     rtree.render(transform, &mut pixmap.as_mut());
 
     Ok(LoadedImage {

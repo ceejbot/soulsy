@@ -252,7 +252,7 @@ mod tests {
             .expect("file not found?");
         let builtin: Layout = toml::from_str(data.as_str()).expect("layout should be valid toml");
         match builtin {
-            Layout::Version1(_) => assert!(false),
+            Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {
                 assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
                 assert_eq!(v.anchor_point().x, 150.0);
@@ -293,7 +293,7 @@ mod tests {
         let minimal = Layout::read_from_file("layouts/SoulsyHUD_minimal.toml")
             .expect("serde should figure out which layout schema");
         match minimal {
-            Layout::Version1(_) => assert!(false),
+            Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {
                 assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
                 assert_eq!(v.anchor_point().x, 150.0);
@@ -309,7 +309,7 @@ mod tests {
         let parsed: Layout =
             toml::from_str(data.as_str()).expect("serde should figure out which layout schema");
         match parsed {
-            Layout::Version1(_) => assert!(false),
+            Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {
                 assert_eq!(v.anchor_name, NamedAnchor::TopLeft);
                 assert_eq!(v.anchor_point().x, 160.0);
@@ -325,7 +325,7 @@ mod tests {
         let parsed: Layout =
             toml::from_str(data.as_str()).expect("serde should figure out which layout schema");
         match parsed {
-            Layout::Version1(_) => assert!(false),
+            Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {
                 assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
                 assert_eq!(v.anchor_point().x, 160.0);

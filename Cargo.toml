@@ -12,10 +12,10 @@ keywords = ["skyrim", "c++"]
 crate-type = ["staticlib"]
 
 [dependencies]
-anyhow = "1.0.75"
 bincode = "2.0.0-rc.3"
 cxx = { version = "1.0.110", features = ["c++20"] }
 enumset = "1.1.3"
+eyre = "0.6.9"
 log = "0.4.20"
 lru = "0.12.0"
 once_cell = "1.18.0"

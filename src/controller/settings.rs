@@ -5,7 +5,7 @@
 
 use std::sync::Mutex;
 
-use anyhow::Result;
+use eyre::Result;
 use ini::Ini;
 use log::Level;
 use once_cell::sync::Lazy;
