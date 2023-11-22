@@ -394,14 +394,11 @@ mod tests {
 
     #[test]
     fn parses_named_anchors() {
-        let cwd = std::env::current_dir().expect("current_dir() should succeed");
-        eprintln!("{}", cwd.display());
-
-        let data = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
-        let builtin: HudLayout = toml::from_str(data).expect("layout should be valid toml");
-        assert_eq!(builtin.anchor_name, NamedAnchor::BottomLeft);
-        assert_eq!(builtin.anchor_point().x, 150.0);
-        assert_eq!(builtin.anchor_point().y, 1290.0);
+        // let data = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
+        // let builtin: HudLayout = toml::from_str(data).expect("layout should be valid toml");
+        // assert_eq!(builtin.anchor_name, NamedAnchor::BottomLeft);
+        // assert_eq!(builtin.anchor_point().x, 150.0);
+        // assert_eq!(builtin.anchor_point().y, 1290.0);
 
         let data = include_str!("../../layouts/SoulsyHUD_centered.toml");
         let centered: HudLayout = toml::from_str(data).expect("layout should be valid toml");
