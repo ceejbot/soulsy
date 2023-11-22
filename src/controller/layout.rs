@@ -392,14 +392,18 @@ mod tests {
         assert_eq!(layout.anchor_point().y, 150.0);
     }
 
+    #[cfg(not(target_os = "linux"))]
     #[test]
-    fn parses_named_anchors() {
-        // let data = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
-        // let builtin: HudLayout = toml::from_str(data).expect("layout should be valid toml");
-        // assert_eq!(builtin.anchor_name, NamedAnchor::BottomLeft);
-        // assert_eq!(builtin.anchor_point().x, 150.0);
-        // assert_eq!(builtin.anchor_point().y, 1290.0);
+    fn default_layout_parses() {
+        let data = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
+        let builtin: HudLayout = toml::from_str(data).expect("layout should be valid toml");
+        assert_eq!(builtin.anchor_name, NamedAnchor::BottomLeft);
+        assert_eq!(builtin.anchor_point().x, 150.0);
+        assert_eq!(builtin.anchor_point().y, 1290.0);
+    }
 
+    #[test]
+    fn other_layouts_parse() {
         let data = include_str!("../../layouts/SoulsyHUD_centered.toml");
         let centered: HudLayout = toml::from_str(data).expect("layout should be valid toml");
         assert_eq!(centered.anchor_name, NamedAnchor::Center);
