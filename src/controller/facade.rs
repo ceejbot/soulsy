@@ -130,7 +130,7 @@ pub fn handle_favorite_event(
 
 pub fn refresh_user_settings() {
     if let Some(e) = UserSettings::refresh().err() {
-        log::warn!("Failed to read user settings! using defaults; {e}");
+        log::warn!("Failed to read user settings! using defaults; {e:#}");
         return;
     }
     control::get().apply_settings();

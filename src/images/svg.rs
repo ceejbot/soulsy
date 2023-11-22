@@ -37,7 +37,7 @@ pub fn rasterize_icon(name: String, maxdim: u32) -> LoadedImage {
     match load_icon(&icon, maxdim) {
         Ok(v) => v,
         Err(e) => {
-            log::error!("failed to load icon SVG; icon={icon}; error={e}");
+            log::error!("failed to load icon SVG; icon={icon}; error={e:#}");
             LoadedImage::default()
         }
     }
@@ -47,7 +47,7 @@ pub fn rasterize_by_path(fpath: String) -> LoadedImage {
     match load_and_rasterize(&fpath.clone().into(), None) {
         Ok(v) => v,
         Err(e) => {
-            log::error!("failed to load svg by path; icon={fpath}; error={e}");
+            log::error!("failed to load svg by path; icon={fpath}; error={e:#}");
             LoadedImage::default()
         }
     }

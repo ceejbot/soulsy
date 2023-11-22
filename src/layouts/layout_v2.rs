@@ -1,3 +1,4 @@
+use eyre::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 use super::shared::*;
@@ -81,10 +82,18 @@ impl HudLayout2 {
             Ok(v) => v,
             Err(e) => {
                 log::warn!("The built-in default layout is broken. Please file a bug.");
-                log::warn!("{e}");
+                log::warn!("{e:#}");
                 HudLayout2::default()
             }
         }
+    }
+
+    /// Read a v2 layout from a file.
+    pub fn read_from_file(pathstr: &str) -> Result<Self> {
+        let path = std::path::Path::new(pathstr);
+        let buf = std::fs::read_to_string(path).wrap_err_with(|| format!("Unable to read the layout file: {}", pathstr))?;
+        let parsed = toml::from_str::<Self>(&buf).wrap_err_with(|| format!("The layout file isn't a valid v2 layout. file={}", pathstr))?;
+        Ok(parsed)
     }
 
     pub fn anchor_point(&self) -> Point {

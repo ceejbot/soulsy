@@ -106,7 +106,7 @@ impl HudItem {
         match strfmt(&fmt, &self.format_vars) {
             Ok(v) => v,
             Err(e) => {
-                log::warn!("Failed to render format string for HUD item; error: {e}");
+                log::warn!("Failed to render format string for HUD item; error: {e:#}");
                 "".to_string()
             }
         }

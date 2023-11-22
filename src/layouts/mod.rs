@@ -12,13 +12,13 @@ use std::fs;
 use std::io::Write;
 use std::sync::Mutex;
 
-use eyre::Result;
+use eyre::{eyre, Context, Result};
 pub use layout_v1::HudLayout1;
 pub use layout_v2::{HudLayout2, TextElement};
 use once_cell::sync::Lazy;
 
 use self::shared::NamedAnchor;
-use crate::plugin::{LayoutFlattened, Point};
+use crate::{plugin::{LayoutFlattened, Point, notifyPlayer}, controller::control::translated_key};
 
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
@@ -55,7 +55,7 @@ impl Layout {
         let layout = match Layout::read_from_file(LAYOUT_PATH) {
             Ok(v) => v,
             Err(e) => {
-                log::warn!("Problem reading the enabled layout file! {e}");
+                log::warn!("Problem reading the enabled layout file! {e:#}");
                 Layout::default()
             }
         };
@@ -72,8 +72,8 @@ impl Layout {
                 *hudl = v.flatten();
             }
             Err(e) => {
-                log::warn!("Problem reading the default layout file! Not updating.");
-                log::warn!("{e}");
+                log::warn!("{e:#}");
+                log::warn!("In-game layout not updated.")
             }
         };
     }
@@ -90,9 +90,25 @@ impl Layout {
             return Ok(Layout::Version2(Box::new(layout)));
         }
 
-        let buf = fs::read_to_string(path)?;
-        let parsed = toml::from_str::<Layout>(&buf)?;
-        Ok(parsed)
+        let buf = fs::read_to_string(path)
+            .wrap_err_with(|| format!("Unable to read the layout file: {}", pathstr))?;
+        match toml::from_str::<Layout>(&buf) {
+            Ok(v) => {
+                // could notify here if we wanted with $SoulsyHUD_Layout_Refreshed_Msg
+                Ok(v)
+            },
+            Err(_) => {
+                let msg = translated_key("$SoulsyHUD_Layout_Failed_Msg");
+                cxx::let_cxx_string!(message = msg);
+                notifyPlayer(&message);
+                // We know these are both errors or we wouldn't be here.
+                let v1err = HudLayout1::read_from_file(pathstr).unwrap_err();
+                log::warn!("{v1err:#}");
+                let v2err = HudLayout2::read_from_file(pathstr).unwrap_err();
+                log::warn!("{v2err:#}");
+                Err(eyre!("The toml file at '{}' can't be parsed as a SoulsyHUD layout.", pathstr))
+            }
+        }
     }
 
     pub fn flatten(&self) -> LayoutFlattened {
