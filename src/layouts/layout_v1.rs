@@ -121,8 +121,11 @@ impl HudLayout1 {
     /// Read a v2 layout from a file.
     pub fn read_from_file(pathstr: &str) -> Result<Self> {
         let path = std::path::Path::new(pathstr);
-        let buf = std::fs::read_to_string(path).wrap_err_with(|| format!("Unable to read the layout file: {}", pathstr))?;
-        let parsed = toml::from_str::<Self>(&buf).wrap_err_with(|| format!("The layout file isn't a valid v1 layout. file={}", pathstr))?;
+        let buf = std::fs::read_to_string(path)
+            .wrap_err_with(|| format!("Unable to read the layout file: {}", pathstr))?;
+        let parsed = toml::from_str::<Self>(&buf).wrap_err_with(|| {
+            format!("The layout file isn't a valid v1 layout. file={}", pathstr)
+        })?;
         Ok(parsed)
     }
 

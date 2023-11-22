@@ -1413,8 +1413,7 @@ impl Controller {
 
         if let Some(msg) = maybe_message {
             log::info!("{msg}");
-            cxx::let_cxx_string!(message = msg);
-            notifyPlayer(&message);
+            notify(&msg);
         } else {
             log::info!("Favoriting or unfavoriting didn't change cycles.");
         }
@@ -1503,8 +1502,7 @@ impl Controller {
         vars.insert("cycle".to_string(), cyclename);
         if let Ok(message) = strfmt(&verb, &vars) {
             log::info!("{}; kind={:?};", message, item.kind());
-            cxx::let_cxx_string!(msg = message);
-            notifyPlayer(&msg);
+            notify(&message);
         } else {
             log::debug!("No notification sent to player because message couldn't be formatted");
         }
@@ -1710,11 +1708,26 @@ impl Default for Controller {
     }
 }
 
+#[cfg(not(test))]
+pub fn notify(msg: &str) {
+    cxx::let_cxx_string!(message = msg);
+    notifyPlayer(&message);
+}
+
+#[cfg(test)]
+pub fn notify(_msg: &str) {}
+
 /// Convenience function for doing the cxx macro boilerplate before
 /// calling C++ with a string.
+#[cfg(not(test))]
 pub fn translated_key(key: &str) -> String {
     let_cxx_string!(cxxkey = key);
     lookupTranslation(&cxxkey)
+}
+
+#[cfg(test)]
+pub fn translated_key(key: &str) -> String {
+    format!("translation of {key}")
 }
 
 const FMT_ITEM_REMOVED: &str = "$SoulsyHUD_fmt_ItemRemoved";

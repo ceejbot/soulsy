@@ -91,8 +91,11 @@ impl HudLayout2 {
     /// Read a v2 layout from a file.
     pub fn read_from_file(pathstr: &str) -> Result<Self> {
         let path = std::path::Path::new(pathstr);
-        let buf = std::fs::read_to_string(path).wrap_err_with(|| format!("Unable to read the layout file: {}", pathstr))?;
-        let parsed = toml::from_str::<Self>(&buf).wrap_err_with(|| format!("The layout file isn't a valid v2 layout. file={}", pathstr))?;
+        let buf = std::fs::read_to_string(path)
+            .wrap_err_with(|| format!("Unable to read the layout file: {}", pathstr))?;
+        let parsed = toml::from_str::<Self>(&buf).wrap_err_with(|| {
+            format!("The layout file isn't a valid v2 layout. file={}", pathstr)
+        })?;
         Ok(parsed)
     }
 
@@ -257,9 +260,8 @@ mod tests {
 
     #[test]
     fn default_layout_valid() {
-        let data = std::fs::read_to_string("data/SKSE/plugins/SoulsyHUD_layout.toml")
-            .expect("file not found?");
-        let builtin: Layout = toml::from_str(data.as_str()).expect("layout should be valid toml");
+        let data = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
+        let builtin: Layout = toml::from_str(data).expect("layout should be valid toml");
         match builtin {
             Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {
@@ -272,10 +274,8 @@ mod tests {
 
     #[test]
     fn centered_layout_valid() {
-        let data =
-            std::fs::read_to_string("layouts/SoulsyHUD_centered.toml").expect("file not found?");
-        let centered: HudLayout2 =
-            toml::from_str(data.as_str()).expect("layout should be valid toml");
+        let data = include_str!("../../layouts/SoulsyHUD_centered.toml");
+        let centered: HudLayout2 = toml::from_str(data).expect("layout should be valid toml");
         assert_eq!(centered.anchor_name, NamedAnchor::Center);
         assert_eq!(centered.anchor_point().x, 1720.0);
         assert_eq!(centered.anchor_point().y, 720.0);
@@ -283,10 +283,8 @@ mod tests {
 
     #[test]
     fn topleft_layout_valid() {
-        let data =
-            std::fs::read_to_string("layouts/SoulsyHUD_topleft.toml").expect("file not found?");
-        let layout: HudLayout2 =
-            toml::from_str(data.as_str()).expect("layout should be valid toml");
+        let data = include_str!("../../layouts/SoulsyHUD_topleft.toml");
+        let layout: HudLayout2 = toml::from_str(data).expect("layout should be valid toml");
         assert_eq!(layout.anchor_name, NamedAnchor::None);
         assert_eq!(layout.anchor_point().x, 150.0);
         assert_eq!(layout.anchor_point().y, 150.0);
@@ -294,10 +292,9 @@ mod tests {
 
     #[test]
     fn minimal_layout_valid() {
-        let data =
-            std::fs::read_to_string("layouts/SoulsyHUD_minimal.toml").expect("file not found?");
+        let data = include_str!("../../layouts/SoulsyHUD_minimal.toml");
         let specific: HudLayout2 =
-            toml::from_str(data.as_str()).expect("minimal layout should be valid toml");
+            toml::from_str(data).expect("minimal layout should be valid toml");
         assert_eq!(specific.anchor_name, NamedAnchor::BottomLeft);
         let minimal = Layout::read_from_file("layouts/SoulsyHUD_minimal.toml")
             .expect("serde should figure out which layout schema");
@@ -313,10 +310,9 @@ mod tests {
 
     #[test]
     fn curvy_left_top_valid() {
-        let data = std::fs::read_to_string("layouts/curvy/SoulsyHUD_curvy_left_top.toml")
-            .expect("file not found?");
+        let data = include_str!("../../layouts/curvy/SoulsyHUD_curvy_left_top.toml");
         let parsed: Layout =
-            toml::from_str(data.as_str()).expect("serde should figure out which layout schema");
+            toml::from_str(data).expect("serde should figure out which layout schema");
         match parsed {
             Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {
@@ -329,10 +325,9 @@ mod tests {
 
     #[test]
     fn curvy_left_bottom_valid() {
-        let data = std::fs::read_to_string("layouts/curvy/SoulsyHUD_curvy_left_bottom.toml")
-            .expect("file not found?");
+        let data = include_str!("../../layouts/curvy/SoulsyHUD_curvy_left_bottom.toml");
         let parsed: Layout =
-            toml::from_str(data.as_str()).expect("serde should figure out which layout schema");
+            toml::from_str(data).expect("serde should figure out which layout schema");
         match parsed {
             Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {

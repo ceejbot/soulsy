@@ -2,8 +2,6 @@
 
 #![allow(non_snake_case, non_camel_case_types)]
 
-use serde::{Deserialize, Serialize};
-
 pub mod layout_v1;
 pub mod layout_v2;
 pub mod shared;
@@ -16,9 +14,12 @@ use eyre::{eyre, Context, Result};
 pub use layout_v1::HudLayout1;
 pub use layout_v2::{HudLayout2, TextElement};
 use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
 
 use self::shared::NamedAnchor;
-use crate::{plugin::{LayoutFlattened, Point, notifyPlayer}, controller::control::translated_key};
+use crate::control::notify;
+use crate::controller::control::translated_key;
+use crate::plugin::{LayoutFlattened, Point};
 
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
 
@@ -96,17 +97,19 @@ impl Layout {
             Ok(v) => {
                 // could notify here if we wanted with $SoulsyHUD_Layout_Refreshed_Msg
                 Ok(v)
-            },
+            }
             Err(_) => {
                 let msg = translated_key("$SoulsyHUD_Layout_Failed_Msg");
-                cxx::let_cxx_string!(message = msg);
-                notifyPlayer(&message);
+                notify(&msg);
                 // We know these are both errors or we wouldn't be here.
                 let v1err = HudLayout1::read_from_file(pathstr).unwrap_err();
                 log::warn!("{v1err:#}");
                 let v2err = HudLayout2::read_from_file(pathstr).unwrap_err();
                 log::warn!("{v2err:#}");
-                Err(eyre!("The toml file at '{}' can't be parsed as a SoulsyHUD layout.", pathstr))
+                Err(eyre!(
+                    "The toml file at '{}' can't be parsed as a SoulsyHUD layout.",
+                    pathstr
+                ))
             }
         }
     }

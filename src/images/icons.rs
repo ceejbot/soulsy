@@ -576,7 +576,8 @@ pub fn random_icon() -> Icon {
 
 #[cfg(test)]
 mod tests {
-    use std::{path::PathBuf, str::FromStr};
+    use std::path::PathBuf;
+    use std::str::FromStr;
 
     use once_cell::sync::Lazy;
     use strum::VariantNames;
@@ -586,7 +587,7 @@ mod tests {
     static ICON_PATHS: Lazy<Vec<&str>> = Lazy::new(|| {
         vec![
             "data/SKSE/plugins/resources/icons/",
-            "layouts/icon-pack",
+            "layouts/icon-pack-soulsy",
             "layouts/icon-pack-thicc",
         ]
     });
