@@ -86,7 +86,6 @@ pub enum Icon {
     ShoutMarkedForDeath,
     ShoutStormcall,
     ShoutUnrelentingForce,
-    Soulgem,
     // SpellArcane,
     SpellArclight,
     // SpellBlast, // not yet used
@@ -455,5 +454,14 @@ mod tests {
             })
             .collect();
         assert!(missing.len() == 0, "{missing:#?}");
+    }
+
+    #[test]
+    #[ignore]
+    fn emit_icon_files() {
+        Icon::VARIANTS.iter().for_each(|xs| {
+            eprintln!("{xs}.svg");
+        });
+        assert!(false);
     }
 }

@@ -102,9 +102,11 @@ impl Layout {
                 let msg = translated_key("$SoulsyHUD_Layout_Failed_Msg");
                 notify(&msg);
                 // We know these are both errors or we wouldn't be here.
-                let v1err = HudLayout1::read_from_file(pathstr).unwrap_err();
+                let v1err = HudLayout1::read_from_file(pathstr)
+                    .expect_err("Layout parsing failed but v1 succeeded? WAT.");
                 log::warn!("{v1err:#}");
-                let v2err = HudLayout2::read_from_file(pathstr).unwrap_err();
+                let v2err = HudLayout2::read_from_file(pathstr)
+                    .expect_err("Layout parsing failed but v2 succeeded? WAT.");
                 log::warn!("{v2err:#}");
                 Err(eyre!(
                     "The toml file at '{}' can't be parsed as a SoulsyHUD layout.",

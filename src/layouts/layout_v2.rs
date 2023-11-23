@@ -63,11 +63,11 @@ pub struct HudLayout2 {
 
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct SlotElement {
-    pub offset: Point,
-    pub icon: IconElement,
-    pub text: Vec<TextElement>,
-    pub background: Option<ImageElement>,
-    pub hotkey: Option<HotkeyElement>,
+    offset: Point,
+    icon: IconElement,
+    text: Vec<TextElement>,
+    background: Option<ImageElement>,
+    hotkey: Option<HotkeyElement>,
     progress_bar: Option<ProgressElement>,
 }
 
@@ -201,12 +201,12 @@ impl Default for HotkeyElement {
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct TextElement {
-    pub offset: Point,
-    pub color: Color,
+    offset: Point,
+    color: Color,
     #[serde(default, deserialize_with = "deserialize_align")]
-    pub alignment: Align,
-    pub contents: String,
-    pub font_size: f32,
+    alignment: Align,
+    contents: String,
+    font_size: f32,
 }
 
 // TODO TODO TODO
