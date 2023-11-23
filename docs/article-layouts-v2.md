@@ -59,24 +59,31 @@ Order does not matter, but color fields are usually mentioned in this order.
 
 ### Background image elements
 
-Background images use a point and a color
+Background images use a point and a color to describe how large to draw the image, and what color to use to draw it. The `svg` field names the image file to draw. This file must be in the directory `resources/backgrounds`. Here's an example:
 
 ```toml
 [background]
-# This is the file name of an SVG that must be in resources/backgrounds.
 svg = "hud_bg.svg"
-# The size to draw the image.
 size = { x = 300.0, y = 300.0}
-# The color to use to draw this image.
 color = { r = 0, g = 0, b = 0, a = 64 }
 ```
 
-
 ### Icon elements
+
+Every HUD slot has a required icon element. This specifies where to draw the icon for the item shown in that slot. Each icon element has a color, an offset, and a size. Here's an example:
+
+```toml
+[slotname.icon]
+color = { r = 200, g = 200, b = 200, a = 128 }
+size = { x = 43.0, y = 43.0 }
+offset = { x = 0.0, y = 0.0 }
+```
 
 ### Text elements
 
-Each layout has an array (or list) of *text* elements. These describe text that should be drawn in the slot.
+Each layout has a list of *text* elements. These describe text that should be drawn in the slot. You can have as many text elements as you need. For instance, you might display the item count in one location and name in another, or you might combine them into a single display. Each text element you add costs a little bit of time for each HUD draw (an addition measured in nanoseconds) so you won't want to add dozens of them.
+
+Here are the fields a text element has:
 
 - `offset`: Where to draw this text, relative to the center of the slot
 - `alignment`: How to justify the text. Possible values are `left`, `center`, and `right`.
@@ -91,15 +98,13 @@ The data that can be filled into a format string is:
 - `{kind}`: the item's category
 - any regular text you'd like
 
-Some examples of format strings:
+Some examples of valid format strings:
 
 - `ITEM: {name}`
 - `{name}: {count}`
 - `outfit`
 
-You can have as many text elements as you need. For instance, you might display the item count in one location and name in another, or you might combine them into a single display.
-
-Here's a full text element:
+Here's a full text element, which draws the name of the equipped shout or power for that slot:
 
 ```toml
 [[power.text]]
@@ -110,11 +115,11 @@ contents = "{name}"
 font_size = 20.0
 ```
 
-Any additional text elements for the power slot will also be named `[[power.text]]`. The double square brackets tells TOML that this is an array of items.
+Any additional text elements for the power slot would also be named `[[power.text]]`. The double square brackets tells TOML that this is an array of items.
 
 ## Slot elements
 
-There are six slots you can describe in a layout. All of them except the `equipset` slot are *required*.
+There are six slots you can describe in a layout. All of them except the `equipset` slot are *required*. These slots are:
 
 - `power`: The shout or minor power currently ready for use.
 - `utility`: The utility or consumable item ready to be activated.
@@ -125,7 +130,7 @@ There are six slots you can describe in a layout. All of them except the `equips
 
 Each slot has the following sub-elements:
 
-- an `offset` field, describing where to draw this slot
+- an `offset` field, describing where to draw this slot relative to the center of the HUD
 - a required `icon` element, named `[slotname.icon]`
 - an optional `background` element, named `[slotname.background]`
 - an optional `hotkey` element, named `[slotname.hotkey]`
@@ -145,7 +150,7 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 [right.icon]
 color = { r = 200, g = 200, b = 200, a = 255 }
 size = { x = 43.0, y = 43.0 }
-offset = { x = 0.0, y = 0.0 }
+offset = { x = 0.0, y = 0.0 } # relative to the center of the slot
 
 [right.hotkey]
 color = { r = 255, g = 255, b = 255, a = 255 }
@@ -219,9 +224,13 @@ hide_left_when_irrelevant = false
 
 If you want to show both slots all the time, set both to false.
 
+⚠️ These options are awkward. They might be replaced in the future with a single "swap left and ammo" option. If I do this, I'll support the old options until the mod reaches 1.0.
+
 ### Fonts
 
 A set of font options. Please see [the theming docs](./article-theming.md) for more on fonts.
+
+⚠️ Font options might be reorganized in the future. If I do this, I'll support the old options until the mod reaches 1.0.
 
 ### Example
 
