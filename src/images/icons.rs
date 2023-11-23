@@ -278,7 +278,7 @@ impl Icon {
             Icon::SpellConstellation => "spell_constellation.svg".to_string(),
             Icon::SpellControl => "spell_control.svg".to_string(),
             Icon::SpellCure => "spell_cure.svg".to_string(),
-            Icon::SpellDesecration => "spell_necrotic.svg".to_string(),
+            Icon::SpellDesecration => "spell_desecration.svg".to_string(),
             Icon::SpellDetect => "spell_detect.svg".to_string(),
             // Icon::SpellDrain => "spell_drain.svg".to_string(),
             Icon::SpellEagleEye => "spell_eagleeye.svg".to_string(),
@@ -324,7 +324,7 @@ impl Icon {
             Icon::SpellWind => "spell_wind.svg".to_string(),
             Icon::SpellWisp => "spell_wisp.svg".to_string(),
             Icon::ToolFishingRod => "tool_fishingrod.svg".to_string(),
-            Icon::ToolPickaxe => "weapon_pickaxe.svg".to_string(),
+            Icon::ToolPickaxe => "tool_pickaxe.svg".to_string(),
             Icon::ToolShovel => "tool_shovel.svg".to_string(),
             Icon::ToolSickle => "tool_sickle.svg".to_string(),
             Icon::MiscTorch => "misc_torch.svg".to_string(),
@@ -565,5 +565,39 @@ pub fn random_icon() -> Icon {
         Icon::from_str(variant).unwrap_or(Icon::WeaponSwordTwoHanded)
     } else {
         Icon::WeaponSwordOneHanded
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{path::PathBuf, str::FromStr};
+
+    use once_cell::sync::Lazy;
+    use strum::VariantNames;
+
+    use super::*;
+
+    static ICON_PATHS: Lazy<Vec<&str>> = Lazy::new(|| {
+        vec![
+            "data/SKSE/plugins/resources/icons/",
+            "layouts/icon-pack",
+            "layouts/icon-pack-thicc",
+        ]
+    });
+
+    #[test]
+    fn icons_have_files() {
+        Icon::VARIANTS.iter().for_each(|variant| {
+            let icon =
+                Icon::from_str(variant).expect("icon names should darn well turn into icons");
+            let found = ICON_PATHS.iter().any(|prefix| {
+                let fpath: PathBuf = [prefix, icon.icon_file().as_str()].iter().collect();
+                fpath.exists()
+            });
+            if !found {
+                eprintln!("svg for {icon:?} missing: {}", icon.icon_file());
+            }
+            assert!(found);
+        });
     }
 }

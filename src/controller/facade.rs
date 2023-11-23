@@ -24,7 +24,7 @@ pub fn initialize_rust_logging(_logdir: &cxx::CxxVector<u16>) {
     let config = settings();
     let log_level = config.log_level().to_level_filter();
 
-    #[cfg(any(target_os = "macos", target_os = "unix"))]
+    #[cfg(not(target_os = "windows"))]
     let chonky_path = OsString::from("placeholder");
     #[cfg(target_os = "windows")]
     let chonky_path = OsString::from_wide(_logdir.as_slice());
