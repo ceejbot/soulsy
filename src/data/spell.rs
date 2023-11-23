@@ -125,7 +125,7 @@ impl SpellType {
         } else if tagset.contains(SpellKeywords::MagicWard) {
             Icon::SpellWard
         } else if tagset.contains(SpellKeywords::MagicWeaponSpeed) {
-            Icon::SpellElementalFury
+            Icon::ShoutElementalFury
         } else if tagset.contains(SpellKeywords::MagicSummonFamiliar) {
             Icon::SpellSummon
         } else if tagset.contains(SpellKeywords::MagicSummonUndead) {
