@@ -84,7 +84,7 @@ pub enum Icon {
     ShoutIceForm,
     ShoutMarkedForDeath,
     ShoutStormcall,
-    ShoutUnrelentingForce
+    ShoutUnrelentingForce,
     Soulgem,
     // SpellArcane,
     SpellArclight,
