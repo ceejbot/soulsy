@@ -262,8 +262,8 @@ mod tests {
     #[ignore]
     fn default_layout_valid() {
         // The github runner doesn't seem to have a data directory. I have NO IDEA why not yet.
-        let data = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
-        let builtin: Layout = toml::from_str(data).expect("layout should be valid toml");
+        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
+        let builtin: Layout = toml::from_str(buf).expect("layout should be valid toml");
         match builtin {
             Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {
@@ -276,8 +276,8 @@ mod tests {
 
     #[test]
     fn centered_layout_valid() {
-        let data = include_str!("../../layouts/SoulsyHUD_centered.toml");
-        let centered: HudLayout2 = toml::from_str(data).expect("layout should be valid toml");
+        let buf = include_str!("../../layouts/SoulsyHUD_centered.toml");
+        let centered: HudLayout2 = toml::from_str(buf).expect("layout should be valid toml");
         assert_eq!(centered.anchor_name, NamedAnchor::Center);
         assert_eq!(centered.anchor_point().x, 1720.0);
         assert_eq!(centered.anchor_point().y, 720.0);
@@ -285,8 +285,8 @@ mod tests {
 
     #[test]
     fn topleft_layout_valid() {
-        let data = include_str!("../../layouts/SoulsyHUD_topleft.toml");
-        let layout: HudLayout2 = toml::from_str(data).expect("layout should be valid toml");
+        let buf = include_str!("../../layouts/SoulsyHUD_topleft.toml");
+        let layout: HudLayout2 = toml::from_str(buf).expect("layout should be valid toml");
         assert_eq!(layout.anchor_name, NamedAnchor::None);
         assert_eq!(layout.anchor_point().x, 150.0);
         assert_eq!(layout.anchor_point().y, 150.0);

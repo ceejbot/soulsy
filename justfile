@@ -35,7 +35,7 @@ cmake:
 
 # Clippy.
 @lint:
-	cargo clippy --all-targets
+	cargo clippy --all-targets --no-deps
 
 # Run rust tests. Cannot run on Windows (yet; use Mac or WSL Ubuntu for now).
 @test:
