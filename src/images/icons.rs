@@ -459,6 +459,7 @@ impl Icon {
             Icon::ShoutIceForm => Icon::Destruction,
             Icon::ShoutMarkedForDeath => Icon::Shout,
             Icon::ShoutStormcall => Icon::Shout,
+            Icon::ShoutUnrelentingForce => Icon::Shout,
 
             Icon::Soulgem => Icon::Conjuration,
 
