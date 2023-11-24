@@ -120,9 +120,8 @@ impl ShoutType {
             ShoutVariant::MarkedForDeath => Icon::ShoutMarkedForDeath,
             ShoutVariant::Slowtime => Icon::SpellTime,
             ShoutVariant::StormCall => Icon::ShoutStormcall,
-            ShoutVariant::UnrelentingForce => Icon::Shout,
-            ShoutVariant::WhirlwindSprint => Icon::SpellSprint,
             ShoutVariant::UnrelentingForce => Icon::ShoutUnrelentingForce,
+            ShoutVariant::WhirlwindSprint => Icon::SpellSprint,
             _ => Icon::Shout,
         };
 
