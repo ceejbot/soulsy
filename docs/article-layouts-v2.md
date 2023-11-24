@@ -1,5 +1,26 @@
 # Layouts 2: Electric Boogaloo
 
+1. [Layouts 2: Electric Boogaloo](#layouts-2-electric-boogaloo)
+   1. [How to edit layouts](#how-to-edit-layouts)
+   2. [Layout overview](#layout-overview)
+   3. [Building blocks](#building-blocks)
+      1. [Points](#points)
+      2. [Colors](#colors)
+      3. [Background image elements](#background-image-elements)
+      4. [Icon elements](#icon-elements)
+      5. [Text elements](#text-elements)
+   4. [Slot elements](#slot-elements)
+   5. [Top-level fields](#top-level-fields)
+      1. [`global_scale`: number](#global_scale-number)
+      2. [`anchor_name`: text](#anchor_name-text)
+      3. [`size`: point](#size-point)
+      4. [ammo and left swap options](#ammo-and-left-swap-options)
+      5. [Fonts](#fonts)
+      6. [Example](#example)
+   6. [The full layout](#the-full-layout)
+   7. [Examples](#examples)
+   8. [Appendix](#appendix)
+
 SoulsyHUD now has a second-generation layout schema you can use instead of the earlier schema. I encourage you to use this new layout approach-- it offers you more ways to customize layouts. (The first schema is still supported and will draw correctly, but it won't get any new features.)
 
 ## How to edit layouts

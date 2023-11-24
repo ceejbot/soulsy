@@ -1,6 +1,3 @@
-
-## What goes into a theme
-
 One of SoulsyHUD's design goals was to be easily themeable. If I got it right, you should be able to design a HUD layout that complements any UI theme, using its fonts, icons, and colors. This article discusses how you can change images and fonts to theme the HUD beyond how it lays out items on the screen. There's a separate full article on [what you can do with layout files](./article-layouts-v2.md).
 
 Here's what Soulsy pulls together to draw a HUD on the screen:
