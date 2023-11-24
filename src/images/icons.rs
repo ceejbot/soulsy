@@ -84,6 +84,7 @@ pub enum Icon {
     ShoutIceForm,
     ShoutMarkedForDeath,
     ShoutStormcall,
+    ShoutUnrelentingForce,
     Soulgem,
     // SpellArcane,
     SpellArclight,
@@ -274,6 +275,7 @@ impl Icon {
             Icon::ShoutIceForm => "shout_ice_form.svg".to_string(),
             Icon::ShoutMarkedForDeath => "shout_marked_death.svg".to_string(),
             Icon::ShoutStormcall => "shout_stormcall.svg".to_string(),
+            Icon::ShoutUnrelentingForce => "shout_unrelentingforce.svg".to_string(),
             Icon::Soulgem => "soulgem.svg".to_string(),
             Icon::SpellArclight => "spell_arclight.svg".to_string(),
             Icon::SpellBleed => "spell_bleed.svg".to_string(),
@@ -459,6 +461,7 @@ impl Icon {
             Icon::ShoutIceForm => Icon::Destruction,
             Icon::ShoutMarkedForDeath => Icon::Shout,
             Icon::ShoutStormcall => Icon::Shout,
+            Icon::ShoutUnrelentingForce => Icon::Shout,
 
             Icon::Soulgem => Icon::Conjuration,
 
