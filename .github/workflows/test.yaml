@@ -42,7 +42,9 @@ jobs:
                   pwd
                   ls -alF
                   ls -alF data
+                  ls -alF data/SKSE
                   ls -alF data/SKSE/plugins
+                  ls -alF data/SKSE/plugins/SoulsyHUD_Layout.toml
 
             - name: run the tests
               run: cargo nextest run
