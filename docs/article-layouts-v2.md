@@ -292,14 +292,6 @@ svg = "sleek_bg.svg"
 size = { x = 100.0, y = 400.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
 
-[power]
-offset = { x = -37.0, y = 0.0 }
-# etc
-
-[utility]
-offset = { x = -37.0, y = 75.0 }
-# etc
-
 [left]
 offset = { x = -37.0, y = 150.0 }
 [left.icon]
@@ -334,6 +326,14 @@ font_size = 20.0
 alignment = "right"
 contents = "{name}: {count}"
 
+[power]
+offset = { x = -37.0, y = 0.0 }
+# (not included to keep this readable)
+
+[utility]
+offset = { x = -37.0, y = 75.0 }
+# (not included to keep this readable)
+
 [right]
 offset = { x = -37.0, y = 225.0 }
 # etc
@@ -343,6 +343,12 @@ offset = { x = -37.0, y = 300.0 }
 # etc
 ```
 
+## Examples
+
+The optional layout files you can download have examples of some of the things you can do with layouts. You can read them online on GitHub if you don't feel like downloading them. The [minimal layout](https://github.com/ceejbot/soulsy/blob/latest/layouts/SoulsyHUD_minimal.toml) shows how much you can leave out if you want to strip the HUD down to just its icons. The [centered layout](https://github.com/ceejbot/soulsy/blob/latest/layouts/SoulsyHUD_centered.toml) is an example of a layout that widely separates the HUD slots.
+
+I am not a graphic designer but you might be-- please do something cool with these tools!
+
 ## Appendix
 
-Pointless trivia! Did you know that this is not what Soulsy uses internally to draw the HUD? It translates both this format and the earlier format into a third format designed to make it easier to draw the HUD on every tick. The HUD-drawing code is performance-critical. If it's slow, you'll notice it.
+Pointless trivia! Did you know that this is not what Soulsy uses internally to draw the HUD? It translates both this layout format and the earlier format into a third one designed to make it easier to draw the HUD on every tick. The HUD-drawing code is performance-critical, as in, if it's slow, you'll notice it.
