@@ -289,8 +289,6 @@ impl Icon {
             Icon::ShoutStormcall => Icon::Shout,
             Icon::ShoutUnrelentingForce => Icon::Shout,
 
-            Icon::Soulgem => Icon::Conjuration,
-
             // Most spells won't ever reach this because they'll fall back to their
             // schools, but just in case.
             // Icon::SpellArcane => Icon::Destruction,
