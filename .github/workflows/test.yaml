@@ -40,11 +40,8 @@ jobs:
             - name: verify that we have our data directory
               run: |
                   pwd
-                  ls -alF
-                  ls -alF data
-                  ls -alF data/SKSE
-                  ls -alF data/SKSE/plugins
                   ls -alF data/SKSE/plugins/SoulsyHUD_Layout.toml
+                  cargo --version
 
             - name: run the tests
-              run: cargo nextest run
+              run: cargo test # cargo nextest run
