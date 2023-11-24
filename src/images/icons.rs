@@ -181,7 +181,7 @@ pub enum Icon {
 
 impl Icon {
     pub fn icon_file(&self) -> String {
-        format!("{}.svg", self.to_string())
+        format!("{self}.svg")
     }
 
     /// Fall back from any icon to one in the core set guaranteed to come with the base HUD.
@@ -406,7 +406,7 @@ mod tests {
 
     #[test]
     fn soulsy_pack_complete() {
-        let icon_paths = vec![
+        let icon_paths = [
             "data/SKSE/plugins/resources/icons/",
             "layouts/icon-pack-soulsy",
         ];
@@ -425,13 +425,13 @@ mod tests {
                 !found
             })
             .collect();
-        assert!(missing.len() == 0);
+        assert!(missing.is_empty());
     }
 
     #[test]
     #[ignore]
     fn thicc_pack_complete() {
-        let icon_paths = vec![
+        let icon_paths = [
             "data/SKSE/plugins/resources/icons/",
             "layouts/icon-pack-thicc",
         ];
@@ -451,7 +451,7 @@ mod tests {
                 }
             })
             .collect();
-        assert!(missing.len() == 0, "{missing:#?}");
+        assert!(missing.is_empty(), "{missing:#?}");
     }
 
     #[test]
@@ -460,6 +460,6 @@ mod tests {
         Icon::VARIANTS.iter().for_each(|xs| {
             eprintln!("{xs}.svg");
         });
-        assert!(false);
+        unreachable!(); // forces a test failure and output of the lines above
     }
 }

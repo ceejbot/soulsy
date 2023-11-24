@@ -223,15 +223,6 @@ impl From<&HudLayout1> for LayoutFlattened {
     }
 }
 
-impl Default for HudLayout1 {
-    fn default() -> Self {
-        // compile-time include of default layout toml
-        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_Layout.toml");
-        toml::from_str::<HudLayout1>(buf)
-            .expect("Default layout is not valid toml! Cannot proceed.")
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::super::Layout;
