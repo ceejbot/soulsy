@@ -307,9 +307,7 @@ impl Controller {
         }
 
         let le_options = settings();
-        if le_options.autofade() {
-            showBriefly();
-        }
+        showBriefly();
 
         match hotkey {
             Hotkey::Power => self.handle_cycle_power(),

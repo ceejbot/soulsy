@@ -718,7 +718,8 @@ namespace ui
 
 	void makeFadeDecision()
 	{
-		if (helpers::hudShouldAutoFadeOut())
+		// We do the peek even when autofade is false, so we need to fade out automatically in that one case.
+		if (helpers::hudShouldAutoFadeOut() || gDoingBriefPeek)
 		{
 			if (gDoingBriefPeek)
 			{
