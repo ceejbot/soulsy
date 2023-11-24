@@ -140,6 +140,8 @@ Each slot has the following sub-elements:
 - an optional `hotkey` element, named `[slotname.hotkey]`
 - a list of text elements, in the array `[[slotname.text]]`
 
+Because each slot specifies its own background element independent of the others, you can use a different background file for each slot. You might do this if your layout is asymmetrical or spread out on the screen. It's up to you!
+
 An example slot layout with all of the elements:
 
 ```toml

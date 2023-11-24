@@ -296,8 +296,8 @@ mod tests {
         let specific: HudLayout2 =
             toml::from_str(data).expect("minimal layout should be valid toml");
         assert_eq!(specific.anchor_name, NamedAnchor::BottomLeft);
-        let minimal = Layout::read_from_file("layouts/SoulsyHUD_minimal.toml")
-            .expect("serde should figure out which layout schema");
+        let minimal: Layout =
+            toml::from_str(data).expect("serde should figure out which layout schema");
         match minimal {
             Layout::Version1(_) => unreachable!(),
             Layout::Version2(v) => {

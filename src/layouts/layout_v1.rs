@@ -231,3 +231,51 @@ impl Default for HudLayout1 {
             .expect("Default layout is not valid toml! Cannot proceed.")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::Layout;
+    use super::*;
+
+    #[test]
+    fn hexagon_lr_valid() {
+        let data = include_str!("../../layouts/hexagons/SoulsyHUD_hexagons_lr.toml");
+        let specific: HudLayout1 =
+            toml::from_str(data).expect("minimal layout should be valid toml");
+        assert_eq!(specific.anchor_name, NamedAnchor::TopRight);
+        let minimal: Layout =
+            toml::from_str(data).expect("serde should figure out which layout schema");
+        match minimal {
+            Layout::Version2(_) => unreachable!(),
+            Layout::Version1(ref v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::TopRight);
+                assert_eq!(v.anchor_point().x, 3290.0);
+                assert_eq!(v.anchor_point().y, 150.0);
+            }
+        }
+        let flattened = minimal.flatten();
+        assert_eq!(flattened.anchor.x, 3290.0);
+        assert_eq!(flattened.anchor.y, 150.0);
+    }
+
+    #[test]
+    fn hexagon_tb_valid() {
+        let data = include_str!("../../layouts/hexagons/SoulsyHUD_hexagons_tb.toml");
+        let specific: HudLayout1 =
+            toml::from_str(data).expect("minimal layout should be valid toml");
+        assert_eq!(specific.anchor_name, NamedAnchor::BottomRight);
+        let minimal: Layout =
+            toml::from_str(data).expect("serde should figure out which layout schema");
+        match minimal {
+            Layout::Version2(_) => unreachable!(),
+            Layout::Version1(ref v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::BottomRight);
+                assert_eq!(v.anchor_point().x, 3290.0);
+                assert_eq!(v.anchor_point().y, 1290.0);
+            }
+        }
+        let flattened = minimal.flatten();
+        assert_eq!(flattened.anchor.x, 3290.0);
+        assert_eq!(flattened.anchor.y, 1290.0);
+    }
+}
