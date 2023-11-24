@@ -122,6 +122,7 @@ impl ShoutType {
             ShoutVariant::StormCall => Icon::ShoutStormcall,
             ShoutVariant::UnrelentingForce => Icon::Shout,
             ShoutVariant::WhirlwindSprint => Icon::SpellSprint,
+            ShoutVariant::UnrelentingForce => Icon::ShoutUnrelentingForce,
             _ => Icon::Shout,
         };
 
