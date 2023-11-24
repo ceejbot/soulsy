@@ -80,6 +80,7 @@ namespace ui
 		static void drawHud();
 
 		static bool lazyLoadIcon(std::string name);
+		static bool lazyLoadHudImage(std::string fname);
 		static bool loadTextureFromFile(const char* filename,
 			ID3D11ShaderResourceView** out_srv,
 			std::int32_t& out_width,

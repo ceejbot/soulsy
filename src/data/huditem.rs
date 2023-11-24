@@ -1,5 +1,8 @@
+use std::collections::HashMap;
 use std::ffi::CString;
 use std::fmt::Display;
+
+use strfmt::strfmt;
 
 use super::base::BaseType;
 use super::HasIcon;
@@ -8,7 +11,7 @@ use crate::plugin::{Color, ItemCategory};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.
-#[derive(Hash, Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HudItem {
     /// Player-visible name as its underlying bytes.
     name_bytes: Vec<u8>,
@@ -22,6 +25,8 @@ pub struct HudItem {
     kind: BaseType,
     /// Cached count from inventory data. Relies on hooks to be updated.
     count: u32,
+    /// Hashmap used by variable substitution in the HUD renderer.
+    format_vars: HashMap<String, String>,
 }
 
 impl HudItem {
@@ -37,6 +42,7 @@ impl HudItem {
 
         // log::debug!("calling BaseType::classify() with keywords={keywords:?};");
         let kind: BaseType = BaseType::classify(name.as_str(), category, keywords, twohanded);
+        let format_vars = HudItem::make_format_vars(name.clone(), count);
         Self {
             name_bytes,
             name,
@@ -44,6 +50,7 @@ impl HudItem {
             form_string,
             count,
             kind,
+            format_vars,
         }
     }
 
@@ -54,6 +61,7 @@ impl HudItem {
         kind: BaseType,
     ) -> Self {
         let (name_is_utf8, name) = name_from_bytes(&name_bytes);
+        let format_vars = HudItem::make_format_vars(name.clone(), count);
         Self {
             name_bytes,
             name,
@@ -61,10 +69,12 @@ impl HudItem {
             form_string,
             count,
             kind,
+            format_vars,
         }
     }
 
     pub fn for_equip_set(name: String, id: u32, icon: Icon) -> Self {
+        let format_vars = HudItem::make_format_vars(name.clone(), 1);
         Self {
             name_bytes: name.as_bytes().to_vec(),
             name,
@@ -72,6 +82,7 @@ impl HudItem {
             form_string: format!("equipset_{id}"),
             count: 1,
             kind: BaseType::Equipset(icon),
+            format_vars,
         }
     }
 
@@ -82,6 +93,23 @@ impl HudItem {
             1,
             BaseType::HandToHand,
         )
+    }
+
+    fn make_format_vars(name: String, count: u32) -> HashMap<String, String> {
+        let mut vars = HashMap::new();
+        vars.insert("name".to_string(), name);
+        vars.insert("count".to_string(), count.to_string());
+        vars
+    }
+
+    pub fn fmtstr(&self, fmt: String) -> String {
+        match strfmt(&fmt, &self.format_vars) {
+            Ok(v) => v,
+            Err(e) => {
+                log::warn!("Failed to render format string for HUD item; error: {e:#}");
+                "".to_string()
+            }
+        }
     }
 
     pub fn icon(&self) -> &Icon {
@@ -129,7 +157,9 @@ impl HudItem {
     }
 
     pub fn set_count(&mut self, v: u32) {
-        self.count = v
+        self.count = v;
+        let format_vars = HudItem::make_format_vars(self.name.clone(), self.count);
+        self.format_vars = format_vars;
     }
 
     pub fn is_poisoned(&self) -> bool {

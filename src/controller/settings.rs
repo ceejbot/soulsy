@@ -5,7 +5,7 @@
 
 use std::sync::Mutex;
 
-use anyhow::Result;
+use eyre::Result;
 use ini::Ini;
 use log::Level;
 use once_cell::sync::Lazy;
@@ -38,7 +38,7 @@ pub fn refresh_user_settings() {
             log::info!("Refreshed user settings after MCM edits.");
         }
         Err(e) => {
-            log::warn!("Failed to refresh user settings; using defaults; {e:?}");
+            log::warn!("Failed to refresh user settings; using defaults; {e:#}");
         }
     }
 }
@@ -483,7 +483,7 @@ impl FromIniStr for Level {
             Err(e) => {
                 // This is an error parsing a log level string. We might not manage
                 // to log this error if it's at startup, but we try anyway.
-                log::warn!("Error parsing log level string: {e:?}");
+                log::warn!("Error parsing log level string: {e:#}");
                 Some(Level::Info)
             }
         }

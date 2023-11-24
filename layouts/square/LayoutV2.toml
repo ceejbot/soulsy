@@ -1,0 +1,126 @@
+global_scale = 0.0
+anchor_name = "none"
+hide_ammo_when_irrelevant = false
+hide_left_when_irrelevant = false
+font = ""
+font_size = 0.0
+chinese_full_glyphs = false
+simplified_chinese_glyphs = false
+cyrillic_glyphs = false
+japanese_glyphs = false
+korean_glyphs = false
+thai_glyphs = false
+vietnamese_glyphs = false
+
+[anchor]
+x = 0.0
+y = 0.0
+
+[size]
+x = 0.0
+y = 0.0
+
+[right]
+text = []
+
+[right.offset]
+x = 0.0
+y = 0.0
+
+[right.icon.size]
+x = 0.0
+y = 0.0
+
+[right.icon.offset]
+x = 0.0
+y = 0.0
+
+[right.icon.color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[left]
+text = []
+
+[left.offset]
+x = 0.0
+y = 0.0
+
+[left.icon.size]
+x = 0.0
+y = 0.0
+
+[left.icon.offset]
+x = 0.0
+y = 0.0
+
+[left.icon.color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[power]
+text = []
+
+[power.offset]
+x = 0.0
+y = 0.0
+
+[power.icon.size]
+x = 0.0
+y = 0.0
+
+[power.icon.offset]
+x = 0.0
+y = 0.0
+
+[power.icon.color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[utility]
+text = []
+
+[utility.offset]
+x = 0.0
+y = 0.0
+
+[utility.icon.size]
+x = 0.0
+y = 0.0
+
+[utility.icon.offset]
+x = 0.0
+y = 0.0
+
+[utility.icon.color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+[ammo]
+text = []
+
+[ammo.offset]
+x = 0.0
+y = 0.0
+
+[ammo.icon.size]
+x = 0.0
+y = 0.0
+
+[ammo.icon.offset]
+x = 0.0
+y = 0.0
+
+[ammo.icon.color]
+r = 255
+g = 255
+b = 255
+a = 255

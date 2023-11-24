@@ -8,7 +8,7 @@ use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::{Display, EnumIter, IntoEnumIterator};
 
 impl TryFrom<&str> for SpellKeywords {
-    type Error = anyhow::Error;
+    type Error = eyre::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let keystr = value
@@ -19,7 +19,7 @@ impl TryFrom<&str> for SpellKeywords {
         if let Some(k) = keywd {
             Ok(k)
         } else {
-            Err(anyhow::anyhow!("not a valid soulsy magic keyword"))
+            Err(eyre::eyre!("not a valid soulsy magic keyword"))
         }
     }
 }

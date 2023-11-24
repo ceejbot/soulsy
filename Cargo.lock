@@ -26,12 +26,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0942ffc6dcaadf03badf6e6a2d0228460359d5e34b57ccdc720b7382dfbd5ec5"
 
 [[package]]
-name = "anyhow"
-version = "1.0.75"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
-
-[[package]]
 name = "arrayref"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -281,6 +275,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
+name = "eyre"
+version = "0.6.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80f656be11ddf91bd709454d15d5bd896fbaf4cc3314e69349e4d1569f5b46cd"
+dependencies = [
+ "indenter",
+ "once_cell",
+]
+
+[[package]]
 name = "fdeflate"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -382,6 +386,12 @@ name = "imagesize"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "029d73f573d8e8d63e6d5020011d3255b28c3ba85d6cf870a07184ed23de9284"
+
+[[package]]
+name = "indenter"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce23b50ad8242c51a442f3ff322d56b02f08852c77e4c0b4d3fd684abc89c683"
 
 [[package]]
 name = "indexmap"
@@ -751,11 +761,11 @@ checksum = "942b4a808e05215192e39f4ab80813e599068285906cc91aa64f923db842bd5a"
 name = "soulsy"
 version = "0.12.0"
 dependencies = [
- "anyhow",
  "bincode",
  "cxx",
  "cxx-build",
  "enumset",
+ "eyre",
  "log",
  "lru",
  "once_cell",

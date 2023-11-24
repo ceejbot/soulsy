@@ -20,10 +20,6 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: actions-rs/toolchain@v1
-              with:
-                  toolchain: stable
-                  override: true
 
             - uses: actions/cache@v3
               with:
@@ -40,6 +36,12 @@ jobs:
                   curl -sL https://get.nexte.st/latest/linux -o nextest.tgz
                   tar xfz nextest.tgz
                   mv cargo-nextest /home/runner/.cargo/bin
+
+            - name: verify that we have our data directory
+              run: |
+                  pwd
+                  ls -alF data/SKSE/plugins/SoulsyHUD_Layout.toml
+                  cargo --version
 
             - name: run the tests
               run: cargo nextest run

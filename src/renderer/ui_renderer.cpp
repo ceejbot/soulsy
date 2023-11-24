@@ -16,12 +16,12 @@ namespace ui
 
 	static std::map<uint8_t, float> cycle_timers = {};
 
-	static std::map<uint32_t, TextureData> image_struct;
 	static std::map<uint32_t, TextureData> key_struct;
 	static std::map<uint32_t, TextureData> default_key_struct;
 	static std::map<uint32_t, TextureData> PS5_BUTTON_MAP;
 	static std::map<uint32_t, TextureData> XBOX_BUTTON_MAP;
 	static std::map<std::string, TextureData> ICON_MAP;
+	static std::map<std::string, TextureData> HUD_IMAGES_MAP;
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 	static const uint32_t MAX_ICON_DIM    = 300;   // rasterized at 96 dpi
@@ -358,7 +358,7 @@ namespace ui
 	void ui_renderer::drawAllSlots()
 	{
 		auto topLayout          = hud_layout();
-		auto anchor             = topLayout.anchor_point();
+		auto anchor             = topLayout.anchor;
 		auto hudsize            = topLayout.size;
 		bool rangedEquipped     = player::hasRangedEquipped();
 		const auto settings     = user_settings();
@@ -366,29 +366,26 @@ namespace ui
 		const auto screenHeight = resolutionHeight();
 		bool colorizeIcons      = settings->colorize_icons();
 
-		auto globalScale = topLayout.global_scale;
-		// serde's default for missing f32 fields is 0
-		if (globalScale == 0.0f) { globalScale = 1.0f; }
-
 		// If the layout is larger than the HUD, restrict it to one quarter screen size.
-		hudsize.x = std::min(screenWidth / 4.0f, globalScale * hudsize.x);
-		hudsize.y = std::min(screenHeight / 4.0f, globalScale * hudsize.y);
+		hudsize.x = std::min(screenWidth / 4.0f, hudsize.x);
+		hudsize.y = std::min(screenHeight / 4.0f, hudsize.y);
 
 		// If the layout is trying to draw the HUD offscreen, clamp it to an edge.
 		anchor.x = std::clamp(anchor.x, hudsize.x / 2.0f, screenWidth - hudsize.x / 2.0f);
 		anchor.y = std::clamp(anchor.y, hudsize.y / 2.0f, screenHeight - hudsize.y / 2.0f);
 
 		// Draw the HUD background if requested.
-		if (topLayout.bg_color.a > 0)
+		const auto bgimg = std::string(topLayout.bg_image);
+		if (topLayout.bg_color.a > 0 && lazyLoadHudImage(bgimg))
 		{
 			constexpr auto angle                = 0.f;
 			const auto center                   = ImVec2(anchor.x, anchor.y);
-			const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::hud)];
+			const auto [texture, width, height] = HUD_IMAGES_MAP[bgimg];
 			const auto size                     = ImVec2(hudsize.x, hudsize.y);
 			drawElement(texture, center, size, angle, topLayout.bg_color);
 		}
 
-		for (auto slotLayout : topLayout.layouts)
+		for (auto slotLayout : topLayout.slots)
 		{
 			if ((slotLayout.element == HudElement::Left) && topLayout.hide_left_when_irrelevant && rangedEquipped)
 			{
@@ -419,17 +416,14 @@ namespace ui
 				entry_name = helpers::vec_to_stdstring(bytes);
 			}
 
-			const auto hotkey = settings->hotkey_for(slotLayout.element);
-			const auto slot_center =
-				ImVec2(anchor.x + slotLayout.offset.x * globalScale, anchor.y + slotLayout.offset.y * globalScale);
+			const auto hotkey      = settings->hotkey_for(slotLayout.element);
+			const auto slot_center = ImVec2(slotLayout.center.x, slotLayout.center.y);
 
-			slotLayout.size.x *= globalScale;
-			slotLayout.size.y *= globalScale;
-
-			if (slotLayout.bg_color.a > 0)
+			const auto slotbg = std::string(slotLayout.bg_image);
+			if (slotLayout.bg_color.a > 0 && lazyLoadHudImage(slotbg))
 			{
-				const auto [texture, width, height] = image_struct[static_cast<int32_t>(image_type::slot)];
-				const auto size                     = ImVec2(slotLayout.size.x, slotLayout.size.y);
+				const auto [texture, width, height] = HUD_IMAGES_MAP[slotbg];
+				const auto size                     = ImVec2(slotLayout.bg_size.x, slotLayout.bg_size.y);
 				drawElement(texture, slot_center, size, 0.f, slotLayout.bg_color);
 			}
 
@@ -441,62 +435,40 @@ namespace ui
 				if (lazyLoadIcon(iconkey))
 				{
 					const auto [texture, width, height] = ICON_MAP[iconkey];
-					const auto scale    = width > height ? (slotLayout.icon_size.x * globalScale / width) :
-					                                       (slotLayout.icon_size.y * globalScale / height);
+					const auto scale =
+						width > height ? (slotLayout.icon_size.x / width) : (slotLayout.icon_size.y / height);
 					const auto size     = ImVec2(width * scale, height * scale);
-					const auto icon_pos = ImVec2(slot_center.x + slotLayout.icon_offset.x * globalScale,
-						slot_center.y + slotLayout.icon_offset.y * globalScale);
+					const auto icon_pos = ImVec2(slotLayout.icon_center.x, slotLayout.icon_center.y);
 
-					drawElement(texture, slot_center, size, 0.f, iconColor);
+					drawElement(texture, icon_pos, size, 0.f, iconColor);
 				}
 				else { logger::debug("lazy load for icon key {} failed; not drawing icon.", iconkey); }
 			}
 
-			// Now decide if we should draw the text showing the item's name.
-			if (slotLayout.name_color.a > 0 && (entry_name.size() > 0))
+			// Loop through the text elements of this slot.
+			for (auto label : slotLayout.text)
 			{
-				const auto textPos = ImVec2(slot_center.x + slotLayout.name_offset.x * globalScale,
-					slot_center.y + slotLayout.name_offset.y * globalScale);
-				auto fontSize      = slotLayout.name_font_size;
-				if (fontSize == 0.0) { fontSize = topLayout.font_size; }
-
-				drawText(entry_name, textPos, fontSize * globalScale, slotLayout.name_color, slotLayout.align_text);
-			}
-
-			// Do we need to draw a count?
-			if (slotLayout.count_color.a > 0 && entry->count_matters())
-			{
-				auto count         = entry->count();
-				auto countText     = std::to_string(count);
-				const auto textPos = ImVec2(slot_center.x + slotLayout.count_offset.x * globalScale,
-					slot_center.y + slotLayout.count_offset.y * globalScale);
-
-				if (!countText.empty())
-				{
-					drawText(countText,
-						textPos,
-						slotLayout.count_font_size * globalScale,
-						slotLayout.count_color,
-						slotLayout.align_text);
-				}
+				if (label.color.a == 0) { continue; }
+				const auto textPos = ImVec2(label.anchor.x, label.anchor.y);
+				auto entrytxt      = std::string(entry->fmtstr(label.contents));
+				drawText(entrytxt, textPos, label.font_size, label.color, label.alignment);
 			}
 
 			if (slotLayout.hotkey_color.a > 0)
 			{
-				const auto hk_im_center = ImVec2(slot_center.x + slotLayout.hotkey_offset.x * globalScale,
-					slot_center.y + slotLayout.hotkey_offset.y * globalScale);
+				const auto hk_im_center = ImVec2(slotLayout.hotkey_center.x, slotLayout.hotkey_center.y);
 
-				if (slotLayout.hotkey_bg_color.a > 0)
+				const auto hotkeybg = std::string(slotLayout.hotkey_bg_image);
+				if (slotLayout.hotkey_bg_color.a > 0 && lazyLoadHudImage(hotkeybg))
 				{
-					const auto [texture, width, height] = image_struct[static_cast<uint32_t>(image_type::key)];
-					const auto size =
-						ImVec2(slotLayout.hotkey_size.x * globalScale, slotLayout.hotkey_size.y * globalScale);
+					const auto [texture, width, height] = HUD_IMAGES_MAP[hotkeybg];
+					const auto size                     = ImVec2(slotLayout.hotkey_size.x, slotLayout.hotkey_size.y);
 					drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_bg_color);
 				}
 
 				const auto [texture, width, height] = iconForHotkey(hotkey);
-				const auto size = ImVec2(static_cast<float>(slotLayout.hotkey_size.x * globalScale - 2.0f),
-					static_cast<float>(slotLayout.hotkey_size.y * globalScale - 2.0f));
+				const auto size                     = ImVec2(static_cast<float>(slotLayout.hotkey_size.x - 2.0f),
+                    static_cast<float>(slotLayout.hotkey_size.y - 2.0f));
 				drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_color);
 			}
 		}
@@ -615,6 +587,24 @@ namespace ui
 		return return_image;
 	}
 
+	bool ui_renderer::lazyLoadHudImage(std::string key)
+	{
+		if (HUD_IMAGES_MAP[key].width > 0) { return true; }
+		std::string path      = R"(Data\SKSE\Plugins\resources\backgrounds\)" + key;
+		LoadedImage loadedImg = rasterize_by_path(path);
+		if (loadedImg.width == 0) { return false; }
+		if (d3dTextureFromBuffer(
+				&loadedImg, &HUD_IMAGES_MAP[key].texture, HUD_IMAGES_MAP[key].width, HUD_IMAGES_MAP[key].height))
+		{
+			logger::info("Lazy-loaded hud bg image '{}'; width={}; height={}",
+				key,
+				HUD_IMAGES_MAP[key].width,
+				HUD_IMAGES_MAP[key].height);
+			return true;
+		}
+		logger::warn("Failed to load requested hud image '{}'; double-check the svg name in the layout file!", key);
+		return false;
+	}
 
 	void ui_renderer::loadFont()
 	{
@@ -643,7 +633,7 @@ namespace ui
 			if (hud.vietnamese_glyphs) { builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese()); }
 
 			builder.BuildRanges(&ranges);
-			auto scaledSize = hud.font_size * hud.global_scale;
+			auto scaledSize = hud.font_size;
 
 			imFont = io.Fonts->AddFontFromFileTTF(file_path.string().c_str(), scaledSize, nullptr, ranges.Data);
 			if (io.Fonts->Build())
@@ -657,7 +647,6 @@ namespace ui
 
 	void ui_renderer::preloadImages()
 	{
-		loadImagesForMap(ImageFileToType, image_struct, img_directory);
 		loadImagesForMap(key_icon_name_map, key_struct, key_directory);
 		loadImagesForMap(default_key_icon_name_map, default_key_struct, key_directory);
 		loadImagesForMap(gamepad_ps_icon_name_map, PS5_BUTTON_MAP, key_directory);

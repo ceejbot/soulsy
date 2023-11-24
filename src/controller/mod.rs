@@ -12,9 +12,7 @@ pub mod cycleentries;
 pub mod cycles;
 pub mod facade;
 pub mod keys;
-pub mod layout;
 pub mod settings;
 
 pub use facade::*;
-pub use layout::{deserialize_align, deserialize_named_anchor, hud_layout};
 pub use settings::UserSettings;

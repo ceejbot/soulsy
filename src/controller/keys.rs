@@ -3,7 +3,7 @@
 use std::fmt::Display;
 use std::time::{Duration, Instant};
 
-use anyhow::anyhow;
+use eyre::eyre;
 use strum::Display;
 
 use super::control::RequestedAction;
@@ -280,7 +280,7 @@ impl From<&Hotkey> for HudElement {
 }
 
 impl TryFrom<Action> for CycleSlot {
-    type Error = anyhow::Error;
+    type Error = eyre::Error;
 
     fn try_from(value: Action) -> Result<Self, Self::Error> {
         match value {
@@ -288,15 +288,13 @@ impl TryFrom<Action> for CycleSlot {
             Action::Utility => Ok(CycleSlot::Utility),
             Action::Left => Ok(CycleSlot::Left),
             Action::Right => Ok(CycleSlot::Right),
-            _ => Err(anyhow!(
-                "this action does not map to a cycle; key={value:?}"
-            )),
+            _ => Err(eyre!("this action does not map to a cycle; key={value:?}")),
         }
     }
 }
 
 impl TryFrom<Hotkey> for CycleSlot {
-    type Error = anyhow::Error;
+    type Error = eyre::Error;
 
     fn try_from(value: Hotkey) -> Result<Self, Self::Error> {
         match value {
@@ -304,7 +302,7 @@ impl TryFrom<Hotkey> for CycleSlot {
             Hotkey::Utility => Ok(CycleSlot::Utility),
             Hotkey::Left => Ok(CycleSlot::Left),
             Hotkey::Right => Ok(CycleSlot::Right),
-            _ => Err(anyhow!("this hotkey is not a cycle key; key={value}")),
+            _ => Err(eyre!("this hotkey is not a cycle key; key={value}")),
         }
     }
 }

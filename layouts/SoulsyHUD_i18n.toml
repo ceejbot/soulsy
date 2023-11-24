@@ -1,5 +1,10 @@
 # This layout looks like the default layout, but comes with a font that can render
 # glyphs for languages with character sets different from Western European languages.
+#
+# This layout uses the new layout schema.
+#
+# All SoulsyHUD layouts are written in TOML. To learn more about TOML,
+# visit its official website: https://toml.io/
 
 # Global scaling factor: the whole hud size changes when you change this.
 global_scale = 1.0
@@ -17,9 +22,6 @@ anchor_name = "bottom_left"
 
 # The size of the hud, before the global scaling factor is applied.
 size = { x = 300.0, y = 300.0 }
-
-# The color of the HUD background file. Set alpha to 0 to skip drawing a background.
-bg_color = { r = 0, g = 0, b = 0, a = 64 }
 
 # Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
 hide_ammo_when_irrelevant = true
@@ -43,143 +45,199 @@ korean_glyphs = false
 thai_glyphs = false
 vietnamese_glyphs = false
 
+# An optional background image. If your layout doesn't have an overall background, you
+# can safely leave this out. All background elements look like this.
+[background]
+# This is the file name of an SVG that must be in resources/backgrounds.
+svg = "hud_bg.svg"
+# The size to draw the image.
+size = { x = 300.0 , y = 300.0}
+# The color to use to draw this slot's background. Alpha of 0 means it's not visible.
+# Color is expressed as RGBA; values are 0-255.
+color = { r = 0, g = 0, b = 0, a = 64 }
+
+# ---------- power slot
 # This is the sub-layout for the shouts and powers slot.
-[[layouts]]
-# This name is to help humans editing this file figure out which slot they're on.
-# It's not drawn in the HUD.
-name = "Shouts/Powers"
-# Used to help the hud renderer figure out which slot this is. Complicated
-# handwave about serializing TOML. You must not change this number, but you can ignore it.
-element = { repr = 0 }
+[power]
+
 # The offset of the center of this slot relative to the center of the HUD.
 # This gets scaled when the global scaling factor is applied.
 offset = { x = 0.0, y = -83.0 }
-# Size of this slot, before scaling.
-size = { x = 100.0 , y = 100.0 }
 
-# How to align name and count text for this slot. IMPORTANT DOCUMENTATION!
-# The options are left, right, center.
+# Optional slot background image: if not present, not drawn. You can have
+# different background images for different slots if you like. The background
+# is always drawn in the exact center of the slot.
+[power.background]
+# This is the image drawn in the background. It can be different for
+# every slot.
+svg = "slot_bg.svg"
+# Size of this image, before scaling.
+size = { x = 100.0 , y = 100.0}
+# Color to use to draw the background image. While it will be invisible
+# if you set the alpha to 0, it's better to omit this section entirely if
+# you don't want to draw a background image.
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+
+# Optional display for the slot's hotkey. All hotkey elements look like this.
+[power.hotkey]
+# Size before scaling.
+size = { x = 30.0, y = 30.0 }
+# Where to draw the hotkey. Gets scaled.
+offset = { x = 0.0, y = 60.0 }
+# color for drawing the hotkey's image
+color = { r = 255, g = 255, b = 255, a = 255 }
+# An optional background image for the hotkey. You can leave this out to not
+# draw a background for the hotkey display. For this layout, we don't draw it.
+#[power.hotkey.background]
+#svg = "hotkey_bg.svg"
+#size = { x = 30.0 , y = 30.0}
+#color = { r = 255, g = 255, b = 255, a = 128 }
+
+# An array of text elements for this slot. You can have as many
+# as you want, but each one costs time to draw so use them wisely.
+# The text can include values filled in from the item's info.
+# (TOML hint: double square brackets around a category means you can
+# have more than one of them.)
+[[power.text]]
+offset = { x = 110.0, y = 110.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 20.0
+# How to align name and count text for this text element.
+# IMPORTANT DOCUMENTATION! The options are left, right, center.
 # Text alignment is, for cognitive ease reasons, also a statement about
-# where the stated anchor point is. 
-# Center alignment: the offset refers to the center of the text box. 
+# where the stated anchor point is.
+# Center alignment: the offset refers to the center of the text box.
 # Left alignment: the offset refers to the center of the left edge.
 # Right alignment: the offset refers to the center of the right edge.
-align_text = "left"
+alignment = "left"
+# The contents of the text to draw. This can be fixed text, e.g.,
+#     contents = "Hello, world!"
+# or it can substitute in values from the item shown in the slot.
+# To fill in a value, use it with curly braces, like this
+# example, which draws the name of the item shown. You can use more
+# than one.
+# Possible values: count, name, kind,
+contents = "{name}"
 
-# The color to use to draw this slot's background. Alpha of 0 means it's not visible.
-# Color is expressed as RGBA; values are 0-255.
-bg_color = { r = 255, g = 255, b = 255, a = 128 }
-# Color for this HUD's icon. Alpha of 0 means it's not drawn. The icon is
-# always centered in the slot.
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-# Size of the icon for this slot, before scaling.
-icon_size = { x = 43.0, y = 43.0 }
 
-# Color for this HUD's hotkey. Alpha of 0 means it's not drawn.
-hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-# Where to draw the hotkey. Gets scaled.
-hotkey_offset = { x = 0.0, y = 60.0 }
-# Size of the hotkey. Also scaled.
-hotkey_size = { x = 30.0, y = 30.0 }
-# Background color for the hotkey. Alpha means invisible.
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-
-# Offset for any count text. Gets scaled.
-count_offset = { x = 0.0, y = 0.0 }
-# The color for any count displays. An alpha of 0 means not drawn.
-count_color = { r = 200, g = 200, b = 200, a = 0 }
-# Font size for item count.
-count_font_size = 20.0
-
-# The color for the name text of any item in this slot.
-name_color = { r = 255, g = 255, b = 255, a = 255 }
-# Where to draw the item name. Gets scaled.
-name_offset = { x = 110.0, y = 110.0 }
-# Font sized used for item name.
-name_font_size = 20.0
-
-# The consumables slot. You can change all of these values
-# independently from the other slots.
-[[layouts]]
-name = "Consumables"
-element = { repr = 1 }
+# ---------- utility/consumables slot
+# You can change all of these values independently from the other slots.
+[utility]
 offset = { x = 0.0, y = 83.0 }
-size = { x = 100.0 , y = 100.0 }
-align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 128 }
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 43.0, y = 43.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 0.0, y = -60.0 }
-hotkey_size = { x = 30.0, y = 30.0 }
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_color = { r = 200, g = 200, b = 200, a = 255 }
-count_font_size = 20.0
-count_offset = { x = 65.0, y = -4.0 }
-name_offset = { x = 90.0, y = -4.0 }
-name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_font_size = 20.0
 
-[[layouts]]
-name = "Left Hand"
-element = { repr = 2 }
+[utility.background]
+svg = "slot_bg.svg"
+size = { x = 100.0 , y = 100.0 }
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+[utility.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 43.0, y = 43.0 }
+offset = { x = 0.0, y = 0.0 }
+
+[utility.hotkey]
+color = { r = 255, g = 255, b = 255, a = 255 }
+size = { x = 30.0, y = 30.0 }
+offset = { x = 0.0, y = -60.0 }
+
+[[utility.text]]
+alignment = "left"
+offset = { x = 65.0, y = -4.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 20.0
+contents = "{count} {name}"
+
+# ---------- left hand slot
+[left]
 offset = { x = -83.0, y = 0.0 }
-size = { x = 100.0 , y = 100.0 }
-align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 128 }
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 43.0, y = 43.0 }
-icon_offset = { x = 0.0, y=0.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 60.0, y = 0.0 }
-hotkey_size = { x = 30.0, y = 30.0 }
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_color = { r = 255, g = 255, b = 255, a = 0 }
-count_font_size = 20.0
-count_offset = { x = 125.0, y = 107.0 }
-name_offset = { x = 125.0, y = 107.0 }
-name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_font_size = 20.0
 
-[[layouts]]
-name = "Right Hand"
-element = { repr = 3 }
+[left.background]
+svg = "slot_bg.svg"
+size = { x = 100.0 , y = 100.0 }
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+[left.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 43.0, y = 43.0 }
+offset = { x = 0.0, y = 0.0 }
+
+[left.hotkey]
+color = { r = 255, g = 255, b = 255, a = 255 }
+offset = { x = 60.0, y = 0.0 }
+size = { x = 30.0, y = 30.0 }
+
+[[left.text]]
+offset = { x = 125.0, y = 107.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 20.0
+alignment = "left"
+contents = "{name}"
+
+# ---------- ammo slot
+[ammo]
+# notice that this is in the same spot as the left slot-- they are swapped
+# for each other when the player equips a ranged weapon
+offset = { x = -83.0, y = 0.0 }
+[ammo.background]
+svg = "slot_bg.svg"
+size = { x = 100.0 , y = 100.0 }
+color = { r = 255, g = 255, b = 255, a = 128 }
+[ammo.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 43.0, y = 43.0 }
+offset = { x = 0.0, y=0.0 }
+[ammo.hotkey]
+color = { r = 255, g = 255, b = 255, a = 255 }
+offset = { x = 60.0, y = 0.0 }
+size = { x = 30.0, y = 30.0 }
+[[ammo.text]]
+alignment = "left"
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 20.0
+offset = { x = 125.0, y = 107.0 }
+contents = "{count} {name}"
+
+# ---------- right hand slot
+[right]
 offset = { x = 83.0, y = 0.0 }
-size = { x = 100.0 , y = 100.0 }
-align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 128 }
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 43.0, y = 43.0 }
-icon_offset = { x = 0.0, y=0.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = -60.0, y = 0.0 }
-hotkey_size = { x = 30.0, y = 30.0 }
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_offset = { x = 0.0, y = 0.0 }
-count_color = { r = 255, g = 255, b = 255, a = 0 }
-count_font_size = 20.0
-name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_offset = { x = 10.0, y = 52.0 }
-name_font_size = 20.0
 
-
-[[layouts]]
-name = "Ammo"
-element = { repr = 4 }
-offset = { x = -83.0, y = 0.0 }
+[right.background]
+svg = "slot_bg.svg"
 size = { x = 100.0 , y = 100.0 }
-align_text = "left"
-bg_color = { r = 255, g = 255, b = 255, a = 128 }
-icon_color = { r = 200, g = 200, b = 200, a = 255 }
-icon_size = { x = 43.0, y = 43.0 }
-icon_offset = { x = 0.0, y=0.0 }
-hotkey_color = { r = 255, g = 255, b = 255, a = 255 }
-hotkey_offset = { x = 60.0, y = 0.0 }
-hotkey_size = { x = 30.0, y = 30.0 }
-hotkey_bg_color = { r = 0, g = 0, b = 0, a = 0 }
-count_color = { r = 255, g = 255, b = 255, a = 255 }
-count_font_size = 20.0
-count_offset = { x = 125.0, y = 107.0 }
-name_offset = { x = 155.0, y = 107.0 }
-name_color = { r = 255, g = 255, b = 255, a = 255 }
-name_font_size = 20.0
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+[right.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 43.0, y = 43.0 }
+offset = { x = 0.0, y = 0.0 }
+
+[right.hotkey]
+color = { r = 255, g = 255, b = 255, a = 255 }
+offset = { x = -60.0, y = 0.0 }
+size = { x = 30.0, y = 30.0 }
+
+[[right.text]]
+color = { r = 255, g = 255, b = 255, a = 255 }
+offset = { x = 10.0, y = 52.0 }
+font_size = 20.0
+alignment = "left"
+contents = "{name}"
+
+# ---------- equipset slot
+[equipset]
+offset = { x = 83.0, y = -83.0 }
+[equipset.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 46.0, y = 46.0 }
+offset = { x = 0.0, y=0.0 }
+[equipset.hotkey]
+color = { r = 255, g = 255, b = 255, a = 255 }
+offset = { x = 60.0, y = -10.0 }
+size = { x = 30.0, y = 30.0 }
+[[equipset.text]]
+alignment = "left"
+offset = { x = 50.0, y = 5.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 20.0
+contents = "{name}"

@@ -35,7 +35,7 @@ cmake:
 
 # Clippy.
 @lint:
-	cargo clippy --all-targets
+	cargo clippy --all-targets --no-deps
 
 # Run rust tests. Cannot run on Windows (yet; use Mac or WSL Ubuntu for now).
 @test:
@@ -147,8 +147,7 @@ layouts:
         font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
         if [[ "$font" =~ "Inter" ]]; then
             mkdir -p "$dest/resources/fonts"
-            cp -p "layouts/${font}" "$dest/resources/fonts"
-            cp -p "layouts/${font}" "$dest/resources/fonts"
+            cp -p "layouts/fonts/${font}" "$dest/resources/fonts"
         fi
 
         cd releases
@@ -167,12 +166,12 @@ layouts:
     # build the Soulsy icon pack
     dest="releases/SoulsyHUD_icon_pack/SKSE/plugins/resources/icons"
     mkdir -p "$dest"
-    cp -rp layouts/icon-pack/*.svg "$dest/"
+    cp -rp layouts/icon-pack-soulsy/*.svg "$dest/"
 
     # build the THICC icon pack
     dest="releases/SoulsyHUD_THICC_icon_pack/SKSE/plugins/resources/icons"
     mkdir -p "$dest"
-    cp -rp layouts/thicc-icon-pack/*.svg "$dest/"
+    cp -rp layouts/icon-pack-thicc/*.svg "$dest/"
 
     archive_dirs="SoulsyHUD_icon_pack SoulsyHUD_THICC_icon_pack SoulsyHUD_layout_square"
     cd releases

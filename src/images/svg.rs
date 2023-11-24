@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
 
-use anyhow::{anyhow, Result};
+use eyre::{eyre, Result};
 use once_cell::sync::Lazy;
 use resvg::usvg::TreeParsing;
 use resvg::*;
@@ -37,7 +37,7 @@ pub fn rasterize_icon(name: String, maxdim: u32) -> LoadedImage {
     match load_icon(&icon, maxdim) {
         Ok(v) => v,
         Err(e) => {
-            log::error!("failed to load icon SVG; icon={icon}; error={e:?}");
+            log::error!("failed to load icon SVG; icon={icon}; error={e:#}");
             LoadedImage::default()
         }
     }
@@ -47,7 +47,7 @@ pub fn rasterize_by_path(fpath: String) -> LoadedImage {
     match load_and_rasterize(&fpath.clone().into(), None) {
         Ok(v) => v,
         Err(e) => {
-            log::error!("failed to load svg by path; icon={fpath}; error={e:?}");
+            log::error!("failed to load svg by path; icon={fpath}; error={e:#}");
             LoadedImage::default()
         }
     }
@@ -122,7 +122,7 @@ fn load_and_rasterize(file_path: &PathBuf, maxsize: Option<u32>) -> Result<Loade
     };
 
     let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())
-        .ok_or(anyhow!("unable to allocate pixmap to render into"))?;
+        .ok_or(eyre!("unable to allocate pixmap to render into"))?;
     rtree.render(transform, &mut pixmap.as_mut());
 
     Ok(LoadedImage {
@@ -167,7 +167,7 @@ mod tests {
             loaded.width as usize * loaded.height as usize * 4
         );
 
-        let full = "layouts/icon-pack/shout_call_dragon.svg".to_string();
+        let full = "layouts/icon-pack-soulsy/shout_call_dragon.svg".to_string();
         let loaded = rasterize_by_path(full);
         assert!(!loaded.buffer.is_empty());
         assert_eq!(
