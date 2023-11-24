@@ -44,4 +44,4 @@ jobs:
                   cargo --version
 
             - name: run the tests
-              run: cargo test # cargo nextest run
+              run: cargo nextest run
