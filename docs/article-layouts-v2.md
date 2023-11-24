@@ -1,10 +1,10 @@
 # Layouts 2: Electric Boogaloo
 
-SoulsyHUD now has a second-generation layout schema you can use instead of the earlier schema. (The first schema is still supported and will draw correctly, but it won't get any new features.)
+SoulsyHUD now has a second-generation layout schema you can use instead of the earlier schema. I encourage you to use this new layout approach-- it offers you more ways to customize layouts. (The first schema is still supported and will draw correctly, but it won't get any new features.)
 
 ## How to edit layouts
 
-SoulsyHUD's layouts are described in TOML text files. TOML is an acronym for "Tom's Obvious Markup Language". It was designed to be better than INI files at describing configuration, less bug-prone than YAML, and more human-friendly than JSON. You can read more about it on [its official webpage](https://toml.io/).
+SoulsyHUD's layouts are described in TOML text files. TOML is an acronym for "Tom's Obvious Markup Language". It was designed to be better at describing configuration than INI, less bug-prone than YAML, and more human-friendly than JSON. You can read more about it on [its official webpage](https://toml.io/).
 
 Here's the fast version for basic edits, like changing the position or size of a layout:
 
@@ -34,6 +34,8 @@ We're going to cover the building blocks first, then start putting them together
 
 ## Building blocks
 
+We'll go in order from simplest to most complex.
+
 ### Points
 
 The layout uses a *point* to define a location on the screen and the size of something. (These are strictly speaking different things, but they're close enough that I got lazy and used it for both.) Points have a `x` and `y` coordinates and look like this in TOML:
@@ -49,17 +51,17 @@ The `x` is the width or the side-to-side offset. Negative values move left. `y` 
 
 Text and images can be drawn with colors. Colors are described with red, green, blue, and alpha numbers, abbreviated to the first letter of each to keep things compact. The lowest possible value is 0. The highest is 255. Black would have `r`, `g`, and `b` all 0. White would have `r`, `g`, and `b` all 255. The alpha value controls how transparent a color is. 0 is completely transparent aka invisible; 255 is not transparent at all. SoulsyHUD skips drawing anything with alpha 0 to avoid doing useless work when rendering the HUD.
 
-Here's a field describing a half-transparent orange-yellow color:
+Here's a color setting describing a half-transparent orange-yellow color:
 
 ```toml
 color = { r = 223, g = 188, b = 32, a = 128 }
 ```
 
-Order does not matter, but color fields are usually mentioned in this order.
+Colors are conventionally given in rgba order, but the order doesn't matter.
 
 ### Background image elements
 
-Background images use a point and a color to describe how large to draw the image, and what color to use to draw it. The `svg` field names the image file to draw. This file must be in the directory `resources/backgrounds`. Here's an example:
+Background images use a point to describe how large to draw the image, and a color to specify what color to draw it. The `svg` field names the image file to draw. The svg file must be in the directory `resources/backgrounds`. Here's an example:
 
 ```toml
 [background]
@@ -70,7 +72,9 @@ color = { r = 0, g = 0, b = 0, a = 64 }
 
 ### Icon elements
 
-Every HUD slot has a required icon element. This specifies where to draw the icon for the item shown in that slot. Each icon element has a color, an offset, and a size. Here's an example:
+Every HUD slot has a required icon element. This element describes where to draw the icon for the item shown in that slot. Each icon element has a color, an offset, and a size. The offset field is relative to the center of the slot. To not offset something at all, use zeros.
+
+Here's an example of a half-transparent gray icon that's not offset from the center of the slot:
 
 ```toml
 [slotname.icon]
@@ -126,7 +130,7 @@ There are six slots you can describe in a layout. All of them except the `equips
 - `left`: What's currently equipped in the player's left hand.
 - `right`: What's currently equipped in the player's right hand.
 - `ammo`: What ammo the player has equipped.
-- `equipset`: The currently-worn equipment set.
+- `equipset`: The currently-worn equipment set; optional.
 
 Each slot has the following sub-elements:
 
@@ -198,11 +202,11 @@ You can also specify the location of the HUD using x and y coordinates directly:
 anchor = { x = 2100.0, y = 825.0 }
 ```
 
-If you include both fields, the named anchor is used.
+If you include both an anchor name and an anchor point, the named anchor is used.
 
 ### `size`: point
 
-The `size` field is a hint about the size of the HUD. This is used to center the HUD on its named anchor point.
+The `size` field is a hint about the size of the HUD. This is used to place the HUD on its named anchor point without clipping on the edge of the player's display.
 
 ### ammo and left swap options
 
@@ -339,4 +343,4 @@ offset = { x = -37.0, y = 300.0 }
 
 ## Appendix
 
-Pointless trivia! Did you know that this is not what Soulsy uses internally to draw the HUD? It translates both this format and the earlier format into a third format that makes it easier and faster to draw the HUD on every tick. The HUD-drawing code must perform well or you'll notice it sapping your framerate, because of how frequently it draws.
+Pointless trivia! Did you know that this is not what Soulsy uses internally to draw the HUD? It translates both this format and the earlier format into a third format designed to make it easier to draw the HUD on every tick. The HUD-drawing code is performance-critical. If it's slow, you'll notice it.

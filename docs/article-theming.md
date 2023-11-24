@@ -1,25 +1,27 @@
 
 ## What goes into a theme
 
-Here's what Soulsy needs to draw layouts:
+One of SoulsyHUD's design goals was to be easily themeable. If I got it right, you should be able to design a HUD layout that complements any UI theme, using its fonts, icons, and colors. This article discusses how you can change images and fonts to theme the HUD beyond how it lays out items on the screen. There's a separate full article on [what you can do with layout files](./article-layouts-v2.md).
 
-- a layout file describing where to draw the HUD elements
+Here's what Soulsy pulls together to draw a HUD on the screen:
+
+- a layout file describing where to draw the HUD elements, how large they are, and so on
 - a a `.ttf` TrueType font file containing the typeface to use for text
-- background images for the whole hud, for slots, and hotkeys, in svg format
+- background images for the whole hud, for slots, and hotkeys, in `svg` format
 - images for hotkeys (PC keyboard shortcuts, PS5 controller buttons, Xbox controller buttons)
-- images for all or some icons also in svg format
+- images for some or all of its icons also in `svg` format
 
 SoulsyHUD provides decent defaults for all of these. However, all of these elements can be replaced by a theme mod. If you're integrating the HUD with an overall UI makeover, like Untarnished or Nordic, you'll want to replace some or all of these things.
 
-There's a separate full article on [what you can do with layout files](./article-layouts-v2.md). This article discusses how you can change images and fonts to theme the HUD beyond how it lays out items on the screen.
-
 ## Fonts
 
-You can use any Truetype font to render text in the HUD. If the font supports it, you can generate glyphs for character sets beyond the usual Western alphabet glyphs. The HUD should be able to render any valid UTF8 character if the font supports it.
+You can use any Truetype font to render text in the HUD. If the font supports it, you can generate glyphs for character sets beyond the usual Western alphabet glyphs. The HUD should be able to render any valid [UTF-8 character](https://www.utf8.com) if the font includes glyphs for that character.
+
+⚠️ There are some characters the game menus can display that are invalid UTF-8 characters. Skyrim's Flash menus support an older text encoding called [UCS-2](https://en.wikipedia.org/wiki/Universal_Coded_Character_Set), and some characters in that encoding are not converted properly to UTF-8. I have encountered two mods that have item names that can't be represented properly. Fixing this bug is on my list for post-1.0. See [the ucs2-rs library](https://lib.rs/crates/ucs2). Even simple text is nothing but simple, it turns out.
 
 Put the `.ttf` file in `SKSE/plugins/resources/fonts` and name it in the layout. The `font_size` option specifies what size to generate Imgui font billboard data. Text will look best when rendered at this size, so make this match whatever size most of your HUD text is.
 
-Here's the full set of font options in the layout file:
+Here's the full set of font options as they'd appear in a layout file:
 
 ```toml
 font = "ComicSans.ttf"
@@ -37,13 +39,13 @@ vietnamese_glyphs = false
 
 All of the images used by Soulsy are in [Scalable Vector Graphics](https://www.w3.org/Graphics/SVG/) or `SVG` format, to keep their size in mod archives small. SoulsyHUD uses the [resvg](https://lib.rs/crates/resvg) Rust library to parse and render svgs. This library supports nearly all SVG features aside from animation. You can use images with color and alpha gradients, for example.
 
-The SoulsyHUD icon pack sources its svgs from [The Noun Project](https://thenounproject.com/icons/), paying for the right to redistribute them without attribution. Other free icon sources include [SVGRepo](https://www.svgrepo.com) and [Flaticon](https://www.flaticon.com). You can also export svg from vector drawing apps. If you are using a UI mod for Skyrim, you can export its images in svg format using an app like [the JPEX Flash decompiler](https://github.com/jindrapetrik/jpexs-decompiler).
+The SoulsyHUD icon pack sources its svgs from [The Noun Project](https://thenounproject.com/icons/), paying for the right to redistribute them without attribution. Other free icon sources include [SVGRepo](https://www.svgrepo.com) and [Flaticon](https://www.flaticon.com). You can also export svg from vector drawing apps. If you are using a UI mod for Skyrim, you can export its images in svg format using an app like [the JPEX Flash decompiler](https://github.com/jindrapetrik/jpexs-decompiler). (If you do this, make sure you have permission to use the assets! You can always do this for your own private use, however.)
 
 ### Background images
 
 [SoulsyHUD v2 layouts](./article-layouts-v2.md) can specify what file to use for any background image, independently for each slot. These background images are loaded from the `SKSE/plugins/resources/backgrounds` directory of the theme mod. If the file is not found, no image is drawn.
 
-SoulsyHUD comes with some bland background images named `hud_bg.svg`, `slot_bg.svg`, and `key_bg.svg`. You can rely on those files being present if your theme has no special needs here.
+SoulsyHUD comes with some black and white background images named `hud_bg.svg`, `slot_bg.svg`, and `key_bg.svg`. You can rely on those files being present if your theme has no special needs here. They were, however, designed to look good with an understated black and white theme like Untarnished, so most themed layouts will want to provide their own images.
 
 ### Controller shortcuts & keys
 
@@ -51,9 +53,9 @@ All of these images can be replaced if you wish. Look at the files in the direct
 
 ### Icons
 
-All of the icons SoulsyHUD uses can be replaced. Your theme mod should put its replacement icons into the directory `SKSE/plugins/resources/icons`. You will need to name your icons the way the HUD expects. The names follow a convention that I hope is predictable.
+All of the icons SoulsyHUD uses can be replaced. Your theme mod should put its replacement icons into the directory `SKSE/plugins/resources/icons`. You *must* name your icons the way the HUD expects. The names follow a convention that I hope is predictable and understandable-- the names mostly mention obvious game concepts.
 
-I am open to adding more icons. I do need to support each icon in code, because the mod does some work to assign icons to in-game items on the fly, and it has to know what the available icons are.
+✨ I am open to adding more icons. I do need to support each icon in code, because the mod does some work to assign icons to in-game items on the fly, and it has to know what the available icons are. If you have an icon you'd like me to add, please do message me on the Nexus about it, or make a GitHub PR to the mod if you prefer. I'll need to know what game concept it represents, so I can figure out which OCF keywords I can use to assign the icon appropriately. Soulsy already distributes some keywords itself to help classify items, so I'm open to adding those if needed as well.
 
 This is the set of core icons any theme should replace:
 
