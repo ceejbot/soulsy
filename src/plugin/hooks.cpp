@@ -142,6 +142,8 @@ namespace hooks
 		return process_event_(this, eventPtr, eventSource);
 	}
 
+	using INPUT_CONTEXT_ID = RE::UserEvents::INPUT_CONTEXT_IDS::INPUT_CONTEXT_ID;
+
 	// ---------- PlayerHook
 
 	void PlayerHook::install()
