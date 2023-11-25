@@ -18,7 +18,7 @@ namespace game
 
 	void consumePotion(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
 	void consumeBestOption(RE::ActorValue a_actor_value);
-	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count);
+	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, RE::ExtraDataList* extra, uint32_t remaining);
 
 	class perk_visitor : public RE::PerkEntryVisitor
 	{

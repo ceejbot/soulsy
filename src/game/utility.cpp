@@ -168,85 +168,41 @@ namespace game
 		auto* alchemy_item = obj->As<RE::AlchemyItem>();
 		if (alchemy_item->IsPoison())
 		{
-			poison_weapon(player, alchemy_item, remaining);
+			poison_weapon(player, alchemy_item, extra, remaining);
 			return;
 		}
 
-		// logger::trace("queuing task to use consumable; name='{}'; remaining={}; formID={};"sv,
-		// 	obj->GetName(),
-		// 	remaining,
-		// 	string_util::int_to_hex(obj->formID));
 		auto* task = SKSE::GetTaskInterface();
-		if (task)
-		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item, extra); });
-		}
+		if (!task) { return; }
+		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item, extra); });
 	}
 
-	void poison_weapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& a_poison, uint32_t a_count)
+	void poison_weapon(RE::PlayerCharacter*& player,
+		RE::AlchemyItem*& poison,
+		RE::ExtraDataList* extra,
+		uint32_t remaining)
 	{
-		// logger::trace("try to apply poison to weapon, inventory count={}"sv, a_count);
-		uint32_t poison_doses = 1;
-		/*
-comment preserved from mlthelama
-it works for vanilla and adamant
-vanilla does a basic set value to 3
-adamant does 2 times add value 2
-ordinator we could handle it "dirty" because the Information we need needs to
-be RE, but if perk xy Is set we could calculate it ourselves. It is basically AV
-multiply base + "alchemy level" * 0.1 * 3 = dose count
-vokrii should be fine as well
-other add av multiply implementations need to be handled by getting the data
-from the game
-the MCM setting will be left for overwrite handling
-*/
-		if (thePlayer->HasPerkEntries(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount))
-		{
-			auto perk_visit = perk_visitor(thePlayer, static_cast<float>(poison_doses));
-			thePlayer->ForEachPerkEntry(RE::BGSEntryPoint::ENTRY_POINTS::kModPoisonDoseCount, perk_visit);
-			poison_doses = static_cast<int>(perk_visit.get_result());
-		}
-		logger::trace("poison doses read from perks; poison_doses={};"sv, poison_doses);
-
-		RE::BGSSoundDescriptor* sound_descriptor = nullptr;
-		if (a_poison->data.consumptionSound) { sound_descriptor = a_poison->data.consumptionSound->soundDescriptor; }
-		else
-		{
-			auto* form = RE::TESForm::LookupByID(0x00106614);
-			if (form) { sound_descriptor = form->As<RE::BGSSoundDescriptorForm>()->soundDescriptor; }
-		}
-
-		auto used             = 0;
-		auto* equipped_object = thePlayer->GetEquippedEntryData(false);
-		if (equipped_object && equipped_object->object->IsWeapon() && !equipped_object->IsPoisoned() && a_count > 0)
-		{
-			logger::trace("about to poison right-hand weapon; poison='{}'; weapon='{}';"sv,
-				a_poison->GetName(),
-				equipped_object->GetDisplayName());
-			equipped_object->PoisonObject(a_poison, poison_doses);
-			// We only play the sound once, even if we also dose the left-hand item.
-			if (sound_descriptor) { player::play_sound(sound_descriptor, thePlayer); }
-			used++;
-			a_count--;
-		}
-
-		logger::trace("now considering left-hand item."sv);
-		auto* equipped_object_left = thePlayer->GetEquippedEntryData(true);
-		if (equipped_object_left && equipped_object_left->object->IsWeapon() && !equipped_object_left->IsPoisoned() &&
-			a_count > 0)
-		{
-			logger::trace("about to poison left-hand weapon; poison='{}'; weapon='{}';"sv,
-				a_poison->GetName(),
-				equipped_object_left->GetDisplayName());
-			equipped_object_left->PoisonObject(a_poison, poison_doses);
-			used++;
-		}
 		auto* task = SKSE::GetTaskInterface();
-		if (task)
+		if (!task) { return; }
+
+		auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		if (right_eq->IsWeapon())
 		{
-			logger::trace("queuing remove item tasks..."sv);
 			task->AddTask(
-				[=]() { thePlayer->RemoveItem(a_poison, used, RE::ITEM_REMOVE_REASON::kRemove, nullptr, nullptr); });
+				[=]() {
+					RE::ActorEquipManager::GetSingleton()->EquipObject(
+						player, poison, extra, 1, game::right_hand_equip_slot());
+				});
+			remaining--;
+		}
+		auto* left_eq = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		if (left_eq->IsWeapon() && remaining > 0)
+		{
+			task->AddTask(
+				[=]() {
+					RE::ActorEquipManager::GetSingleton()->EquipObject(
+						player, poison, extra, 1, game::left_hand_equip_slot());
+				});
 		}
 	}
 
@@ -352,6 +308,9 @@ the MCM setting will be left for overwrite handling
 
 	// ---------- perk visitor, used only by the actor value potion selection
 
+	using PerkFuncType     = RE::BGSEntryPointPerkEntry::EntryData::Function;
+	using PerkFuncDataType = RE::BGSEntryPointFunctionData::FunctionType;
+
 	RE::BSContainer::ForEachResult perk_visitor::Visit(RE::BGSPerkEntry* perk_entry)
 	{
 		const auto* entry_point = static_cast<RE::BGSEntryPointPerkEntry*>(perk_entry);
@@ -359,29 +318,23 @@ the MCM setting will be left for overwrite handling
 
 		logger::trace("perk formID={}; name='{}';"sv, string_util::int_to_hex(perk->formID), perk->GetName());
 
+		// This was originally intended to handle many variations of the poison
+		// dose perk-- it should calculate the correct value from vanilla,
+		// Adamant, Ordinator, and others. It doesn't actually do so. We apply
+		// poisons differently up above, by just equipping it like normal.
 		if (entry_point->functionData)
 		{
 			const RE::BGSEntryPointFunctionDataOneValue* value =
 				static_cast<RE::BGSEntryPointFunctionDataOneValue*>(entry_point->functionData);
-			if (entry_point->entryData.function == RE::BGSEntryPointPerkEntry::EntryData::Function::kSetValue)
-			{
-				result_ = value->data;
-			}
-			else if (entry_point->entryData.function == RE::BGSEntryPointPerkEntry::EntryData::Function::kAddValue)
-			{
-				result_ += value->data;
-			}
-			else if (entry_point->entryData.function == RE::BGSEntryPointPerkEntry::EntryData::Function::kMultiplyValue)
-			{
-				result_ *= value->data;
-			}
-			else if (entry_point->entryData.function ==
-					 RE::BGSEntryPointPerkEntry::EntryData::Function::kAddActorValueMult)
+			if (entry_point->entryData.function == PerkFuncType::kSetValue) { result_ = value->data; }
+			else if (entry_point->entryData.function == PerkFuncType::kAddValue) { result_ += value->data; }
+			else if (entry_point->entryData.function == PerkFuncType::kMultiplyValue) { result_ *= value->data; }
+			else if (entry_point->entryData.function == PerkFuncType::kAddActorValueMult)
 			{
 				if (perk_entry->GetFunction() == RE::BGSPerkEntry::EntryPoint::kModPoisonDoseCount)
 				{
 					auto av = actor_->AsActorValueOwner()->GetActorValue(RE::ActorValue::kAlchemy);
-					result_ += static_cast<float>(av * 0.1 * 3);
+					result_ += static_cast<float>(av * value->data * 3);
 				}
 			}
 
