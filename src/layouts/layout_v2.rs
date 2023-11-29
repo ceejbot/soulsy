@@ -109,7 +109,7 @@ impl HudLayout2 {
         let hkbg = hotkey.background.unwrap_or_default();
 
         let anchor = self.anchor_point();
-        let center = slot.offset.translate(&anchor).scale(self.global_scale);
+        let center = anchor.translate(&slot.offset.scale(self.global_scale));
         let text = slot
             .text
             .iter()
@@ -119,7 +119,7 @@ impl HudLayout2 {
         SlotFlattened {
             element,
             center: center.clone(),
-            bg_size: bg.size,
+            bg_size: bg.size.scale(self.global_scale),
             bg_color: bg.color,
             bg_image: bg.svg,
             icon_size: slot.icon.size.scale(self.global_scale),
@@ -233,14 +233,14 @@ impl From<&HudLayout2> for LayoutFlattened {
         LayoutFlattened {
             global_scale: v.global_scale,
             anchor: v.anchor_point(),
-            size: v.size.clone(),
-            bg_size: bg.size.clone(),
+            size: v.size.scale(v.global_scale),
+            bg_size: bg.size.scale(v.global_scale),
             bg_color: bg.color.clone(),
             bg_image: bg.svg.clone(),
             hide_ammo_when_irrelevant: v.hide_ammo_when_irrelevant,
             hide_left_when_irrelevant: v.hide_left_when_irrelevant,
             font: v.font.clone(),
-            font_size: v.font_size,
+            font_size: v.font_size * v.global_scale,
             chinese_full_glyphs: v.chinese_full_glyphs,
             simplified_chinese_glyphs: v.simplified_chinese_glyphs,
             cyrillic_glyphs: v.cyrillic_glyphs,
@@ -256,7 +256,7 @@ impl From<&HudLayout2> for LayoutFlattened {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::layouts::Layout;
+    use crate::layouts::{resolutionHeight, Layout};
 
     // #[test]
     // #[ignore]
@@ -338,5 +338,42 @@ mod tests {
                 assert_eq!(v.anchor_point().y, 1280.0);
             }
         }
+    }
+
+    #[test]
+    fn flattening_applies_scale() {
+        let data = include_str!("../../layouts/square/LayoutV2.toml");
+        let layout: HudLayout2 =
+            toml::from_str(data).expect("square text fixture should be valid toml");
+        assert_eq!(layout.global_scale, 2.0);
+        assert_eq!(layout.size, Point { x: 190.0, y: 250.0 });
+        assert_eq!(layout.font_size, 18.0);
+        assert_eq!(layout.right.offset, Point { x: 375.0, y: 0.0 });
+        let anchor = layout.anchor_point();
+        assert_eq!(
+            anchor,
+            Point {
+                x: 190.0,
+                y: resolutionHeight() - layout.size.y
+            }
+        );
+
+        // if the above assertions succeed, these should too.
+        let flattened = Layout::Version2(Box::new(layout.clone())).flatten();
+        assert_eq!(flattened.size, Point { x: 380.0, y: 500.0 });
+        assert_eq!(flattened.bg_size, Point { x: 380.0, y: 500.0 });
+        assert_eq!(flattened.font_size, 36.0);
+        assert_eq!(flattened.anchor, anchor);
+        assert_eq!(flattened.slots[0].bg_size, Point { x: 200.0, y: 200.0 });
+        let right_slot = flattened
+            .slots
+            .iter()
+            .find(|slot| slot.element == HudElement::Right)
+            .expect("the right slot must be present");
+        let slot_center = Point {
+            x: flattened.anchor.x + (layout.right.offset.x * flattened.global_scale),
+            y: flattened.anchor.y + (layout.right.offset.y * flattened.global_scale),
+        };
+        assert_eq!(right_slot.center, slot_center);
     }
 }

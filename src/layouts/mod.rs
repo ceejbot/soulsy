@@ -241,6 +241,19 @@ mod tests {
     use super::*;
 
     #[test]
+    fn point_functions_behave() {
+        let point = Point { x: 10.0, y: 15.0 };
+        let puncta = Point { x: -5.0, y: 2.0 };
+        assert_eq!(point.translate(&puncta), puncta.translate(&point));
+        assert_eq!(point.scale(6.0), Point { x: 60.0, y: 90.0 });
+        assert_eq!(puncta.scale(-2.0), Point { x: 10.0, y: -4.0 });
+        assert_eq!(
+            puncta.scale(-2.0).translate(&puncta),
+            Point { x: 5.0, y: -2.0 }
+        );
+    }
+
+    #[test]
     fn can_lazy_load_layouts() {
         let layout = hud_layout();
         assert_eq!(layout.anchor.x, 150.0);

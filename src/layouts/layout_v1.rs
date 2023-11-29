@@ -140,7 +140,7 @@ impl HudLayout1 {
 
     fn flatten(&self, slot: &SlotLayout) -> SlotFlattened {
         let anchor = self.anchor_point();
-        let center = slot.offset.translate(&anchor).scale(self.global_scale);
+        let center = anchor.translate(&slot.offset.scale(self.global_scale));
 
         let mut text = Vec::new();
         if slot.name_color.a > 0 {
@@ -198,7 +198,7 @@ impl From<&HudLayout1> for LayoutFlattened {
         LayoutFlattened {
             global_scale: v.global_scale,
             anchor: v.anchor_point(),
-            size: v.size.clone(),
+            size: v.size.scale(v.global_scale),
             bg_size: Point {
                 x: v.size.x * v.global_scale,
                 y: v.size.y * v.global_scale,
@@ -253,11 +253,11 @@ mod tests {
     fn hexagon_tb_valid() {
         let data = include_str!("../../layouts/hexagons/SoulsyHUD_hexagons_tb.toml");
         let specific: HudLayout1 =
-            toml::from_str(data).expect("minimal layout should be valid toml");
+            toml::from_str(data).expect("hexagons_tb layout should be valid toml");
         assert_eq!(specific.anchor_name, NamedAnchor::BottomRight);
-        let minimal: Layout =
+        let hexagonal: Layout =
             toml::from_str(data).expect("serde should figure out which layout schema");
-        match minimal {
+        match hexagonal {
             Layout::Version2(_) => unreachable!(),
             Layout::Version1(ref v) => {
                 assert_eq!(v.anchor_name, NamedAnchor::BottomRight);
@@ -265,8 +265,43 @@ mod tests {
                 assert_eq!(v.anchor_point().y, 1290.0);
             }
         }
-        let flattened = minimal.flatten();
+        let flattened = hexagonal.flatten();
         assert_eq!(flattened.anchor.x, 3290.0);
         assert_eq!(flattened.anchor.y, 1290.0);
+    }
+
+    #[test]
+    fn flattening_applies_scale() {
+        let data = include_str!("../../layouts/hexagons/SoulsyHUD_hexagons_tb.toml");
+        let layout: HudLayout1 = toml::from_str(data).expect("minimal layout should be valid toml");
+        assert_eq!(layout.global_scale, 0.5);
+        assert_eq!(layout.size, Point { x: 600.0, y: 600.0 });
+        assert_eq!(layout.font_size, 37.0);
+        assert_eq!(layout.layouts[0].size, Point { x: 200.0, y: 200.0 });
+        let anchor = layout.anchor_point();
+        let right_original = layout
+            .layouts
+            .iter()
+            .find(|slot| slot.element == HudElement::Right)
+            .expect("layout expected to have a right hud element")
+            .clone();
+
+        // if the above assertions succeed, these should too.
+        let flattened = Layout::Version1(Box::new(layout)).flatten();
+        assert_eq!(flattened.size, Point { x: 300.0, y: 300.0 });
+        assert_eq!(flattened.bg_size, Point { x: 300.0, y: 300.0 });
+        assert_eq!(flattened.font_size, 18.5);
+        assert_eq!(flattened.anchor, anchor);
+        assert_eq!(flattened.slots[0].bg_size, Point { x: 100.0, y: 100.0 });
+        let right_slot = flattened
+            .slots
+            .iter()
+            .find(|slot| slot.element == HudElement::Right)
+            .expect("the right slot must be present");
+        let slot_center = Point {
+            x: flattened.anchor.x + (right_original.offset.x * flattened.global_scale),
+            y: flattened.anchor.y + (right_original.offset.y * flattened.global_scale),
+        };
+        assert_eq!(right_slot.center, slot_center);
     }
 }
