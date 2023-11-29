@@ -724,9 +724,11 @@ namespace ui
 			if (gDoingBriefPeek)
 			{
 				if (gHudAlpha < 1.0f) { return; }
-				else { gDoingBriefPeek = false; }
+				gDoingBriefPeek = false;
+				startAlphaTransition(false, 0.0f);
+				return;
 			}
-
+			// The auto-fade case here.
 			if ((gHudAlpha > 0.0f && !gIsFading) || (gIsFading && doFadeIn)) { startAlphaTransition(false, 0.0f); }
 		}
 		else if (helpers::hudShouldAutoFadeIn())
