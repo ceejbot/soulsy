@@ -2,11 +2,6 @@
 
 global_scale = 2.0
 
-# A named location for the HUD. Use this as a shortcut for common anchor
-# points. These work no matter what the player's screen resolution is, because this
-# is turned into a location point at run-time.
-# Values: bottom_left, bottom_right, top_left, top_right, center,
-# center_top, center_bottom, left_center, right_center
 anchor_name = "bottom_left"
 
 # You can also specify the anchor point like this if a named anchor point
@@ -113,9 +108,9 @@ orientation = "horizontal" # defaults to vertical
 [right.progress_circle]
 # same
 
-# NOT YET IMPLEMENTED.
 [right.poison]
 offset = { x = 20.0, y = 20.0 }
+[right.poison.indicator]
 svg = "poison.svg"
 color = {r = 160, g = 240, b = 2, a = 255 } # same color as poison. consider using the color names?
 size = { x = 10.0, y = 10.0 }

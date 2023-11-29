@@ -2,12 +2,13 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::fmt::Display;
 
+use cxx::let_cxx_string;
 use strfmt::strfmt;
 
 use super::base::BaseType;
 use super::HasIcon;
 use crate::images::icons::Icon;
-use crate::plugin::{Color, ItemCategory};
+use crate::plugin::{weaponIsPoisoned, Color, ItemCategory};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.
@@ -163,8 +164,12 @@ impl HudItem {
     }
 
     pub fn is_poisoned(&self) -> bool {
-        // TODO track this somehow
-        false
+        if !self.is_weapon() {
+            false
+        } else {
+            let_cxx_string!(form_spec = self.form_string());
+            weaponIsPoisoned(&form_spec)
+        }
     }
 
     /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons

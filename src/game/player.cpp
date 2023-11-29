@@ -38,6 +38,12 @@ namespace player
 		return useAltGrip;
 	}
 
+	bool weaponIsPoisoned(const std::string& form_spec)
+	{
+		auto* const form = formSpecToFormItem(form_spec);
+		return game::isItemPoisoned(form);
+	}
+
 	rust::String specEquippedLeft()
 	{
 		auto* player   = RE::PlayerCharacter::GetSingleton();

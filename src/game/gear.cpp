@@ -102,6 +102,16 @@ namespace game
 		return worn;
 	}
 
+	bool isItemPoisoned(const RE::TESForm* form)
+	{
+		auto* the_player         = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* obj  = nullptr;
+		RE::ExtraDataList* extra = nullptr;
+		auto count               = boundObjectForForm(form, player, obj, extra_data);
+		if (extra_data) { return extra_data->HasType(RE::ExtraDataType::kPoison); }
+		return false;
+	}
+
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();

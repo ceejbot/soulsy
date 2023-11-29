@@ -235,7 +235,7 @@ namespace equippable
 				alchemy_potion->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords          = KeywordAccumulator::mKeywords;
 				rust::Box<HudItem> item = hud_item_from_keywords(
-					ItemCategory::Food, *keywords, std::move(chonker), form_string, count, false);
+					ItemCategory::Food, *keywords, std::move(chonker), form_string, count, false, false);
 				return item;
 			}
 			else

@@ -49,6 +49,7 @@ namespace player
 
 	void consumePotion(const std::string& form_spec);
 	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count);
+	bool weaponIsPoisoned(const std::string& form_spec);
 
 	bool hasItemOrSpell(const std::string& form_spec);
 	uint32_t itemCount(const std::string& form_spec);

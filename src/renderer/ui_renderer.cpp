@@ -454,6 +454,7 @@ namespace ui
 				drawText(entrytxt, textPos, label.font_size, label.color, label.alignment);
 			}
 
+			// Draw the hotkey reminder if asked.
 			if (slotLayout.hotkey_color.a > 0)
 			{
 				const auto hk_im_center = ImVec2(slotLayout.hotkey_center.x, slotLayout.hotkey_center.y);
@@ -470,6 +471,19 @@ namespace ui
 				const auto size                     = ImVec2(static_cast<float>(slotLayout.hotkey_size.x - 2.0f),
                     static_cast<float>(slotLayout.hotkey_size.y - 2.0f));
 				drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_color);
+			}
+
+			// Finally, the poisoned indicator.
+			if (slotLayout.poison_color.a > 0 && entry->is_poisoned())
+			{
+				const auto poison_img = std::string(slotLayout.poison_image);
+				if (lazyLoadHudImage(poison_img))
+				{
+					const auto poison_center = ImVec2(slotLayout.poison_center.x, slotLayout.poison_center.y);
+					const auto [texture, width, height] = HUD_IMAGES_MAP[poison_img];
+					const auto size                     = ImVec2(slotLayout.poison_size.x, slotLayout.poison_size.y);
+					drawElement(texture, poison_center, size, 0.f, slotLayout.poison_color);
+				}
 			}
 		}
 

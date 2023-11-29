@@ -186,6 +186,17 @@ impl HudLayout1 {
             hotkey_bg_size: slot.hotkey_size.scale(self.global_scale),
             hotkey_bg_color: slot.hotkey_bg_color.clone(),
             hotkey_bg_image: "key_bg.svg".to_string(),
+
+            poison_image: "".to_string(),
+            poison_color: Color {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 0,
+            },
+            poison_center: Point { x: 0.0, y: 0.0 },
+            poison_size: Point { x: 0.0, y: 0.0 },
+
             text,
         }
     }

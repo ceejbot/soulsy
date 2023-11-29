@@ -127,6 +127,11 @@ pub mod plugin {
         hotkey_bg_color: Color,
         hotkey_bg_image: String,
 
+        poison_size: Point,
+        poison_center: Point,
+        poison_color: Color,
+        poison_image: String,
+
         text: Vec<TextFlattened>,
     }
 
@@ -484,6 +489,9 @@ pub mod plugin {
 
         /// Check if the player still has items from this form in their inventory.
         fn hasItemOrSpell(form_spec: &CxxString) -> bool;
+
+        /// Is this weapon poisoned?
+        fn weaponIsPoisoned(form_spec: &CxxString) -> bool;
 
         /// Does the player have a bow or crossbow equipped?
         fn hasRangedEquipped() -> bool;

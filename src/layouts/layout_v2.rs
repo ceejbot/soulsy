@@ -69,6 +69,7 @@ pub struct SlotElement {
     background: Option<ImageElement>,
     hotkey: Option<HotkeyElement>,
     progress_bar: Option<ProgressElement>,
+    poison: Option<PoisonElement>,
 }
 
 impl HudLayout2 {
@@ -116,6 +117,12 @@ impl HudLayout2 {
             .map(|xs| self.flatten_text(xs, &center))
             .collect();
 
+        let poison = slot.poison.clone().unwrap_or_default();
+        let poison_image = poison.indicator.svg;
+        let poison_size = poison.indicator.size.scale(self.global_scale);
+        let poison_color = poison.indicator.color;
+        let poison_center = center.translate(&poison.offset.scale(self.global_scale));
+
         SlotFlattened {
             element,
             center: center.clone(),
@@ -131,6 +138,10 @@ impl HudLayout2 {
             hotkey_bg_size: hkbg.size.scale(self.global_scale),
             hotkey_bg_color: hkbg.color,
             hotkey_bg_image: hkbg.svg,
+            poison_size,
+            poison_image,
+            poison_color,
+            poison_center,
             text,
         }
     }
@@ -217,6 +228,21 @@ pub struct ProgressElement {
     color: Color,
 }
 
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct PoisonElement {
+    offset: Point,
+    indicator: ImageElement,
+}
+
+impl Default for PoisonElement {
+    fn default() -> Self {
+        PoisonElement {
+            offset: Point { x: 0.0, y: 0.0 },
+            indicator: ImageElement::default(),
+        }
+    }
+}
+
 impl From<&HudLayout2> for LayoutFlattened {
     fn from(v: &HudLayout2) -> Self {
         let mut slots = vec![
@@ -259,21 +285,62 @@ mod tests {
     use super::*;
     use crate::layouts::{resolutionHeight, Layout};
 
-    // #[test]
-    // #[ignore]
-    // fn default_layout_valid() {
-    //     // The github runner compilation step can't find this file. I have no idea why not.
-    //     let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
-    //     let builtin: Layout = toml::from_str(buf).expect("layout should be valid toml");
-    //     match builtin {
-    //         Layout::Version1(_) => unreachable!(),
-    //         Layout::Version2(v) => {
-    //             assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
-    //             assert_eq!(v.anchor_point().x, 150.0);
-    //             assert_eq!(v.anchor_point().y, 1290.0);
-    //         }
-    //     }
-    // }
+    #[test]
+    fn default_layout_valid() {
+        // The github runner compilation step can't find this file. I have no idea why not.
+        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
+        match toml::from_str::<HudLayout2>(buf) {
+            Ok(v) => {
+                assert_eq!(v.anchor_point().x, 150.0);
+            }
+            Err(e) => {
+                eprintln!("{e:#?}");
+                unreachable!();
+            }
+        }
+        let builtin: Layout = toml::from_str(buf).expect("layout should be valid toml");
+        match builtin {
+            Layout::Version1(_) => unreachable!(),
+            Layout::Version2(v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
+                assert_eq!(v.anchor_point().x, 150.0);
+                assert_eq!(v.anchor_point().y, 1290.0);
+                let right_poison = v
+                    .right
+                    .poison
+                    .as_ref()
+                    .expect("the right slot should have a poison indicator");
+                assert_eq!(
+                    right_poison.indicator.svg,
+                    "icons/indicator_poison.svg".to_string()
+                );
+                let _left_poison = v
+                    .left
+                    .poison
+                    .as_ref()
+                    .expect("the left slot should have a poison indicator");
+
+                let flattened = Layout::Version2(v.clone()).flatten();
+                assert_eq!(flattened.anchor, v.anchor_point());
+                let right_slot = flattened
+                    .slots
+                    .iter()
+                    .find(|slot| slot.element == HudElement::Right)
+                    .expect("the flattened layout needs to have a right slot");
+                assert_eq!(right_slot.poison_image, right_poison.indicator.svg);
+                assert_eq!(right_slot.poison_color, right_poison.indicator.color);
+                let slot_center = Point {
+                    x: flattened.anchor.x + (v.right.offset.x * flattened.global_scale),
+                    y: flattened.anchor.y + (v.right.offset.y * flattened.global_scale),
+                };
+                assert_eq!(right_slot.center, slot_center);
+                assert_eq!(
+                    right_slot.poison_center,
+                    slot_center.translate(&right_poison.offset)
+                );
+            }
+        }
+    }
 
     #[test]
     fn centered_layout_valid() {
@@ -377,6 +444,9 @@ mod tests {
         };
         assert_eq!(right_slot.center, slot_center);
         assert_eq!(layout.right.text.len(), right_slot.text.len());
-        assert_eq!(layout.right.text[0].font_size * layout.global_scale, right_slot.text[0].font_size);
+        assert_eq!(
+            layout.right.text[0].font_size * layout.global_scale,
+            right_slot.text[0].font_size
+        );
     }
 }

@@ -15,6 +15,7 @@ namespace game
 		RE::TESBoundObject*& outval,
 		RE::ExtraDataList*& outextra);
 
+	bool isItemPoisoned(const RE::TESForm* form);
 	bool isItemWorn(RE::TESBoundObject*& object, RE::PlayerCharacter*& the_player);
 	// bottleneck for equipping everything
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);

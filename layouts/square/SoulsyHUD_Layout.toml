@@ -95,34 +95,20 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 # fill in a value, name it surrounded with curly braces, like the
 # example.
 # Possible values: count, name, kind,
+
 [[right.text]]
 alignment = "right"
 offset = { x = 0.0, y = 0.0 }
-color = { r = 255, g = 255, b = 255, a = 0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{count} {name}"
 
-# Optional burn time/enchant charge bar. NOT YET IMPLEMENTED.
-[right.progress_bar]
-offset = { x = 20.0, y = 20.0 }
-background = "bar_bg.svg"
-color = { r = 255, g = 255, b = 255, a = 255 }
-size = { x = 10.0 , y = 100.0 } # this is how to scale the bar, irrespective of orientation
-orientation = "horizontal" # defaults to vertical
-
-# NOT YET IMPLEMENTED.
-[right.progress_arc]
-# this might be an option
-
-# NOT YET IMPLEMENTED.
-[right.progress_circle]
-# same
-
-# NOT YET IMPLEMENTED.
+# An optional indicator for showing if this item is poisoned.
 [right.poison]
 offset = { x = 20.0, y = 20.0 }
+[right.poison.indicator]
 svg = "poison.svg"
-color = {r = 160, g = 240, b = 2, a = 255 } # same color as poison. consider using the color names?
+color = {r = 160, g = 240, b = 2, a = 255 }
 size = { x = 10.0, y = 10.0 }
 
 # ----- left hand slot
@@ -148,6 +134,14 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 svg = "hotkey_bg.svg"
 size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+
+# An optional indicator for showing if this item is poisoned.
+[left.poison]
+offset = { x = 20.0, y = 20.0 }
+[left.poison.indicator]
+svg = "poison.svg"
+color = {r = 160, g = 240, b = 2, a = 255 }
+size = { x = 10.0, y = 10.0 }
 
 [[left.text]]
 alignment = "left"

@@ -179,6 +179,13 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = 60.0, y = 0.0 }
 size = { x = 30.0, y = 30.0 }
 
+[left.poison]
+offset = { x = 0.0, y = 50.0 }
+[left.poison.indicator]
+svg = "icons/indicator_poison.svg"
+size = { x = 23.0, y = 23.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+
 [[left.text]]
 offset = { x = 125.0, y = 107.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
@@ -204,6 +211,13 @@ offset = { x = 0.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -60.0, y = 0.0 }
 size = { x = 30.0, y = 30.0 }
+
+[right.poison]
+offset = { x = 0.0, y = 50.0 }
+[right.poison.indicator]
+svg = "icons/indicator_poison.svg"
+size = { x = 23.0, y = 23.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
 
 [[right.text]]
 color = { r = 255, g = 255, b = 255, a = 255 }
