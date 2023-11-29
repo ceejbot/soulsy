@@ -235,7 +235,7 @@ namespace ui
 
 	ui_renderer::ui_renderer() = default;
 
-	void ui_renderer::draw_animations_frame()
+	void ui_renderer::drawAnimationFrame()
 	{
 		auto it = animation_list.begin();
 		while (it != animation_list.end())
@@ -256,7 +256,7 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::drawText(const std::string text,
+	void drawText(const std::string text,
 		const ImVec2 center,
 		const float fontSize,
 		const Color color,
@@ -292,7 +292,7 @@ namespace ui
 			font, fontSize, aligned_loc, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
 	}
 
-	void ui_renderer::init_animation(const animation_type animation_type,
+	void ui_renderer::initializeAnimation(const animation_type animation_type,
 		const float a_screen_x,
 		const float a_screen_y,
 		const float a_offset_x,
@@ -326,7 +326,54 @@ namespace ui
 		// rlog::trace("done initializing animation. return.");
 	}
 
-	void ui_renderer::drawElement(ID3D11ShaderResourceView* texture,
+	void drawProgressBar(const BarType kind,
+		const float percent,
+		const ImVec2 center,
+		const ImVec2 size,
+		const ID3D11ShaderResourceView* bgTexture,
+		const Color emptyColor,
+		const ID3D11ShaderResourceView* filledTexture,
+		const Color filledColor)
+	{
+		switch (kind)
+		{
+			case:
+				BarType::kHorizontal
+					: progressBarRectangle(90.0, percent, center, size, bgTexture, bgColor, filledTexture, filledColor);
+				return;
+			case:
+				BarType::kVertical
+					: progressBarRectangle(0.0, percent, center, size, bgTexture, bgColor, filledTexture, filledColor);
+				return;
+			case: BarType::kCircularArc : progressBarCircleArc(percent, center); return return;
+		}
+	}
+
+	void progressBarRectangle(const float angle,
+		const float percent,
+		const ImVec2 center,
+		const ImVec2 size,
+		const ID3D11ShaderResourceView* bgTexture,
+		const Color bgColor,
+		const ID3D11ShaderResourceView* filledTexture,
+		const Color filledColor)
+	{
+		drawElement(bgTexture, center, size, angle, bgColor);
+		const ImVec2 filledSize = ImVec2(size.x * percent / 100.0, size.y * percent / 100.0);
+		const ImVec2 location =
+			ImVec2(center.x - (size.x - filledSize.x) / 2.0, center.y - (size.y - filledSize.y) / 2.0);
+		drawElement(bgTexture, location, filledSize, angle, emptyColor);
+	}
+
+	void progressBarCircleArc(const float percent, const ImVec2 center, const float diameter, const float thickness)
+	{
+		// TODO unimplemented
+		// draw circle arc
+		// for now starting point is at (d/2, 0) on the x axis, fill is counter clockwise
+		// research topic: what's in the imgui API?
+	}
+
+	void drawElement(ID3D11ShaderResourceView* texture,
 		const ImVec2 center,
 		const ImVec2 size,
 		const float angle,
@@ -336,7 +383,7 @@ namespace ui
 		drawElementInner(texture, center, size, angle, im_color);
 	}
 
-	void ui_renderer::drawElementInner(ID3D11ShaderResourceView* texture,
+	void drawElementInner(ID3D11ShaderResourceView* texture,
 		const ImVec2 center,
 		const ImVec2 size,
 		const float angle,
@@ -356,7 +403,7 @@ namespace ui
 			texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], im_color);
 	}
 
-	void ui_renderer::drawAllSlots()
+	void drawAllSlots()
 	{
 		auto topLayout          = hud_layout();
 		auto anchor             = topLayout.anchor;
@@ -492,10 +539,10 @@ namespace ui
 			}
 		}
 
-		// draw_animations_frame();
+		// drawAnimationFrame();
 	}
 
-	void ui_renderer::drawHud()
+	void drawHud()
 	{
 		const auto timeDelta = ImGui::GetIO().DeltaTime;
 		advanceTimers(timeDelta);

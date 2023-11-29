@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "animation_handler.h"
 #include "image_path.h"
@@ -38,6 +38,49 @@ namespace ui
 	float easeInCubic(float progress);
 	float easeOutCubic(float progress);
 
+	void drawAllSlots();
+	void drawElement(ID3D11ShaderResourceView* texture,
+		const ImVec2 center,
+		const ImVec2 size,
+		const float angle,
+		const Color color);
+	void drawElementInner(ID3D11ShaderResourceView* texture,
+		const ImVec2 center,
+		const ImVec2 size,
+		const float angle,
+		const ImU32 im_color);  // retaining support for animations...
+	void drawText(const std::string text,
+		const ImVec2 center,
+		const float font_size,
+		const Color color,
+		const Align alignment);
+
+	// Progress bars.
+	enum class BarType
+	{
+		kVertical,
+		kHorizontal,
+		kCircularArc,
+	};
+
+	// arguments TODO for all of these
+	void drawProgressBar(const BarType kind,
+		const float percent,
+		const ImVec2 center,
+		const ImVec2 size,
+		const ID3D11ShaderResourceView* bgTexture,
+		const Color emptyColor,
+		const ID3D11ShaderResourceView* filledTexture,
+		const Color filledColor);
+	void progressBarRectangle(const float angle,
+		const float percent,
+		const ImVec2 center,
+		const ImVec2 size,
+		const ID3D11ShaderResourceView* bgTexture,
+		const Color bgColor,
+		const ID3D11ShaderResourceView* filledTexture,
+		const Color filledColor);
+	void progressBarCircleArc(const float percent, const ImVec2 center);
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
@@ -51,25 +94,8 @@ namespace ui
 		ui_renderer();
 
 		// Oxidation section.
-		static void drawAllSlots();
-		static void drawElement(ID3D11ShaderResourceView* texture,
-			const ImVec2 center,
-			const ImVec2 size,
-			const float angle,
-			const Color color);
-		static void drawElementInner(ID3D11ShaderResourceView* texture,
-			const ImVec2 center,
-			const ImVec2 size,
-			const float angle,
-			const ImU32 im_color);  // retaining support for animations...
-		static void drawText(const std::string text,
-			const ImVec2 center,
-			const float fontSize,
-			const Color color,
-			const Align alignment,
-			const float wrapWidth);
 		// older...
-		static void init_animation(animation_type animation_type,
+		static void initializeAnimation(animation_type animation_type,
 			float a_screen_x,
 			float a_screen_y,
 			float a_offset_x,
@@ -101,14 +127,15 @@ namespace ui
 			std::string& file_path);
 
 		static void loadAnimationFrames(std::string& file_path, std::vector<TextureData>& frame_list);
-		static void draw_animations_frame();
+		static void drawAnimationFrame();
 
 		static TextureData iconForHotkey(uint32_t a_key);
-		static void loadFont();
 
 
 	public:
+		// This only loads key/controller hotkey images.
 		static void preloadImages();
+		static void loadFont();
 
 		struct d_3d_init_hook
 		{
