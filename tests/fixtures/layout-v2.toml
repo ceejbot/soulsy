@@ -1,4 +1,10 @@
 # THIS IS A TEST FIXTURE.
+# This layout uses the new layout design.
+#
+# All SoulsyHUD layouts are written in TOML. To learn more about TOML,
+# visit its official website: https://toml.io/
+#
+# Global scaling factor: the whole hud size changes when you change this.
 
 global_scale = 2.0
 
@@ -108,6 +114,7 @@ orientation = "horizontal" # defaults to vertical
 [right.progress_circle]
 # same
 
+# NOT YET IMPLEMENTED.
 [right.poison]
 offset = { x = 20.0, y = 20.0 }
 [right.poison.indicator]
