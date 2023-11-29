@@ -340,7 +340,7 @@
                     "help": "$SoulsyHUD_Options_FadeTime_Help",
                     "type": "slider",
                     "valueOptions": {
-                        "min": 500,
+                        "min": 0,
                         "max": 5000,
                         "step": 100,
                         "sourceType": "ModSettingInt"
@@ -371,10 +371,7 @@
                     "type": "enum",
                     "help": "$SoulsyHUD_Options_Controller_Help",
                     "valueOptions": {
-                        "options": [
-                            "$SoulsyHUD_Controls_PS",
-                            "$SoulsyHUD_Controls_Xbox"
-                        ],
+                        "options": ["$SoulsyHUD_Controls_PS", "$SoulsyHUD_Controls_Xbox"],
                         "sourceType": "ModSettingInt",
                         "defaultValue": 0
                     }
@@ -446,9 +443,7 @@
                     "action": {
                         "type": "CallFunction",
                         "function": "ShowCycleEntries",
-                        "params": [
-                            "{value}"
-                        ]
+                        "params": ["{value}"]
                     }
                 },
                 {
@@ -457,10 +452,7 @@
                     "help": "$SoulsyHUD_ChosenCycle_Help",
                     "type": "menu",
                     "valueOptions": {
-                        "options": [
-                            " ",
-                            " "
-                        ],
+                        "options": [" ", " "],
                         "sourceType": "PropertyValueInt",
                         "propertyName": "pCycleItemShown",
                         "defaultValue": 0
@@ -522,10 +514,7 @@
                     "help": "$SoulsyHUD_EquipSetList_Help",
                     "type": "menu",
                     "valueOptions": {
-                        "options": [
-                            "$SoulsyHUD_NoEquipSets",
-                            " "
-                        ],
+                        "options": ["$SoulsyHUD_NoEquipSets", " "],
                         "sourceType": "PropertyValueString",
                         "propertyName": "pEquipSetMenuSelection"
                     }
@@ -577,10 +566,7 @@
                     "help": "$SoulsyHUD_EquipSetItemList_Help",
                     "type": "menu",
                     "valueOptions": {
-                        "options": [
-                            "$SoulsyHUD_NoItems",
-                            " "
-                        ],
+                        "options": ["$SoulsyHUD_NoItems", " "],
                         "sourceType": "PropertyValueString",
                         "propertyName": "pIconSourceSelection"
                     }

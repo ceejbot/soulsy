@@ -207,6 +207,7 @@ pub struct TextElement {
     alignment: Align,
     contents: String,
     font_size: f32,
+    bounds: Option<Point>,
 }
 
 // TODO TODO TODO
