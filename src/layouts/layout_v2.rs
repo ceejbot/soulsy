@@ -137,11 +137,11 @@ impl HudLayout2 {
 
     fn flatten_text(&self, text: &TextElement, center: &Point) -> TextFlattened {
         TextFlattened {
-            anchor: text.offset.scale(self.global_scale).translate(center),
+            anchor: center.translate(&text.offset.scale(self.global_scale)),
             color: text.color.clone(),
             alignment: text.alignment,
             contents: text.contents.clone(),
-            font_size: text.font_size,
+            font_size: text.font_size * self.global_scale,
         }
     }
 }
@@ -375,5 +375,7 @@ mod tests {
             y: flattened.anchor.y + (layout.right.offset.y * flattened.global_scale),
         };
         assert_eq!(right_slot.center, slot_center);
+        assert_eq!(layout.right.text.len(), right_slot.text.len());
+        assert_eq!(layout.right.text[0].font_size * layout.global_scale, right_slot.text[0].font_size);
     }
 }
