@@ -206,6 +206,22 @@ namespace game
 		}
 	}
 
+	// ---------- sounds
+
+	void playSound(RE::BGSSoundDescriptor* a_sound_descriptor, RE::PlayerCharacter*& a_player)
+	{
+		auto* audio_manager = RE::BSAudioManager::GetSingleton();
+		if (audio_manager && a_sound_descriptor)
+		{
+			RE::BSSoundHandle sound_handle;
+			audio_manager->BuildSoundDataFromDescriptor(sound_handle, a_sound_descriptor);
+			sound_handle.SetObjectToFollow(a_player->Get3D());
+			sound_handle.SetVolume(1.0);
+			sound_handle.Play();
+			// logger::trace("played sound"sv);
+		}
+	}
+
 	// ---------- potion selection
 
 	const static float MIN_PERFECT = 0.7f;

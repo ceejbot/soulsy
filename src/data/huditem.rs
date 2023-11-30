@@ -8,7 +8,7 @@ use strfmt::strfmt;
 use super::base::BaseType;
 use super::HasIcon;
 use crate::images::icons::Icon;
-use crate::plugin::{weaponIsPoisoned, Color, ItemCategory};
+use crate::plugin::{chargeLevelByFormSpec, isPoisonedByFormSpec, Color, ItemCategory};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.
@@ -168,14 +168,19 @@ impl HudItem {
             false
         } else {
             let_cxx_string!(form_spec = self.form_string());
-            weaponIsPoisoned(&form_spec)
+            isPoisonedByFormSpec(&form_spec)
         }
     }
 
     /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons
     /// and torches or other fueled items.
-    pub fn charge_level(&self) -> f32 {
-        1.0
+    pub fn charge_level(&self) -> f64 {
+        if self.is_armor() || self.is_weapon() || matches!(self.kind, BaseType::Light(_)) {
+            let_cxx_string!(form_spec = self.form_string());
+            chargeLevelByFormSpec(&form_spec)
+        } else {
+            0.0
+        }
     }
 
     // We delegate everything to our object-kind. The goal is for

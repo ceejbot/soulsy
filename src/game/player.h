@@ -12,7 +12,6 @@ namespace player
 {
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
 		getInventoryForType(RE::PlayerCharacter*& a_player, RE::FormType a_type);
-	void play_sound(RE::BGSSoundDescriptor* a_sound_descriptor_form, RE::PlayerCharacter*& a_player);
 
 	uint32_t getInventoryCountByForm(const RE::TESForm* a_form);
 	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player);
@@ -48,8 +47,6 @@ namespace player
 	void equipAmmo(const std::string& form_spec);
 
 	void consumePotion(const std::string& form_spec);
-	void poison_weapon(RE::PlayerCharacter*& a_player, RE::AlchemyItem*& a_poison, uint32_t a_count);
-	bool weaponIsPoisoned(const std::string& form_spec);
 
 	bool hasItemOrSpell(const std::string& form_spec);
 	uint32_t itemCount(const std::string& form_spec);

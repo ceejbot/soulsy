@@ -30,6 +30,33 @@ namespace game
 		return func();
 	}
 
+	bool inventoryEntryDataFor(const RE::TESForm* form,
+		RE::PlayerCharacter*& the_player,
+		RE::TESBoundObject*& outobj,
+		RE::InventoryEntryData*& outentry)
+	{
+		auto* the_player                  = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* boundObj      = nullptr;
+		RE::InventoryEntryData* entryData = nullptr;
+
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(the_player, form->GetFormType());
+
+		for (const auto& [item, inv_data] : candidates)
+		{
+			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
+			{
+				entryData = entry;
+				boundObj  = item;
+			}
+		}
+
+		if (!bound_obj) { return false; }
+		outobj   = bound_obj;
+		outentry = entry;
+		return true;
+	}
+
 	int boundObjectForForm(const RE::TESForm* form,
 		RE::PlayerCharacter*& the_player,
 		RE::TESBoundObject*& outobj,
@@ -102,14 +129,31 @@ namespace game
 		return worn;
 	}
 
+	bool isItemFavorited(RE::TESForm* form)
+	{
+		// TODO I don't think this handles spells
+		RE::TESBoundObject* bound_obj = nullptr;
+		RE::ExtraDataList* extra      = nullptr;
+		game::boundObjectForForm(form, player, bound_obj, extra);
+		if (extra) { return extra->HasType(RE::ExtraDataType::kHotkey); }
+		return false;
+	}
+
 	bool isItemPoisoned(const RE::TESForm* form)
 	{
-		auto* the_player         = RE::PlayerCharacter::GetSingleton();
-		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		[[maybe_unused]] auto count               = boundObjectForForm(form, the_player, obj, extra);
+		auto* the_player            = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* obj     = nullptr;
+		RE::ExtraDataList* extra    = nullptr;
+		[[maybe_unused]] auto count = boundObjectForForm(form, the_player, obj, extra);
 		if (extra) { return extra->HasType(RE::ExtraDataType::kPoison); }
 		return false;
+	}
+
+	double itemChargeLevel(const RE : TESForm* form)
+	{
+		auto* inventoryEntry         = inventoryEntryDataFor(form);
+		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
+		return charge.value_or(0.0);
 	}
 
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)

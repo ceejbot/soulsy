@@ -2,12 +2,14 @@
 
 #include "constant.h"
 #include "equippable.h"
+#include "game.h"
 #include "gear.h"
 #include "player.h"
 #include "string_util.h"
 #include "ui_renderer.h"
 
 #include "lib.rs.h"
+
 namespace helpers
 {
 	using string_util = util::string_util;
@@ -23,7 +25,7 @@ namespace helpers
 		if (form)
 		{
 			auto* sound = form->As<RE::BGSSoundDescriptorForm>();
-			if (sound) { player::play_sound(sound->soundDescriptor, the_player); }
+			if (sound) { game::playSound(sound->soundDescriptor, the_player); }
 		}
 	}
 
@@ -512,76 +514,21 @@ namespace helpers
 	}
 	*/
 
-	bool itemIsFavorited(RE::TESForm* item_form)
+	bool isPoisonedByFormSpec(const std::string& form_spec)
 	{
-		auto* player = RE::PlayerCharacter::GetSingleton();
+		auto* const form = formSpecToFormItem(form_spec);
+		return game::isItemPoisoned(form);
+	}
 
-		if (item_form->Is(RE::FormType::Spell))
-		{
-			RE::TESBoundObject* bound_spell = item_form->As<RE::SpellItem>()->GetMenuDisplayObject();
-			auto formid                     = bound_spell->GetFormID();
-			uint32_t item_count             = 0;
-			RE::ExtraDataList* extra        = nullptr;
-			std::vector<RE::ExtraDataList*> extra_vector;
+	bool isFavoritedByFormSpec(const std::string& form_spec)
+	{
+		auto* const form = formSpecToFormItem(form_spec);
+		return game::isItemFavorited(form);
+	}
 
-			std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
-				player->GetInventory([formid](const RE::TESBoundObject& obj) { return obj.GetFormID() == formid; });
-
-			for (const auto& [item, inv_data] : candidates)
-			{
-				if (const auto& [num_items, entry] = inv_data; entry->object->formID == formid)
-				{
-					// bound_obj                   = item;
-					item_count                  = num_items;
-					auto simple_extra_data_list = entry->extraLists;
-					if (simple_extra_data_list)
-					{
-						for (auto* extra_data : *simple_extra_data_list)
-						{
-							extra = extra_data;
-							extra_vector.push_back(extra_data);
-							auto is_favorited = extra_data->HasType(RE::ExtraDataType::kHotkey);
-							auto is_poisoned  = extra_data->HasType(RE::ExtraDataType::kPoison);
-							auto worn_right   = extra_data->HasType(RE::ExtraDataType::kWorn);
-							auto worn_left    = extra_data->HasType(RE::ExtraDataType::kWornLeft);
-							logger::debug(
-								"extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
-								extra_data->GetCount(),
-								is_favorited,
-								is_poisoned,
-								worn_right,
-								worn_left);
-						}
-					}
-					break;
-				}
-			}
-
-
-			// auto* obj_refr = bound_spell->As<RE::TESObjectREFR>();
-			// auto extra     = obj_refr->extraList;
-			// return extra.HasType(RE::ExtraDataType::kHotkey);
-		}
-		else if (item_form->Is(RE::FormType::Shout))
-		{
-			// get inventory entry data somehow
-		}
-		else if (item_form->Is(RE::FormType::AlchemyItem))
-		{
-			// ditto
-		}
-		else if (item_form->Is(RE::FormType::Ammo))
-		{
-			// yeah
-		}
-		else
-		{
-			RE::TESBoundObject* bound_obj = nullptr;
-			RE::ExtraDataList* extra      = nullptr;
-			game::boundObjectForForm(item_form, player, bound_obj, extra);
-			if (extra) { return extra->HasType(RE::ExtraDataType::kHotkey); }
-		}
-
-		return false;
+	float chargeLevelByFormSpec(const std::string& form_spec)
+	{
+		auto* const form = formSpecToFormItem(form_spec);
+		return game::itemChargeLevel(form);
 	}
 }

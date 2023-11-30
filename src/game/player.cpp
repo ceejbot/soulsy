@@ -1,8 +1,6 @@
 #include "player.h"
 
-#include "equippable.h"
 #include "gear.h"
-#include "magic.h"
 #include "shouts.h"
 #include "utility.h"
 
@@ -36,12 +34,6 @@ namespace player
 		bool useAltGrip = false;
 		RE::PlayerCharacter::GetSingleton()->GetGraphVariableBool("bUseAltGrip", useAltGrip);
 		return useAltGrip;
-	}
-
-	bool weaponIsPoisoned(const std::string& form_spec)
-	{
-		auto* const form = helpers::formSpecToFormItem(form_spec);
-		return game::isItemPoisoned(form);
 	}
 
 	rust::String specEquippedLeft()
@@ -337,20 +329,6 @@ namespace player
 		using func_t = decltype(&has_shout);
 		REL::Relocation<func_t> func{ offset::has_shout };
 		return func(a_actor, a_shout);
-	}
-
-	void play_sound(RE::BGSSoundDescriptor* a_sound_descriptor, RE::PlayerCharacter*& a_player)
-	{
-		auto* audio_manager = RE::BSAudioManager::GetSingleton();
-		if (audio_manager && a_sound_descriptor)
-		{
-			RE::BSSoundHandle sound_handle;
-			audio_manager->BuildSoundDataFromDescriptor(sound_handle, a_sound_descriptor);
-			sound_handle.SetObjectToFollow(a_player->Get3D());
-			sound_handle.SetVolume(1.0);
-			sound_handle.Play();
-			// logger::trace("played sound"sv);
-		}
 	}
 
 	// ---------- counting potions for display in the HUD

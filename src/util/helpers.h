@@ -33,12 +33,12 @@ namespace helpers
 	// Called by the controller when the cycle timeout fires.
 	void exitSlowMotion();
 
-	// Warning: not fully implemented.
-	bool itemIsFavorited(RE::TESForm* item_form);
+	bool isFavoritedByFormSpec(const std::string& form_spec);
+	bool isPoisonedByFormSpec(const std::string& form_spec);
+	float chargeLevelByFormSpec(const std::string& form_spec);
 
 	std::string vec_to_stdstring(rust::Vec<uint8_t> input);
 	std::vector<uint8_t> chars_to_vec(const char* input);
-
 
 	//void addCycleKeyword(const std::string& form_spec);
 	//void removeCycleKeyword(const std::string& form_spec);

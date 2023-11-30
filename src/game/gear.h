@@ -14,13 +14,17 @@ namespace game
 		RE::PlayerCharacter*& the_player,
 		RE::TESBoundObject*& outval,
 		RE::ExtraDataList*& outextra);
+	bool inventoryEntryDataFor(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::InventoryEntryData*& outentry);
 
-	bool isItemPoisoned(const RE::TESForm* form);
 	bool isItemWorn(RE::TESBoundObject*& object, RE::PlayerCharacter*& the_player);
+	bool isItemFavorited(const RE::TESForm* form);
+	bool isItemPoisoned(const RE::TESForm* form);
+	double itemChargeLevel(const RE::TESForm* form);
+
 	// bottleneck for equipping everything
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 
-	void unequipHand(RE::PlayerCharacter*& player, Action which);
-	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player);
+	void unequipHand(RE::PlayerCharacter*& the_player, Action which);
+	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 }

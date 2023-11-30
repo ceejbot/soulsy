@@ -446,6 +446,10 @@ pub mod plugin {
         fn honk();
         /// Make a full HUD-drawing-ready item from a form spec string.
         fn formSpecToHudItem(form_spec: &CxxString) -> Box<HudItem>;
+        /// Is this item poisoned?
+        fn isPoisonedByFormSpec(form_spec: &CxxString) -> bool;
+        /// Get an item's enchant level. Will be 0 for all unenchanted items.
+        fn chargeLevelByFormSpec(form_spec: &CxxString) -> f64;
     }
 
     #[namespace = "ui"]
@@ -491,9 +495,6 @@ pub mod plugin {
 
         /// Check if the player still has items from this form in their inventory.
         fn hasItemOrSpell(form_spec: &CxxString) -> bool;
-
-        /// Is this weapon poisoned?
-        fn weaponIsPoisoned(form_spec: &CxxString) -> bool;
 
         /// Does the player have a bow or crossbow equipped?
         fn hasRangedEquipped() -> bool;
