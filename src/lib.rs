@@ -296,6 +296,8 @@ pub mod plugin {
         fn count_matters(self: &HudItem) -> bool;
         /// Render a format string for the HUD.
         fn fmtstr(self: &HudItem, format: String) -> String;
+        /// Check if this item is poisoned.
+        fn is_poisoned(self: &HudItem) -> bool;
 
         /// See src/data/magic.rs for this struct. It's used to classify spells.
         type SpellData;

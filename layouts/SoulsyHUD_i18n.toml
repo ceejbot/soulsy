@@ -90,7 +90,7 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 # An optional background image for the hotkey. You can leave this out to not
 # draw a background for the hotkey display. For this layout, we don't draw it.
 #[power.hotkey.background]
-#svg = "hotkey_bg.svg"
+#svg = "key_bg.svg"
 #size = { x = 30.0 , y = 30.0}
 #color = { r = 255, g = 255, b = 255, a = 128 }
 

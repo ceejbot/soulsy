@@ -107,8 +107,8 @@ namespace game
 		auto* the_player         = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
-		auto count               = boundObjectForForm(form, player, obj, extra_data);
-		if (extra_data) { return extra_data->HasType(RE::ExtraDataType::kPoison); }
+		[[maybe_unused]] auto count               = boundObjectForForm(form, the_player, obj, extra);
+		if (extra) { return extra->HasType(RE::ExtraDataType::kPoison); }
 		return false;
 	}
 

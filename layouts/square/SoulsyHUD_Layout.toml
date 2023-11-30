@@ -85,7 +85,7 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 # An optional background image for the hotkey. You can leave this out to not
 # draw a background for the hotkey display.
 [right.hotkey.background]
-svg = "hotkey_bg.svg"
+svg = "key_bg.svg"
 size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
@@ -97,19 +97,19 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 # Possible values: count, name, kind,
 
 [[right.text]]
-alignment = "right"
-offset = { x = 0.0, y = 0.0 }
+alignment = "center"
+offset = { x = 0.0, y = -75.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
-contents = "{count} {name}"
+contents = "{name}"
 
 # An optional indicator for showing if this item is poisoned.
 [right.poison]
-offset = { x = 20.0, y = 20.0 }
+offset = { x = 25.0, y = 20.0 }
 [right.poison.indicator]
-svg = "poison.svg"
+svg = "../icons/indicator_poison.svg"
 color = {r = 160, g = 240, b = 2, a = 255 }
-size = { x = 10.0, y = 10.0 }
+size = { x = 25.0, y = 25.0 }
 
 # ----- left hand slot
 
@@ -131,24 +131,24 @@ size = { x = 30.0, y = 30.0 }
 offset = { x = -50.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 [left.hotkey.background]
-svg = "hotkey_bg.svg"
+svg = "key_bg.svg"
 size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
 # An optional indicator for showing if this item is poisoned.
 [left.poison]
-offset = { x = 20.0, y = 20.0 }
+offset = { x = 25.0, y = 20.0 }
 [left.poison.indicator]
-svg = "poison.svg"
+svg = "../icons/indicator_poison.svg"
 color = {r = 160, g = 240, b = 2, a = 255 }
-size = { x = 10.0, y = 10.0 }
+size = { x = 25.0, y = 25.0 }
 
 [[left.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
+alignment = "center"
+offset = { x = 0.0, y = 55.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
-contents = "{count} {name}"
+contents = "{name}"
 
 # ----- utility slot
 
@@ -167,7 +167,7 @@ size = { x = 30.0, y = 30.0 }
 offset = { x = -50.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 [utility.hotkey.background]
-svg = "hotkey_bg.svg"
+svg = "key_bg.svg"
 size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 [[utility.text]]
@@ -177,8 +177,8 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 24.0
 contents = "{count}"
 [[utility.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
+alignment = "center"
+offset = { x = 0.0, y = -75.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -200,7 +200,7 @@ size = { x = 30.0, y = 30.0 }
 offset = { x = -50.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 [power.hotkey.background]
-svg = "hotkey_bg.svg"
+svg = "key_bg.svg"
 size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
@@ -236,7 +236,7 @@ color = { r = 200, g = 200, b = 200, a = 255 }
 font_size = 24.0
 offset = { x = 15.0, y = 15.0 }
 [[ammo.text]]
-alignment = "left"
+alignment = "center"
 contents = "{name}"
 offset = { x = -50, y =  55.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }

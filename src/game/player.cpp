@@ -40,7 +40,7 @@ namespace player
 
 	bool weaponIsPoisoned(const std::string& form_spec)
 	{
-		auto* const form = formSpecToFormItem(form_spec);
+		auto* const form = helpers::formSpecToFormItem(form_spec);
 		return game::isItemPoisoned(form);
 	}
 

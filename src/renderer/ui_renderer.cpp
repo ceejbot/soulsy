@@ -732,15 +732,27 @@ namespace ui
 
 	void makeFadeDecision()
 	{
+		auto settings = user_settings();
+		bool autofade = settings->autofade();
+
 		// We do the peek even when autofade is false, so we need to fade out automatically in that one case.
-		if (helpers::hudShouldAutoFadeOut() || gDoingBriefPeek)
+		if (!autofade)
+		{
+			if (gDoingBriefPeek && gHudAlpha >= 1.0f)
+			{
+				gDoingBriefPeek = false;
+				startAlphaTransition(false, 0.0f);
+			}
+			return;
+		}
+
+		// Now the autofade decision.
+		if (helpers::hudShouldAutoFadeOut())
 		{
 			if (gDoingBriefPeek)
 			{
 				if (gHudAlpha < 1.0f) { return; }
 				gDoingBriefPeek = false;
-				startAlphaTransition(false, 0.0f);
-				return;
 			}
 			// The auto-fade case here.
 			if ((gHudAlpha > 0.0f && !gIsFading) || (gIsFading && doFadeIn)) { startAlphaTransition(false, 0.0f); }
@@ -749,6 +761,7 @@ namespace ui
 		{
 			if ((gHudAlpha < 1.0f && !gIsFading) || (gIsFading && !doFadeIn)) { startAlphaTransition(true, 1.0f); }
 		}
+
 	}
 
 	float easeInCubic(float progress)
