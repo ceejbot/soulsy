@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn can_load_v2_layouts() {
-        let squarev1 = Layout::read_from_file("layouts/square/layoutv1.toml")
+        let squarev1 = Layout::read_from_file("tests/fixtures/layout-v1.toml")
             .expect("the original square layout can be loaded");
         let squarev2 = Layout::read_from_file("layouts/square/SoulsyHUD_Layout.toml")
             .expect("the square layout has been ported");

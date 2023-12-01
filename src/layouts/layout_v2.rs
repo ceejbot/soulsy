@@ -412,7 +412,7 @@ mod tests {
 
     #[test]
     fn flattening_applies_scale() {
-        let data = include_str!("../../layouts/square/LayoutV2.toml");
+        let data = include_str!("../../tests/fixtures/layout-v2.toml");
         let layout: HudLayout2 =
             toml::from_str(data).expect("square text fixture should be valid toml");
         assert_eq!(layout.global_scale, 2.0);

@@ -517,7 +517,7 @@ impl FromIniStr for UnarmedMethod {
 
 impl FromIniStr for bool {
     fn from_ini(value: &str) -> Option<Self> {
-        Some(value != "0")
+        Some(value != "0" && value.to_lowercase() != "false")
     }
 }
 
@@ -541,6 +541,15 @@ impl FromIniStr for i32 {
     }
 }
 
+impl FromIniStr for f32 {
+    fn from_ini(value: &str) -> Option<Self> {
+        if let Ok(v) = value.parse::<f32>() {
+            Some(v)
+        } else {
+            None
+        }
+    }
+}
 impl FromIniStr for String {
     fn from_ini(value: &str) -> Option<Self> {
         Some(value.to_string())
@@ -617,5 +626,48 @@ impl std::fmt::Display for UserSettings {
             self.equip_sets_unequip,
             self.skse_identifier
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ini_reader_trait_works() {
+        let conf = Ini::load_from_file("./tests/fixtures/all-types.ini")
+            .expect("ini fixture file should be readable");
+        let section = conf
+            .section(Some("section"))
+            .expect("the text fixture has a section named 'section'");
+        let u_unsigned_int: u32 = read_from_ini(0, "uUnsignedInt", section);
+        assert_eq!(u_unsigned_int, 2);
+        let u_unsigned_empty: u32 = read_from_ini(100, "uUnsignedEmpty", section);
+        assert_eq!(u_unsigned_empty, 100);
+        let i_signed_int: i32 = read_from_ini(-100, "iSignedInt", section);
+        assert_eq!(i_signed_int, -2);
+        let i_signed_empty: i32 = read_from_ini(-100, "iSignedEmpty", section);
+        assert_eq!(i_signed_empty, -100);
+        let f_float: f32 = read_from_ini(0.0f32, "fFloat", section);
+        assert_eq!(f_float, 2.71828);
+        let f_float_empty: f32 = read_from_ini(1.0f32, "fFloatEmpty", section);
+        assert_eq!(f_float_empty, 1.0);
+        let b_boolean_num_t: bool = read_from_ini(false, "bBooleanNumT", section);
+        assert_eq!(b_boolean_num_t, true);
+        let b_boolean_string_t: bool = read_from_ini(false, "bBooleanStringT", section);
+        assert_eq!(b_boolean_string_t, true);
+        let b_boolean_num_f: bool = read_from_ini(true, "bBooleanNumF", section);
+        assert_eq!(b_boolean_num_f, false);
+        let b_boolean_string_f: bool = read_from_ini(true, "bBooleanStringF", section);
+        assert_eq!(b_boolean_string_f, false);
+        let b_boolean_empty: bool = read_from_ini(true, "bBooleanEmpty", section);
+        assert_eq!(b_boolean_empty, true);
+        let s_string: String = read_from_ini("default".to_string(), "sString", section);
+        assert_eq!(s_string.as_str(), "String with spaces");
+        let s_string_empty: String = read_from_ini("default".to_string(), "sStringEmpty", section);
+        assert_eq!(s_string_empty.as_str(), "");
+
+        let missing_field: String = read_from_ini("default".to_string(), "missing_field", section);
+        assert_eq!(missing_field.as_str(), "default");
     }
 }
