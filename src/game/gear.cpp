@@ -1,4 +1,4 @@
-﻿#include "gear.h"
+#include "gear.h"
 
 #include "constant.h"
 #include "offset.h"
@@ -175,7 +175,7 @@ namespace game
 		return form->GetName();
 	}
 
-	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
@@ -192,21 +192,21 @@ namespace game
 		else if (form->Is(RE::FormType::Spell))
 		{
 			// We do not want to look for a bound object for spells.
-			equipSpellByFormAndSlot(form, slot, player);
+			equipSpellByFormAndSlot(form, slot, the_player);
 			return;
 		}
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		auto item_count               = boundObjectForForm(form, player, bound_obj, extra);
+		auto item_count               = boundObjectForForm(form, the_player, bound_obj, extra);
 		if (!bound_obj)
 		{
 			rlog::debug("unable to find bound object for name='{}'"sv, form->GetName());
 			return;
 		}
 
-		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto* obj_right = the_player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = the_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 
 		const auto obj_equipped_left  = obj_left && obj_left->formID == bound_obj->formID;
 		const auto obj_equipped_right = obj_right && obj_right->formID == bound_obj->formID;
@@ -234,7 +234,7 @@ namespace game
 		if (item_count == equipped_count)
 		{
 			// The game might try to equip something else, according to mlthelama.
-			unequipLeftOrRightSlot(player, slot);
+			unequipLeftOrRightSlot(the_player, slot);
 			return;
 		}
 
@@ -246,15 +246,15 @@ namespace game
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, nullptr, 1, slot); });
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(the_player, bound_obj, nullptr, 1, slot); });
 		}
 	}
 
-	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player)
 	{
 		if (form->Is(RE::FormType::Scroll))
 		{
-			equipItemByFormAndSlot(form, slot, player);
+			equipItemByFormAndSlot(form, slot, the_player);
 			return;
 		}
 
@@ -264,8 +264,8 @@ namespace game
 			slot_is_left,
 			form->GetFormType());
 
-		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto* obj_right = the_player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = the_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 
 		const auto obj_equipped_left  = obj_left && obj_left->formID == form->formID;
 		const auto obj_equipped_right = obj_right && obj_right->formID == form->formID;
@@ -286,9 +286,9 @@ namespace game
 		if (!task) return;
 
 		auto* spell = form->As<RE::SpellItem>();
-		if (player->HasSpell(spell))
+		if (the_player->HasSpell(spell))
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell, slot); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(the_player, spell, slot); });
 		}
 		else
 		{

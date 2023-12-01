@@ -320,6 +320,8 @@ pub mod plugin {
         fn fmtstr(self: &HudItem, format: String) -> String;
         /// Check if this item is poisoned.
         fn is_poisoned(self: &HudItem) -> bool;
+        /// Check if this item is poisoned.
+        fn charge_level(self: &HudItem) -> f32;
 
         /// See src/data/magic.rs for this struct. It's used to classify spells.
         type SpellData;

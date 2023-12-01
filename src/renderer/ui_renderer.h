@@ -80,7 +80,7 @@ namespace ui
 		const Color bgColor,
 		const ID3D11ShaderResourceView* filledTexture,
 		const Color filledColor);
-	void progressBarCircleArc(const float percent, const ImVec2 center);
+	void progressBarCircleArc(const double percent, const ImVec2 center);
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
@@ -107,8 +107,6 @@ namespace ui
 			float a_duration);
 		static void drawHud();
 
-		static bool lazyLoadIcon(std::string name);
-		static bool lazyLoadHudImage(std::string fname);
 		static bool loadTextureFromFile(const char* filename,
 			ID3D11ShaderResourceView** out_srv,
 			std::int32_t& out_width,
@@ -129,13 +127,13 @@ namespace ui
 		static void loadAnimationFrames(std::string& file_path, std::vector<TextureData>& frame_list);
 		static void drawAnimationFrame();
 
-		static TextureData iconForHotkey(uint32_t a_key);
-
-
 	public:
 		// This only loads key/controller hotkey images.
 		static void preloadImages();
 		static void loadFont();
+		static bool lazyLoadIcon(std::string name);
+		static bool lazyLoadHudImage(std::string fname);
+		static TextureData iconForHotkey(uint32_t a_key);
 
 		struct d_3d_init_hook
 		{
