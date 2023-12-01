@@ -341,15 +341,13 @@ namespace ui
 	{
 		switch (kind)
 		{
-			case:
-				BarType::kHorizontal
-					: progressBarRectangle(90.0, percent, center, size, bgTexture, bgColor, filledTexture, filledColor);
+			case BarType::kHorizontal:
+				progressBarRectangle(90.0, percent, center, size, bgTexture, emptyColor, filledTexture, filledColor);
 				return;
-			case:
-				BarType::kVertical
-					: progressBarRectangle(0.0, percent, center, size, bgTexture, bgColor, filledTexture, filledColor);
+			case BarType::kVertical:
+				progressBarRectangle(0.0, percent, center, size, bgTexture, emptyColor, filledTexture, filledColor);
 				return;
-			case: BarType::kCircularArc : progressBarCircleArc(percent, center); return return;
+			case BarType::kCircularArc: progressBarCircleArc(percent, center); return;
 		}
 	}
 
@@ -357,15 +355,16 @@ namespace ui
 		const float percent,
 		const ImVec2 center,
 		const ImVec2 size,
-		const ID3D11ShaderResourceView* bgTexture,
-		const Color bgColor,
-		const ID3D11ShaderResourceView* filledTexture,
+		ID3D11ShaderResourceView* bgTexture,
+		const Color emptyColor,
+		ID3D11ShaderResourceView* filledTexture,
 		const Color filledColor)
 	{
-		drawElement(bgTexture, center, size, angle, bgColor);
-		const ImVec2 filledSize = ImVec2(size.x * percent / 100.0, size.y * percent / 100.0);
+		drawElement(bgTexture, center, size, angle, emptyColor);
+		const ImVec2 filledSize =
+			ImVec2(size.x * percent / 100.0f, size.y * percent / 100.0f);
 		const ImVec2 location =
-			ImVec2(center.x - (size.x - filledSize.x) / 2.0, center.y - (size.y - filledSize.y) / 2.0);
+			ImVec2(center.x - (size.x - filledSize.x) / 2.0f, center.y - (size.y - filledSize.y) / 2.0f);
 		drawElement(bgTexture, location, filledSize, angle, emptyColor);
 	}
 
@@ -428,7 +427,7 @@ namespace ui
 
 		// Draw the HUD background if requested.
 		const auto bgimg = std::string(topLayout.bg_image);
-		if (topLayout.bg_color.a > 0 && lazyLoadHudImage(bgimg))
+		if (topLayout.bg_color.a > 0 && ui_renderer::lazyLoadHudImage(bgimg))
 		{
 			constexpr auto angle                = 0.f;
 			const auto center                   = ImVec2(anchor.x, anchor.y);
@@ -460,7 +459,7 @@ namespace ui
 			const auto slot_center = ImVec2(slotLayout.center.x, slotLayout.center.y);
 
 			const auto slotbg = std::string(slotLayout.bg_image);
-			if (slotLayout.bg_color.a > 0 && lazyLoadHudImage(slotbg))
+			if (slotLayout.bg_color.a > 0 && ui_renderer::lazyLoadHudImage(slotbg))
 			{
 				const auto [texture, width, height] = HUD_IMAGES_MAP[slotbg];
 				const auto size                     = ImVec2(slotLayout.bg_size.x, slotLayout.bg_size.y);
@@ -472,7 +471,7 @@ namespace ui
 			{
 				const auto iconColor = colorizeIcons ? entry->color() : slotLayout.icon_color;
 				auto iconkey         = std::string(entry->icon_key());
-				if (lazyLoadIcon(iconkey))
+				if (ui_renderer::lazyLoadIcon(iconkey))
 				{
 					const auto [texture, width, height] = ICON_MAP[iconkey];
 					const auto scale =
@@ -504,14 +503,14 @@ namespace ui
 				const auto hk_im_center = ImVec2(slotLayout.hotkey_center.x, slotLayout.hotkey_center.y);
 
 				const auto hotkeybg = std::string(slotLayout.hotkey_bg_image);
-				if (slotLayout.hotkey_bg_color.a > 0 && lazyLoadHudImage(hotkeybg))
+				if (slotLayout.hotkey_bg_color.a > 0 && ui_renderer::lazyLoadHudImage(hotkeybg))
 				{
 					const auto [texture, width, height] = HUD_IMAGES_MAP[hotkeybg];
 					const auto size                     = ImVec2(slotLayout.hotkey_size.x, slotLayout.hotkey_size.y);
 					drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_bg_color);
 				}
 
-				const auto [texture, width, height] = iconForHotkey(hotkey);
+				const auto [texture, width, height] = ui_renderer::iconForHotkey(hotkey);
 				const auto size                     = ImVec2(static_cast<float>(slotLayout.hotkey_size.x - 2.0f),
                     static_cast<float>(slotLayout.hotkey_size.y - 2.0f));
 				drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_color);
@@ -521,7 +520,7 @@ namespace ui
 			if (slotLayout.poison_color.a > 0 && entry->is_poisoned())
 			{
 				const auto poison_img = std::string(slotLayout.poison_image);
-				if (lazyLoadHudImage(poison_img))
+				if (ui_renderer::lazyLoadHudImage(poison_img))
 				{
 					const auto poison_center = ImVec2(slotLayout.poison_center.x, slotLayout.poison_center.y);
 					const auto [texture, width, height] = HUD_IMAGES_MAP[poison_img];

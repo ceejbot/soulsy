@@ -1,4 +1,4 @@
-﻿#include "gear.h"
+#include "gear.h"
 
 #include "RE/E/ExtraDataTypes.h"
 #include "constant.h"
@@ -384,7 +384,7 @@ namespace game
 		}
 	}
 
-	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::trace("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
@@ -392,8 +392,8 @@ namespace game
 			slot_is_left,
 			form->GetFormType());
 
-		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto* obj_right = the_player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = the_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 
 		const auto obj_equipped_left  = obj_left && obj_left->formID == form->formID;
 		const auto obj_equipped_right = obj_right && obj_right->formID == form->formID;
@@ -414,9 +414,9 @@ namespace game
 		if (!task) return;
 
 		auto* spell = form->As<RE::SpellItem>();
-		if (player->HasSpell(spell))
+		if (the_player->HasSpell(spell))
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell, slot); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(the_player, spell, slot); });
 		}
 		else
 		{
