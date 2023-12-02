@@ -70,7 +70,7 @@ pub struct SlotElement {
     text: Vec<TextElement>,
     background: Option<ImageElement>,
     hotkey: Option<HotkeyElement>,
-    progress_bar: Option<ProgressElement>,
+    meter: Option<MeterElement>,
     poison: Option<PoisonElement>,
 }
 
@@ -234,7 +234,7 @@ pub struct TextElement {
 
 // TODO TODO TODO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
-pub struct ProgressElement {
+pub struct MeterElement {
     offset: Point,
     color: Color,
 }

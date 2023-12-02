@@ -1,4 +1,4 @@
-﻿#include "ui_renderer.h"
+#include "ui_renderer.h"
 #include "animation_handler.h"
 #include "constant.h"
 #include "gear.h"
@@ -323,10 +323,9 @@ namespace ui
 				a_duration,
 				size);
 		animation_list.emplace_back(static_cast<ui::animation_type>(animation_type), std::move(anim));
-		// rlog::trace("done initializing animation. return.");
 	}
 
-	void drawProgressBar(const BarType kind,
+	void drawMeter(const MeterType kind,
 		const float percent,
 		const ImVec2 center,
 		const ImVec2 size,
@@ -337,17 +336,19 @@ namespace ui
 	{
 		switch (kind)
 		{
-			case BarType::kHorizontal:
-				progressBarRectangle(90.0, percent, center, size, bgTexture, emptyColor, filledTexture, filledColor);
+			case MeterType::Horizontal:
+				drawMeterRectangle(90.0, percent, center, size, bgTexture, emptyColor, filledTexture, filledColor);
 				return;
-			case BarType::kVertical:
-				progressBarRectangle(0.0, percent, center, size, bgTexture, emptyColor, filledTexture, filledColor);
+			case MeterType::Vertical:
+				drawMeterRectangle(0.0, percent, center, size, bgTexture, emptyColor, filledTexture, filledColor);
 				return;
-			case BarType::kCircularArc: progressBarCircleArc(percent, center); return;
+			case MeterType::CircleArc:
+				drawMeterCircleArc(percent, center, size, width, bgTexture, null, filledColor);
+				return;
 		}
 	}
 
-	void progressBarRectangle(const float angle,
+	void drawMeterRectangle(const float angle,
 		const float percent,
 		const ImVec2 center,
 		const ImVec2 size,
@@ -357,14 +358,19 @@ namespace ui
 		const Color filledColor)
 	{
 		drawElement(bgTexture, center, size, angle, emptyColor);
-		const ImVec2 filledSize =
-			ImVec2(size.x * percent / 100.0f, size.y * percent / 100.0f);
+		const ImVec2 filledSize = ImVec2(size.x * percent / 100.0f, size.y * percent / 100.0f);
 		const ImVec2 location =
 			ImVec2(center.x - (size.x - filledSize.x) / 2.0f, center.y - (size.y - filledSize.y) / 2.0f);
 		drawElement(bgTexture, location, filledSize, angle, emptyColor);
 	}
 
-	void progressBarCircleArc(const float percent, const ImVec2 center, const float diameter, const float thickness)
+	void drawMeterCircleArc(const float percent,
+		const ImVec2 center,
+		const ImVec2 start,
+		ID3D11ShaderResourceView* bgTexture,
+		const Color emptyColor,
+		ID3D11ShaderResourceView* filledTexture,
+		const Color filledColor)
 	{
 		// TODO unimplemented
 		// draw circle arc
@@ -524,18 +530,21 @@ namespace ui
 				drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_color);
 			}
 
-			// Finally, the poisoned indicator.
-			if (slotLayout.poison_color.a > 0 && entry->is_poisoned())
-			{
-				const auto poison_img = std::string(slotLayout.poison_image);
-				if (ui_renderer::lazyLoadHudImage(poison_img))
+			// Charge/fuel meter.
+			if (slotLayout.meter_)
+
+				// Finally, the poisoned indicator.
+				if (slotLayout.poison_color.a > 0 && entry->is_poisoned())
 				{
-					const auto poison_center = ImVec2(slotLayout.poison_center.x, slotLayout.poison_center.y);
-					const auto [texture, width, height] = HUD_IMAGES_MAP[poison_img];
-					const auto size                     = ImVec2(slotLayout.poison_size.x, slotLayout.poison_size.y);
-					drawElement(texture, poison_center, size, 0.f, slotLayout.poison_color);
+					const auto poison_img = std::string(slotLayout.poison_image);
+					if (ui_renderer::lazyLoadHudImage(poison_img))
+					{
+						const auto poison_center = ImVec2(slotLayout.poison_center.x, slotLayout.poison_center.y);
+						const auto [texture, width, height] = HUD_IMAGES_MAP[poison_img];
+						const auto size = ImVec2(slotLayout.poison_size.x, slotLayout.poison_size.y);
+						drawElement(texture, poison_center, size, 0.f, slotLayout.poison_color);
+					}
 				}
-			}
 		}
 
 		// drawAnimationFrame();

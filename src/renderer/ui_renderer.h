@@ -6,6 +6,7 @@
 // Forward declarations of the types we're getting from Rust.
 enum class Action : ::std::uint8_t;
 enum class Align : ::std::uint8_t;
+enum class MeterType : ::std::uint8_t;
 struct HudLayout;
 struct SlotLayout;
 struct Point;
@@ -55,16 +56,8 @@ namespace ui
 		const Color color,
 		const Align alignment);
 
-	// Progress bars.
-	enum class BarType
-	{
-		kVertical,
-		kHorizontal,
-		kCircularArc,
-	};
-
 	// arguments TODO for all of these
-	void drawProgressBar(const BarType kind,
+	void drawMeter(const MeterType kind,
 		const float percent,
 		const ImVec2 center,
 		const ImVec2 size,
@@ -72,7 +65,7 @@ namespace ui
 		const Color emptyColor,
 		const ID3D11ShaderResourceView* filledTexture,
 		const Color filledColor);
-	void progressBarRectangle(const float angle,
+	void drawMeterRectangle(const float angle,
 		const float percent,
 		const ImVec2 center,
 		const ImVec2 size,
@@ -80,7 +73,7 @@ namespace ui
 		const Color bgColor,
 		const ID3D11ShaderResourceView* filledTexture,
 		const Color filledColor);
-	void progressBarCircleArc(const double percent, const ImVec2 center);
+	void drawMeterCircleArc(const double percent, const ImVec2 center);
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
