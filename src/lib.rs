@@ -132,7 +132,24 @@ pub mod plugin {
         poison_color: Color,
         poison_image: String,
 
+        meter_type: MeterType,
+        meter_center: Point,
+        meter_size: Point,
+        meter_empty_image: String,
+        meter_empty_color: Color,
+        meter_fill_image: String,
+        meter_fill_color: Color,
+
         text: Vec<TextFlattened>,
+    }
+
+    #[derive(Clone, Debug, Default)]
+    pub enum MeterType {
+        #[default]
+        None,
+        Vertical,
+        Horizontal,
+        CircleArc,
     }
 
     #[derive(Clone, Debug)]
