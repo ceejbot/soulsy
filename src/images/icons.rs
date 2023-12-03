@@ -386,8 +386,9 @@ impl Icon {
 
 #[cfg(test)]
 pub fn random_icon() -> Icon {
-    use rand::prelude::*;
     use std::str::FromStr;
+
+    use rand::prelude::*;
     use strum::VariantNames;
 
     if let Some(variant) = Icon::VARIANTS.choose(&mut rand::thread_rng()) {
@@ -399,10 +400,12 @@ pub fn random_icon() -> Icon {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::path::PathBuf;
     use std::str::FromStr;
+
     use strum::VariantNames;
+
+    use super::*;
 
     #[test]
     fn soulsy_pack_complete() {

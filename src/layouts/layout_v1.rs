@@ -19,8 +19,7 @@ pub struct HudLayout1 {
     /// A global scaling factor for the entire hud.
     global_scale: f32,
     /// Where to draw the HUD; an offset from the top left corner.
-    #[serde(default)]
-    anchor: Point,
+    anchor: Option<Point>,
     #[serde(
         default,
         deserialize_with = "crate::layouts::shared::deserialize_named_anchor"
@@ -134,7 +133,7 @@ impl HudLayout1 {
             self.global_scale,
             &self.size,
             &self.anchor_name,
-            Some(&self.anchor),
+            self.anchor.as_ref(),
         )
     }
 

@@ -174,17 +174,9 @@ pub fn anchor_point(
             x: screen_width - width / 2.0,
             y: screen_height / 2.0,
         },
-        _ => {
+        NamedAnchor::None => {
             if let Some(anchor) = maybe_anchor {
-                if *anchor == Point::default() {
-                    log::info!("Layout has neither a named anchor nor an anchor point. Falling back to top left.");
-                    Point {
-                        x: width / 2.0,
-                        y: height / 2.0,
-                    }
-                } else {
-                    anchor.clone()
-                }
+                anchor.clone()
             } else {
                 // note the opportunity for refactoring but I am too stressed right now
                 Point {
@@ -237,7 +229,6 @@ fn resolutionHeight() -> f32 {
 
 #[cfg(test)]
 mod tests {
-    use super::shared::NamedAnchor;
     use super::*;
 
     #[test]
@@ -294,9 +285,21 @@ mod tests {
         assert!(fpath.exists());
     }
 
-    #[derive(Deserialize, Serialize, Debug, Clone)]
-    struct TestAnchor {
-        #[serde(default, deserialize_with = "super::shared::deserialize_named_anchor")]
-        anchor: NamedAnchor,
+    #[test]
+    fn anchor_points_respected() {
+        let buf = include_str!("../../tests/fixtures/named-anchor.toml");
+        let named: HudLayout2 =
+            toml::from_str(buf).expect("named-anchor.toml fixture is a valid layout");
+        let buf2 = include_str!("../../tests/fixtures/anchor-point.toml");
+        let pointed: HudLayout2 =
+            toml::from_str(buf2).expect("named-anchor.toml fixture is a valid layout");
+        assert_eq!(
+            pointed.anchor_point(),
+            Point {
+                x: 150.0,
+                y: 1290.0
+            }
+        );
+        assert_eq!(pointed.anchor_point(), named.anchor_point());
     }
 }

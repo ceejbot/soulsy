@@ -162,9 +162,8 @@ impl Display for HudElement {
 
 #[cfg(test)]
 mod tests {
-    use crate::layouts::layout_v1;
-
     use super::*;
+    use crate::layouts::HudLayout1;
 
     #[derive(Deserialize, Serialize, Debug, Clone)]
     struct TestAnchor {
@@ -187,16 +186,14 @@ mod tests {
     fn parses_named_anchors() {
         let data = std::fs::read_to_string("layouts/hexagons/SoulsyHUD_hexagons_lr.toml")
             .expect("file not found?");
-        let hexa1: layout_v1::HudLayout1 =
-            toml::from_str(data.as_str()).expect("layout should be valid toml");
+        let hexa1: HudLayout1 = toml::from_str(data.as_str()).expect("layout should be valid toml");
         assert_eq!(hexa1.anchor_name, NamedAnchor::TopRight);
         assert_eq!(hexa1.anchor_point().x, 3290.0);
         assert_eq!(hexa1.anchor_point().y, 150.0);
 
         let data = std::fs::read_to_string("layouts/hexagons/SoulsyHUD_hexagons_tb.toml")
             .expect("file not found?");
-        let hexa2: layout_v1::HudLayout1 =
-            toml::from_str(data.as_str()).expect("layout should be valid toml");
+        let hexa2: HudLayout1 = toml::from_str(data.as_str()).expect("layout should be valid toml");
         assert_eq!(hexa2.anchor_name, NamedAnchor::BottomRight);
         assert_eq!(hexa2.anchor_point().x, 3290.0);
         assert_eq!(hexa2.anchor_point().y, 1290.0);

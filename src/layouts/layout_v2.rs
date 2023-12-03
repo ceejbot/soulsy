@@ -15,11 +15,10 @@ pub struct HudLayout2 {
     /// A global scaling factor for the entire hud.
     global_scale: f32,
     /// Where to draw the HUD; an offset from the top left corner.
-    #[serde(default)]
-    anchor: Point,
-    size: Point,
+    anchor: Option<Point>,
     #[serde(default, deserialize_with = "deserialize_named_anchor")]
     anchor_name: NamedAnchor,
+    size: Point,
     /// A background image.
     background: Option<ImageElement>,
     right: SlotElement,
@@ -101,7 +100,12 @@ impl HudLayout2 {
     }
 
     pub fn anchor_point(&self) -> Point {
-        super::anchor_point(self.global_scale, &self.size, &self.anchor_name, None)
+        super::anchor_point(
+            self.global_scale,
+            &self.size,
+            &self.anchor_name,
+            self.anchor.as_ref(),
+        )
     }
 
     fn flatten_slot(&self, slot: &SlotElement, element: HudElement) -> SlotFlattened {
