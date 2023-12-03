@@ -359,7 +359,7 @@ namespace ui
 	{
 		auto topLayout          = hud_layout();
 		auto anchor             = topLayout.anchor;
-		auto hudsize            = topLayout.size;
+		auto hudsize            = topLayout.bg_size;
 		bool rangedEquipped     = player::hasRangedEquipped();
 		const auto settings     = user_settings();
 		const auto screenWidth  = resolutionWidth();
@@ -761,7 +761,6 @@ namespace ui
 		{
 			if ((gHudAlpha < 1.0f && !gIsFading) || (gIsFading && !doFadeIn)) { startAlphaTransition(true, 1.0f); }
 		}
-
 	}
 
 	float easeInCubic(float progress)

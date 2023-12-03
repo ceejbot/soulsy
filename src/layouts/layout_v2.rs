@@ -285,11 +285,9 @@ mod tests {
     use super::*;
     use crate::layouts::{resolutionHeight, Layout};
 
-    /*
     #[test]
     fn default_layout_valid() {
-        // The github runner compilation step can't find this file. I have no idea why not.
-        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_layout.toml");
+        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_Layout.toml");
         match toml::from_str::<HudLayout2>(buf) {
             Ok(v) => {
                 assert_eq!(v.anchor_point().x, 150.0);
@@ -313,7 +311,7 @@ mod tests {
                     .expect("the right slot should have a poison indicator");
                 assert_eq!(
                     right_poison.indicator.svg,
-                    "icons/indicator_poison.svg".to_string()
+                    "../icons/indicator_poison.svg".to_string()
                 );
                 let _left_poison = v
                     .left
@@ -342,7 +340,6 @@ mod tests {
             }
         }
     }
-    */
 
     #[test]
     fn centered_layout_valid() {

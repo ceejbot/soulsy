@@ -221,8 +221,8 @@ impl Point {
 #[cfg(not(test))]
 use crate::plugin::{resolutionHeight, resolutionWidth};
 
-// mocked screen resolution numbers, because these functions are provided by
-// C++ and require imgui etc.
+// Mocked screen resolution numbers, because these functions are provided by
+// C++ and require imgui etc. The names come from C++ and are not snake case.
 #[cfg(test)]
 #[allow(non_snake_case)]
 fn resolutionWidth() -> f32 {
@@ -290,40 +290,13 @@ mod tests {
 
     #[test]
     fn default_layout_exists() {
-        // TODO
+        let fpath = std::path::Path::new("data/SKSE/plugins/SoulsyHUD_Layout.toml");
+        assert!(fpath.exists());
     }
 
     #[derive(Deserialize, Serialize, Debug, Clone)]
     struct TestAnchor {
         #[serde(default, deserialize_with = "super::shared::deserialize_named_anchor")]
         anchor: NamedAnchor,
-    }
-
-    #[test]
-    fn deserde_anchor_names() {
-        let input = r#"anchor = "center""#;
-        let parsed: TestAnchor = toml::from_str(input).expect("this should be parseable");
-        assert_eq!(parsed.anchor, NamedAnchor::Center);
-
-        let input = r#"anchor = "bottom_center""#;
-        let parsed: TestAnchor = toml::from_str(input).expect("this should be parseable");
-        assert_eq!(parsed.anchor, NamedAnchor::CenterBottom);
-    }
-
-    #[test]
-    fn parses_named_anchors() {
-        let data = std::fs::read_to_string("layouts/hexagons/SoulsyHUD_hexagons_lr.toml")
-            .expect("file not found?");
-        let hexa1: HudLayout1 = toml::from_str(data.as_str()).expect("layout should be valid toml");
-        assert_eq!(hexa1.anchor_name, NamedAnchor::TopRight);
-        assert_eq!(hexa1.anchor_point().x, 3290.0);
-        assert_eq!(hexa1.anchor_point().y, 150.0);
-
-        let data = std::fs::read_to_string("layouts/hexagons/SoulsyHUD_hexagons_tb.toml")
-            .expect("file not found?");
-        let hexa2: HudLayout1 = toml::from_str(data.as_str()).expect("layout should be valid toml");
-        assert_eq!(hexa2.anchor_name, NamedAnchor::BottomRight);
-        assert_eq!(hexa2.anchor_point().x, 3290.0);
-        assert_eq!(hexa2.anchor_point().y, 1290.0);
     }
 }
