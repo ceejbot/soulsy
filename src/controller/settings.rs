@@ -634,6 +634,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[allow(clippy::approx_constant)]
     fn ini_reader_trait_works() {
         let conf = Ini::load_from_file("./tests/fixtures/all-types.ini")
             .expect("ini fixture file should be readable");
@@ -648,20 +649,23 @@ mod tests {
         assert_eq!(i_signed_int, -2);
         let i_signed_empty: i32 = read_from_ini(-100, "iSignedEmpty", section);
         assert_eq!(i_signed_empty, -100);
+
+        // This is why I need the lint allow above. Ha.
         let f_float: f32 = read_from_ini(0.0f32, "fFloat", section);
         assert_eq!(f_float, 2.71828);
+
         let f_float_empty: f32 = read_from_ini(1.0f32, "fFloatEmpty", section);
         assert_eq!(f_float_empty, 1.0);
         let b_boolean_num_t: bool = read_from_ini(false, "bBooleanNumT", section);
-        assert_eq!(b_boolean_num_t, true);
+        assert!(b_boolean_num_t);
         let b_boolean_string_t: bool = read_from_ini(false, "bBooleanStringT", section);
-        assert_eq!(b_boolean_string_t, true);
+        assert!(b_boolean_string_t);
         let b_boolean_num_f: bool = read_from_ini(true, "bBooleanNumF", section);
-        assert_eq!(b_boolean_num_f, false);
+        assert!(!b_boolean_num_f);
         let b_boolean_string_f: bool = read_from_ini(true, "bBooleanStringF", section);
-        assert_eq!(b_boolean_string_f, false);
+        assert!(!b_boolean_string_f);
         let b_boolean_empty: bool = read_from_ini(true, "bBooleanEmpty", section);
-        assert_eq!(b_boolean_empty, true);
+        assert!(b_boolean_empty);
         let s_string: String = read_from_ini("default".to_string(), "sString", section);
         assert_eq!(s_string.as_str(), "String with spaces");
         let s_string_empty: String = read_from_ini("default".to_string(), "sStringEmpty", section);

@@ -1,7 +1,5 @@
 //! Layouts: two schema versions and associated machinery.
 
-#![allow(non_snake_case, non_camel_case_types)]
-
 pub mod layout_v1;
 pub mod layout_v2;
 pub mod shared;
@@ -226,11 +224,13 @@ use crate::plugin::{resolutionHeight, resolutionWidth};
 // mocked screen resolution numbers, because these functions are provided by
 // C++ and require imgui etc.
 #[cfg(test)]
+#[allow(non_snake_case)]
 fn resolutionWidth() -> f32 {
     3440.0
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 fn resolutionHeight() -> f32 {
     1440.0
 }
