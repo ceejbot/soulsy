@@ -1,5 +1,6 @@
 #include "player.h"
 
+#include "equippable.h"
 #include "gear.h"
 #include "shouts.h"
 #include "utility.h"

@@ -2,11 +2,11 @@
 
 #include "constant.h"
 #include "equippable.h"
-#include "game.h"
 #include "gear.h"
 #include "player.h"
 #include "string_util.h"
 #include "ui_renderer.h"
+#include "utility.h"
 
 #include "lib.rs.h"
 

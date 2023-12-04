@@ -174,7 +174,7 @@ impl HudItem {
 
     /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons
     /// and torches or other fueled items.
-    pub fn charge_level(&self) -> f64 {
+    pub fn charge_level(&self) -> f32 {
         if self.is_armor() || self.is_weapon() || matches!(self.kind, BaseType::Light(_)) {
             let_cxx_string!(form_spec = self.form_string());
             chargeLevelByFormSpec(&form_spec)

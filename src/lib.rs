@@ -449,7 +449,7 @@ pub mod plugin {
         /// Is this item poisoned?
         fn isPoisonedByFormSpec(form_spec: &CxxString) -> bool;
         /// Get an item's enchant level. Will be 0 for all unenchanted items.
-        fn chargeLevelByFormSpec(form_spec: &CxxString) -> f64;
+        fn chargeLevelByFormSpec(form_spec: &CxxString) -> f32;
     }
 
     #[namespace = "ui"]

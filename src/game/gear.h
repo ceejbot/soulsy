@@ -19,7 +19,7 @@ namespace game
 	bool isItemWorn(RE::TESBoundObject*& object, RE::PlayerCharacter*& the_player);
 	bool isItemFavorited(const RE::TESForm* form);
 	bool isItemPoisoned(const RE::TESForm* form);
-	double itemChargeLevel(const RE::TESForm* form);
+	float itemChargeLevel(const RE::TESForm* form);
 
 	// bottleneck for equipping everything
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);

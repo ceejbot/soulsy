@@ -31,13 +31,12 @@ namespace game
 	}
 
 	bool inventoryEntryDataFor(const RE::TESForm* form,
-		RE::PlayerCharacter*& the_player,
 		RE::TESBoundObject*& outobj,
 		RE::InventoryEntryData*& outentry)
 	{
 		auto* the_player                  = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* boundObj      = nullptr;
-		RE::InventoryEntryData* entryData = nullptr;
+		RE::InventoryEntryData entryData;
 
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(the_player, form->GetFormType());
@@ -46,14 +45,15 @@ namespace game
 		{
 			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
 			{
-				entryData = entry;
+				entryData = *entry;
 				boundObj  = item;
+				break;
 			}
 		}
 
-		if (!bound_obj) { return false; }
-		outobj   = bound_obj;
-		outentry = entry;
+		if (!boundObj) { return false; }
+		outobj   = boundObj;
+		outentry = &entryData;
 		return true;
 	}
 
@@ -90,7 +90,8 @@ namespace game
 						auto worn_right   = extra_data->HasType(RE::ExtraDataType::kWorn);
 						auto worn_left    = extra_data->HasType(RE::ExtraDataType::kWornLeft);
 						logger::debug(
-							"extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
+							"name='{}'; extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
+							item->GetName(),
 							extra_data->GetCount(),
 							is_favorited,
 							is_poisoned,
@@ -114,10 +115,10 @@ namespace game
 		return item_count;
 	}
 
-	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& player)
+	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& the_player)
 	{
 		auto worn = false;
-		for (const auto& [item, inv_data] : player::getInventoryForType(player, RE::FormType::Armor))
+		for (const auto& [item, inv_data] : player::getInventoryForType(the_player, RE::FormType::Armor))
 		{
 			const auto& [count, entry] = inv_data;
 			if (entry && entry->object && (entry->object->formID == bound_obj->formID) && entry->IsWorn())
@@ -129,12 +130,13 @@ namespace game
 		return worn;
 	}
 
-	bool isItemFavorited(RE::TESForm* form)
+	bool isItemFavorited(const RE::TESForm* form)
 	{
 		// TODO I don't think this handles spells
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		game::boundObjectForForm(form, player, bound_obj, extra);
+		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		game::boundObjectForForm(form, the_player, bound_obj, extra);
 		if (extra) { return extra->HasType(RE::ExtraDataType::kHotkey); }
 		return false;
 	}
@@ -149,11 +151,16 @@ namespace game
 		return false;
 	}
 
-	double itemChargeLevel(const RE : TESForm* form)
+	float itemChargeLevel(const RE::TESForm* form)
 	{
-		auto* inventoryEntry         = inventoryEntryDataFor(form);
+		RE::TESBoundObject* boundObj = nullptr;
+		RE::InventoryEntryData* inventoryEntry = nullptr;
+
+		if (!inventoryEntryDataFor(form, boundObj, inventoryEntry)) {
+			return 0.0f;
+		}
 		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
-		return charge.value_or(0.0);
+		return static_cast<float>(charge.value_or(0.0));
 	}
 
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)

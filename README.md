@@ -1,5 +1,7 @@
 # Soulsy
 
+[![Test Rust features](https://github.com/ceejbot/soulsy/actions/workflows/test.yaml/badge.svg)](https://github.com/ceejbot/soulsy/actions/workflows/test.yaml) [![Build mod archive](https://github.com/ceejbot/soulsy/actions/workflows/build.yaml/badge.svg)](https://github.com/ceejbot/soulsy/actions/workflows/build.yaml)
+
 Soulsy is a lightweight, fast Souls-style hotkey HUD mod for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and LamasTinyHud. It started life as a fork of [LamasTinyHud](https://github.com/mlthelama/LamasTinyHUD), though it has since diverged significantly.
 
 ![Screenshot of the hud](./docs/SoulsyHUD_preview.jpeg)
