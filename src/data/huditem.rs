@@ -98,7 +98,11 @@ impl HudItem {
 
     fn make_format_vars(name: String, count: u32) -> HashMap<String, String> {
         let mut vars = HashMap::new();
-        vars.insert("name".to_string(), name);
+        if name.is_empty() {
+            vars.insert("(no name)".to_string(), name);
+        } else {
+            vars.insert("name".to_string(), name);
+        }
         vars.insert("count".to_string(), count.to_string());
         vars
     }

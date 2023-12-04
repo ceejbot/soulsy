@@ -116,7 +116,7 @@ namespace player
 		{
 			const auto& [num_items, entry] = inv_data;
 			auto* new_ammo                 = item->As<RE::TESAmmo>();
-			if (new_ammo->IsBolt() == useBolts) { sorted->push_back(new_ammo); }
+			if ((num_items > 0) && (new_ammo->IsBolt() == useBolts)) { sorted->push_back(new_ammo); }
 		}
 		sort(sorted->begin(), sorted->end(), compare);
 
