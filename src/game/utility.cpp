@@ -186,7 +186,7 @@ namespace game
 		if (!task) { return; }
 
 		auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		if (right_eq->IsWeapon())
+		if (right_eq && right_eq->IsWeapon())
 		{
 			task->AddTask(
 				[=]() {
@@ -196,7 +196,7 @@ namespace game
 			remaining--;
 		}
 		auto* left_eq = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-		if (left_eq->IsWeapon() && remaining > 0)
+		if (left_eq && left_eq->IsWeapon() && remaining > 0)
 		{
 			task->AddTask(
 				[=]() {
