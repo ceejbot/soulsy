@@ -111,8 +111,8 @@ impl HudItem {
         match strfmt(&fmt, &self.format_vars) {
             Ok(v) => v,
             Err(e) => {
-                log::warn!("Failed to render format string for HUD item; error: {e:#}");
-                "".to_string()
+                log::trace!("Failed to render format string for HUD item; error: {e:#}");
+                fmt.clone()
             }
         }
     }
@@ -187,10 +187,10 @@ impl HudItem {
         }
     }
 
-    // We delegate everything to our object-kind. The goal is for
-    // most things not to need to know about the item kind mess.
-    // Note that these functions are all from the trait IsHudItem, which
-    // we can't implement because we offer all of these to the C++ side.
+    // We delegate everything to our object-kind. The goal is for most things
+    // not to need to know about the item kind mess. Note that these functions
+    // are all from the trait IsHudItem, which we can't implement here because
+    // we offer these functions to the C++ side.
     pub fn count_matters(&self) -> bool {
         self.kind.count_matters()
     }
@@ -276,8 +276,12 @@ fn name_from_bytes(name_bytes: &[u8]) -> (bool, String) {
         name_is_utf8 = true;
         v
     } else {
-        log::trace!("Item name is invalid utf-8; falling back to lossy string");
-        cstring.to_string_lossy().to_string()
+        let lossy = cstring.to_string_lossy().to_string();
+        log::debug!(
+            "Item name is invalid utf-8; falling back to lossy string. name='{}';",
+            lossy
+        );
+        lossy
     };
 
     (name_is_utf8, name)
