@@ -112,7 +112,7 @@ impl HudItem {
             Ok(v) => v,
             Err(e) => {
                 log::trace!("Failed to render format string for HUD item; error: {e:#}");
-                fmt.clone()
+                "".to_string()
             }
         }
     }

@@ -451,7 +451,7 @@ namespace ui
 				if (label.color.a == 0) { continue; }
 				const auto textPos = ImVec2(label.anchor.x, label.anchor.y);
 				auto entrytxt      = std::string(entry->fmtstr(label.contents));
-				drawText(entrytxt, textPos, label.font_size, label.color, label.alignment);
+				if (!entrytxt.empty()) { drawText(entrytxt, textPos, label.font_size, label.color, label.alignment); }
 			}
 
 			// Draw the hotkey reminder if asked.
