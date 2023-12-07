@@ -105,7 +105,7 @@ namespace game
 
 		if (!bound_obj) { return 0; }
 
-		logger::debug("found {} instance for bound object; name='{}'; formID={};"sv,
+		logger::trace("found {} instance for bound object; name='{}'; formID={};"sv,
 			item_count,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
