@@ -22,7 +22,7 @@ static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
 
 /// There can be only one. Not public because we want access managed.
 static SETTINGS: Lazy<Mutex<UserSettings>> =
-    Lazy::new(|| Mutex::new(UserSettings::new_from_file()));
+    Lazy::new(|| Mutex::new(UserSettings::new_from_file(SETTINGS_PATH)));
 
 pub fn settings() -> UserSettings {
     let settings = SETTINGS
@@ -162,9 +162,9 @@ impl Default for UserSettings {
 }
 
 impl UserSettings {
-    pub fn new_from_file() -> Self {
+    pub fn new_from_file(fpath: &str) -> Self {
         let mut s = UserSettings::default();
-        s.read_from_file().unwrap_or_default();
+        s.read_from_file(fpath).unwrap_or_default();
         s
     }
 
@@ -172,13 +172,13 @@ impl UserSettings {
         let mut settings = SETTINGS
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire settings lock.");
-        settings.read_from_file()
+        settings.read_from_file(SETTINGS_PATH)
     }
 
     /// Refresh ourselves from the MCM-controlled file.
-    pub fn read_from_file(&mut self) -> Result<()> {
+    pub fn read_from_file(&mut self, fpath: &str) -> Result<()> {
         // We'll fall back to defaults at a different level.
-        let conf = Ini::load_from_file(SETTINGS_PATH)?;
+        let conf = Ini::load_from_file(fpath)?;
         let empty = ini::Properties::new();
 
         // This is the sound of my brain going clonk.
@@ -232,11 +232,10 @@ impl UserSettings {
             0,
             2500,
         );
-        self.long_press_ms = u32::clamp(
-            read_from_ini(self.equip_delay_ms, "uLongPressMillis", options),
-            self.equip_delay_ms + 100,
-            2500,
-        );
+        self.long_press_ms = read_from_ini(self.equip_delay_ms, "uLongPressMillis", options);
+        if self.long_press_ms < self.equip_delay_ms {
+            self.long_press_ms = self.equip_delay_ms + 100;
+        }
 
         self.autofade = read_from_ini(self.autofade, "bAutoFade", options);
         self.fade_time = u32::clamp(read_from_ini(self.fade_time, "uFadeTime", options), 0, 2500);
@@ -329,6 +328,7 @@ impl UserSettings {
     pub fn cycle_with_modifier(&self) -> bool {
         self.cycle_modifier > 0
     }
+
     pub fn cycle_modifier(&self) -> i32 {
         self.cycle_modifier
     }
@@ -673,5 +673,11 @@ mod tests {
 
         let missing_field: String = read_from_ini("default".to_string(), "missing_field", section);
         assert_eq!(missing_field.as_str(), "default");
+    }
+
+    #[test]
+    fn can_read_example_ini() {
+        let le_options = UserSettings::new_from_file("./tests/fixtures/SoulsyHUD.ini");
+        assert!(le_options.long_press_ms > le_options.equip_delay_ms);
     }
 }
