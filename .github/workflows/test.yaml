@@ -37,11 +37,5 @@ jobs:
                   tar xfz nextest.tgz
                   mv cargo-nextest /home/runner/.cargo/bin
 
-            - name: verify that we have our data directory
-              run: |
-                  pwd
-                  ls -alF data/SKSE/plugins/SoulsyHUD_Layout.toml
-                  cargo --version
-
             - name: run the tests
               run: cargo nextest run
