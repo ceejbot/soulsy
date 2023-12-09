@@ -9,6 +9,15 @@ impl Color {
     pub fn rgb(r: u8, g: u8, b: u8) -> Color {
         Color { r, g, b, a: 255 }
     }
+
+    pub fn invisible() -> Self {
+        Color {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 0,
+        }
+    }
 }
 
 impl Default for Color {
