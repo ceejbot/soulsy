@@ -6,7 +6,7 @@ use std::fmt::Display;
 use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
 
-use crate::plugin::{Action, Align, HudElement};
+use crate::plugin::{Action, Align, HudElement, MeterKind};
 
 // ---------- Align
 
@@ -131,6 +131,65 @@ where
         )),
     }
 }
+
+// ---------- MeterType
+
+// We can't derive this because it is exposed to C++.
+impl Default for MeterKind {
+    fn default() -> Self {
+        MeterKind::None
+    }
+}
+
+impl Display for MeterKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            &MeterKind::CircleArc => write!(f, "circle_arc"),
+            &MeterKind::Vertical => write!(f, "vertical"),
+            &MeterKind::Horizontal => write!(f, "horizontal"),
+            _ => write!(f, "none"),
+        }
+    }
+}
+
+impl From<&str> for MeterKind {
+    fn from(value: &str) -> Self {
+        match value.to_lowercase().as_str() {
+            "circle_arc" => MeterKind::CircleArc,
+            "vertical" => MeterKind::Vertical,
+            "horizontal" => MeterKind::Horizontal,
+            _ => MeterKind::None,
+        }
+    }
+}
+
+impl Serialize for MeterKind {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+pub fn deserialize_meter_kind<'de, D>(deserializer: D) -> Result<MeterKind, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+    match s.to_lowercase().as_str() {
+        "circle_arc" => Ok(MeterKind::CircleArc),
+        "vertical" => Ok(MeterKind::Vertical),
+        "horizontal" => Ok(MeterKind::Horizontal),
+        "none" => Ok(MeterKind::None),
+        _ => Err(Error::unknown_variant(
+            &s,
+            &["circle_arc", "vertical", "horizontal", "none"],
+        )),
+    }
+}
+
+// ---------- HudElement
 
 /// All this converting makes me suspect the abstraction is wrong.
 impl From<Action> for HudElement {

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use super::shared::*;
 use crate::plugin::{
-    Align, Color, HudElement, LayoutFlattened, Point, SlotFlattened, TextFlattened,
+    Align, Color, HudElement, LayoutFlattened, MeterKind, Point, SlotFlattened, TextFlattened,
 };
 
 /// Where to arrange the HUD elements and what color to draw them in.
@@ -131,6 +131,15 @@ impl HudLayout2 {
         let poison_color = poison.indicator.color;
         let poison_center = center.translate(&poison.offset.scale(self.global_scale));
 
+        let meter = slot.meter.clone().unwrap_or_default();
+        let meter_kind = meter.kind;
+        let meter_center = center.translate(&meter.offset.scale(self.global_scale));
+        let meter_size = meter.size.scale(self.global_scale);
+        let meter_empty_image = meter.empty_image;
+        let meter_empty_color = meter.empty_color;
+        let meter_fill_image = meter.fill_image;
+        let meter_fill_color = meter.fill_color;
+
         SlotFlattened {
             element,
             center: center.clone(),
@@ -150,6 +159,13 @@ impl HudLayout2 {
             poison_image,
             poison_color,
             poison_center,
+            meter_kind,
+            meter_center,
+            meter_size,
+            meter_empty_image,
+            meter_empty_color,
+            meter_fill_image,
+            meter_fill_color,
             text,
         }
     }
@@ -177,13 +193,8 @@ impl Default for ImageElement {
     fn default() -> Self {
         ImageElement {
             svg: "".to_string(),
-            size: Point { x: 0.0, y: 0.0 },
-            color: Color {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0,
-            },
+            size: Point::origin(),
+            color: Color::invisible(),
         }
     }
 }
@@ -206,14 +217,9 @@ pub struct HotkeyElement {
 impl Default for HotkeyElement {
     fn default() -> Self {
         HotkeyElement {
-            offset: Point { x: 0.0, y: 0.0 },
-            size: Point { x: 0.0, y: 0.0 },
-            color: Color {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0,
-            },
+            offset: Point::origin(),
+            size: Point::origin(),
+            color: Color::invisible(),
             background: None,
         }
     }
@@ -235,8 +241,28 @@ pub struct TextElement {
 // TODO TODO TODO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct MeterElement {
+    #[serde(default, deserialize_with = "deserialize_meter_kind")]
+    kind: MeterKind,
     offset: Point,
-    color: Color,
+    size: Point,
+    empty_image: String,
+    empty_color: Color,
+    fill_image: String,
+    fill_color: Color,
+}
+
+impl Default for MeterElement {
+    fn default() -> Self {
+        MeterElement {
+            kind: MeterKind::None,
+            offset: Point::origin(),
+            size: Point::origin(),
+            empty_image: String::new(),
+            empty_color: Color::invisible(),
+            fill_image: String::new(),
+            fill_color: Color::invisible(),
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
@@ -248,7 +274,7 @@ pub struct PoisonElement {
 impl Default for PoisonElement {
     fn default() -> Self {
         PoisonElement {
-            offset: Point { x: 0.0, y: 0.0 },
+            offset: Point::origin(),
             indicator: ImageElement::default(),
         }
     }
@@ -487,6 +513,60 @@ mod tests {
         assert_eq!(
             layout.right.text[0].font_size * layout.global_scale,
             right_slot.text[0].font_size
+        );
+    }
+
+    #[test]
+    fn charge_meters() {
+        let data = include_str!("../../tests/fixtures/layout-v2.toml");
+        let layout: HudLayout2 =
+            toml::from_str(data).expect("v2 text fixture should be valid toml");
+
+        assert!(layout.power.meter.is_none());
+        assert!(layout.utility.meter.is_none());
+        assert!(layout.right.meter.is_some());
+        assert!(layout.left.meter.is_some());
+
+        let rmeter = layout
+            .right
+            .meter
+            .clone()
+            .expect("we just asserted this exists");
+        assert_eq!(rmeter.kind, MeterKind::Vertical);
+
+        let lmeter = layout
+            .left
+            .meter
+            .clone()
+            .expect("we just asserted this exists");
+        assert_eq!(lmeter.kind, MeterKind::Horizontal);
+
+        let flattened = Layout::Version2(Box::new(layout.clone())).flatten();
+        let rflat = flattened
+            .slots
+            .iter()
+            .find(|slot| slot.element == HudElement::Right)
+            .expect("the right slot must be present");
+        let lflat = flattened
+            .slots
+            .iter()
+            .find(|slot| slot.element == HudElement::Left)
+            .expect("the right slot must be present");
+
+        assert_eq!(rflat.meter_kind, rmeter.kind);
+        assert_eq!(lflat.meter_kind, lmeter.kind);
+
+        assert_eq!(
+            rflat.meter_center,
+            rflat
+                .center
+                .translate(&rmeter.offset.scale(layout.global_scale))
+        );
+        assert_eq!(
+            lflat.meter_center,
+            lflat
+                .center
+                .translate(&lmeter.offset.scale(layout.global_scale))
         );
     }
 }
