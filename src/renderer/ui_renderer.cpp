@@ -691,16 +691,22 @@ namespace ui
 		startAlphaTransition(true, gMaxAlpha);
 	}
 
-	void setMaxAlpha(float maxgoal) { gMaxAlpha = std::clamp(maxgoal, 0.125f, 1.0f); }
+	void setMaxAlpha(float max)
+	{
+		gMaxAlpha = std::clamp(std::abs(max), 0.2f, 1.0f);
+		if (gHudAlpha > gMaxAlpha) {
+			gHudAlpha = gMaxAlpha;
+		}
+	}
 
 	void startAlphaTransition(const bool becomeVisible, const float goal)
 	{
-		if (becomeVisible && gHudAlpha == gMaxAlpha) { return; }
+		gGoalAlpha = std::clamp(goal, 0.0f, gMaxAlpha);
+		if (becomeVisible && gHudAlpha >= gMaxAlpha) { return; }
 		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
 		logger::debug(
-			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomeVisible, goal, gHudAlpha);
+			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomeVisible, gGoalAlpha, gHudAlpha);
 
-		gGoalAlpha = std::clamp(goal, 0.0f, gMaxAlpha);
 		doFadeIn   = becomeVisible;
 
 		// The game will report that the player has sheathed weapons when
@@ -796,7 +802,7 @@ namespace ui
 				return;
 			}
 			if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
-			gHudAlpha = easeInCubic(gMaxAlpha - (gFadeDurRemaining / gFullFadeDuration));
+			gHudAlpha = easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
 		}
 		else if (!doFadeIn && gIsFading)
 		{
@@ -811,7 +817,7 @@ namespace ui
 				}
 				delayBeforeFadeout = 0.0f;
 				if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
-				gHudAlpha = gMaxAlpha - easeInCubic(gMaxAlpha - (gFadeDurRemaining / gFullFadeDuration));
+				gHudAlpha = gMaxAlpha - easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
 			}
 		}
 	}

@@ -165,6 +165,8 @@ impl Controller {
             self.cycles.remove_item(CycleSlot::Utility, &proxy);
         }
 
+        setMaxAlpha(settings.max_alpha());
+
         if !settings.autofade() {
             if self.cycles.hud_visible() {
                 startAlphaTransition(true, 1.0);

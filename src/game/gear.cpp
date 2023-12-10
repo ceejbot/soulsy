@@ -89,7 +89,7 @@ namespace game
 						auto is_poisoned  = extra_data->HasType(RE::ExtraDataType::kPoison);
 						auto worn_right   = extra_data->HasType(RE::ExtraDataType::kWorn);
 						auto worn_left    = extra_data->HasType(RE::ExtraDataType::kWornLeft);
-						logger::debug(
+						logger::trace(
 							"name='{}'; extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
 							item->GetName(),
 							extra_data->GetCount(),

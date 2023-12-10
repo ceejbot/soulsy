@@ -28,6 +28,7 @@ namespace ui
 
 	void makeFadeDecision();
 	void showBriefly();
+	void setMaxAlpha(float max);
 
 	void startTimer(Action which, uint32_t duration);
 	void stopTimer(Action which);

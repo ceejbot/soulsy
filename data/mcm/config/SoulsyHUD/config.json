@@ -352,9 +352,11 @@
                     "help": "$SoulsyHUD_Options_MaxAlpha_Help",
                     "type": "slider",
                     "valueOptions": {
-                        "min": 0.125,
+                        "min": 0.2,
                         "max": 1.0,
-                        "sourceType": "ModSettingFloat"
+                        "step": 0.01,
+                        "sourceType": "ModSettingFloat",
+                        "formatString": "{2}"
                     }
                 },
                 {

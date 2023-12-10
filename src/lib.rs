@@ -462,7 +462,7 @@ pub mod plugin {
         fn resolutionWidth() -> f32;
         /// Get the display height in pixels.
         fn resolutionHeight() -> f32;
-        /// Start the named timer. Duretion is looked up from settings.
+        /// Start the named timer. Duration is looked up from settings.
         fn startTimer(which: Action, duration: u32);
         /// Stop the named timer.
         fn stopTimer(which: Action);
@@ -470,6 +470,8 @@ pub mod plugin {
         fn showBriefly();
         /// Start the HUD widget fading in or out to the goal transparency.
         fn startAlphaTransition(fade_in: bool, alpha: f32);
+        /// Set the max alpha value the HUD is allowed to reach. From user settings.
+        fn setMaxAlpha(max: f32);
 
     }
 
