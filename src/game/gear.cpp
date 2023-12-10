@@ -30,12 +30,10 @@ namespace game
 		return func();
 	}
 
-	bool inventoryEntryDataFor(const RE::TESForm* form,
-		RE::TESBoundObject*& outobj,
-		RE::InventoryEntryData*& outentry)
+	bool inventoryEntryDataFor(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::InventoryEntryData*& outentry)
 	{
-		auto* the_player                  = RE::PlayerCharacter::GetSingleton();
-		RE::TESBoundObject* boundObj      = nullptr;
+		auto* the_player             = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* boundObj = nullptr;
 		RE::InventoryEntryData entryData;
 
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
@@ -135,7 +133,7 @@ namespace game
 		// TODO I don't think this handles spells
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extra      = nullptr;
-		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		auto* the_player              = RE::PlayerCharacter::GetSingleton();
 		game::boundObjectForForm(form, the_player, bound_obj, extra);
 		if (extra) { return extra->HasType(RE::ExtraDataType::kHotkey); }
 		return false;
@@ -153,15 +151,23 @@ namespace game
 
 	float itemChargeLevel(const RE::TESForm* form)
 	{
-		RE::TESBoundObject* boundObj = nullptr;
+		RE::TESBoundObject* boundObj           = nullptr;
 		RE::InventoryEntryData* inventoryEntry = nullptr;
 
-		if (!inventoryEntryDataFor(form, boundObj, inventoryEntry)) {
-			return 0.0f;
-		}
+		if (!inventoryEntryDataFor(form, boundObj, inventoryEntry)) { return 0.0f; }
 		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
 		return static_cast<float>(charge.value_or(0.0));
 	}
+
+	const char* displayName(const RE::TESForm* form)
+	{
+		RE::TESBoundObject* boundObj           = nullptr;
+		RE::InventoryEntryData* inventoryEntry = nullptr;
+
+		if (!inventoryEntryDataFor(form, boundObj, inventoryEntry)) { return form->GetName(); }
+		return inventoryEntry->GetDisplayName();
+	}
+
 
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{

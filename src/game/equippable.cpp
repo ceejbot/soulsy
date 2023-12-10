@@ -2,6 +2,7 @@
 
 #include "helpers.h"
 #include "player.h"
+#include "gear.h"
 
 #include "lib.rs.h"
 
@@ -76,7 +77,7 @@ namespace equippable
 		if (!item_form) { return empty_huditem(); }
 
 		KeywordAccumulator::clear();
-		auto chonker            = helpers::chars_to_vec(item_form->GetName());
+		auto chonker            = helpers::chars_to_vec(game::displayName(item_form));
 		std::string form_string = helpers::makeFormSpecString(item_form);
 		bool two_handed         = requiresTwoHands(item_form);
 
