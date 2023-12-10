@@ -3,7 +3,6 @@
 #include "constant.h"
 #include "gear.h"
 #include "helpers.h"
-#include "image_path.h"
 #include "key_path.h"
 #include "keycodes.h"
 
@@ -26,8 +25,9 @@ namespace ui
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 	static const uint32_t MAX_ICON_DIM    = 300;   // rasterized at 96 dpi
 
-	auto gHudAlpha          = 0.0f;
-	auto gGoalAlpha         = 1.0f;
+	auto gHudAlpha          = 0.0f;  // this is the current alpha
+	auto gGoalAlpha         = 1.0f;  // our goal if we're fading
+	auto gMaxAlpha          = 1.0f;  // the least transparent we allow ourselves to be (user setting)
 	auto doFadeIn           = true;
 	auto gFullFadeDuration  = 3.0f;  // seconds
 	auto gFadeDurRemaining  = 2.0f;  // seconds
@@ -685,20 +685,22 @@ namespace ui
 
 	void showBriefly()
 	{
-		if (gDoingBriefPeek || gHudAlpha == 1.0f || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
+		if (gDoingBriefPeek || gHudAlpha >= gMaxAlpha || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
 
 		gDoingBriefPeek = true;
-		startAlphaTransition(true, 1.0f);
+		startAlphaTransition(true, gMaxAlpha);
 	}
+
+	void setMaxAlpha(float maxgoal) { gMaxAlpha = std::clamp(maxgoal, 0.125f, 1.0f); }
 
 	void startAlphaTransition(const bool becomeVisible, const float goal)
 	{
-		if (becomeVisible && gHudAlpha == 1.0f) { return; }
+		if (becomeVisible && gHudAlpha == gMaxAlpha) { return; }
 		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
 		logger::debug(
 			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomeVisible, goal, gHudAlpha);
 
-		gGoalAlpha = std::clamp(goal, 0.0f, 1.0f);
+		gGoalAlpha = std::clamp(goal, 0.0f, gMaxAlpha);
 		doFadeIn   = becomeVisible;
 
 		// The game will report that the player has sheathed weapons when
@@ -738,7 +740,7 @@ namespace ui
 		// We do the peek even when autofade is false, so we need to fade out automatically in that one case.
 		if (!autofade)
 		{
-			if (gDoingBriefPeek && gHudAlpha >= 1.0f)
+			if (gDoingBriefPeek && gHudAlpha >= gMaxAlpha)
 			{
 				gDoingBriefPeek = false;
 				startAlphaTransition(false, 0.0f);
@@ -751,7 +753,7 @@ namespace ui
 		{
 			if (gDoingBriefPeek)
 			{
-				if (gHudAlpha < 1.0f) { return; }
+				if (gHudAlpha < gMaxAlpha) { return; }
 				gDoingBriefPeek = false;
 			}
 			// The auto-fade case here.
@@ -759,7 +761,10 @@ namespace ui
 		}
 		else if (helpers::hudShouldAutoFadeIn())
 		{
-			if ((gHudAlpha < 1.0f && !gIsFading) || (gIsFading && !doFadeIn)) { startAlphaTransition(true, 1.0f); }
+			if ((gHudAlpha < gMaxAlpha && !gIsFading) || (gIsFading && !doFadeIn))
+			{
+				startAlphaTransition(true, gMaxAlpha);
+			}
 		}
 	}
 
@@ -783,15 +788,15 @@ namespace ui
 		// is off. This is maybe the only place where bug #44 might be caused.
 		if (doFadeIn && gIsFading)
 		{
-			if (gHudAlpha >= 1.0f)
+			if (gHudAlpha >= gMaxAlpha)
 			{
-				gHudAlpha         = 1.0f;
+				gHudAlpha         = gMaxAlpha;
 				gFadeDurRemaining = 0.0f;
 				gIsFading         = false;
 				return;
 			}
 			if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
-			gHudAlpha = easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
+			gHudAlpha = easeInCubic(gMaxAlpha - (gFadeDurRemaining / gFullFadeDuration));
 		}
 		else if (!doFadeIn && gIsFading)
 		{
@@ -806,7 +811,7 @@ namespace ui
 				}
 				delayBeforeFadeout = 0.0f;
 				if (gFadeDurRemaining > 0.0f) { gFadeDurRemaining -= timeDelta; }
-				gHudAlpha = 1.0f - easeInCubic(1.0f - (gFadeDurRemaining / gFullFadeDuration));
+				gHudAlpha = gMaxAlpha - easeInCubic(gMaxAlpha - (gFadeDurRemaining / gFullFadeDuration));
 			}
 		}
 	}

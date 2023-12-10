@@ -106,6 +106,8 @@ pub struct UserSettings {
     autofade: bool,
     /// The time in milliseconds it takes to fade out.
     fade_time: u32,
+    /// Max alpha: the most transparent the HUD goes.
+    max_alpha: f32,
     /// The controller kind to show in the UX. Matches the controller_set enum in key_path.h
     controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
     /// Whether to slow down time when cycling
@@ -149,6 +151,7 @@ impl Default for UserSettings {
             equip_delay_ms: 750, // in milliseconds
             long_press_ms: 1250, // in milliseconds
             autofade: true,
+            max_alpha: 1.0,
             fade_time: 2000,    // in milliseconds
             controller_kind: 0, // PS5
             cycling_slows_time: false,
@@ -239,6 +242,8 @@ impl UserSettings {
 
         self.autofade = read_from_ini(self.autofade, "bAutoFade", options);
         self.fade_time = u32::clamp(read_from_ini(self.fade_time, "uFadeTime", options), 0, 2500);
+        self.max_alpha = read_from_ini(self.max_alpha, "fMaxAlpha", options);
+
         self.controller_kind = u32::clamp(
             read_from_ini(self.controller_kind, "uControllerKind", options),
             0,
@@ -403,6 +408,9 @@ impl UserSettings {
     pub fn fade_time(&self) -> u32 {
         self.fade_time
     }
+    pub fn max_alpha(&self) -> f32 {
+        self.max_alpha
+    }
     pub fn controller_kind(&self) -> u32 {
         u32::clamp(self.controller_kind, 0, 2)
     }
@@ -518,6 +526,19 @@ impl FromIniStr for UnarmedMethod {
 impl FromIniStr for bool {
     fn from_ini(value: &str) -> Option<Self> {
         Some(value != "0" && value.to_lowercase() != "false")
+    }
+}
+
+impl FromIniStr for u8 {
+    fn from_ini(v: &str) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if let Ok(v) = v.parse::<u8>() {
+            Some(v)
+        } else {
+            None
+        }
     }
 }
 

@@ -262,6 +262,8 @@ pub mod plugin {
         fn slow_time_factor(self: &UserSettings) -> f32;
         /// How long to spend fading in or out.
         fn fade_time(self: &UserSettings) -> u32;
+        /// The max hud alpha to allow.
+        fn max_alpha(self: &UserSettings) -> f32;
         /// If we care about favorites.
         fn link_to_favorites(self: &UserSettings) -> bool;
         /// If icons should be colorful.

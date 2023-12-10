@@ -347,6 +347,17 @@
                     }
                 },
                 {
+                    "id": "fMaxAlpha:Options",
+                    "text": "$SoulsyHUD_Options_MaxAlpha_Text",
+                    "help": "$SoulsyHUD_Options_MaxAlpha_Help",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 0.125,
+                        "max": 1.0,
+                        "sourceType": "ModSettingFloat"
+                    }
+                },
+                {
                     "id": "uShowHideKey:Controls",
                     "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
                     "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
