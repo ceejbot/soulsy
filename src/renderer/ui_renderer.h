@@ -56,23 +56,6 @@ namespace ui
 		const Color color,
 		const Align alignment);
 
-	// arguments TODO for all of these
-	void drawMeter(const MeterType kind,
-		const float percent,
-		const ImVec2 center,
-		const ImVec2 size,
-		const ID3D11ShaderResourceView* bgTexture,
-		const Color emptyColor,
-		const ID3D11ShaderResourceView* filledTexture,
-		const Color filledColor);
-	void drawMeterRectangle(const float angle,
-		const float percent,
-		const ImVec2 center,
-		const ImVec2 size,
-		const ID3D11ShaderResourceView* bgTexture,
-		const Color bgColor,
-		const ID3D11ShaderResourceView* filledTexture,
-		const Color filledColor);
 	void drawMeterCircleArc(const double percent, const ImVec2 center);
 
 	// TODO either make this use the fact that it's a class or make it not a class.

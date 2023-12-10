@@ -325,45 +325,6 @@ namespace ui
 		animation_list.emplace_back(static_cast<ui::animation_type>(animation_type), std::move(anim));
 	}
 
-	void drawMeter(const MeterType kind,
-		const float percent,
-		const ImVec2 center,
-		const ImVec2 size,
-		const ID3D11ShaderResourceView* bgTexture,
-		const Color emptyColor,
-		const ID3D11ShaderResourceView* filledTexture,
-		const Color filledColor)
-	{
-		switch (kind)
-		{
-			case MeterType::Horizontal:
-				drawMeterRectangle(90.0, percent, center, size, bgTexture, emptyColor, filledTexture, filledColor);
-				return;
-			case MeterType::Vertical:
-				drawMeterRectangle(0.0, percent, center, size, bgTexture, emptyColor, filledTexture, filledColor);
-				return;
-			case MeterType::CircleArc:
-				drawMeterCircleArc(percent, center, size, width, bgTexture, null, filledColor);
-				return;
-		}
-	}
-
-	void drawMeterRectangle(const float angle,
-		const float percent,
-		const ImVec2 center,
-		const ImVec2 size,
-		ID3D11ShaderResourceView* bgTexture,
-		const Color emptyColor,
-		ID3D11ShaderResourceView* filledTexture,
-		const Color filledColor)
-	{
-		drawElement(bgTexture, center, size, angle, emptyColor);
-		const ImVec2 filledSize = ImVec2(size.x * percent / 100.0f, size.y * percent / 100.0f);
-		const ImVec2 location =
-			ImVec2(center.x - (size.x - filledSize.x) / 2.0f, center.y - (size.y - filledSize.y) / 2.0f);
-		drawElement(bgTexture, location, filledSize, angle, emptyColor);
-	}
-
 	void drawMeterCircleArc(const float percent,
 		const ImVec2 center,
 		const ImVec2 start,
@@ -531,20 +492,68 @@ namespace ui
 			}
 
 			// Charge/fuel meter.
-			if (slotLayout.meter_)
+			if (slotLayout.meter_kind == MeterType::CircleArc)
+			{
+				auto level              = entry->charge_level();
+				const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
+				// TODO also needs colors passed as well as starting point, idek
+				drawMeterCircleArc(level, meter_center);
+			}
+			if (slotLayout.meter_kind != MeterType::None)
+			{
+				// this is a percent-full level.
+				auto level              = entry->charge_level();
+				const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
+				const auto size         = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
+				const auto bg_img_str   = std::string(slotLayout.meter_empty_image);
 
-				// Finally, the poisoned indicator.
-				if (slotLayout.poison_color.a > 0 && entry->is_poisoned())
+				if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
 				{
-					const auto poison_img = std::string(slotLayout.poison_image);
-					if (ui_renderer::lazyLoadHudImage(poison_img))
-					{
-						const auto poison_center = ImVec2(slotLayout.poison_center.x, slotLayout.poison_center.y);
-						const auto [texture, width, height] = HUD_IMAGES_MAP[poison_img];
-						const auto size = ImVec2(slotLayout.poison_size.x, slotLayout.poison_size.y);
-						drawElement(texture, poison_center, size, 0.f, slotLayout.poison_color);
-					}
+					const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
+					drawElement(texture, meter_center, size, 0.f, slotLayout.meter_empty_color);
 				}
+				else
+				{
+					// TODO if no svg, fill the background area with the bg color.
+				}
+
+				auto fill_x = 0.0f;
+				auto fill_y = 0.0f;
+				if (slotLayout.meter_kind == MeterType::Horizontal)
+				{
+					fill_x = slotLayout.meter_size.x * level / 100.0f;
+					fill_y = slotLayout.meter_size.y;
+				}
+				else if (slotLayout.meter_kind == MeterType::Vertical)
+				{
+					fill_x = slotLayout.meter_size.x;
+					fill_y = slotLayout.meter_size.y * level / 100.0f;
+				}
+				const auto fillsize     = ImVec2(fill_x, fill_y);
+				const auto fill_img_str = std::string(slotLayout.meter_fill_image);
+				if (!fill_img_str.empty() && ui_renderer::lazyLoadHudImage(fill_img_str))
+				{
+					const auto [texture, width, height] = HUD_IMAGES_MAP[fill_img_str];
+					drawElement(texture, meter_center, fillsize, 0.f, slotLayout.meter_fill_color);
+				}
+				else
+				{
+					// TODO if no svg, fill the filled area with the fg color.
+				}
+			}
+
+			// Finally, the poisoned indicator.
+			if (slotLayout.poison_color.a > 0 && entry->is_poisoned())
+			{
+				const auto poison_img = std::string(slotLayout.poison_image);
+				if (ui_renderer::lazyLoadHudImage(poison_img))
+				{
+					const auto poison_center = ImVec2(slotLayout.poison_center.x, slotLayout.poison_center.y);
+					const auto [texture, width, height] = HUD_IMAGES_MAP[poison_img];
+					const auto size                     = ImVec2(slotLayout.poison_size.x, slotLayout.poison_size.y);
+					drawElement(texture, poison_center, size, 0.f, slotLayout.poison_color);
+				}
+			}
 		}
 
 		// drawAnimationFrame();
