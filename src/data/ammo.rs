@@ -6,6 +6,10 @@ use super::color::InvColor;
 use super::{HasIcon, HasKeywords};
 use crate::images::icons::Icon;
 
+/// Known ammunition variants. These variants correspond with OCF tags
+/// and represent things we are able to categorize. This is a simpler
+/// item type so variants map directly to icons, with color hints from
+/// OCF being the only other data tracked.
 #[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum AmmoType {
     Arrow(InvColor),
@@ -17,6 +21,7 @@ pub enum AmmoType {
     Grenade(InvColor),
 }
 
+/// The default ammunition is an arrow drawn in white.
 impl Default for AmmoType {
     fn default() -> Self {
         AmmoType::Arrow(InvColor::default())
@@ -24,6 +29,8 @@ impl Default for AmmoType {
 }
 
 impl HasKeywords for AmmoType {
+    /// Use OCF keywords to identify this ammunition type and map it to
+    /// one of the enum variants.
     fn classify(_name: &str, keywords: Vec<String>, _ignored: bool) -> Self {
         let color = super::color::color_from_keywords(&keywords);
 
