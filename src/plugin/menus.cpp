@@ -1,6 +1,22 @@
 #include "menus.h"
 
+#include "equippable.h"
+#include "gear.h"
+#include "keycodes.h"
+#include "util/string_util.h"
+
 #include "lib.rs.h"
+
+inline const std::set<RE::FormType> RELEVANT_FORMTYPES_ALL{
+	RE::FormType::AlchemyItem,
+	RE::FormType::Ammo,
+	RE::FormType::Armor,
+	RE::FormType::Light,
+	RE::FormType::Scroll,
+	RE::FormType::Shout,
+	RE::FormType::Spell,
+	RE::FormType::Weapon,
+};
 
 // ---------- MenuHook
 

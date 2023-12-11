@@ -3,6 +3,7 @@
 #include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
+#include "keycodes.h"
 #include "player.h"
 #include "ui_renderer.h"
 

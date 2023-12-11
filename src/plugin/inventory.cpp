@@ -2,16 +2,9 @@
 
 #include "equippable.h"
 #include "gear.h"
-#include "hooks.h"
 #include "string_util.h"
 
 #include "lib.rs.h"
-
-void install_hooks()
-{
-	PlayerHook::install();
-	MenuHook::install();
-}
 
 inline const std::set<RE::FormType> RELEVANT_FORMTYPES_INVENTORY{
 	RE::FormType::AlchemyItem,
@@ -19,17 +12,6 @@ inline const std::set<RE::FormType> RELEVANT_FORMTYPES_INVENTORY{
 	RE::FormType::Armor,
 	RE::FormType::Light,
 	RE::FormType::Scroll,
-	RE::FormType::Weapon,
-};
-
-inline const std::set<RE::FormType> RELEVANT_FORMTYPES_ALL{
-	RE::FormType::AlchemyItem,
-	RE::FormType::Ammo,
-	RE::FormType::Armor,
-	RE::FormType::Light,
-	RE::FormType::Scroll,
-	RE::FormType::Shout,
-	RE::FormType::Spell,
 	RE::FormType::Weapon,
 };
 

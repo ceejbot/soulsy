@@ -1,9 +1,6 @@
 #pragma once
 
 // Hooking the functions that let us listen for player inventory changes.
-
-void install_hooks();
-
 class PlayerHook
 {
 public:

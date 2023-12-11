@@ -55,7 +55,6 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 				ui::ui_renderer::preloadImages();
 				MenuHook::install();
 				PlayerHook::install();
-				hooks::install_hooks();
 				papyrus::registerPapyrusFunctions();
 			}
 			break;
