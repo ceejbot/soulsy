@@ -1042,7 +1042,7 @@ impl Controller {
         if !equipped {
             return self.handle_item_unequipped(form_spec, equipped_right, equipped_left);
         }
-        let item = self.cache.get(form_spec);
+        let item = self.cache.get_with_refresh(form_spec);
         let right = form_spec == equipped_right;
         let left = form_spec == equipped_left;
         let prefix = if right && left {

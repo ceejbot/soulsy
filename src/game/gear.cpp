@@ -163,11 +163,9 @@ namespace game
 	{
 		RE::TESBoundObject* boundObj           = nullptr;
 		RE::InventoryEntryData* inventoryEntry = nullptr;
-
 		if (!inventoryEntryDataFor(form, boundObj, inventoryEntry)) { return form->GetName(); }
-		return inventoryEntry->GetDisplayName();
+		return inventoryEntry ? inventoryEntry->GetDisplayName() : form->GetName();
 	}
-
 
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
