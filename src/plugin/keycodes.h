@@ -13,8 +13,8 @@ namespace keycodes
 		kGamepadOffset  = 266
 	};
 
-	uint32_t get_key_id(const RE::ButtonEvent* button);
+	uint32_t keyID(const RE::ButtonEvent* button);
 
-	uint32_t get_gamepad_index(RE::BSWin32GamepadDevice::Key key);
+	uint32_t gamepadIndex(RE::BSWin32GamepadDevice::Key key);
 
 }  // keycodes

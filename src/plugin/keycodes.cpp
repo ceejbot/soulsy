@@ -2,16 +2,14 @@
 
 namespace keycodes
 {
-	uint32_t get_key_id(const RE::ButtonEvent* button)
+	uint32_t keyID(const RE::ButtonEvent* button)
 	{
 		uint32_t key = button->idCode;
 		switch (button->device.get())
 		{
 			case RE::INPUT_DEVICE::kMouse: key += kMouseOffset; break;
 			case RE::INPUT_DEVICE::kKeyboard: key += kKeyboardOffset; break;
-			case RE::INPUT_DEVICE::kGamepad:
-				key = get_gamepad_index(static_cast<RE::BSWin32GamepadDevice::Key>(key));
-				break;
+			case RE::INPUT_DEVICE::kGamepad: key = gamepadIndex(static_cast<RE::BSWin32GamepadDevice::Key>(key)); break;
 			case RE::INPUT_DEVICE::kNone:
 			case RE::INPUT_DEVICE::kVirtualKeyboard:
 			// case RE::INPUT_DEVICE::kVRRight:
@@ -22,7 +20,7 @@ namespace keycodes
 		return key;
 	}
 
-	uint32_t get_gamepad_index(const RE::BSWin32GamepadDevice::Key a_key)
+	uint32_t gamepadIndex(const RE::BSWin32GamepadDevice::Key a_key)
 	{
 		using key = RE::BSWin32GamepadDevice::Key;
 

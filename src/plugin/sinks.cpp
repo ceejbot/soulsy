@@ -3,7 +3,6 @@
 #include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
-#include "keycodes.h"
 #include "player.h"
 #include "ui_renderer.h"
 
@@ -89,7 +88,7 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 		// This offsets the button by an amount that varies based on what originated the
 		// event. This appears to be so that we can directly compare it to the hotkey numbers
 		// we have snagged from the MCM settings. ??
-		const uint32_t key = keycodes::get_key_id(button);
+		const uint32_t key = keycodes::keyID(button);
 		if (key == -1) { continue; }
 
 		// We need to be a little bit stateful to handle modifier keys, because we don't

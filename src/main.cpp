@@ -1,5 +1,6 @@
 #include "cosave.h"
-#include "hooks.h"
+#include "inventory.h"
+#include "menus.h"
 #include "papyrus.h"
 #include "sinks.h"
 #include "ui_renderer.h"
@@ -52,6 +53,8 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			{
 				logger::debug("SKSE data loaded callback; UI is initialized."sv);
 				ui::ui_renderer::preloadImages();
+				MenuHook::install();
+				PlayerHook::install();
 				hooks::install_hooks();
 				papyrus::registerPapyrusFunctions();
 			}
