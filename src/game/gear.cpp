@@ -30,29 +30,24 @@ namespace game
 		return func();
 	}
 
-	bool inventoryEntryDataFor(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::InventoryEntryData*& outentry)
+	bool inventoryEntryDataFor(const RE::TESForm* form, RE::InventoryEntryData*& outentry)
 	{
-		auto* the_player             = RE::PlayerCharacter::GetSingleton();
-		RE::TESBoundObject* boundObj = nullptr;
-		RE::InventoryEntryData entryData;
-
+		auto* the_player = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(the_player, form->GetFormType());
 
 		for (const auto& [item, inv_data] : candidates)
 		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
+			if (!item) continue;
+			const auto& [num_items, entry] = inv_data;
+			if (entry->object->formID == form->formID)
 			{
-				entryData = *entry;
-				boundObj  = item;
-				break;
+				outentry = &*entry;
+				return true;
 			}
 		}
 
-		if (!boundObj) { return false; }
-		outobj   = boundObj;
-		outentry = &entryData;
-		return true;
+		return false;
 	}
 
 	int boundObjectForForm(const RE::TESForm* form,
@@ -75,26 +70,13 @@ namespace game
 				bound_obj                   = item;
 				item_count                  = num_items;
 				auto simple_extra_data_list = entry->extraLists;
+
 				if (simple_extra_data_list)
 				{
 					for (auto* extra_data : *simple_extra_data_list)
 					{
 						extra = extra_data;
 						extra_vector.push_back(extra_data);
-						auto isFavorited  = extra_data->HasType(RE::ExtraDataType::kHotkey);
-						auto isPoisoned   = extra_data->HasType(RE::ExtraDataType::kPoison);
-						auto wornRight    = extra_data->HasType(RE::ExtraDataType::kWorn);
-						auto wornLeft     = extra_data->HasType(RE::ExtraDataType::kWornLeft);
-						auto hasExtraText = extra_data->HasType(RE::ExtraDataType::kTextDisplayData);
-						logger::debug(
-							"name='{}'; extra data count={}; isFavorited={}; isPoisoned={}; worn right={}; worn left={}; text data={};"sv,
-							item->GetName(),
-							extra_data->GetCount(),
-							isFavorited,
-							isPoisoned,
-							wornRight,
-							wornLeft,
-							hasExtraText);
 					}
 				}
 				break;
@@ -151,21 +133,60 @@ namespace game
 
 	float itemChargeLevel(const RE::TESForm* form)
 	{
-		RE::TESBoundObject* boundObj           = nullptr;
 		RE::InventoryEntryData* inventoryEntry = nullptr;
 
-		if (!inventoryEntryDataFor(form, boundObj, inventoryEntry)) { return 0.0f; }
+		if (!inventoryEntryDataFor(form, inventoryEntry)) { return 0.0f; }
 		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
 		return static_cast<float>(charge.value_or(0.0));
 	}
 
 	const char* displayName(const RE::TESForm* form)
 	{
-		RE::TESBoundObject* boundObj           = nullptr;
 		RE::InventoryEntryData* inventoryEntry = nullptr;
-		if (!inventoryEntryDataFor(form, boundObj, inventoryEntry)) { return form->GetName(); }
+
+		if (!inventoryEntryDataFor(form, inventoryEntry))
+		{
+			logger::info("boop boop didn't find it");
+			return form->GetName();
+		}
+
+		if (inventoryEntry->extraLists != nullptr)
+		{
+			logger::debug("------");
+			for (auto* extra_data : *inventoryEntry->extraLists)
+			{
+				if (!extra_data) { continue; }
+				auto isFavorited  = extra_data->HasType(RE::ExtraDataType::kHotkey);
+				auto isPoisoned   = extra_data->HasType(RE::ExtraDataType::kPoison);
+				auto wornRight    = extra_data->HasType(RE::ExtraDataType::kWorn);
+				auto wornLeft     = extra_data->HasType(RE::ExtraDataType::kWornLeft);
+				auto hasExtraText = extra_data->HasType(RE::ExtraDataType::kTextDisplayData);
+				logger::debug(
+					"name='{}'; extra data count={}; isFavorited={}; isPoisoned={}; worn right={}; worn left={}; text data={};"sv,
+					form->GetName(),
+					extra_data->GetCount(),
+					isFavorited,
+					isPoisoned,
+					wornRight,
+					wornLeft,
+					hasExtraText);
+
+				auto* extrafox = hasExtraText ? extra_data->GetByType(RE::ExtraDataType::kTextDisplayData) : nullptr;
+				if (extrafox)
+				{
+					auto* extraTxt = static_cast<RE::ExtraTextDisplayData*>(extrafox);
+					logger::debug("custom name length: {}; display: '{}';"sv,
+						extraTxt->customNameLength,
+						std::string(extraTxt->displayName));
+					if (extraTxt->customNameLength > 0) { return extraTxt->displayName.c_str(); }
+				}
+			}
+		}
+
+		return form->GetName();
+
 		// I am a horrible person.
-		return inventoryEntry ? inventoryEntry->GetDisplayName() : boundObj ? boundObj->GetName() : form->GetName();
+		//return inventoryEntry ? inventoryEntry->GetDisplayName() : boundObj ? boundObj->GetName() : form->GetName();
 	}
 
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
