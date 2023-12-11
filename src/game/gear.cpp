@@ -67,8 +67,6 @@ namespace game
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(the_player, form->GetFormType());
 
-		// logger::trace("found count={} candidates of same type as name='{}';"sv, candidates.size(), form->GetName());
-
 		auto item_count = 0;
 		for (const auto& [item, inv_data] : candidates)
 		{
@@ -83,18 +81,20 @@ namespace game
 					{
 						extra = extra_data;
 						extra_vector.push_back(extra_data);
-						auto is_favorited = extra_data->HasType(RE::ExtraDataType::kHotkey);
-						auto is_poisoned  = extra_data->HasType(RE::ExtraDataType::kPoison);
-						auto worn_right   = extra_data->HasType(RE::ExtraDataType::kWorn);
-						auto worn_left    = extra_data->HasType(RE::ExtraDataType::kWornLeft);
-						logger::trace(
-							"name='{}'; extra data count={}; is_favorite={}; is_poisoned={}; worn right={}, worn left={}"sv,
+						auto isFavorited  = extra_data->HasType(RE::ExtraDataType::kHotkey);
+						auto isPoisoned   = extra_data->HasType(RE::ExtraDataType::kPoison);
+						auto wornRight    = extra_data->HasType(RE::ExtraDataType::kWorn);
+						auto wornLeft     = extra_data->HasType(RE::ExtraDataType::kWornLeft);
+						auto hasExtraText = extra_data->HasType(RE::ExtraDataType::kTextDisplayData);
+						logger::debug(
+							"name='{}'; extra data count={}; isFavorited={}; isPoisoned={}; worn right={}; worn left={}; text data={};"sv,
 							item->GetName(),
 							extra_data->GetCount(),
-							is_favorited,
-							is_poisoned,
-							worn_right,
-							worn_left);
+							isFavorited,
+							isPoisoned,
+							wornRight,
+							wornLeft,
+							hasExtraText);
 					}
 				}
 				break;
@@ -164,7 +164,8 @@ namespace game
 		RE::TESBoundObject* boundObj           = nullptr;
 		RE::InventoryEntryData* inventoryEntry = nullptr;
 		if (!inventoryEntryDataFor(form, boundObj, inventoryEntry)) { return form->GetName(); }
-		return inventoryEntry ? inventoryEntry->GetDisplayName() : form->GetName();
+		// I am a horrible person.
+		return inventoryEntry ? inventoryEntry->GetDisplayName() : boundObj ? boundObj->GetName() : form->GetName();
 	}
 
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
