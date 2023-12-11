@@ -185,8 +185,8 @@ namespace game
 
 		if (form->formID == util::unarmed)
 		{
-			logger::debug("this slot should be unarmed; unequipping slot"sv);
-			unequipLeftOrRightSlot(slot, player);
+			logger::debug("unequipping this slot by request!"sv);
+			unequipLeftOrRightSlot(player, slot);
 			return;
 		}
 		else if (form->Is(RE::FormType::Spell))
@@ -234,7 +234,7 @@ namespace game
 		if (item_count == equipped_count)
 		{
 			// The game might try to equip something else, according to mlthelama.
-			unequipLeftOrRightSlot(slot, player);
+			unequipLeftOrRightSlot(player, slot);
 			return;
 		}
 
@@ -313,10 +313,10 @@ namespace game
 			return;
 		}
 
-		unequipLeftOrRightSlot(slot, player);
+		unequipLeftOrRightSlot(player, slot);
 	}
 
-	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void unequipLeftOrRightSlot(RE::PlayerCharacter*& player, RE::BGSEquipSlot*& slot)
 	{
 		// We're starting with a slot not a hand enum.
 		RE::TESForm* equipped = nullptr;

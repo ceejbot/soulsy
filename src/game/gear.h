@@ -1,31 +1,49 @@
 ﻿#pragma once
 
-// Equipping and unequipping armor and weapons.
+// Equipping and unequipping armor and weapons, as well as answering questions
+// about equipped gear.
 
 enum class Action : ::std::uint8_t;
 
 namespace game
 {
+	// Ask the game for the right hand slot.
 	RE::BGSEquipSlot* right_hand_equip_slot();
+	// Ask the game for the left hand slot.
 	RE::BGSEquipSlot* left_hand_equip_slot();
+	// Ask the game for the shouts/powers slot.
 	RE::BGSEquipSlot* power_equip_slot();
 
+	// Find a bound object matching this form in the player's inventory. Caller must provide
+	// pointers to bound object and extra data list references to receive found data. Returns
+	// the number of such items the player has in their inventory.
 	int boundObjectForForm(const RE::TESForm* form,
 		RE::PlayerCharacter*& the_player,
 		RE::TESBoundObject*& outval,
 		RE::ExtraDataList*& outextra);
+	// Similar to boundObjectForForm(), but fills out an inventory entry instead of extra data lists.
 	bool inventoryEntryDataFor(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::InventoryEntryData*& outentry);
 
+	// Is the player wearing this item?
 	bool isItemWorn(RE::TESBoundObject*& object, RE::PlayerCharacter*& the_player);
+	// Is this item favorited? Probably doesn't work for spells, which are not inventory items.
 	bool isItemFavorited(const RE::TESForm* form);
+	// Is this weapon poisoned?
 	bool isItemPoisoned(const RE::TESForm* form);
+	// If this item is enchanted, what is its charge level? Or if a torch, what is its burn time?
 	float itemChargeLevel(const RE::TESForm* form);
+	// Get the display name for this item, looking up a player-set custom name if the item has one.
 	const char* displayName(const RE::TESForm* form);
 
-	// bottleneck for equipping everything
+	// Equip a form in either the left or right hand. Handles weapons/shields directly, but delegates spells.
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
+	// Equip a spell in either the left or right hand.
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 
+	// Unequip the hand indicated by the shared enum.
 	void unequipHand(RE::PlayerCharacter*& the_player, Action which);
-	void unequipLeftOrRightSlot(RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
+	// Unequip the hand indicated by the game's slot data. If the item is a spell, equips and
+	// then immediately unequips the dummy dagger item (if found) to make sure the item shown
+	// in the hand is updated properly.
+	void unequipLeftOrRightSlot(RE::PlayerCharacter*& the_player, RE::BGSEquipSlot*& slot);
 }

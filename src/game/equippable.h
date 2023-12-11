@@ -2,10 +2,8 @@
 
 #include "rust/cxx.h"
 
-// A set of helpers for exposing item data to the Rust side, because
-// not all of TESForm's methods can be punched through easily. It ends
-// up being convenient for serialization to use the ItemData type,
-// which is a side benefit.
+// Builds the rust HudItem struct from game data, inspecting forms,
+// keywords, and inventory data as needed.
 
 struct HudItem;
 struct SpellData;
@@ -14,7 +12,6 @@ namespace equippable
 {
 	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form);
 	rust::Box<SpellData> fillOutSpellData(bool two_handed, int32_t skill_level, const RE::EffectSetting* effect);
-	rust::Box<HudItem> subKindForConsumable(RE::TESForm*& form);
 
 	bool requiresTwoHands(RE::TESForm*& form);
 	RE::ActorValue getPotionEffect(RE::TESForm* form, bool filter);
