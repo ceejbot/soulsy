@@ -143,10 +143,10 @@ impl Default for MeterKind {
 
 impl Display for MeterKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            &MeterKind::CircleArc => write!(f, "circle_arc"),
-            &MeterKind::Vertical => write!(f, "vertical"),
-            &MeterKind::Horizontal => write!(f, "horizontal"),
+        match *self {
+            MeterKind::CircleArc => write!(f, "circle_arc"),
+            MeterKind::Vertical => write!(f, "vertical"),
+            MeterKind::Horizontal => write!(f, "horizontal"),
             _ => write!(f, "none"),
         }
     }
