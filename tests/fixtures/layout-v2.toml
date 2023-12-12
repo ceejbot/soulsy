@@ -49,15 +49,8 @@ svg = "key_bg.svg"
 size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
-[[right.text]]
-alignment = "right"
-offset = { x = 0.0, y = 0.0 }
-color = { r = 255, g = 255, b = 255, a = 0 }
-font_size = 18.0
-contents = "{count} {name}"
-
 [right.meter]
-kind = "vertical"
+orientation = "vertical"
 offset = { x = 20.0, y = 20.0 }
 size = { x = 10.0, y = 100.0 }
 empty_image = ""
@@ -71,6 +64,13 @@ offset = { x = 20.0, y = 20.0 }
 svg = "poison.svg"
 color = {r = 160, g = 240, b = 2, a = 255 }
 size = { x = 10.0, y = 10.0 }
+
+[[right.text]]
+alignment = "right"
+offset = { x = 0.0, y = 0.0 }
+color = { r = 255, g = 255, b = 255, a = 0 }
+font_size = 18.0
+contents = "{count} {name}"
 
 # ----- left hand slot
 
@@ -104,7 +104,7 @@ font_size = 18.0
 contents = "{count} {name}"
 
 [left.meter]
-kind = "horizontal"
+orientation = "horizontal"
 offset = { x = 20.0, y = 20.0 }
 size = { x = 100.0, y = 0.0 }
 empty_image = ""
@@ -144,6 +144,15 @@ offset = { x = -50.0, y = 55.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
+
+[utility.meter]
+offset = { x = 0.0, y = 0.0 }
+size = { x = 70.0, y = 10.0 }
+bg_image = ""
+bg_color = { r = 0, g = 0, b = 0, a = 255 }
+fill_color =  { r = 255, g = 255, b = 255, a = 255 }
+start_angle = 0
+end_angle = 180
 
 # ----- power slot
 

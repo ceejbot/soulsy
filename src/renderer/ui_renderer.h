@@ -56,8 +56,6 @@ namespace ui
 		const Color color,
 		const Align alignment);
 
-	void drawMeterCircleArc(const double percent, const ImVec2 center);
-
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
 	{

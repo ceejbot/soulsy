@@ -325,20 +325,6 @@ namespace ui
 		animation_list.emplace_back(static_cast<ui::animation_type>(animation_type), std::move(anim));
 	}
 
-	void drawMeterCircleArc(const float percent,
-		const ImVec2 center,
-		const ImVec2 start,
-		ID3D11ShaderResourceView* bgTexture,
-		const Color emptyColor,
-		ID3D11ShaderResourceView* filledTexture,
-		const Color filledColor)
-	{
-		// TODO unimplemented
-		// draw circle arc
-		// for now starting point is at (d/2, 0) on the x axis, fill is counter clockwise
-		// research topic: what's in the imgui API?
-	}
-
 	void drawElement(ID3D11ShaderResourceView* texture,
 		const ImVec2 center,
 		const ImVec2 size,
@@ -494,10 +480,63 @@ namespace ui
 			// Charge/fuel meter.
 			if (slotLayout.meter_kind == MeterType::CircleArc)
 			{
+				// The flat structure has the same fields to support arc and
+				// rectangular meters, so some names might be surprising here.
 				auto level              = entry->charge_level();
 				const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
-				// TODO also needs colors passed as well as starting point, idek
-				drawMeterCircleArc(level, meter_center);
+				const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
+				const auto bg_img_str   = std::string(slotLayout.meter_empty_image);
+				if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
+				{
+					const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
+					drawElement(texture, meter_center, size, 0.0f, slotLayout.meter_empty_color);
+				}
+
+				if (meter_size.x != meter_size.y)
+				{
+					logger::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
+				}
+				const auto radius = meter_size.x / 2.0f;
+
+				ImVec2 start = ImVec2(meter_center.x + radius * cosf(slotLayout.meter_start_angle),
+					meter_center.y + radius * sinf(slotLayout.meter_start_angle));
+				// level is a percentage IIUC but might not be so this might have to change once I start
+				// looking at real values...
+				const float startAngle = slotLayout.meter_end_angle;
+				const float endAngle   = (slotLayout.meter_end_angle - slotLayout.meter_start_angle) * level / 100.0f;
+				ImVec2 end = ImVec2(meter_center.x + radius * cosf(endAngle), meter_center.y + radius * sinf(endAngle));
+
+				const ImU32 fill_color = IM_COL32(slotLayout.meter_fill_color.r,
+					slotLayout.meter_fill_color.g,
+					slotLayout.meter_fill_color.b,
+					slotLayout.meter_fill_color.a * gHudAlpha);
+
+				// ImGui::GetWindowDrawList()->PathLineTo(meter_center);
+				ImGui::GetWindowDrawList()->PathClear();
+				ImGui::GetWindowDrawList()->PathLineTo(start);
+				// IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 0);
+				ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius, startAngle, endAngle, 20);
+				ImGui::GetWindowDrawList()->PathLineTo(ImVec2(end.x - width, end.y - width));
+				ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius - width, endAngle, startAngle, 20);
+				ImGui::GetWindowDrawList()->PathLineToMergeDuplicate(start);
+				ImGui::GetWindowDrawList()->PathFillConvex(fill_color);
+				ImGui::GetWindowDrawList()->PathClear();
+				/*
+				// Stateful path API, add points then finish with PathFillConvex() or PathStroke()
+// - Filled shapes must always use clockwise winding order. The anti-aliasing fringe depends on it. Counter-clockwise shapes will have "inward" anti-aliasing.
+inline    void  PathClear()                                                 { _Path.Size = 0; }
+inline    void  PathLineTo(const ImVec2& pos)                               { _Path.push_back(pos); }
+inline    void  PathLineToMergeDuplicate(const ImVec2& pos)                 { if (_Path.Size == 0 || memcmp(&_Path.Data[_Path.Size - 1], &pos, 8) != 0) _Path.push_back(pos); }
+inline    void  PathFillConvex(ImU32 col)                                   { AddConvexPolyFilled(_Path.Data, _Path.Size, col); _Path.Size = 0; }
+inline    void  PathStroke(ImU32 col, ImDrawFlags flags = 0, float thickness = 1.0f) { AddPolyline(_Path.Data, _Path.Size, col, flags, thickness); _Path.Size = 0; }
+IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 0);
+IMGUI_API void  PathArcToFast(const ImVec2& center, float radius, int a_min_of_12, int a_max_of_12);                // Use precomputed angles for a 12 steps circle
+IMGUI_API void  PathEllipticalArcTo(const ImVec2& center, float radius_x, float radius_y, float rot, float a_min, float a_max, int num_segments = 0); // Ellipse
+IMGUI_API void  PathBezierCubicCurveTo(const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, int num_segments = 0); // Cubic Bezier (4 control points)
+IMGUI_API void  PathBezierQuadraticCurveTo(const ImVec2& p2, const ImVec2& p3, int num_segments = 0);               // Quadratic Bezier (3 control points)
+IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, ImDrawFlags flags = 0);
+
+			 */
 			}
 			if (slotLayout.meter_kind != MeterType::None)
 			{
@@ -510,7 +549,7 @@ namespace ui
 				if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
 				{
 					const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
-					drawElement(texture, meter_center, size, 0.f, slotLayout.meter_empty_color);
+					drawElement(texture, meter_center, size, 0.0f, slotLayout.meter_empty_color);
 				}
 				else
 				{

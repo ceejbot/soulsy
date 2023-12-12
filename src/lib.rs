@@ -139,6 +139,8 @@ pub mod plugin {
         meter_empty_color: Color,
         meter_fill_image: String,
         meter_fill_color: Color,
+        meter_start_angle: f32,
+        meter_end_angle: f32,
 
         text: Vec<TextFlattened>,
     }
