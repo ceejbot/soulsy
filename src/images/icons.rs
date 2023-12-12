@@ -1,5 +1,16 @@
 use strum::{Display, EnumString, EnumVariantNames};
 
+/// All usable icons are defined here as enum variants.
+///
+/// To add a new icon, you must add a variant name here AND add the
+/// variant to `fallback()`, so the HUD renders something if the file
+/// is missing (e.g., an icon pack dose not include it). If the icon is
+/// added to the core set in the main mod, it is its own fallback and can
+/// be a fallback target. (This is not enforced by types.)
+///
+/// You should then add a file for the icon in one of the icon packs or the
+/// core set. The name of the file *must* be the enum variation name in
+/// snake_case. That is, a variation named SnakeCase becomes `snake_case.svg`.
 #[derive(Debug, Clone, Default, Hash, PartialEq, Eq, EnumString, EnumVariantNames, Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum Icon {
@@ -180,6 +191,7 @@ pub enum Icon {
 }
 
 impl Icon {
+    /// Get the SVG filename for this icon. Programmatically derived.
     pub fn icon_file(&self) -> String {
         format!("{self}.svg")
     }

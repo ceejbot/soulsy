@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+// UNUSED.
 // TODO: Rewrite if adding a cast-from-hud feature. Otherwise remove.
 namespace game
 {

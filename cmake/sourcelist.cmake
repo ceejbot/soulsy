@@ -7,8 +7,9 @@ set(headers ${headers}
     src/game/shouts.h
     src/game/utility.h
     src/plugin/cosave.h
-    src/plugin/hooks.h
+    src/plugin/inventory.h
     src/plugin/keycodes.h
+    src/plugin/menus.h
     src/plugin/papyrus.h
     src/plugin/sinks.h
     src/renderer/animation_handler.h
@@ -30,8 +31,9 @@ set(sources ${sources}
     src/game/utility.cpp
     src/main.cpp
     src/plugin/cosave.cpp
-    src/plugin/hooks.cpp
+    src/plugin/inventory.cpp
     src/plugin/keycodes.cpp
+    src/plugin/menus.cpp
     src/plugin/papyrus.cpp
     src/plugin/sinks.cpp
     src/renderer/ui_renderer.cpp

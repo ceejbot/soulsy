@@ -1,5 +1,8 @@
-//! Rasterize svgs and provide them to the C++ side.
-//! Possibly read on the fly?
+//! Rasterize svgs and provide them to the C++ side. C++ controls whether the svgs
+//! are preloaded or lazily loaded. This uses the `resvg` crate which supports
+//! nearly all of the svg standard, with the notable exception of animation. This
+//! module also maintains a mapping of icon key to the icon file found for that
+//! path after fallbacks, so icon data is loaded at most once.
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -15,12 +18,14 @@ use crate::plugin::LoadedImage;
 
 static ICON_MAP: Lazy<Mutex<HashMap<Icon, Icon>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
+/// Get the lock for the icon map for safe use.
 pub fn icon_map() -> std::sync::MutexGuard<'static, HashMap<Icon, Icon>> {
     ICON_MAP
         .lock()
         .expect("Unrecoverable runtime problem: cannot acquire icon hashmap lock. Exiting.")
 }
 
+/// Path for icons relative to the game dir.
 const ICON_SVG_PATH: &str = "data/SKSE/plugins/resources/icons/";
 
 /// C++ should call this before trying to load any icon data.
@@ -29,7 +34,7 @@ pub fn get_icon_key(name: String) -> String {
     key_for_icon(&icon).to_string()
 }
 
-/// Called by C++, so it needs to handle all errors and signal its
+/// Called by C++, so it needs to handle all errors and signalits
 /// success or failure through some means other than a Result.
 /// In this case, a zero-length vector is a failure.
 pub fn rasterize_icon(name: String, maxdim: u32) -> LoadedImage {
@@ -43,6 +48,9 @@ pub fn rasterize_icon(name: String, maxdim: u32) -> LoadedImage {
     }
 }
 
+/// Given a string path, load and rasterize the svg there. Does not
+/// attempt to restrict size. Signals failure only by returning an
+/// empty image, so intended for use by C++ not Rust.
 pub fn rasterize_by_path(fpath: String) -> LoadedImage {
     match load_and_rasterize(&fpath.clone().into(), None) {
         Ok(v) => v,
@@ -53,7 +61,7 @@ pub fn rasterize_by_path(fpath: String) -> LoadedImage {
     }
 }
 
-/// Rust can call this to load rasterized icon image data.
+/// Rust should call this to load rasterized icon image data, with a size constraint.
 pub fn load_icon(icon: &Icon, maxdim: u32) -> Result<LoadedImage> {
     let mapped = key_for_icon(icon);
     let file_path = icon_to_path(&mapped);
