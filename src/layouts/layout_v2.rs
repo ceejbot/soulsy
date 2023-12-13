@@ -139,9 +139,8 @@ impl HudLayout2 {
             meter_kind,
             meter_center,
             meter_size,
-            meter_empty_image,
+            meter_bg_image,
             meter_empty_color,
-            meter_fill_image,
             meter_fill_color,
             meter_start_angle,
             meter_end_angle,
@@ -152,7 +151,6 @@ impl HudLayout2 {
                 Point::origin(),
                 String::new(),
                 Color::invisible(),
-                String::new(),
                 Color::invisible(),
                 0.0f32,
                 0.0f32,
@@ -161,9 +159,8 @@ impl HudLayout2 {
                 orientation,
                 offset,
                 size,
-                empty_image,
+                svg,
                 empty_color,
-                fill_image,
                 fill_color,
             } => {
                 let kind = match orientation {
@@ -177,9 +174,8 @@ impl HudLayout2 {
                     kind,
                     meter_center,
                     size.scale(self.global_scale),
-                    empty_image,
+                    svg,
                     empty_color,
-                    fill_image,
                     fill_color,
                     0.0f32,
                     0.0f32,
@@ -188,8 +184,8 @@ impl HudLayout2 {
             MeterElement::CircleArc {
                 offset,
                 size,
-                bg_image,
-                bg_color,
+                svg,
+                empty_color,
                 fill_color,
                 start_angle,
                 end_angle,
@@ -200,9 +196,8 @@ impl HudLayout2 {
                     MeterKind::CircleArc,
                     meter_center,
                     size.scale(self.global_scale),
-                    bg_image,
-                    bg_color,
-                    String::new(),
+                    svg,
+                    empty_color,
                     fill_color,
                     start_angle as f32 * std::f32::consts::PI / 180.0f32,
                     end_angle as f32 * std::f32::consts::PI / 180.0f32,
@@ -232,9 +227,8 @@ impl HudLayout2 {
             meter_kind,
             meter_center,
             meter_size,
-            meter_empty_image,
+            meter_bg_image,
             meter_empty_color,
-            meter_fill_image,
             meter_fill_color,
             meter_start_angle,
             meter_end_angle,
@@ -364,16 +358,15 @@ pub enum MeterElement {
         orientation: MeterOrientation,
         offset: Point,
         size: Point,
-        empty_image: String,
+        svg: String,
         empty_color: Color,
-        fill_image: String,
         fill_color: Color,
     },
     CircleArc {
         offset: Point,
         size: Point,
-        bg_image: String,
-        bg_color: Color,
+        svg: String,
+        empty_color: Color,
         fill_color: Color,
         start_angle: u32, // in degrees, 0-360
         end_angle: u32,   // in degrees, 0-360, must be > end_angle
@@ -610,10 +603,9 @@ mod tests {
     fn can_deserialize_vert_meter() {
         let data = r#"orientation = "vertical"
         offset = { x = 20.0, y = 20.0 }
-        size = { x = 100.0, y = 0.0 }
-        empty_image = ""
+        size = { x = 10.0, y = 100.0 }
+        svg = "meter_bar_vertical.svg"
         empty_color = { r = 0, g = 0, b = 0, a = 255 }
-        fill_image = ""
         fill_color = { r = 255, g = 30, b = 128, a = 255 }"#;
         let meter: MeterElement = match toml::from_str(data) {
             Ok(v) => v,
@@ -622,6 +614,7 @@ mod tests {
                 panic!("vertical test fixture should be valid meter");
             }
         };
+        assert_eq!(meter.offset(), Point { x: 20.0, y: 20.0 });
     }
 
     #[test]
@@ -629,9 +622,8 @@ mod tests {
         let data = r#"orientation = "horizontal"
         offset = { x = 20.0, y = 20.0 }
         size = { x = 100.0, y = 0.0 }
-        empty_image = ""
+        svg = "meter_bar_vertical.svg"
         empty_color = { r = 0, g = 0, b = 0, a = 255 }
-        fill_image = ""
         fill_color = { r = 255, g = 30, b = 128, a = 255 }"#;
         let meter: MeterElement = match toml::from_str(data) {
             Ok(v) => v,
@@ -646,13 +638,12 @@ mod tests {
     #[test]
     fn can_deserialize_arc_meter() {
         let data = r#"offset = { x = 0.0, y = 0.0 }
-size = { x = 70.0, y = 10.0 }
-bg_image = ""
-bg_color = { r = 0, g = 0, b = 0, a = 255 }
-fill_color =  { r = 255, g = 255, b = 255, a = 255 }
-start_angle = 0
-end_angle = 180
-"#;
+        size = { x = 70.0, y = 10.0 }
+        svg = "meter_bar_vertical.svg"
+        empty_color = { r = 0, g = 0, b = 0, a = 255 }
+        fill_color =  { r = 255, g = 255, b = 255, a = 255 }
+        start_angle = 0
+        end_angle = 180"#;
         let meter: MeterElement = match toml::from_str(data) {
             Ok(v) => v,
             Err(e) => {

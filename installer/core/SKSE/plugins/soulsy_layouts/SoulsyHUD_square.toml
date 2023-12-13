@@ -112,6 +112,14 @@ svg = "../icons/indicator_poison.svg"
 color = {r = 160, g = 240, b = 2, a = 255 }
 size = { x = 25.0, y = 25.0 }
 
+[right.meter]
+orientation = "vertical"
+offset = { x = 60.0, y = 0.0 }
+size = { x = 20.0, y = 100.0 }
+svg = "meter_bar_vertical.svg"
+empty_color = { r = 0, g = 0, b = 0, a = 255 }
+fill_color = { r = 255, g = 30, b = 128, a = 255 }
+
 # ----- left hand slot
 
 [left]
