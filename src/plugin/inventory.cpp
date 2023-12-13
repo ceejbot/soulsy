@@ -6,15 +6,6 @@
 
 #include "lib.rs.h"
 
-inline const std::set<RE::FormType> RELEVANT_FORMTYPES_INVENTORY{
-	RE::FormType::AlchemyItem,
-	RE::FormType::Ammo,
-	RE::FormType::Armor,
-	RE::FormType::Light,
-	RE::FormType::Scroll,
-	RE::FormType::Weapon,
-};
-
 // ---------- PlayerHook
 
 void PlayerHook::install()

@@ -3,6 +3,7 @@
 #include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
+#include "inventory.h"
 #include "keycodes.h"
 #include "player.h"
 #include "ui_renderer.h"
@@ -37,6 +38,9 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 	if (!event || !event->actor || !event->actor->IsPlayerRef()) { return event_result::kContinue; }
 	auto* form = RE::TESForm::LookupByID(event->baseObject);
 	if (!form) { return event_result::kContinue; }
+
+	const auto formtype = form->GetFormType();
+	if (!RELEVANT_FORMTYPES_INVENTORY.contains(formtype)) { return event_result::kContinue; }
 
 	auto* player   = RE::PlayerCharacter::GetSingleton();
 	auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
