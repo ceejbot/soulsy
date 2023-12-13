@@ -53,9 +53,8 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 orientation = "vertical"
 offset = { x = 20.0, y = 20.0 }
 size = { x = 10.0, y = 100.0 }
-empty_image = ""
+svg = "meter_bar_vertical.svg"
 empty_color = { r = 0, g = 0, b = 0, a = 255 }
-fill_image = ""
 fill_color = { r = 255, g = 30, b = 128, a = 255 }
 
 [right.poison]
@@ -107,9 +106,8 @@ contents = "{count} {name}"
 orientation = "horizontal"
 offset = { x = 20.0, y = 20.0 }
 size = { x = 100.0, y = 0.0 }
-empty_image = ""
+svg = "meter_bar_vertical.svg"
 empty_color = { r = 0, g = 0, b = 0, a = 255 }
-fill_image = ""
 fill_color = { r = 255, g = 30, b = 128, a = 255 }
 
 # ----- utility slot
@@ -148,8 +146,8 @@ contents = "{name}"
 [utility.meter]
 offset = { x = 0.0, y = 0.0 }
 size = { x = 70.0, y = 10.0 }
-bg_image = ""
-bg_color = { r = 0, g = 0, b = 0, a = 255 }
+svg = "meter_bar_vertical.svg"
+empty_color = { r = 0, g = 0, b = 0, a = 255 }
 fill_color =  { r = 255, g = 255, b = 255, a = 255 }
 start_angle = 0
 end_angle = 180
