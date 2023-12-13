@@ -517,50 +517,32 @@ namespace ui
 					ImGui::GetWindowDrawList()->PathLineToMergeDuplicate(start);
 					ImGui::GetWindowDrawList()->PathFillConvex(fill_color);
 					ImGui::GetWindowDrawList()->PathClear();
-					/*
-				// Stateful path API, add points then finish with PathFillConvex() or PathStroke()
-// - Filled shapes must always use clockwise winding order. The anti-aliasing fringe depends on it. Counter-clockwise shapes will have "inward" anti-aliasing.
-inline    void  PathClear()                                                 { _Path.Size = 0; }
-inline    void  PathLineTo(const ImVec2& pos)                               { _Path.push_back(pos); }
-inline    void  PathLineToMergeDuplicate(const ImVec2& pos)                 { if (_Path.Size == 0 || memcmp(&_Path.Data[_Path.Size - 1], &pos, 8) != 0) _Path.push_back(pos); }
-inline    void  PathFillConvex(ImU32 col)                                   { AddConvexPolyFilled(_Path.Data, _Path.Size, col); _Path.Size = 0; }
-inline    void  PathStroke(ImU32 col, ImDrawFlags flags = 0, float thickness = 1.0f) { AddPolyline(_Path.Data, _Path.Size, col, flags, thickness); _Path.Size = 0; }
-IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 0);
-IMGUI_API void  PathArcToFast(const ImVec2& center, float radius, int a_min_of_12, int a_max_of_12);                // Use precomputed angles for a 12 steps circle
-IMGUI_API void  PathEllipticalArcTo(const ImVec2& center, float radius_x, float radius_y, float rot, float a_min, float a_max, int num_segments = 0); // Ellipse
-IMGUI_API void  PathBezierCubicCurveTo(const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, int num_segments = 0); // Cubic Bezier (4 control points)
-IMGUI_API void  PathBezierQuadraticCurveTo(const ImVec2& p2, const ImVec2& p3, int num_segments = 0);               // Quadratic Bezier (3 control points)
-IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, ImDrawFlags flags = 0);
-
-			 */
 				}
-				if (slotLayout.meter_kind != MeterKind::None)
+				else if (slotLayout.meter_kind != MeterKind::None)
 				{
 					// this is a percent-full level.
 					auto level = entry->charge_level();
-					logger::info("charge level == {}", level);
 					const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
 					const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
 					const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
 
-					auto fill_x = 0.0f;
-					auto fill_y = 0.0f;
+					auto adjust_x = 0.0f;
+					auto adjust_y = 0.0f;
 					if (slotLayout.meter_kind == MeterKind::Horizontal)
 					{
-						fill_x = slotLayout.meter_size.x * level / 100.0f;
-						fill_y = slotLayout.meter_size.y;
+						adjust_x = slotLayout.meter_size.x * (1.0f - level * 0.01f);
 					}
 					else if (slotLayout.meter_kind == MeterKind::Vertical)
 					{
-						fill_x = slotLayout.meter_size.x;
-						fill_y = slotLayout.meter_size.y * level / 100.0f;
+						adjust_y = slotLayout.meter_size.y * (1.0f - level * 0.01f);
 					}
 
 					// clip_min is left, top
 					const auto clip_min =
-						ImVec2(meter_center.x - meter_size.x / 2.0f, meter_center.y - meter_size.y / 2.0f);
+						ImVec2(meter_center.x - meter_size.x / 2.0f, meter_center.y - meter_size.y / 2.0f + adjust_y);
 					// clip_max is right, bottom
-					const auto clip_max = ImVec2(clip_min.x + fill_x, clip_min.y + fill_y);
+					const auto clip_max =
+						ImVec2(meter_center.x + meter_size.x / 2.0f - adjust_x, meter_center.y + meter_size.y / 2.0f);
 
 					if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
 					{

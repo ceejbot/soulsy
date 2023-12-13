@@ -7,7 +7,9 @@ use strfmt::strfmt;
 use super::base::BaseType;
 use super::HasIcon;
 use crate::images::icons::Icon;
-use crate::plugin::{chargeLevelByFormSpec, isPoisonedByFormSpec, Color, ItemCategory, hasChargeByFormSpec};
+use crate::plugin::{
+    chargeLevelByFormSpec, hasChargeByFormSpec, isPoisonedByFormSpec, Color, ItemCategory,
+};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.

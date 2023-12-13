@@ -50,9 +50,9 @@ namespace game
 		RE::InventoryEntryData entryData;
 		bool found = false;
 
-		for (const auto& [item, inv_data] : candidates)
+		for (const auto& [item, invData] : candidates)
 		{
-			const auto& [num_items, entry] = inv_data;
+			const auto& [num_items, entry] = invData;
 			if (entry->object->formID == form->formID)
 			{
 				if (item)
@@ -240,7 +240,7 @@ namespace game
 		auto worn = false;
 		for (const auto& [item, inv_data] : player::getInventoryForType(thePlayer, RE::FormType::Armor))
 		{
-			const auto& [count, entry] = inv_data;
+			const auto& [count, entry] = invData;
 			if (entry && entry->object && (entry->object->formID == bound_obj->formID) && entry->IsWorn())
 			{
 				worn = true;
@@ -271,32 +271,91 @@ namespace game
 
 	bool itemHasCharge(const RE::TESForm* form)
 	{
-		// TODO shouts and powers have their own charge concept that we can show.
+		if (!form) { return false; }
+		if (form->Is(RE::FormType::Shout)) { return true; }
+		const auto enchantable = form->As<RE::TESEnchantableForm>();
+		if (enchantable && enchantable->formEnchanting) { return true; }
 
-		RE::InventoryEntryData* inventoryEntry = nullptr;
-		if (!inventoryEntryDataFor(form, inventoryEntry)) { false; }
-		return inventoryEntry && inventoryEntry->IsEnchanted();
-	}
-
-	float itemChargeLevel(const RE::TESForm* form)
-	{
-		// TODO shouts and powers have their own charge concept that we can show.
-
-		RE::InventoryEntryData* inventoryEntry = nullptr;
-		if (!inventoryEntryDataFor(form, inventoryEntry)) { return 0.0f; }
-		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
-		return static_cast<float>(charge.value_or(0.0));
-	}
-
-	const char* displayName(const RE::TESForm* form)
-	{
 		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(thePlayer, form->GetFormType());
 
-		for (const auto& [item, inv_data] : candidates)
+		for (const auto& [item, invData] : candidates)
 		{
-			const auto& [num_items, entry] = inv_data;
+			const auto& [num_items, entry] = invData;
+			if (entry->object->formID == form->formID)
+			{
+				if (item && entry->extraLists)
+				{
+					for (auto* datalist : *entry->extraLists)
+					{
+						auto* extrafox = datalist->GetByType(RE::ExtraDataType::kEnchantment);
+						if (extrafox) { return true; }
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	// This returns a percentage.
+	float itemChargeLevel(const RE::TESForm* form)
+	{
+		if (!form) { return false; }
+
+		if (form->Is(RE::FormType::Shout))
+		{
+			auto* thePlayer   = RE::PlayerCharacter::GetSingleton();
+			auto* playerActor = thePlayer->As<RE::Actor>();
+			return static_cast<float>(playerActor->GetCurrentShoutLevel());
+		}
+
+		float current = 0.0f;
+		float max     = 0.0f;
+
+		const auto enchantable = form->As<RE::TESEnchantableForm>();
+		if (enchantable) { max = enchantable->amountofEnchantment; }
+
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		for (const auto& [item, invData] : candidates)
+		{
+			const auto& [num_items, entry] = invData;
+			if (entry->object->formID == form->formID)
+			{
+				if (item && entry->extraLists)
+				{
+					for (auto* datalist : *entry->extraLists)
+					{
+						auto* maybe_charge = datalist->GetByType(RE::ExtraDataType::kCharge);
+						if (maybe_charge && current == 0.0f)
+						{
+							auto* charge = static_cast<RE::ExtraCharge*>(maybe_charge);
+							current      = charge->charge;
+						}
+					}  // end of extra data checking
+					if (max > 0.0f && current > 0.0f) { return current * 100.0f / max; }
+				}
+			}
+		}  // end of candidates loop
+
+		RE::InventoryEntryData* inventoryEntry = nullptr;
+		return 100.0f;
+	}
+
+	const char* displayName(const RE::TESForm* form)
+	{
+		if (!form) { return "null"; }
+
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		for (const auto& [item, invData] : candidates)
+		{
+			const auto& [num_items, entry] = invData;
 			if (entry->object->formID == form->formID)
 			{
 				if (item && entry->extraLists)
@@ -330,7 +389,7 @@ namespace game
 
 		if (form->formID == util::unarmed)
 		{
-			rlog::debug("unequipping this slot by request!"sv);
+			logger::debug("unequipping this slot by request!"sv);
 			unequipLeftOrRightSlot(thePlayer, slot);
 			return;
 		}
@@ -395,7 +454,7 @@ namespace game
 		}
 	}
 
-	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player)
+	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& thePlayer)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::trace("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
@@ -403,8 +462,8 @@ namespace game
 			slot_is_left,
 			form->GetFormType());
 
-		const auto* obj_right = the_player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = the_player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto* obj_right = thePlayer->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = thePlayer->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 
 		const auto obj_equipped_left  = obj_left && obj_left->formID == form->formID;
 		const auto obj_equipped_right = obj_right && obj_right->formID == form->formID;
@@ -425,9 +484,9 @@ namespace game
 		if (!task) return;
 
 		auto* spell = form->As<RE::SpellItem>();
-		if (the_player->HasSpell(spell))
+		if (thePlayer->HasSpell(spell))
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(the_player, spell, slot); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(thePlayer, spell, slot); });
 		}
 		else
 		{
