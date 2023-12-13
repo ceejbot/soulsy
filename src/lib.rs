@@ -336,7 +336,9 @@ pub mod plugin {
         fn fmtstr(self: &HudItem, format: String) -> String;
         /// Check if this item is poisoned.
         fn is_poisoned(self: &HudItem) -> bool;
-        /// Check if this item is poisoned.
+        /// Check if this item has a charge level: enchantment or fuel.
+        fn has_charge(self: &HudItem) -> bool;
+        /// Get the charge level if it's relevant.
         fn charge_level(self: &HudItem) -> f32;
 
         /// See src/data/magic.rs for this struct. It's used to classify spells.
@@ -493,6 +495,8 @@ pub mod plugin {
         fn formSpecToHudItem(form_spec: &CxxString) -> Box<HudItem>;
         /// Is this item poisoned?
         fn isPoisonedByFormSpec(form_spec: &CxxString) -> bool;
+        /// Does this item have fuel or an enchantment charge level?
+        fn hasChargeByFormSpec(form_spec: &CxxString) -> bool;
         /// Get an item's enchant level. Will be 0 for all unenchanted items.
         fn chargeLevelByFormSpec(form_spec: &CxxString) -> f32;
     }

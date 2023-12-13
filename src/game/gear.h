@@ -73,6 +73,8 @@ namespace game
 	bool isItemFavorited(const RE::TESForm* form);
 	// Is this weapon poisoned?
 	bool isItemPoisoned(const RE::TESForm* form);
+	// Does this item have a charge or fuel level?
+	bool itemHasCharge(const RE::TESForm* form);
 	// If this item is enchanted, what is its charge level? Or if a torch, what is its burn time?
 	float itemChargeLevel(const RE::TESForm* form);
 	// Get the display name for this item, looking up a player-set custom name if the item has one.

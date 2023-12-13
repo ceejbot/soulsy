@@ -470,50 +470,54 @@ namespace ui
 			}
 
 			// Charge/fuel meter.
-			if (slotLayout.meter_kind == MeterType::CircleArc)
+			if (entry->has_charge())
 			{
-				// The flat structure has the same fields to support arc and
-				// rectangular meters, so some names might be surprising here.
-				auto level              = entry->charge_level();
-				const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
-				const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
-				const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
-				if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
+				if (slotLayout.meter_kind == MeterKind::CircleArc)
 				{
-					const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
-					drawElement(texture, meter_center, size, 0.0f, slotLayout.meter_empty_color);
-				}
+					// The flat structure has the same fields to support arc and
+					// rectangular meters, so some names might be surprising here.
+					auto level              = entry->charge_level();
+					const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
+					const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
+					const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
+					if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
+					{
+						const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
+						drawElement(texture, meter_center, meter_size, 0.0f, slotLayout.meter_empty_color);
+					}
 
-				if (meter_size.x != meter_size.y)
-				{
-					logger::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
-				}
-				const auto radius = meter_size.x / 2.0f;
+					if (meter_size.x != meter_size.y)
+					{
+						logger::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
+					}
+					const auto radius = meter_size.x / 2.0f;
+					const auto width  = 10.0f;  // HACK HACK HACK TODO
 
-				ImVec2 start = ImVec2(meter_center.x + radius * cosf(slotLayout.meter_start_angle),
-					meter_center.y + radius * sinf(slotLayout.meter_start_angle));
-				// level is a percentage IIUC but might not be so this might have to change once I start
-				// looking at real values...
-				const float startAngle = slotLayout.meter_end_angle;
-				const float endAngle   = (slotLayout.meter_end_angle - slotLayout.meter_start_angle) * level / 100.0f;
-				ImVec2 end = ImVec2(meter_center.x + radius * cosf(endAngle), meter_center.y + radius * sinf(endAngle));
+					ImVec2 start = ImVec2(meter_center.x + radius * cosf(slotLayout.meter_start_angle),
+						meter_center.y + radius * sinf(slotLayout.meter_start_angle));
+					// level is a percentage IIUC but might not be so this might have to change once I start
+					// looking at real values...
+					const float startAngle = slotLayout.meter_end_angle;
+					const float endAngle = (slotLayout.meter_end_angle - slotLayout.meter_start_angle) * level / 100.0f;
+					ImVec2 end =
+						ImVec2(meter_center.x + radius * cosf(endAngle), meter_center.y + radius * sinf(endAngle));
 
-				const ImU32 fill_color = IM_COL32(slotLayout.meter_fill_color.r,
-					slotLayout.meter_fill_color.g,
-					slotLayout.meter_fill_color.b,
-					slotLayout.meter_fill_color.a * gHudAlpha);
+					const ImU32 fill_color = IM_COL32(slotLayout.meter_fill_color.r,
+						slotLayout.meter_fill_color.g,
+						slotLayout.meter_fill_color.b,
+						slotLayout.meter_fill_color.a * gHudAlpha);
 
-				// ImGui::GetWindowDrawList()->PathLineTo(meter_center);
-				ImGui::GetWindowDrawList()->PathClear();
-				ImGui::GetWindowDrawList()->PathLineTo(start);
-				// IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 0);
-				ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius, startAngle, endAngle, 20);
-				ImGui::GetWindowDrawList()->PathLineTo(ImVec2(end.x - width, end.y - width));
-				ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius - width, endAngle, startAngle, 20);
-				ImGui::GetWindowDrawList()->PathLineToMergeDuplicate(start);
-				ImGui::GetWindowDrawList()->PathFillConvex(fill_color);
-				ImGui::GetWindowDrawList()->PathClear();
-				/*
+					// ImGui::GetWindowDrawList()->PathLineTo(meter_center);
+					ImGui::GetWindowDrawList()->PathClear();
+					ImGui::GetWindowDrawList()->PathLineTo(start);
+					// IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 0);
+					ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius, startAngle, endAngle, 20);
+					ImGui::GetWindowDrawList()->PathLineTo(ImVec2(end.x - width, end.y - width));
+					ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius - width, endAngle, startAngle, 20);
+					ImGui::GetWindowDrawList()->PathLineToMergeDuplicate(start);
+					ImGui::GetWindowDrawList()->PathFillConvex(fill_color);
+					ImGui::GetWindowDrawList()->PathClear();
+					/*
 				// Stateful path API, add points then finish with PathFillConvex() or PathStroke()
 // - Filled shapes must always use clockwise winding order. The anti-aliasing fringe depends on it. Counter-clockwise shapes will have "inward" anti-aliasing.
 inline    void  PathClear()                                                 { _Path.Size = 0; }
@@ -529,46 +533,48 @@ IMGUI_API void  PathBezierQuadraticCurveTo(const ImVec2& p2, const ImVec2& p3, i
 IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, ImDrawFlags flags = 0);
 
 			 */
-			}
-			if (slotLayout.meter_kind != MeterType::None)
-			{
-				// this is a percent-full level.
-				auto level              = entry->charge_level();
-				const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
-				const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
-				const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
-
-				auto fill_x = 0.0f;
-				auto fill_y = 0.0f;
-				if (slotLayout.meter_kind == MeterType::Horizontal)
-				{
-					fill_x = slotLayout.meter_size.x * level / 100.0f;
-					fill_y = slotLayout.meter_size.y;
 				}
-				else if (slotLayout.meter_kind == MeterType::Vertical)
+				if (slotLayout.meter_kind != MeterKind::None)
 				{
-					fill_x = slotLayout.meter_size.x;
-					fill_y = slotLayout.meter_size.y * level / 100.0f;
-				}
+					// this is a percent-full level.
+					auto level = entry->charge_level();
+					logger::info("charge level == {}", level);
+					const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
+					const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
+					const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
 
-				// clip_min is left, top
-				const auto clip_min =
-					ImVec2(meter_center.x - meter_size.x / 2.0f, meter_center.y - meter_size.y / 2.0f);
-				// clip_max is right, bottom
-				const auto clip_max = ImVec(clip_min.x + fill_x, clip_min.y + fill_y);
+					auto fill_x = 0.0f;
+					auto fill_y = 0.0f;
+					if (slotLayout.meter_kind == MeterKind::Horizontal)
+					{
+						fill_x = slotLayout.meter_size.x * level / 100.0f;
+						fill_y = slotLayout.meter_size.y;
+					}
+					else if (slotLayout.meter_kind == MeterKind::Vertical)
+					{
+						fill_x = slotLayout.meter_size.x;
+						fill_y = slotLayout.meter_size.y * level / 100.0f;
+					}
 
-				if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
-				{
-					const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
-					drawElement(texture, meter_center, meter_size, 0.f, slotLayout.meter_empty_color);
-					// IMGUI_API void          PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
-					ImGui::GetWindowDrawList()->PushClipRect(clip_min, clip_max, true);
-					drawElement(texture, meter_center, meter_size, 0.f, slotLayout.meter_fill_color);
-					ImGui::GetWindowDrawList()->PopClipRect();
-				}
-				else
-				{
-					// TODO if no svg, fill the filled area with the fg color and the rest with bg color
+					// clip_min is left, top
+					const auto clip_min =
+						ImVec2(meter_center.x - meter_size.x / 2.0f, meter_center.y - meter_size.y / 2.0f);
+					// clip_max is right, bottom
+					const auto clip_max = ImVec2(clip_min.x + fill_x, clip_min.y + fill_y);
+
+					if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
+					{
+						const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
+						drawElement(texture, meter_center, meter_size, 0.f, slotLayout.meter_empty_color);
+						// IMGUI_API void          PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
+						ImGui::GetWindowDrawList()->PushClipRect(clip_min, clip_max, true);
+						drawElement(texture, meter_center, meter_size, 0.f, slotLayout.meter_fill_color);
+						ImGui::GetWindowDrawList()->PopClipRect();
+					}
+					else
+					{
+						// TODO if no svg, fill the filled area with the fg color and the rest with bg color
+					}
 				}
 			}
 

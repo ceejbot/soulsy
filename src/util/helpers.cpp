@@ -339,6 +339,12 @@ namespace helpers
 		return game::isItemFavorited(form);
 	}
 
+	bool hasChargeByFormSpec(const std::string& form_spec)
+	{
+		auto* const form = formSpecToFormItem(form_spec);
+		return game::itemHasCharge(form);
+	}
+
 	float chargeLevelByFormSpec(const std::string& form_spec)
 	{
 		auto* const form = formSpecToFormItem(form_spec);

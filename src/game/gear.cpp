@@ -269,8 +269,19 @@ namespace game
 		return false;
 	}
 
+	bool itemHasCharge(const RE::TESForm* form)
+	{
+		// TODO shouts and powers have their own charge concept that we can show.
+
+		RE::InventoryEntryData* inventoryEntry = nullptr;
+		if (!inventoryEntryDataFor(form, inventoryEntry)) { false; }
+		return inventoryEntry && inventoryEntry->IsEnchanted();
+	}
+
 	float itemChargeLevel(const RE::TESForm* form)
 	{
+		// TODO shouts and powers have their own charge concept that we can show.
+
 		RE::InventoryEntryData* inventoryEntry = nullptr;
 		if (!inventoryEntryDataFor(form, inventoryEntry)) { return 0.0f; }
 		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
