@@ -8,7 +8,7 @@ use strfmt::strfmt;
 use super::base::BaseType;
 use super::HasIcon;
 use crate::images::icons::Icon;
-use crate::plugin::{chargeLevelByFormSpec, isPoisonedByFormSpec, Color, ItemCategory};
+use crate::plugin::{chargeLevelByFormSpec, isPoisonedByFormSpec, Color, ItemCategory, hasChargeByFormSpec};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.
@@ -170,6 +170,11 @@ impl HudItem {
             let_cxx_string!(form_spec = self.form_string());
             isPoisonedByFormSpec(&form_spec)
         }
+    }
+
+    pub fn has_charge(&self) -> bool {
+        let_cxx_string!(form_spec = self.form_string());
+        hasChargeByFormSpec(&form_spec)
     }
 
     /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons

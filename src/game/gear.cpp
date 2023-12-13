@@ -137,8 +137,19 @@ namespace game
 		return false;
 	}
 
+	bool itemHasCharge(const RE::TESForm* form)
+	{
+		// TODO shouts and powers have their own charge concept that we can show.
+
+		RE::InventoryEntryData* inventoryEntry = nullptr;
+		if (!inventoryEntryDataFor(form, inventoryEntry)) { false; }
+		return inventoryEntry && inventoryEntry->IsEnchanted();
+	}
+
 	float itemChargeLevel(const RE::TESForm* form)
 	{
+		// TODO shouts and powers have their own charge concept that we can show.
+
 		RE::InventoryEntryData* inventoryEntry = nullptr;
 
 		if (!inventoryEntryDataFor(form, inventoryEntry)) { return 0.0f; }
@@ -186,7 +197,7 @@ namespace game
 		if (form->formID == util::unarmed)
 		{
 			rlog::debug("unequipping this slot by request!"sv);
-			unequipLeftOrRightSlot(player, slot);
+			unequipLeftOrRightSlot(the_player, slot);
 			return;
 		}
 		else if (form->Is(RE::FormType::Spell))

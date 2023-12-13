@@ -27,6 +27,8 @@ namespace ui
 	float resolutionScaleWidth();
 	float resolutionScaleHeight();
 
+	void drawHud();
+
 	void makeFadeDecision();
 	void showBriefly();
 	void setMaxAlpha(float max);
@@ -79,7 +81,6 @@ namespace ui
 			uint32_t a_modify,
 			uint32_t a_alpha,
 			float a_duration);
-		static void drawHud();
 
 		static bool loadTextureFromFile(const char* filename,
 			ID3D11ShaderResourceView** out_srv,

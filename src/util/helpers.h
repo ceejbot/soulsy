@@ -35,6 +35,7 @@ namespace helpers
 
 	bool isFavoritedByFormSpec(const std::string& form_spec);
 	bool isPoisonedByFormSpec(const std::string& form_spec);
+	bool hasChargeByFormSpec(const std::string& form_spec);
 	float chargeLevelByFormSpec(const std::string& form_spec);
 
 	std::string vec_to_stdstring(rust::Vec<uint8_t> input);
