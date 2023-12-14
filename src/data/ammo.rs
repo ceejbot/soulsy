@@ -19,6 +19,13 @@ pub enum AmmoType {
     Slingshot(InvColor),
     Melee(InvColor),
     Grenade(InvColor),
+    BodkinArrow(InvColor),
+    BroadheadArrow(InvColor),
+    HammerheadArrow(InvColor),
+    CrescentArrow(InvColor),
+    FireArrow(InvColor),
+    WhistleArrow(InvColor),
+    PractceArrow(InvColor),
 }
 
 /// The default ammunition is an arrow drawn in white.
@@ -37,6 +44,13 @@ impl HasKeywords for AmmoType {
         let ammo_keywords: Vec<AmmoType> = keywords
             .iter()
             .filter_map(|xs| match xs.as_str() {
+                "ArrowBodkin" => Some(Self::BodkinArrow(color.clone())),
+                "ArrowBroadhead" => Some(Self::BroadheadArrow(color.clone())),
+                "ArrowHammer" => Some(Self::HammerheadArrow(color.clone())),
+                "ArrowCrescent" => Some(Self::CrescentArrow(color.clone())),
+                "ArrowFire" => Some(Self::FireArrow(color.clone())),
+                "ArrowWhistle" => Some(Self::WhistleArrow(color.clone())),
+                "ArrowPractice" => Some(Self::PractceArrowArrow(color.clone())),
                 "OCF_AmmoTypeArrow" => Some(Self::Arrow(color.clone())),
                 "OCF_AmmoTypeBolt" => Some(Self::Bolt(color.clone())),
                 "OCF_AmmoTypeBullet" => Some(Self::Bullet(color.clone())),
@@ -65,12 +79,29 @@ impl HasIcon for AmmoType {
             Self::Slingshot(c) => c.color(),
             Self::Melee(c) => c.color(),
             Self::Grenade(c) => c.color(),
+            Self::BodkinArrow(c) => c.color(),
+            Self::BroadheadArrow(c) => c.color(),
+            Self::HammerheadArrow(c) => c.color(),
+            Self::CrescentArrow(c) => c.color(),
+            Self::FireArrow(c) => c.color(),
+            Self::WhistleArrow(c) => c.color(),
+            Self::PractceArrow(c) => c.color(),
         }
     }
 
     fn icon(&self) -> &Icon {
         match self {
             AmmoType::Bullet(_) => &Icon::AmmoBullet,
+            AmmoType::Bolt(_) => &Icon::AmmoBolt,
+            AmmoType::Dart(_) => &Icon::AmmoDart,
+            AmmoType::Slingshot(_) => &Icon::AmmoSlingshot,
+            AmmoType::BodkinArrow(_) => &Icon::AmmoBodkinArrow,
+            AmmoType::BroadheadArrow(_) => &Icon::AmmoBroadheadArrow,
+            AmmoType::HammerheadArrow(_) => &Icon::AmmoHammerheadArrow,
+            AmmoType::CrescentArrow(_) => &Icon::AmmoCrescentArrow,
+            AmmoType::FireArrow(_) => &Icon::AmmoFireArrow,
+            AmmoType::WhistleArrow(_) => &Icon::AmmoWhistleArrow,
+            AmmoType::PractceArrow(_) => &Icon::AmmoPractceArrow,
             _ => &Icon::AmmoArrow,
         }
     }
