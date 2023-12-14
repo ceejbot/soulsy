@@ -260,6 +260,103 @@ namespace ui
 		}
 	}
 
+	void drawMeterCircleArc(f32 level, SlotLayout slotLayout)
+	{
+		// The flat structure has the same fields to support arc and
+		// rectangular meters, so some names might be surprising here.
+		const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
+		const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
+		const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
+		if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
+		{
+			const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
+			drawElement(texture, meter_center, meter_size, 0.0f, slotLayout.meter_empty_color);
+		}
+
+		if (meter_size.x != meter_size.y)
+		{
+			logger::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
+		}
+		const auto radius = meter_size.x / 2.0f;
+		const auto width  = 10.0f;  // HACK HACK HACK TODO
+
+		ImVec2 start = ImVec2(meter_center.x + radius * cosf(slotLayout.meter_start_angle),
+			meter_center.y + radius * sinf(slotLayout.meter_start_angle));
+		// level is a percentage IIUC but might not be so this might have to change once I start
+		// looking at real values...
+		const float startAngle = slotLayout.meter_end_angle;
+		const float endAngle   = (slotLayout.meter_end_angle - slotLayout.meter_start_angle) * level / 100.0f;
+		ImVec2 end = ImVec2(meter_center.x + radius * cosf(endAngle), meter_center.y + radius * sinf(endAngle));
+
+		const ImU32 fill_color = IM_COL32(slotLayout.meter_fill_color.r,
+			slotLayout.meter_fill_color.g,
+			slotLayout.meter_fill_color.b,
+			slotLayout.meter_fill_color.a * gHudAlpha);
+
+		// ImGui::GetWindowDrawList()->PathLineTo(meter_center);
+		ImGui::GetWindowDrawList()->PathClear();
+		ImGui::GetWindowDrawList()->PathLineTo(start);
+		// IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 0);
+		ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius, startAngle, endAngle, 20);
+		ImGui::GetWindowDrawList()->PathLineTo(ImVec2(end.x - width, end.y - width));
+		ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius - width, endAngle, startAngle, 20);
+		ImGui::GetWindowDrawList()->PathLineToMergeDuplicate(start);
+		ImGui::GetWindowDrawList()->PathFillConvex(fill_color);
+		ImGui::GetWindowDrawList()->PathClear();
+	}
+
+	void drawMeterRectangular(f32 level, SlotLayout slotLayout)
+	{
+		// this is a percent-full level.
+		auto missing          = 1.0f - level * 0.01f;
+		const auto center     = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
+		const auto bgSize     = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
+		const auto bg_img_str = std::string(slotLayout.meter_bg_image);
+		const auto fg_img_str = std::string(slotLayout.meter_fg_image);
+
+		auto angle       = slotLayout.meter_start_angle;
+		bool haveBgImage = bg_img_str.empty() ? false : ui_renderer::lazyLoadHudImage(bg_img_str);
+		bool haveFgImage = fg_img_str.empty() ? false : ui_renderer::lazyLoadHudImage(fg_img_str);
+
+		if (haveBgImage && haveFgImage)
+		{
+			const auto [bgtex, width, height]   = HUD_IMAGES_MAP[bg_img_str];
+			const auto [fgtex, fwidth, fheight] = HUD_IMAGES_MAP[fg_img_str];
+			const auto fillLen                  = slotLayout.meter_fill_size.x * level * 0.01f;
+			const auto fillSize                 = ImVec2(fillLen, slotLayout.meter_fill_size.y);
+			const auto offset                   = slotLayout.meter_fill_size.x - fillLen * 0.5f;
+			const auto fillCenter               = ImVec2(slotLayout.meter_center.x - offset, slotLayout.meter_center.y);
+
+			drawElement(bgtex, center, bgSize, angle, slotLayout.meter_empty_color);
+			drawElement(fgtex, fillCenter, fillSize, angle, slotLayout.meter_fill_color);
+		}
+		else if (haveBgImage && !haveFgImage)
+		{
+			// Here we draw the bg image twice: once at full size for the empty background,
+			// and a second time with the fill color, clipped to indicate charge level.
+			// clip_min is left, top
+			const auto clip_min = ImVec2(center.x - bgSize.x / 2.0f, center.y - bgSize.y / 2.0f + adjust_y);
+			// clip_max is right, bottom
+			const auto clip_max = ImVec2(center.x + bgSize.x / 2.0f - adjust_x, center.y + bgSize.y / 2.0f);
+			// rotate the clip rect wheeeeee high school trig
+			const auto rotMin = ImVec2(clip_min.x * fcos(angle) - fsin(angle) * clip_min.y,
+				fsin(angle) * clip_min.x + fcos(angle) * clip_min.y);
+			const auto rotMax = ImVec2(clip_max.x * fcos(angle) - fsin(angle) * clip_max.y,
+				fsin(angle) * clip_max.x + fcos(angle) * clip_max.y);
+
+			const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
+			drawElement(texture, center, bgSize, angle, slotLayout.meter_empty_color);
+			// IMGUI_API void          PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
+			ImGui::GetWindowDrawList()->PushClipRect(rotMin, rotMax, true);
+			drawElement(texture, center, bgSize, angle, slotLayout.meter_fill_color);
+			ImGui::GetWindowDrawList()->PopClipRect();
+		}
+		else
+		{
+			// TODO if no svg, do rectangular flood fills? idk
+		}
+	}
+
 	void drawText(const std::string text,
 		const ImVec2 center,
 		const float fontSize,
@@ -470,94 +567,11 @@ namespace ui
 			}
 
 			// Charge/fuel meter.
-			if (entry->has_charge())
+			if (slotLayout.meter_kind != MeterKind::None && entry->has_charge())
 			{
-				if (slotLayout.meter_kind == MeterKind::CircleArc)
-				{
-					// The flat structure has the same fields to support arc and
-					// rectangular meters, so some names might be surprising here.
-					auto level              = entry->charge_level();
-					const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
-					const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
-					const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
-					if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
-					{
-						const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
-						drawElement(texture, meter_center, meter_size, 0.0f, slotLayout.meter_empty_color);
-					}
-
-					if (meter_size.x != meter_size.y)
-					{
-						logger::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
-					}
-					const auto radius = meter_size.x / 2.0f;
-					const auto width  = 10.0f;  // HACK HACK HACK TODO
-
-					ImVec2 start = ImVec2(meter_center.x + radius * cosf(slotLayout.meter_start_angle),
-						meter_center.y + radius * sinf(slotLayout.meter_start_angle));
-					// level is a percentage IIUC but might not be so this might have to change once I start
-					// looking at real values...
-					const float startAngle = slotLayout.meter_end_angle;
-					const float endAngle = (slotLayout.meter_end_angle - slotLayout.meter_start_angle) * level / 100.0f;
-					ImVec2 end =
-						ImVec2(meter_center.x + radius * cosf(endAngle), meter_center.y + radius * sinf(endAngle));
-
-					const ImU32 fill_color = IM_COL32(slotLayout.meter_fill_color.r,
-						slotLayout.meter_fill_color.g,
-						slotLayout.meter_fill_color.b,
-						slotLayout.meter_fill_color.a * gHudAlpha);
-
-					// ImGui::GetWindowDrawList()->PathLineTo(meter_center);
-					ImGui::GetWindowDrawList()->PathClear();
-					ImGui::GetWindowDrawList()->PathLineTo(start);
-					// IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 0);
-					ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius, startAngle, endAngle, 20);
-					ImGui::GetWindowDrawList()->PathLineTo(ImVec2(end.x - width, end.y - width));
-					ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius - width, endAngle, startAngle, 20);
-					ImGui::GetWindowDrawList()->PathLineToMergeDuplicate(start);
-					ImGui::GetWindowDrawList()->PathFillConvex(fill_color);
-					ImGui::GetWindowDrawList()->PathClear();
-				}
-				else if (slotLayout.meter_kind != MeterKind::None)
-				{
-					// this is a percent-full level.
-					auto level              = entry->charge_level();
-					const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
-					const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
-					const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
-
-					auto adjust_x = 0.0f;
-					auto adjust_y = 0.0f;
-					if (slotLayout.meter_kind == MeterKind::Horizontal)
-					{
-						adjust_x = slotLayout.meter_size.x * (1.0f - level * 0.01f);
-					}
-					else if (slotLayout.meter_kind == MeterKind::Vertical)
-					{
-						adjust_y = slotLayout.meter_size.y * (1.0f - level * 0.01f);
-					}
-
-					// clip_min is left, top
-					const auto clip_min =
-						ImVec2(meter_center.x - meter_size.x / 2.0f, meter_center.y - meter_size.y / 2.0f + adjust_y);
-					// clip_max is right, bottom
-					const auto clip_max =
-						ImVec2(meter_center.x + meter_size.x / 2.0f - adjust_x, meter_center.y + meter_size.y / 2.0f);
-
-					if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
-					{
-						const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
-						drawElement(texture, meter_center, meter_size, 0.f, slotLayout.meter_empty_color);
-						// IMGUI_API void          PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
-						ImGui::GetWindowDrawList()->PushClipRect(clip_min, clip_max, true);
-						drawElement(texture, meter_center, meter_size, 0.f, slotLayout.meter_fill_color);
-						ImGui::GetWindowDrawList()->PopClipRect();
-					}
-					else
-					{
-						// TODO if no svg, fill the filled area with the fg color and the rest with bg color
-					}
-				}
+				auto level = entry->charge_level();
+				if (slotLayout.meter_kind == MeterKind::CircleArc) { drawMeterCircleArc(level, slotLayout); }
+				else if (slotLayout.meter_kind == MeterKind::Rectangular) { drawMeterRectangular(level, slotLayout); }
 			}
 
 			// Finally, the poisoned indicator.

@@ -135,8 +135,10 @@ pub mod plugin {
         meter_kind: MeterKind,
         meter_center: Point,
         meter_size: Point,
-        meter_bg_image: String,
+        meter_empty_image: String,
         meter_empty_color: Color,
+        meter_fill_image: String,
+        meter_fill_size: Point,
         meter_fill_color: Color,
         meter_start_angle: f32,
         meter_end_angle: f32,
@@ -147,8 +149,7 @@ pub mod plugin {
     #[derive(Clone, Debug, Deserialize)]
     pub enum MeterKind {
         None,
-        Vertical,
-        Horizontal,
+        Rectangular,
         CircleArc,
     }
 
