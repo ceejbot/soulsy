@@ -9,6 +9,7 @@ set(headers ${headers}
     src/plugin/cosave.h
     src/plugin/inventory.h
     src/plugin/keycodes.h
+    src/plugin/log.h
     src/plugin/menus.h
     src/plugin/papyrus.h
     src/plugin/sinks.h
@@ -33,6 +34,7 @@ set(sources ${sources}
     src/plugin/cosave.cpp
     src/plugin/inventory.cpp
     src/plugin/keycodes.cpp
+    src/plugin/log.cpp
     src/plugin/menus.cpp
     src/plugin/papyrus.cpp
     src/plugin/sinks.cpp

@@ -1,5 +1,6 @@
 #include "cosave.h"
 #include "inventory.h"
+#include "logs.h"
 #include "menus.h"
 #include "papyrus.h"
 #include "sinks.h"
@@ -38,7 +39,7 @@ void init_logger()
 	}
 	catch (const std::exception& e)
 	{
-		logger::critical("failed, what={}"sv, e.what());
+		log::critical("failed, what={}"sv, e.what());
 	}
 }
 
@@ -51,7 +52,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 		case SKSE::MessagingInterface::kDataLoaded:
 			if (ui::ui_renderer::d_3d_init_hook::initialized)
 			{
-				logger::debug("SKSE data loaded callback; UI is initialized."sv);
+				log::debug("SKSE data loaded callback; UI is initialized."sv);
 				ui::ui_renderer::preloadImages();
 				MenuHook::install();
 				PlayerHook::install();
@@ -60,8 +61,8 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
 		case SKSE::MessagingInterface::kNewGame:
-			// logger::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
-			logger::info("SKSE kNewGame post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
+			// log::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
+			log::info("SKSE kNewGame post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
 			registerAllListeners();
 			initialize_hud();
 			break;
@@ -77,9 +78,8 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 {
 	init_logger();
 
-	logger::info(
-		"---------- {} @ {}.{}.{} loading"sv, Version::PROJECT, Version::MAJOR, Version::MINOR, Version::PATCH);
-	logger::info("Game version {}", a_skse->RuntimeVersion().string());
+	log::info("---------- {} @ {}.{}.{} loading"sv, Version::PROJECT, Version::MAJOR, Version::MINOR, Version::PATCH);
+	log::info("Game version {}", a_skse->RuntimeVersion().string());
 	auto settings = user_settings();
 
 	auto loglevel = static_cast<spdlog::level::level_enum>(settings->log_level_number());
@@ -127,14 +127,14 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI
 
 	if (a_skse->IsEditor())
 	{
-		logger::critical("Loaded in editor, marking as incompatible"sv);
+		log::critical("Loaded in editor, marking as incompatible"sv);
 		return false;
 	}
 
 	const auto ver = a_skse->RuntimeVersion();
 	if (ver < SKSE::RUNTIME_SSE_1_5_39)
 	{
-		logger::critical(FMT_STRING("Unsupported runtime version {}"), ver.string());
+		log::critical(FMT_STRING("Unsupported runtime version {}"), ver.string());
 		return false;
 	}
 

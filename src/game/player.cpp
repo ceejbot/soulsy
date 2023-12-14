@@ -272,10 +272,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		logger::debug("player has: {}; name='{}'; formID={};"sv,
-			has_it,
-			form->GetName(),
-			form_spec);
+		logger::debug("player has: {}; name='{}'; formID={};"sv, has_it, form->GetName(), form_spec);
 
 		return has_it;
 	}

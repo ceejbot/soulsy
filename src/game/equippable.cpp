@@ -1,8 +1,8 @@
 #include "equippable.h"
 
+#include "gear.h"
 #include "helpers.h"
 #include "player.h"
-#include "gear.h"
 
 #include "lib.rs.h"
 
@@ -77,7 +77,7 @@ namespace equippable
 		if (!item_form) { return empty_huditem(); }
 
 		KeywordAccumulator::clear();
-		auto loggerName = game::displayName(item_form);
+		auto loggerName         = game::displayName(item_form);
 		auto chonker            = helpers::chars_to_vec(loggerName);
 		std::string form_string = helpers::makeFormSpecString(item_form);
 		bool two_handed         = requiresTwoHands(item_form);
