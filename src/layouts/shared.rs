@@ -145,8 +145,7 @@ impl Display for MeterKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
             MeterKind::CircleArc => write!(f, "circle_arc"),
-            MeterKind::Vertical => write!(f, "vertical"),
-            MeterKind::Horizontal => write!(f, "horizontal"),
+            MeterKind::Rectangular => write!(f, "rectangular"),
             _ => write!(f, "none"),
         }
     }
@@ -156,8 +155,7 @@ impl From<&str> for MeterKind {
     fn from(value: &str) -> Self {
         match value.to_lowercase().as_str() {
             "circle_arc" => MeterKind::CircleArc,
-            "vertical" => MeterKind::Vertical,
-            "horizontal" => MeterKind::Horizontal,
+            "rectangular" => MeterKind::Rectangular,
             _ => MeterKind::None,
         }
     }
@@ -179,12 +177,11 @@ where
     let s: String = Deserialize::deserialize(deserializer)?;
     match s.to_lowercase().as_str() {
         "circle_arc" => Ok(MeterKind::CircleArc),
-        "vertical" => Ok(MeterKind::Vertical),
-        "horizontal" => Ok(MeterKind::Horizontal),
+        "rectangular" => Ok(MeterKind::Rectangular),
         "none" => Ok(MeterKind::None),
         _ => Err(Error::unknown_variant(
             &s,
-            &["circle_arc", "vertical", "horizontal", "none"],
+            &["circle_arc", "rectangular", "none"],
         )),
     }
 }

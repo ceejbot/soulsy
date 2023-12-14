@@ -57,6 +57,8 @@ namespace ui
 		const float font_size,
 		const Color color,
 		const Align alignment);
+	void drawMeterCircleArc(f32 level, SlotLayout slotLayout);
+	void drawMeterRectangular(f32 level, SlotLayout slotLayout);
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer

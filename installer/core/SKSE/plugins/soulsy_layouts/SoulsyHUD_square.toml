@@ -113,11 +113,31 @@ color = {r = 160, g = 240, b = 2, a = 255 }
 size = { x = 25.0, y = 25.0 }
 
 [right.meter]
-orientation = "vertical"
+# What angle to draw the image at, an integer from 0 to 360.
+# 0 is horizontal. >
+# 90 is rotated counter-clockwise 90° to vertical.  ^
+# The meter is presumed to fill from LEFT to RIGHT before rotation.
+# Rotating 90° makes it fill from bottom to top.
+# Rotating 180° makes it fill from right to left. Etc.  <
+angle = 90
+# An offset for the center of the meter, from the center of the slot.
 offset = { x = 60.0, y = 0.0 }
-size = { x = 20.0, y = 100.0 }
-svg = "meter_bar_vertical.svg"
+# This size is the size of the image before rotation!
+size = { x = 100.0, y = 20.0 }
+# The SVG file to use for the progress bar. This should like in the
+# `resources/backgrounds` folder. You can reference another folder with
+# `../icons/file_in_icons_dir.svg` if you need to.
+svg = "meter_bar_filled.svg"
+# The color for the background, or empty part, of the meter.
 empty_color = { r = 0, g = 0, b = 0, a = 255 }
+# You can skip the filled svg if you want. If you do this, the filled portion
+# of the meter will re-use the background image, but shortened to indicate
+# the percentage of the meter that's filled. E.g., 50% full would be half the
+# length.
+# fill_svg = "different_image.svg"
+# The size of the filled meter when the charge/fuel/whatever is at max.
+# fill_size = { x = 96.0, y = 16.0 }
+# The color for the filled part of the meter.
 fill_color = { r = 255, g = 30, b = 128, a = 255 }
 
 # ----- left hand slot
@@ -159,6 +179,16 @@ wrap_width = 100.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
+
+[left.meter]
+angle = 0 # horizontal
+offset = { x = 0.0, y = 60.0 }
+size = { x = 100.0, y = 20.0 }
+svg = "meter_bar_empty.svg"
+empty_color = { r = 255, g = 255, b = 255, a = 255 }
+fill_svg = "meter_bar_filled.svg"
+fill_size = { x = 98.0, y = 16.0 }
+fill_color = { r = 59, g = 106, b = 249, a = 200 }
 
 # ----- utility slot
 

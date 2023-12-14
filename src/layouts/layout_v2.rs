@@ -2,7 +2,6 @@
 //! new features-- v1 is to be retired gently over time.
 
 use eyre::{Context, Result};
-use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
 
 use std::fmt::Display;
@@ -139,8 +138,10 @@ impl HudLayout2 {
             meter_kind,
             meter_center,
             meter_size,
-            meter_bg_image,
+            meter_empty_image,
             meter_empty_color,
+            meter_fill_image,
+            meter_fill_size,
             meter_fill_color,
             meter_start_angle,
             meter_end_angle,
@@ -151,24 +152,26 @@ impl HudLayout2 {
                 Point::origin(),
                 String::new(),
                 Color::invisible(),
+                String::new(),
+                Point::origin(),
                 Color::invisible(),
                 0.0f32,
                 0.0f32,
             ),
             MeterElement::Rectangular {
-                orientation,
+                angle,
                 offset,
                 size,
                 svg,
                 empty_color,
+                fill_svg,
+                fill_size,
                 fill_color,
             } => {
-                let kind = match orientation {
-                    MeterOrientation::Horizontal => MeterKind::Horizontal,
-                    MeterOrientation::Vertical => MeterKind::Vertical,
-                    MeterOrientation::None => MeterKind::Vertical,
-                };
+                let kind = MeterKind::Rectangular;
                 let meter_center = center.translate(&offset.scale(self.global_scale));
+                let filled_svg = fill_svg.unwrap_or_default();
+                let filled_size = fill_size.unwrap_or_default();
 
                 (
                     kind,
@@ -176,8 +179,10 @@ impl HudLayout2 {
                     size.scale(self.global_scale),
                     svg,
                     empty_color,
+                    filled_svg,
+                    filled_size,
                     fill_color,
-                    0.0f32,
+                    angle as f32 * std::f32::consts::PI / 180.0f32,
                     0.0f32,
                 )
             }
@@ -198,6 +203,8 @@ impl HudLayout2 {
                     size.scale(self.global_scale),
                     svg,
                     empty_color,
+                    String::new(),
+                    Point::origin(),
                     fill_color,
                     start_angle as f32 * std::f32::consts::PI / 180.0f32,
                     end_angle as f32 * std::f32::consts::PI / 180.0f32,
@@ -227,8 +234,10 @@ impl HudLayout2 {
             meter_kind,
             meter_center,
             meter_size,
-            meter_bg_image,
+            meter_empty_image,
             meter_empty_color,
+            meter_fill_image,
+            meter_fill_size,
             meter_fill_color,
             meter_start_angle,
             meter_end_angle,
@@ -354,13 +363,14 @@ pub enum MeterElement {
     #[default]
     None,
     Rectangular {
-        #[serde(default, deserialize_with = "deserialize_orientation")]
-        orientation: MeterOrientation,
+        angle: u32,
         offset: Point,
         size: Point,
-        svg: String,
+        svg: String, // background svg
         empty_color: Color,
-        fill_color: Color,
+        fill_svg: Option<String>, // will re-use the empty image, clipped, if not present
+        fill_size: Option<Point>, // if we do not have a fill image
+        fill_color: Color,        // always need a fill color, though
     },
     CircleArc {
         offset: Point,
@@ -386,6 +396,20 @@ impl MeterElement {
             MeterElement::None => Point::origin(),
             MeterElement::Rectangular { size, .. } => size.clone(),
             MeterElement::CircleArc { size, .. } => size.clone(),
+        }
+    }
+    pub fn bg_img_path(&self) -> &str {
+        match self {
+            MeterElement::None => "",
+            MeterElement::Rectangular { svg, .. } => svg.as_str(),
+            MeterElement::CircleArc { svg, .. } => svg.as_str(),
+        }
+    }
+    pub fn angle(&self) -> u32 {
+        match *self {
+            MeterElement::None => 0,
+            MeterElement::Rectangular { angle, .. } => angle,
+            MeterElement::CircleArc { start_angle, .. } => start_angle,
         }
     }
 }
@@ -601,12 +625,13 @@ mod tests {
 
     #[test]
     fn can_deserialize_vert_meter() {
-        let data = r#"orientation = "vertical"
+        let data = r#"angle = 90
         offset = { x = 20.0, y = 20.0 }
-        size = { x = 10.0, y = 100.0 }
-        svg = "meter_bar_vertical.svg"
-        empty_color = { r = 0, g = 0, b = 0, a = 255 }
-        fill_color = { r = 255, g = 30, b = 128, a = 255 }"#;
+        size = { x = 100.0, y = 0.0 }
+        svg = "meter_bar_empty.svg"
+        empty_color = { r = 255, g = 255, b = 255, a = 255 }
+        fill_svg = "meter_bar_filled.svg"
+        fill_color = { r = 59, g = 106, b = 249, a = 200 }"#;
         let meter: MeterElement = match toml::from_str(data) {
             Ok(v) => v,
             Err(e) => {
@@ -615,16 +640,18 @@ mod tests {
             }
         };
         assert_eq!(meter.offset(), Point { x: 20.0, y: 20.0 });
+        assert_eq!(meter.bg_img_path(), "meter_bar_empty.svg");
     }
 
     #[test]
     fn can_deserialize_horiz_meter() {
-        let data = r#"orientation = "horizontal"
+        let data = r#"angle = 0 # horizontal
         offset = { x = 20.0, y = 20.0 }
         size = { x = 100.0, y = 0.0 }
-        svg = "meter_bar_vertical.svg"
-        empty_color = { r = 0, g = 0, b = 0, a = 255 }
-        fill_color = { r = 255, g = 30, b = 128, a = 255 }"#;
+        svg = "meter_bar_empty.svg"
+        empty_color = { r = 255, g = 255, b = 255, a = 255 }
+        fill_svg = "meter_bar_filled.svg"
+        fill_color = { r = 59, g = 106, b = 249, a = 200 }"#;
         let meter: MeterElement = match toml::from_str(data) {
             Ok(v) => v,
             Err(e) => {
@@ -705,8 +732,14 @@ mod tests {
     #[test]
     fn charge_meters() {
         let data = include_str!("../../tests/fixtures/layout-v2.toml");
-        let layout: HudLayout2 =
-            toml::from_str(data).expect("v2 text fixture should be valid toml");
+        let layout = match toml::from_str::<HudLayout2>(data) {
+            Ok(l) => l,
+            Err(e) => {
+                eprintln!("layout-v2.toml fixture is invalid!");
+                eprintln!("{e:#}");
+                unreachable!();
+            }
+        };
 
         assert!(layout.power.meter.is_none());
         assert!(layout.utility.meter.is_some());
@@ -720,10 +753,7 @@ mod tests {
             .expect("we just asserted this exists");
         assert!(matches!(
             rmeter,
-            MeterElement::Rectangular {
-                orientation: MeterOrientation::Vertical,
-                ..
-            }
+            MeterElement::Rectangular { angle: 90, .. }
         ));
 
         let lmeter = layout
@@ -731,13 +761,7 @@ mod tests {
             .meter
             .clone()
             .expect("we just asserted this exists");
-        assert!(matches!(
-            lmeter,
-            MeterElement::Rectangular {
-                orientation: MeterOrientation::Horizontal,
-                ..
-            }
-        ));
+        assert!(matches!(lmeter, MeterElement::Rectangular { angle: 0, .. }));
 
         let flattened = Layout::Version2(Box::new(layout.clone())).flatten();
         let rflat = flattened
@@ -751,8 +775,10 @@ mod tests {
             .find(|slot| slot.element == HudElement::Left)
             .expect("the right slot must be present");
 
-        assert_eq!(rflat.meter_kind, MeterKind::Vertical);
-        assert_eq!(lflat.meter_kind, MeterKind::Horizontal);
+        assert_eq!(rflat.meter_kind, MeterKind::Rectangular);
+        assert_eq!(rflat.meter_start_angle, std::f32::consts::PI * 0.5);
+        assert_eq!(lflat.meter_kind, MeterKind::Rectangular);
+        assert_eq!(lflat.meter_start_angle, 0.0);
 
         assert_eq!(
             rflat.meter_center,

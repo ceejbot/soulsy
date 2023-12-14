@@ -49,14 +49,6 @@ svg = "key_bg.svg"
 size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
-[right.meter]
-orientation = "vertical"
-offset = { x = 20.0, y = 20.0 }
-size = { x = 10.0, y = 100.0 }
-svg = "meter_bar_vertical.svg"
-empty_color = { r = 0, g = 0, b = 0, a = 255 }
-fill_color = { r = 255, g = 30, b = 128, a = 255 }
-
 [right.poison]
 offset = { x = 20.0, y = 20.0 }
 [right.poison.indicator]
@@ -70,6 +62,14 @@ offset = { x = 0.0, y = 0.0 }
 color = { r = 255, g = 255, b = 255, a = 0 }
 font_size = 18.0
 contents = "{count} {name}"
+
+[right.meter]
+angle = 90 # vertical
+offset = { x = 20.0, y = 20.0 }
+size = { x = 10.0, y = 100.0 }
+svg = "meter_bar_filled.svg"
+empty_color = { r = 0, g = 0, b = 0, a = 255 }
+fill_color = { r = 59, g = 106, b = 249, a = 200 }
 
 # ----- left hand slot
 
@@ -103,12 +103,14 @@ font_size = 18.0
 contents = "{count} {name}"
 
 [left.meter]
-orientation = "horizontal"
+angle = 0 # horizontal
 offset = { x = 20.0, y = 20.0 }
-size = { x = 100.0, y = 0.0 }
-svg = "meter_bar_vertical.svg"
-empty_color = { r = 0, g = 0, b = 0, a = 255 }
-fill_color = { r = 255, g = 30, b = 128, a = 255 }
+size = { x = 100.0, y = 20.0 }
+svg = "meter_bar_empty.svg"
+empty_color = { r = 255, g = 255, b = 255, a = 255 }
+fill_size = { x = 98.0, y = 16.0 }
+fill_svg = "meter_bar_filled.svg"
+fill_color = { r = 59, g = 106, b = 249, a = 200 }
 
 # ----- utility slot
 
