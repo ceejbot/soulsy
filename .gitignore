@@ -9,3 +9,4 @@ releases
 SoulsyHUD_v*
 /vcpkg_installed
 **/unused
+compile_flags.txt

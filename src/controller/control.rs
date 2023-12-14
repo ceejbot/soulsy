@@ -9,7 +9,7 @@
 //! Functions of note: `handle_key_event()`, `handle_item_equipped()`, and
 //! `timer_expired()`.
 //!
-//! I apologies for what a mess this is. It grew organically and the feature
+//! I apologize for what a mess this is. It grew organically and the feature
 //! set is itself complex.
 
 use std::collections::HashMap;
@@ -43,7 +43,7 @@ pub fn get() -> std::sync::MutexGuard<'static, Controller> {
 pub struct Controller {
     /// Our currently-active cycles.
     pub cycles: CycleData,
-    /// the hud item cache
+    /// The hud item cache.
     pub cache: ItemCache,
     /// The items the HUD should show right now.
     visible: HashMap<HudElement, HudItem>,

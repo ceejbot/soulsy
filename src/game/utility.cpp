@@ -139,15 +139,15 @@ namespace game
 
 	// ---------- potions
 
-	void consumePotion(const RE::TESForm* potion_form, RE::PlayerCharacter*& player)
+	void consumePotion(const RE::TESForm* potionForm, RE::PlayerCharacter*& thePlayer)
 	{
 		logger::trace("consumePotion called; form_id={}; potion='{}';"sv,
-			util::string_util::int_to_hex(potion_form->formID),
-			potion_form->GetName());
+			util::string_util::int_to_hex(potionForm->formID),
+			potionForm->GetName());
 
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(potion_form, player, obj, extra);
+		auto remaining           = boundObjectForForm(potionForm, thePlayer, obj, extra);
 
 		if (!obj || remaining == 0)
 		{
@@ -165,19 +165,19 @@ namespace game
 			return;
 		}
 
-		auto* alchemy_item = obj->As<RE::AlchemyItem>();
-		if (alchemy_item->IsPoison())
+		auto* alchemyItem = obj->As<RE::AlchemyItem>();
+		if (alchemyItem->IsPoison())
 		{
-			poison_weapon(player, alchemy_item, extra, remaining);
+			poisonWeapon(thePlayer, alchemyItem, extra, remaining);
 			return;
 		}
 
 		auto* task = SKSE::GetTaskInterface();
 		if (!task) { return; }
-		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, alchemy_item, extra); });
+		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, alchemyItem); });
 	}
 
-	void poison_weapon(RE::PlayerCharacter*& player,
+	void poisonWeapon(RE::PlayerCharacter*& player,
 		RE::AlchemyItem*& poison,
 		RE::ExtraDataList* extra,
 		uint32_t remaining)
@@ -208,16 +208,16 @@ namespace game
 
 	// ---------- sounds
 
-	void playSound(RE::BGSSoundDescriptor* a_sound_descriptor, RE::PlayerCharacter*& a_player)
+	void playSound(RE::BGSSoundDescriptor* soundDescriptor, RE::PlayerCharacter*& thePlayer)
 	{
-		auto* audio_manager = RE::BSAudioManager::GetSingleton();
-		if (audio_manager && a_sound_descriptor)
+		auto* audio = RE::BSAudioManager::GetSingleton();
+		if (audio && soundDescriptor)
 		{
-			RE::BSSoundHandle sound_handle;
-			audio_manager->BuildSoundDataFromDescriptor(sound_handle, a_sound_descriptor);
-			sound_handle.SetObjectToFollow(a_player->Get3D());
-			sound_handle.SetVolume(1.0);
-			sound_handle.Play();
+			RE::BSSoundHandle soundHandle;
+			audio->BuildSoundDataFromDescriptor(soundHandle, soundDescriptor);
+			soundHandle.SetObjectToFollow(thePlayer->Get3D());
+			soundHandle.SetVolume(1.0);
+			soundHandle.Play();
 			// logger::trace("played sound"sv);
 		}
 	}
