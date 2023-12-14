@@ -182,7 +182,7 @@ contents = "{name}"
 
 [left.meter]
 angle = 0 # horizontal
-offset = { x = 0.0, y = 60.0 }
+offset = { x = 0.0, y = -60.0 }
 size = { x = 100.0, y = 20.0 }
 svg = "meter_bar_empty.svg"
 empty_color = { r = 255, g = 255, b = 255, a = 255 }
