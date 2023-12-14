@@ -26,6 +26,11 @@ namespace ui
 
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 	static const uint32_t MAX_ICON_DIM    = 300;   // rasterized at 96 dpi
+	static constexpr ImVec2 FLAT_UVS[4]   = { ImVec2(0.0f, 0.0f),
+		  ImVec2(1.0f, 0.0f),
+		  ImVec2(1.0f, 1.0f),
+		  ImVec2(0.0f, 1.0f) };
+
 
 	auto gHudAlpha          = 0.0f;  // this is the current alpha
 	auto gGoalAlpha         = 1.0f;  // our goal if we're fading
@@ -260,13 +265,13 @@ namespace ui
 		}
 	}
 
-	void drawMeterCircleArc(f32 level, SlotLayout slotLayout)
+	void drawMeterCircleArc(float level, SlotFlattened slotLayout)
 	{
 		// The flat structure has the same fields to support arc and
 		// rectangular meters, so some names might be surprising here.
 		const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
 		const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
-		const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
+		const auto bg_img_str   = std::string(slotLayout.meter_empty_image);
 		if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
 		{
 			const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
@@ -305,14 +310,14 @@ namespace ui
 		ImGui::GetWindowDrawList()->PathClear();
 	}
 
-	void drawMeterRectangular(f32 level, SlotLayout slotLayout)
+	void drawMeterRectangular(float level, SlotFlattened slotLayout)
 	{
-		// this is a percent-full level.
+		// level is a percent-full level.
 		auto missing          = 1.0f - level * 0.01f;
 		const auto center     = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
 		const auto bgSize     = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
-		const auto bg_img_str = std::string(slotLayout.meter_bg_image);
-		const auto fg_img_str = std::string(slotLayout.meter_fg_image);
+		const auto bg_img_str = std::string(slotLayout.meter_empty_image);
+		const auto fg_img_str = std::string(slotLayout.meter_fill_image);
 
 		auto angle       = slotLayout.meter_start_angle;
 		bool haveBgImage = bg_img_str.empty() ? false : ui_renderer::lazyLoadHudImage(bg_img_str);
@@ -324,25 +329,42 @@ namespace ui
 			const auto [fgtex, fwidth, fheight] = HUD_IMAGES_MAP[fg_img_str];
 			const auto fillLen                  = slotLayout.meter_fill_size.x * level * 0.01f;
 			const auto fillSize                 = ImVec2(fillLen, slotLayout.meter_fill_size.y);
-			const auto offset                   = slotLayout.meter_fill_size.x - fillLen * 0.5f;
+			const auto offset                   = slotLayout.meter_center.x - fillLen * 0.5f;
 			const auto fillCenter               = ImVec2(slotLayout.meter_center.x - offset, slotLayout.meter_center.y);
 
-			drawElement(bgtex, center, bgSize, angle, slotLayout.meter_empty_color);
-			drawElement(fgtex, fillCenter, fillSize, angle, slotLayout.meter_fill_color);
+			const std::array<ImVec2, 4> bgRotated = rotateRect(center, bgSize, angle);
+			const std::array<ImVec2, 4> centerRot = rotateRect(center, fillSize, angle);
+			// now slide that fg rect down to nestle in the bottom left corner of the bg rect
+			const auto xdiff = bgRotated[0].x - centerRot[0].x - std::fabs(bgSize.x - fillSize.x) * 0.5f;
+			const auto ydiff = bgRotated[0].y - centerRot[0].y - std::fabs(bgSize.y - fillSize.y) * 0.5f;
+			std::array<ImVec2, 4> fgRotated = {
+				ImVec2(centerRot[0].x - xdiff, centerRot[0].y + ydiff),
+				ImVec2(centerRot[1].x - xdiff, centerRot[1].y + ydiff),
+				ImVec2(centerRot[2].x - xdiff, centerRot[2].y + ydiff),
+				ImVec2(centerRot[3].x - xdiff, centerRot[3].y + ydiff),
+			};
+
+			drawTextureQuad(bgtex, bgRotated, slotLayout.meter_empty_color);
+			drawTextureQuad(fgtex, fgRotated, slotLayout.meter_fill_color);
+			// drawElement(bgtex, center, bgSize, angle, slotLayout.meter_empty_color);
+			// drawElement(fgtex, center, fillSize, angle, slotLayout.meter_fill_color);
 		}
 		else if (haveBgImage && !haveFgImage)
 		{
 			// Here we draw the bg image twice: once at full size for the empty background,
 			// and a second time with the fill color, clipped to indicate charge level.
+			auto adjust_x = slotLayout.meter_size.x * missing;
+			auto adjust_y = 0.0f;
+
 			// clip_min is left, top
 			const auto clip_min = ImVec2(center.x - bgSize.x / 2.0f, center.y - bgSize.y / 2.0f + adjust_y);
 			// clip_max is right, bottom
 			const auto clip_max = ImVec2(center.x + bgSize.x / 2.0f - adjust_x, center.y + bgSize.y / 2.0f);
 			// rotate the clip rect wheeeeee high school trig
-			const auto rotMin = ImVec2(clip_min.x * fcos(angle) - fsin(angle) * clip_min.y,
-				fsin(angle) * clip_min.x + fcos(angle) * clip_min.y);
-			const auto rotMax = ImVec2(clip_max.x * fcos(angle) - fsin(angle) * clip_max.y,
-				fsin(angle) * clip_max.x + fcos(angle) * clip_max.y);
+			const auto rotMin = ImVec2(clip_min.x * std::cosf(angle) - std::sinf(angle) * clip_min.y,
+				std::sinf(angle) * clip_min.x + std::cosf(angle) * clip_min.y);
+			const auto rotMax = ImVec2(clip_max.x * std::cosf(angle) - std::sinf(angle) * clip_max.y,
+				std::sinf(angle) * clip_max.x + std::cosf(angle) * clip_max.y);
 
 			const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
 			drawElement(texture, center, bgSize, angle, slotLayout.meter_empty_color);
@@ -436,24 +458,51 @@ namespace ui
 		drawElementInner(texture, center, size, angle, im_color);
 	}
 
+	std::array<ImVec2, 4> rotateRect(const ImVec2 center, const ImVec2 size, const float angle)
+	{
+		std::array<ImVec2, 4> rotated;
+		const float cos_a = cosf(angle);
+		const float sin_a = sinf(angle);
+		rotated           = { center + ImRotate(ImVec2(-size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+					  center + ImRotate(ImVec2(+size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+					  center + ImRotate(ImVec2(+size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a),
+					  center + ImRotate(ImVec2(-size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a)
+
+		};
+		return rotated;
+	}
+
 	void drawElementInner(ID3D11ShaderResourceView* texture,
 		const ImVec2 center,
 		const ImVec2 size,
 		const float angle,
 		const ImU32 im_color)
 	{
-		const float cos_a   = cosf(angle);
-		const float sin_a   = sinf(angle);
-		const ImVec2 pos[4] = { center + ImRotate(ImVec2(-size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
-			center + ImRotate(ImVec2(+size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
-			center + ImRotate(ImVec2(+size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a),
-			center + ImRotate(ImVec2(-size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a)
+		// const float cos_a   = cosf(angle);
+		// const float sin_a   = sinf(angle);
+		// const ImVec2 pos[4] = { center + ImRotate(ImVec2(-size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+		// 	center + ImRotate(ImVec2(+size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+		// 	center + ImRotate(ImVec2(+size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a),
+		// 	center + ImRotate(ImVec2(-size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a)
 
-		};
-		constexpr ImVec2 uvs[4] = { ImVec2(0.0f, 0.0f), ImVec2(1.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec2(0.0f, 1.0f) };
-
+		std::array<ImVec2, 4> pos = rotateRect(center, size, angle);
 		ImGui::GetWindowDrawList()->AddImageQuad(
-			texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], im_color);
+			texture, pos[0], pos[1], pos[2], pos[3], FLAT_UVS[0], FLAT_UVS[1], FLAT_UVS[2], FLAT_UVS[3], im_color);
+	}
+
+	void drawTextureQuad(ID3D11ShaderResourceView* texture, const std::array<ImVec2, 4> bounds, const Color color)
+	{
+		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
+		ImGui::GetWindowDrawList()->AddImageQuad(texture,
+			bounds[0],
+			bounds[1],
+			bounds[2],
+			bounds[3],
+			FLAT_UVS[0],
+			FLAT_UVS[1],
+			FLAT_UVS[2],
+			FLAT_UVS[3],
+			im_color);
 	}
 
 	void drawAllSlots()

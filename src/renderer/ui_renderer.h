@@ -4,6 +4,9 @@
 #include "image_path.h"
 #include "soulsy.h"
 
+struct LoadedImage;
+
+
 namespace ui
 {
 	struct TextureData
@@ -48,8 +51,10 @@ namespace ui
 		const float font_size,
 		const Color color,
 		const Align alignment);
-	void drawMeterCircleArc(f32 level, SlotLayout slotLayout);
-	void drawMeterRectangular(f32 level, SlotLayout slotLayout);
+	void drawMeterCircleArc(float level, SlotFlattened slotLayout);
+	void drawMeterRectangular(float level, SlotFlattened slotLayout);
+	std::array<ImVec2, 4> rotateRect(const ImVec2 center, const ImVec2 size, const float angle);
+	void drawTextureQuad(ID3D11ShaderResourceView* texture, const std::array<ImVec2, 4> bounds, const Color color);
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
