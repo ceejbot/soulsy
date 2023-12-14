@@ -521,7 +521,7 @@ namespace ui
 				else if (slotLayout.meter_kind != MeterKind::None)
 				{
 					// this is a percent-full level.
-					auto level = entry->charge_level();
+					auto level              = entry->charge_level();
 					const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
 					const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
 					const auto bg_img_str   = std::string(slotLayout.meter_bg_image);
