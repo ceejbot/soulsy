@@ -13,19 +13,19 @@ use crate::images::icons::Icon;
 #[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum AmmoType {
     Arrow(InvColor),
-    Bolt(InvColor),
-    Bullet(InvColor),
-    Dart(InvColor),
-    Slingshot(InvColor),
-    Melee(InvColor),
-    Grenade(InvColor),
     BodkinArrow(InvColor),
+    Bolt(InvColor),
     BroadheadArrow(InvColor),
-    HammerheadArrow(InvColor),
+    Bullet(InvColor),
     CrescentArrow(InvColor),
+    Dart(InvColor),
     FireArrow(InvColor),
+    Grenade(InvColor),
+    HammerheadArrow(InvColor),
+    Melee(InvColor),
+    PracticeArrow(InvColor),
+    Slingshot(InvColor),
     WhistleArrow(InvColor),
-    PractceArrow(InvColor),
 }
 
 /// The default ammunition is an arrow drawn in white.
@@ -50,7 +50,7 @@ impl HasKeywords for AmmoType {
                 "ArrowCrescent" => Some(Self::CrescentArrow(color.clone())),
                 "ArrowFire" => Some(Self::FireArrow(color.clone())),
                 "ArrowWhistle" => Some(Self::WhistleArrow(color.clone())),
-                "ArrowPractice" => Some(Self::PractceArrowArrow(color.clone())),
+                "ArrowPractice" => Some(Self::PracticeArrow(color.clone())),
                 "OCF_AmmoTypeArrow" => Some(Self::Arrow(color.clone())),
                 "OCF_AmmoTypeBolt" => Some(Self::Bolt(color.clone())),
                 "OCF_AmmoTypeBullet" => Some(Self::Bullet(color.clone())),
@@ -85,7 +85,7 @@ impl HasIcon for AmmoType {
             Self::CrescentArrow(c) => c.color(),
             Self::FireArrow(c) => c.color(),
             Self::WhistleArrow(c) => c.color(),
-            Self::PractceArrow(c) => c.color(),
+            Self::PracticeArrow(c) => c.color(),
         }
     }
 
@@ -101,7 +101,7 @@ impl HasIcon for AmmoType {
             AmmoType::CrescentArrow(_) => &Icon::AmmoCrescentArrow,
             AmmoType::FireArrow(_) => &Icon::AmmoFireArrow,
             AmmoType::WhistleArrow(_) => &Icon::AmmoWhistleArrow,
-            AmmoType::PractceArrow(_) => &Icon::AmmoPractceArrow,
+            AmmoType::PracticeArrow(_) => &Icon::AmmoPracticeArrow,
             _ => &Icon::AmmoArrow,
         }
     }
