@@ -260,7 +260,8 @@ namespace ui
 		const ImVec2 center,
 		const float font_size,
 		const Color color,
-		const Align align)
+		const Align align,
+		const float wrapWidth)
 	{
 		if (!text.length() || color.a == 0) { return; }
 
@@ -288,7 +289,7 @@ namespace ui
 		ImVec2 aligned_loc = ImVec2(center.x + adjustment, center.y);
 
 		ImGui::GetWindowDrawList()->AddText(
-			font, font_size, aligned_loc, text_color, text.c_str(), nullptr, 0.0f, nullptr);
+			font, font_size, aligned_loc, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
 	}
 
 	void ui_renderer::init_animation(const animation_type animation_type,
@@ -451,7 +452,11 @@ namespace ui
 				if (label.color.a == 0) { continue; }
 				const auto textPos = ImVec2(label.anchor.x, label.anchor.y);
 				auto entrytxt      = std::string(entry->fmtstr(label.contents));
-				if (!entrytxt.empty()) { drawText(entrytxt, textPos, label.font_size, label.color, label.alignment); }
+				// Let's try a wrap width here. This is going to be wrong, but we'll experiment.
+				if (!entrytxt.empty())
+				{
+					drawText(entrytxt, textPos, label.font_size, label.color, label.alignment, slotLayout.bg_size.x);
+				}
 			}
 
 			// Draw the hotkey reminder if asked.
@@ -694,9 +699,7 @@ namespace ui
 	void setMaxAlpha(float max)
 	{
 		gMaxAlpha = std::clamp(std::abs(max), 0.2f, 1.0f);
-		if (gHudAlpha > gMaxAlpha) {
-			gHudAlpha = gMaxAlpha;
-		}
+		if (gHudAlpha > gMaxAlpha) { gHudAlpha = gMaxAlpha; }
 	}
 
 	void startAlphaTransition(const bool becomeVisible, const float goal)
@@ -704,10 +707,12 @@ namespace ui
 		gGoalAlpha = std::clamp(goal, 0.0f, gMaxAlpha);
 		if (becomeVisible && gHudAlpha >= gMaxAlpha) { return; }
 		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
-		logger::debug(
-			"startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv, becomeVisible, gGoalAlpha, gHudAlpha);
+		logger::debug("startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv,
+			becomeVisible,
+			gGoalAlpha,
+			gHudAlpha);
 
-		doFadeIn   = becomeVisible;
+		doFadeIn = becomeVisible;
 
 		// The game will report that the player has sheathed weapons when
 		// the player has merely equipped something new. So we give it some

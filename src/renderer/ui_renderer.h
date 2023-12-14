@@ -64,9 +64,10 @@ namespace ui
 			const ImU32 im_color);  // retaining support for animations...
 		static void drawText(const std::string text,
 			const ImVec2 center,
-			const float font_size,
+			const float fontSize,
 			const Color color,
-			const Align alignment);
+			const Align alignment,
+			const float wrapWidth);
 		// older...
 		static void init_animation(animation_type animation_type,
 			float a_screen_x,
