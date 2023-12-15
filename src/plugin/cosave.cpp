@@ -11,7 +11,7 @@ namespace cosave
 	{
 		const auto settings = user_settings();
 		auto uniq           = settings->skse_identifier();
-		rlog::info("Initializing cosave serialization.");
+		rlog::info("Registering plugin for SKSE cosaves.");
 		auto* cosave = SKSE::GetSerializationInterface();
 		cosave->SetUniqueID(uniq);
 		cosave->SetSaveCallback(cosave::gameSavedHandler);
@@ -48,7 +48,7 @@ namespace cosave
 		{
 			if (type == CYCLE_RECORD)
 			{
-				rlog::info("reading cosave data version {}"sv, version);
+				rlog::trace("reading cosave data version {}"sv, version);
 				uint32_t bufSize;
 				std::vector<uint8_t> buffer;
 				cosave->ReadRecordData(bufSize);
@@ -56,7 +56,7 @@ namespace cosave
 
 				const auto read = cosave->ReadRecordData(buffer.data(), bufSize);
 				buffer.resize(read);
-				rlog::debug("read {} bytes from cosave; buffer len is {}"sv, read, buffer.size());
+				rlog::trace("read {} bytes from cosave; buffer len is {}"sv, read, buffer.size());
 				cycle_loaded_from_cosave(buffer, version);
 			}
 			else { rlog::warn("Unknown record type in cosave; type={}", type); }

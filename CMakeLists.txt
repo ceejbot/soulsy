@@ -99,7 +99,6 @@ set(GameVersion "Skyrim")
 
 # Find our vcpkg dependencies.
 # find_package(CommonLibSSE CONFIG REQUIRED)
-find_package(spdlog REQUIRED CONFIG)
 find_package(imgui REQUIRED)
 
 include(cmake/sourcelist.cmake)
@@ -232,7 +231,6 @@ target_link_libraries(
     PRIVATE
     ${SOULSY_LIB}
     CommonLibSSE::CommonLibSSE
-    spdlog::spdlog
     imgui::imgui
     wsock32
     ws2_32

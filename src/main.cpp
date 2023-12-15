@@ -30,7 +30,7 @@ void init_logger()
 	}
 	catch (const std::exception& e)
 	{
-		rlog::critical("failed, what={}"sv, e.what());
+		stl::report_and_fail(fmt::format("failed, what={}"sv, e.what()));
 	}
 }
 
@@ -69,13 +69,8 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 {
 	init_logger();
 
-	rlog::info("---------- {} @ {}.{}.{} loading"sv, Version::PROJECT, Version::MAJOR, Version::MINOR, Version::PATCH);
 	rlog::info("Game version {}", a_skse->RuntimeVersion().string());
 	auto settings = user_settings();
-
-	auto loglevel = static_cast<spdlog::level::level_enum>(settings->log_level_number());
-	spdlog::set_level(loglevel);
-	spdlog::flush_on(loglevel);
 
 	Init(a_skse);
 	cosave::initializeCosaves();

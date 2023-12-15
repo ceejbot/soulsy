@@ -25,7 +25,7 @@ Soulsy is a Rust and C++ project, using CMake to drive Cargo to build the Rust p
 
 The plugin requires the following vcpkg libraries, which will be installed for you:
 
-- [spdlog](https://github.com/gabime/spdlog)
+- [spdlog](https://github.com/gabime/spdlog) (consumed by CommonLib, not by Soulsy)
 - [imgui](https://github.com/ocornut/imgui)
 
 Finally, [CommonLibSSE-NG](https://github.com/CharmedBaryon/CommonLibSSE-NG) is pulled in as a git submodule and built. The repo used is [my fork](https://github.com/ceejbot/CommonLibSSE-NG) of CommonLib, which has some minor fixes in addition to the upstream.

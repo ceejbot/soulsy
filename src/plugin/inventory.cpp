@@ -19,7 +19,7 @@ inline const std::set<RE::FormType> RELEVANT_FORMTYPES_INVENTORY{
 
 void PlayerHook::install()
 {
-	rlog::info("Hooking player so we get equip events plus inventory changes..."sv);
+	rlog::info("Hooking player so we get inventory changes..."sv);
 
 	REL::Relocation<std::uintptr_t> player_character_vtbl{ RE::VTABLE_PlayerCharacter[0] };
 	add_object_to_container_ = player_character_vtbl.write_vfunc(0x5A, add_object_to_container);
@@ -29,6 +29,7 @@ void PlayerHook::install()
 	auto& trampoline = SKSE::GetTrampoline();
 	REL::Relocation<std::uintptr_t> add_item_functor_hook{ RELOCATION_ID(55946, 56490) };
 	add_item_functor_ = trampoline.write_call<5>(add_item_functor_hook.address() + 0x15D, add_item_functor);
+	rlog::info("Player hooked.");
 }
 
 void PlayerHook::add_object_to_container(RE::Actor* a_this,

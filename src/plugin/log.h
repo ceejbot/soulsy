@@ -10,7 +10,9 @@ namespace rlog
 	{
 		critical() = delete;
 
-		explicit critical(fmt::format_string<Args...> fmtstr, Args&&... args)
+		explicit critical(fmt::format_string<Args...> fmtstr,
+			Args&&... args,
+			SKSE::stl::source_location loc = SKSE::stl::source_location::current())
 		{
 			const auto msg = fmt::format(fmtstr, std::forward<Args>(args)...);
 			log_error(msg);
@@ -78,10 +80,16 @@ namespace rlog
 	{
 		debug() = delete;
 
-		explicit debug(fmt::format_string<Args...> fmtstr, Args&&... args)
+		explicit debug(fmt::format_string<Args...> fmtstr,
+			Args&&... args,
+			SKSE::stl::source_location loc = SKSE::stl::source_location::current())
 		{
-			const auto msg = fmt::format(fmtstr, std::forward<Args>(args)...);
-			log_debug(msg);
+			const std::filesystem::path p = loc.file_name();
+			auto filename                 = p.filename().lexically_normal().generic_string();
+
+			const auto msg      = fmt::format(fmtstr, std::forward<Args>(args)...);
+			const auto with_loc = fmt::format("{}:{}: {}", filename, static_cast<int>(loc.line()), msg);
+			log_debug(with_loc);
 		}
 	};
 
@@ -95,10 +103,16 @@ namespace rlog
 	{
 		trace() = delete;
 
-		explicit trace(fmt::format_string<Args...> fmtstr, Args&&... args)
+		explicit trace(fmt::format_string<Args...> fmtstr,
+			Args&&... args,
+			SKSE::stl::source_location loc = SKSE::stl::source_location::current())
 		{
-			const auto msg = fmt::format(fmtstr, std::forward<Args>(args)...);
-			log_trace(msg);
+			const std::filesystem::path p = loc.file_name();
+			auto filename                 = p.filename().lexically_normal().generic_string();
+
+			const auto msg      = fmt::format(fmtstr, std::forward<Args>(args)...);
+			const auto with_loc = fmt::format("{}:{}: {}", filename, static_cast<int>(loc.line()), msg);
+			log_trace(with_loc);
 		}
 	};
 

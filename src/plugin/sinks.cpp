@@ -15,6 +15,7 @@ using event_result = RE::BSEventNotifyControl;
 // Where all == both.
 void registerAllListeners()
 {
+	rlog::info("Registering listeners for equip, animation graph, and button events.");
 	EquipEventListener::registerListener();
 	KeyEventListener::registerListener();
 	AnimGraphListener::registerListener();
