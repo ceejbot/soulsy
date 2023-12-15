@@ -3,14 +3,7 @@
 //! on the C++ side. It can include any logic that doesn't demand the controller.
 //! In particular, it includes a lot of support for papyrus functions.
 
-use std::ffi::OsString;
-use std::fs::File;
-#[cfg(target_os = "windows")]
-use std::os::windows::ffi::OsStringExt;
-use std::path::Path;
-
 use cxx::CxxVector;
-use simplelog::*;
 
 use super::cycles::*;
 use super::settings::{settings, UserSettings};
@@ -18,29 +11,6 @@ use crate::control;
 use crate::data::*;
 use crate::layouts::{hud_layout, Layout};
 use crate::plugin::*;
-
-// ---------- logging
-
-pub fn initialize_rust_logging(_logdir: &cxx::CxxVector<u16>) {
-    let config = settings();
-    let log_level = config.log_level().to_level_filter();
-
-    #[cfg(not(target_os = "windows"))]
-    let chonky_path = OsString::from("placeholder");
-    #[cfg(target_os = "windows")]
-    let chonky_path = OsString::from_wide(_logdir.as_slice());
-    let path = Path::new(chonky_path.as_os_str()).with_file_name("SoulsyHUD_rust.log");
-
-    let Ok(logfile) = File::create(path) else {
-        // Welp, we failed and I have nowhere to write the darn error. Ha ha.
-        return;
-    };
-    let Ok(_) = WriteLogger::init(log_level, Config::default(), logfile) else {
-        // oh dear
-        return;
-    };
-    log::info!("Rust logging standing by.");
-}
 
 // ---------- boxed user settings
 

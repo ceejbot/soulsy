@@ -23,17 +23,17 @@ namespace game
 
 		if (!obj || remaining == 0)
 		{
-			logger::warn("Ammo not found in inventory! name='{}';"sv, form->GetName());
+			rlog::warn("Ammo not found in inventory! name='{}';"sv, form->GetName());
 			return;
 		}
 
 		if (const auto* current_ammo = player->GetCurrentAmmo(); current_ammo && current_ammo->formID == obj->formID)
 		{
-			// logger::trace("ammo is already equipped; bound formID={}"sv, string_util::int_to_hex(obj->formID));
+			// rlog::trace("ammo is already equipped; bound formID={}"sv, string_util::int_to_hex(obj->formID));
 			return;
 		}
 
-		logger::debug("queuing task to equip ammo; name='{}'; bound formID={}"sv,
+		rlog::debug("queuing task to equip ammo; name='{}'; bound formID={}"sv,
 			obj->GetName(),
 			string_util::int_to_hex(obj->formID));
 		auto* task = SKSE::GetTaskInterface();
@@ -59,7 +59,7 @@ namespace game
 			{
 				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->UnequipObject(player, ammo); });
 			}
-			logger::debug("ammo unequipped; name='{}'; formID={}"sv,
+			rlog::debug("ammo unequipped; name='{}'; formID={}"sv,
 				ammo->GetName(),
 				util::string_util::int_to_hex(ammo->formID));
 		}
@@ -77,7 +77,7 @@ namespace game
 			{
 				task->AddTask([=]() { equip_manager->UnequipObject(player, item); });
 			}
-			// logger::trace("unequipped armor; name='{}';"sv, item->GetName());
+			// rlog::trace("unequipped armor; name='{}';"sv, item->GetName());
 		}
 		return is_worn;
 	}
@@ -85,21 +85,21 @@ namespace game
 	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
 		// This is a toggle in reality. Also, use this as a model for other equip funcs.
-		// logger::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
+		// rlog::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
 		auto remaining           = boundObjectForForm(form, player, obj, extra);
 
 		if (!obj || remaining == 0)
 		{
-			logger::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
+			rlog::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
 			return;
 		}
 
 		auto* task = SKSE::GetTaskInterface();
 		if (!task)
 		{
-			logger::warn("could not find SKSE task interface! Cannot act."sv);
+			rlog::warn("could not find SKSE task interface! Cannot act."sv);
 			return;
 		}
 
@@ -117,14 +117,14 @@ namespace game
 
 	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
-		// logger::trace("attempting to equip armor; name='{}';"sv, form->GetName());
+		// rlog::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		RE::ExtraDataList* extra = nullptr;
 		auto remaining           = boundObjectForForm(form, player, obj, extra);
 
 		if (!obj || remaining == 0)
 		{
-			logger::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
+			rlog::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
 			return;
 		}
 
@@ -141,7 +141,7 @@ namespace game
 
 	void consumePotion(const RE::TESForm* potionForm, RE::PlayerCharacter*& thePlayer)
 	{
-		logger::trace("consumePotion called; form_id={}; potion='{}';"sv,
+		rlog::trace("consumePotion called; form_id={}; potion='{}';"sv,
 			util::string_util::int_to_hex(potionForm->formID),
 			potionForm->GetName());
 
@@ -151,7 +151,7 @@ namespace game
 
 		if (!obj || remaining == 0)
 		{
-			logger::warn("Couldn't find requested potion in inventory!"sv);
+			rlog::warn("Couldn't find requested potion in inventory!"sv);
 			helpers::honk();
 			return;
 		}
@@ -159,7 +159,7 @@ namespace game
 		if (!obj->Is(RE::FormType::AlchemyItem))
 		{
 			helpers::honk();
-			logger::warn("bound object is not an alchemy item? name='{}'; formID={};"sv,
+			rlog::warn("bound object is not an alchemy item? name='{}'; formID={};"sv,
 				obj->GetName(),
 				string_util::int_to_hex(obj->formID));
 			return;
@@ -218,7 +218,7 @@ namespace game
 			soundHandle.SetObjectToFollow(thePlayer->Get3D());
 			soundHandle.SetVolume(1.0);
 			soundHandle.Play();
-			// logger::trace("played sound"sv);
+			// rlog::trace("played sound"sv);
 		}
 	}
 
@@ -242,12 +242,12 @@ namespace game
 
 		if (deficit == 0)
 		{
-			logger::info("Not drinking a {} potion because you don't need one."sv, vitalStat);
+			rlog::info("Not drinking a {} potion because you don't need one."sv, vitalStat);
 			helpers::honk();
 			return;
 		}
 
-		logger::debug("goal potion: deficit={}; min={}; max={};"sv,
+		rlog::debug("goal potion: deficit={}; min={}; max={};"sv,
 			fmt::format(FMT_STRING("{:.2f}"), deficit),
 			fmt::format(FMT_STRING("{:.2f}"), goalMin),
 			fmt::format(FMT_STRING("{:.2f}"), goalMax));
@@ -256,7 +256,7 @@ namespace game
 		float prevRating        = -100.0f;
 
 		auto candidates = player::getInventoryForType(thePlayer, RE::FormType::AlchemyItem);
-		logger::debug("{} potions in inventory"sv, candidates.size(), vitalStat);
+		rlog::debug("{} potions in inventory"sv, candidates.size(), vitalStat);
 		auto count = 0;
 		for (const auto& [item, inv_data] : candidates)
 		{
@@ -282,7 +282,7 @@ namespace game
 				// any match is better than no match
 				obj        = alchemy_item;
 				prevRating = rating;
-				logger::debug("found at least one {} potion: rating={}; max_restored={}; deficit={};"sv,
+				rlog::debug("found at least one {} potion: rating={}; max_restored={}; deficit={};"sv,
 					vitalStat,
 					rating,
 					max_restored,
@@ -294,7 +294,7 @@ namespace game
 			// We have at least a second candidate. Is it better than our current choice?
 			if (std::fabs(rating) < std::fabs(prevRating))
 			{
-				logger::debug(
+				rlog::debug(
 					"improved selection: rating={}; max_restored={}; deficit={};"sv, rating, max_restored, deficit);
 				obj        = alchemy_item;
 				prevRating = rating;
@@ -305,7 +305,7 @@ namespace game
 
 		if (obj)
 		{
-			logger::debug("after considering {} candidates, found a potion: rating={}; name='{}';"sv,
+			rlog::debug("after considering {} candidates, found a potion: rating={}; name='{}';"sv,
 				vitalStat,
 				prevRating,
 				obj->GetName());
@@ -317,7 +317,7 @@ namespace game
 		}
 		else
 		{
-			logger::warn("We couldn't find any {} potions!"sv, vitalStat);
+			rlog::warn("We couldn't find any {} potions!"sv, vitalStat);
 			helpers::honk();
 		}
 	}
@@ -332,7 +332,7 @@ namespace game
 		const auto* entry_point = static_cast<RE::BGSEntryPointPerkEntry*>(perk_entry);
 		const auto* perk        = entry_point->perk;
 
-		logger::trace("perk formID={}; name='{}';"sv, string_util::int_to_hex(perk->formID), perk->GetName());
+		rlog::trace("perk formID={}; name='{}';"sv, string_util::int_to_hex(perk->formID), perk->GetName());
 
 		// This was originally intended to handle many variations of the poison
 		// dose perk-- it should calculate the correct value from vanilla,
@@ -354,7 +354,7 @@ namespace game
 				}
 			}
 
-			logger::trace("Got value {} for Perk, total now is {}"sv, value->data, result_);
+			rlog::trace("Got value {} for Perk, total now is {}"sv, value->data, result_);
 		}
 
 		return RE::BSContainer::ForEachResult::kContinue;

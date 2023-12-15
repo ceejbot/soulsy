@@ -11,7 +11,7 @@ namespace cosave
 	{
 		const auto settings = user_settings();
 		auto uniq           = settings->skse_identifier();
-		logger::info("Initializing cosave serialization.");
+		rlog::info("Registering plugin for SKSE cosaves.");
 		auto* cosave = SKSE::GetSerializationInterface();
 		cosave->SetUniqueID(uniq);
 		cosave->SetSaveCallback(cosave::gameSavedHandler);
@@ -26,11 +26,11 @@ namespace cosave
 		const uint32_t version    = serialize_version();
 		rust::Vec<uint8_t> buffer = serialize_cycles();
 		uint32_t bufsize          = static_cast<uint32_t>(buffer.size());
-		logger::debug("cycles serialized into a Vec<u8> of size={};"sv, bufsize);
+		rlog::debug("cycles serialized into a Vec<u8> of size={};"sv, bufsize);
 
 		if (!cosave->OpenRecord(CYCLE_RECORD, version))
 		{
-			logger::error("Unable to open record to write cosave data.");
+			rlog::error("Unable to open record to write cosave data.");
 			return;
 		}
 
@@ -48,7 +48,7 @@ namespace cosave
 		{
 			if (type == CYCLE_RECORD)
 			{
-				logger::info("reading cosave data version {}"sv, version);
+				rlog::trace("reading cosave data version {}"sv, version);
 				uint32_t bufSize;
 				std::vector<uint8_t> buffer;
 				cosave->ReadRecordData(bufSize);
@@ -56,10 +56,10 @@ namespace cosave
 
 				const auto read = cosave->ReadRecordData(buffer.data(), bufSize);
 				buffer.resize(read);
-				logger::debug("read {} bytes from cosave; buffer len is {}"sv, read, buffer.size());
+				rlog::trace("read {} bytes from cosave; buffer len is {}"sv, read, buffer.size());
 				cycle_loaded_from_cosave(buffer, version);
 			}
-			else { logger::warn("Unknown record type in cosave; type={}", type); }
+			else { rlog::warn("Unknown record type in cosave; type={}", type); }
 		}
 	}
 

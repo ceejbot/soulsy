@@ -164,7 +164,7 @@ Each SKSE mod that stores data in the cosave file must identify itself to the SK
 
 Enable this toggle and restart the game to make the mod log more verbosely.
 
-All SKSE plugin mods log in the same directory: `Documents/my games/Skyrim Special Edition/SKSE`. SoulsyHUD writes two logs, one for its C++ code and one for its Rust code. (Correctly interleaving log output from the two very different logging systems is more work than it's worth.) The two log files are named `SoulsyHUD.log` and `SoulsyHUD_rust.log`.
+All SKSE plugin mods log in the same directory: `Documents/my games/Skyrim Special Edition/SKSE`. SoulsyHUD writes its logs in a file named `SoulsyHUD.log`.
 
 In normal logging mode, SoulsyHUD's logs are designed for you to read to learn about what the mod is doing and how it's making decisions for you. At game load, it will log what all your cycles contain and what your equipment sets are, for example. In debug mode, the logs contain information intended to help the mod author debug. Enable this if you're curious or if you have a problem you're trying to figure out.
 

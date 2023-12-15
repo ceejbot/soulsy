@@ -182,7 +182,7 @@ If the item shown in this slot has a meaningful count-- say, a stack of potions 
 
 The next four fields starting with `hotkey_` are, you guessed it, for drawing a hotkey reminder. If this slot has a hotkey associated with it, where and how should the hotkey reminder be drawn? The fields here are similar to all the others. You have rgba colors for the background image and the shortcut image, a size for the background image, and an offset relative to the center of the slot saying where to draw it.
 
-The order the slot fields are in does not matter, so long as they're present. If you are missing a required field, you will not be able to load the layout file. You'll find details about what went wrong in the log file `SoulsyHUD_rust.log`.
+The order the slot fields are in does not matter, so long as they're present. If you are missing a required field, you will not be able to load the layout file. You'll find details about what went wrong in the log file `SoulsyHUD.log`.
 
 Repeat this five times, once for each slot, and you have a full layout!
 

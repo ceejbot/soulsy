@@ -9,6 +9,7 @@ set(headers ${headers}
     src/plugin/cosave.h
     src/plugin/inventory.h
     src/plugin/keycodes.h
+    src/plugin/log.h
     src/plugin/menus.h
     src/plugin/papyrus.h
     src/plugin/sinks.h

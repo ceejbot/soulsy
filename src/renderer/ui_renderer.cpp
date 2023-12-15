@@ -59,11 +59,11 @@ namespace ui
 	{
 		func();
 
-		logger::info("D3DInit hooked so we can give imgui something to render to."sv);
+		rlog::info("D3DInit hooked so we can give imgui something to render to."sv);
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)
 		{
-			logger::error("Cannot find game renderer. Initialization failed.");
+			rlog::error("Cannot find game renderer. Initialization failed.");
 			return;
 		}
 
@@ -71,41 +71,41 @@ namespace ui
 		const auto swapChain = renderer->data.renderWindows->swapChain;
 		const auto forwarder = renderer->data.forwarder;
 
-		logger::info("Getting DXGI swapchain..."sv);
+		rlog::info("Getting DXGI swapchain..."sv);
 		auto* swapchain = swapChain;
 		if (!swapchain)
 		{
-			logger::error("Cannot find game render manager. Initialization failed."sv);
+			rlog::error("Cannot find game render manager. Initialization failed."sv);
 			return;
 		}
-		logger::info("Reticulating splines...");
+		rlog::info("Reticulating splines...");
 
-		logger::info("Getting DXGI swapchain desc..."sv);
+		rlog::info("Getting DXGI swapchain desc..."sv);
 		DXGI_SWAP_CHAIN_DESC sd{};
 		if (swapchain->GetDesc(std::addressof(sd)) < 0)
 		{
-			logger::error("IDXGISwapChain::GetDesc failed."sv);
+			rlog::error("IDXGISwapChain::GetDesc failed."sv);
 			return;
 		}
 
 		device_  = forwarder;
 		context_ = context;
 
-		logger::info("Initializing ImGui..."sv);
+		rlog::info("Initializing ImGui..."sv);
 		ImGui::CreateContext();
 		if (!ImGui_ImplWin32_Init(sd.OutputWindow))
 		{
-			logger::error("ImGui initialization failed (Win32)");
+			rlog::error("ImGui initialization failed (Win32)");
 			return;
 		}
 		if (!ImGui_ImplDX11_Init(device_, context_))
 		{
-			logger::error("ImGui initialization failed (DX11)"sv);
+			rlog::error("ImGui initialization failed (DX11)"sv);
 			return;
 		}
 
 		initialized.store(true);
-		logger::info("Ready to draw the HUD.");
+		rlog::info("Ready to draw the HUD.");
 
 		// Make our blend state for re-use.
 		// D3D11_BLEND_DESC desc;
@@ -123,7 +123,7 @@ namespace ui
 
 		wnd_proc_hook::func = reinterpret_cast<WNDPROC>(
 			SetWindowLongPtrA(sd.OutputWindow, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wnd_proc_hook::thunk)));
-		if (!wnd_proc_hook::func) { logger::error("SetWindowLongPtrA failed"sv); }
+		if (!wnd_proc_hook::func) { rlog::error("SetWindowLongPtrA failed"sv); }
 	}
 
 	void ui_renderer::dxgi_present_hook::thunk(std::uint32_t a_p1)
@@ -167,7 +167,7 @@ namespace ui
 		if (loadedImg.width == 0) { return false; }
 		if (d3dTextureFromBuffer(&loadedImg, &ICON_MAP[key].texture, ICON_MAP[key].width, ICON_MAP[key].height))
 		{
-			logger::info("Lazy-loaded icon '{}'; width={}; height={}", key, ICON_MAP[key].width, ICON_MAP[key].height);
+			rlog::info("Lazy-loaded icon '{}'; width={}; height={}", key, ICON_MAP[key].width, ICON_MAP[key].height);
 			return true;
 		}
 		return false;
@@ -184,7 +184,7 @@ namespace ui
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)
 		{
-			logger::error("Cannot find render manager. Initialization failed."sv);
+			rlog::error("Cannot find render manager. Initialization failed."sv);
 			return false;
 		}
 		const auto forwarder = renderer->data.forwarder;
@@ -305,7 +305,7 @@ namespace ui
 	{
 		if (a_alpha == 0) { return; }
 
-		// logger::trace("starting inited animation");
+		// rlog::trace("starting inited animation");
 		constexpr auto angle = 0.0f;
 
 		const auto size = static_cast<uint32_t>(animation_frame_map[animation_type].size());
@@ -323,7 +323,7 @@ namespace ui
 				a_duration,
 				size);
 		animation_list.emplace_back(static_cast<ui::animation_type>(animation_type), std::move(anim));
-		// logger::trace("done initializing animation. return.");
+		// rlog::trace("done initializing animation. return.");
 	}
 
 	void ui_renderer::drawElement(ID3D11ShaderResourceView* texture,
@@ -443,7 +443,7 @@ namespace ui
 
 					drawElement(texture, icon_pos, size, 0.f, iconColor);
 				}
-				else { logger::debug("lazy load for icon key {} failed; not drawing icon.", iconkey); }
+				else { rlog::debug("lazy load for icon key {} failed; not drawing icon.", iconkey); }
 			}
 
 			// Loop through the text elements of this slot.
@@ -535,7 +535,7 @@ namespace ui
 			{
 				if (entry.path().filename().extension() != ".svg")
 				{
-					logger::warn("file {}, does not match supported extension '.svg'"sv,
+					rlog::warn("file {}, does not match supported extension '.svg'"sv,
 						entry.path().filename().string().c_str());
 					continue;
 				}
@@ -546,14 +546,14 @@ namespace ui
 						textureCache[index].height))
 				{
 					/*
-					logger::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
+					rlog::trace("loading texture {}, type: {}, width: {}, height: {}"sv,
 						entry.path().filename().string().c_str(),
 						entry.path().filename().extension().string().c_str(),
 						textureCache[index].width,
 						textureCache[index].height);
 					*/
 				}
-				else { logger::error("failed to load texture {}"sv, entry.path().filename().string().c_str()); }
+				else { rlog::error("failed to load texture {}"sv, entry.path().filename().string().c_str()); }
 
 				textureCache[index].width  = static_cast<int32_t>(textureCache[index].width * res_width);
 				textureCache[index].height = static_cast<int32_t>(textureCache[index].height * res_height);
@@ -570,14 +570,14 @@ namespace ui
 			int32_t height                    = 0;
 			if (entry.path().filename().extension() != ".svg")
 			{
-				logger::warn(
+				rlog::warn(
 					"file {}, does not match supported extension '.svg'"sv, entry.path().filename().string().c_str());
 				continue;
 			}
 
 			loadTextureFromFile(entry.path().string().c_str(), &texture, width, height);
 
-			// logger::trace("loading animation frame: {}"sv, entry.path().string().c_str());
+			// rlog::trace("loading animation frame: {}"sv, entry.path().string().c_str());
 			TextureData img;
 			img.texture = texture;
 			// img.width   = static_cast<int32_t>(width * resolutionScaleWidth());
@@ -615,13 +615,13 @@ namespace ui
 		if (d3dTextureFromBuffer(
 				&loadedImg, &HUD_IMAGES_MAP[key].texture, HUD_IMAGES_MAP[key].width, HUD_IMAGES_MAP[key].height))
 		{
-			logger::info("Lazy-loaded hud bg image '{}'; width={}; height={}",
+			rlog::info("Lazy-loaded hud bg image '{}'; width={}; height={}",
 				key,
 				HUD_IMAGES_MAP[key].width,
 				HUD_IMAGES_MAP[key].height);
 			return true;
 		}
-		logger::warn("Failed to load requested hud image '{}'; double-check the svg name in the layout file!", key);
+		rlog::warn("Failed to load requested hud image '{}'; double-check the svg name in the layout file!", key);
 		return false;
 	}
 
@@ -632,7 +632,7 @@ namespace ui
 		std::string path = R"(Data\SKSE\Plugins\resources\fonts\)" + fontfile;
 		auto file_path   = std::filesystem::path(path);
 
-		logger::trace(
+		rlog::trace(
 			"about to try to load font; size={}; globalScale={}; path={}"sv, hud.font_size, hud.global_scale, path);
 		triedFontLoad = true;
 		if (std::filesystem::is_regular_file(file_path) &&
@@ -658,7 +658,7 @@ namespace ui
 			if (io.Fonts->Build())
 			{
 				ImGui_ImplDX11_CreateDeviceObjects();
-				logger::info("font loaded; path={}"sv, path);
+				rlog::info("font loaded; path={}"sv, path);
 				return;
 			}
 		}
@@ -672,7 +672,7 @@ namespace ui
 		loadImagesForMap(gamepad_xbox_icon_name_map, XBOX_BUTTON_MAP, key_directory);
 
 		loadAnimationFrames(highlight_animation_directory, animation_frame_map[animation_type::highlight]);
-		logger::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
+		rlog::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
 	}
 
 	// These values scale the UI from the resolution the mod author used to the resolution
@@ -707,7 +707,7 @@ namespace ui
 		gGoalAlpha = std::clamp(goal, 0.0f, gMaxAlpha);
 		if (becomeVisible && gHudAlpha >= gMaxAlpha) { return; }
 		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
-		logger::debug("startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv,
+		rlog::debug("startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv,
 			becomeVisible,
 			gGoalAlpha,
 			gHudAlpha);
@@ -841,7 +841,7 @@ namespace ui
 			auto remaining = iter->second;
 
 			remaining -= delta;
-			// logger::trace("timer decremented; timer={}; delta={}; remaining={};"sv, which, delta, remaining);
+			// rlog::trace("timer decremented; timer={}; delta={}; remaining={};"sv, which, delta, remaining);
 			if (remaining < 0.0f)
 			{
 				to_remove.push_back(which);
@@ -862,7 +862,7 @@ namespace ui
 		// are floats where whole numbers are seconds. So we divide.
 		const auto settings = user_settings();
 		cycle_timers.insert_or_assign(static_cast<uint8_t>(which), static_cast<float>(duration) / 1000.0f);
-		logger::debug("Started equip delay timer; which={}; duration={} ms;"sv, static_cast<uint8_t>(which), duration);
+		rlog::debug("Started equip delay timer; which={}; duration={} ms;"sv, static_cast<uint8_t>(which), duration);
 		// TODO do not start slomo for long-presses???
 		if (settings->cycling_slows_time() && RE::PlayerCharacter::GetSingleton()->IsInCombat())
 		{

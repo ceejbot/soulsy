@@ -231,6 +231,21 @@ pub mod plugin {
         /// Tell the rust side where to log.
         fn initialize_rust_logging(logdir: &CxxVector<u16>);
 
+        // Next are shims for sending C++-originated log lines to the Rust logging
+        // facilities. This lets us have a single log file without having to interleave
+        // log lines and formats. All logs except trace level should be written for
+        // humans to read, not programmers.
+        /// Log at error level. Use this level for unrecoverable problems. Consider crashing.
+        fn log_error(message: String);
+        /// Log warn level. Use this level for problems the player might want to fix.
+        fn log_warn(message: String);
+        /// Log at info level. Use this level for normal operations.
+        fn log_info(message: String);
+        /// Log at debug level. Use this level to help players debug problems.
+        fn log_debug(message: String);
+        /// Log at trace level. Use this level for debugging programming problems.
+        fn log_trace(message: String);
+
         /// Trigger rust to read config, figure out what the player has equipped,
         /// and figure out what it should draw.
         fn initialize_hud();

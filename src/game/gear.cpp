@@ -91,7 +91,7 @@ namespace game
 
 		if (!bound_obj) { return 0; }
 
-		logger::trace("found {} instance for bound object; name='{}'; formID={};"sv,
+		rlog::trace("found {} instance for bound object; name='{}'; formID={};"sv,
 			item_count,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
@@ -178,14 +178,14 @@ namespace game
 	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
-		logger::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
+		rlog::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
 			form->GetName(),
 			slot_is_left,
 			form->GetFormType());
 
 		if (form->formID == util::unarmed)
 		{
-			logger::debug("unequipping this slot by request!"sv);
+			rlog::debug("unequipping this slot by request!"sv);
 			unequipLeftOrRightSlot(player, slot);
 			return;
 		}
@@ -201,7 +201,7 @@ namespace game
 		auto item_count               = boundObjectForForm(form, player, bound_obj, extra);
 		if (!bound_obj)
 		{
-			logger::debug("unable to find bound object for name='{}'"sv, form->GetName());
+			rlog::debug("unable to find bound object for name='{}'"sv, form->GetName());
 			return;
 		}
 
@@ -213,20 +213,20 @@ namespace game
 
 		if (slot_is_left && obj_equipped_left)
 		{
-			logger::debug("item already equipped in left hand. name='{}'"sv, bound_obj->GetName());
+			rlog::debug("item already equipped in left hand. name='{}'"sv, bound_obj->GetName());
 			return;
 		}
 
 		if (!slot_is_left && obj_equipped_right)
 		{
-			logger::debug("item already equipped in right hand. name='{}'"sv, bound_obj->GetName());
+			rlog::debug("item already equipped in right hand. name='{}'"sv, bound_obj->GetName());
 			return;
 		}
 
 		auto equipped_count = 0;
 		if (obj_equipped_left) { equipped_count++; }
 		if (obj_equipped_right) { equipped_count++; }
-		logger::debug("checking how many '{}' we have available; count={}; equipped_count={}"sv,
+		rlog::debug("checking how many '{}' we have available; count={}; equipped_count={}"sv,
 			bound_obj->GetName(),
 			item_count,
 			equipped_count);
@@ -238,7 +238,7 @@ namespace game
 			return;
 		}
 
-		logger::debug("queuing task to equip '{}'; left={}; formID={};"sv,
+		rlog::debug("queuing task to equip '{}'; left={}; formID={};"sv,
 			form->GetName(),
 			slot_is_left,
 			util::string_util::int_to_hex(bound_obj->formID));
@@ -259,7 +259,7 @@ namespace game
 		}
 
 		auto slot_is_left = slot == left_hand_equip_slot();
-		logger::debug("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
+		rlog::debug("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
 			form->GetName(),
 			slot_is_left,
 			form->GetFormType());
@@ -272,13 +272,13 @@ namespace game
 
 		if (slot_is_left && obj_equipped_left)
 		{
-			logger::debug("spell already equipped in left hand. name='{}'"sv, form->GetName());
+			rlog::debug("spell already equipped in left hand. name='{}'"sv, form->GetName());
 			return;
 		}
 
 		if (!slot_is_left && obj_equipped_right)
 		{
-			logger::debug("spell already equipped in right hand. name='{}'"sv, form->GetName());
+			rlog::debug("spell already equipped in right hand. name='{}'"sv, form->GetName());
 			return;
 		}
 
@@ -292,11 +292,11 @@ namespace game
 		}
 		else
 		{
-			logger::info("player tried to equip a spell they don't know; upstream bug?"sv);
+			rlog::info("player tried to equip a spell they don't know; upstream bug?"sv);
 			return;
 		}
 
-		logger::debug("queued task to equip '{}'; left={}; formID={};"sv,
+		rlog::debug("queued task to equip '{}'; left={}; formID={};"sv,
 			form->GetName(),
 			slot_is_left,
 			util::string_util::int_to_hex(form->formID));
@@ -309,7 +309,7 @@ namespace game
 		else if (which == Action::Right) { slot = right_hand_equip_slot(); }
 		else
 		{
-			logger::debug("somebody called unequipHand() with slot={};"sv, static_cast<uint8_t>(which));
+			rlog::debug("somebody called unequipHand() with slot={};"sv, static_cast<uint8_t>(which));
 			return;
 		}
 
@@ -330,7 +330,7 @@ namespace game
 		}
 		else
 		{
-			logger::debug("slot is not left/right!");
+			rlog::debug("slot is not left/right!");
 			return;
 		}
 		if (!equipped) { return; }
@@ -339,7 +339,7 @@ namespace game
 		auto* task          = SKSE::GetTaskInterface();
 		if (!task)
 		{
-			logger::warn("Unable to get SKSE task interface! Cannot equip or unequip anything."sv);
+			rlog::warn("Unable to get SKSE task interface! Cannot equip or unequip anything."sv);
 			return;
 		}
 

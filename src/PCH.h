@@ -7,8 +7,6 @@
 #include <RE/Skyrim.h>
 #include <SKSE/SKSE.h>
 
-#include <spdlog/sinks/basic_file_sink.h>
-
 #include <algorithm>
 #include <cctype>
 #include <d3d11.h>
@@ -21,7 +19,9 @@
 #include <windows.h>
 #include <winuser.h>
 
-namespace logger = SKSE::log;
+// Templates for sending C++ logging to Rust.
+#include "log.h"
+
 using namespace std::literals;
 
 namespace stl

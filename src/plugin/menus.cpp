@@ -22,19 +22,19 @@ inline const std::set<RE::FormType> RELEVANT_FORMTYPES_ALL{
 
 void MenuHook::install()
 {
-	logger::info("Hooking menus to get keystrokes..."sv);
+	rlog::info("Hooking menus to get keystrokes..."sv);
 
 	REL::Relocation<std::uintptr_t> menu_controls_vtbl{ RE::VTABLE_MenuControls[0] };
 	process_event_ = menu_controls_vtbl.write_vfunc(0x1, &MenuHook::process_event);
 
-	logger::info("Menus hooked."sv);
+	rlog::info("Menus hooked."sv);
 }
 
 bool MenuHook::buttonMatchesEvent(RE::ControlMap* controlMap, RE::BSFixedString eventID, RE::ButtonEvent* button)
 {
 	auto the_device = button->GetDevice();
 	auto key        = controlMap->GetMappedKey(eventID, the_device, static_cast<RE::ControlMap::InputContextID>(0));
-	//  logger::debug("favorites detection: looking for {} ? = {}"sv, key, button->GetIDCode());
+	//  rlog::debug("favorites detection: looking for {} ? = {}"sv, key, button->GetIDCode());
 	return key == button->GetIDCode();
 }
 
@@ -86,7 +86,7 @@ RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 					auto menu_form           = MenuSelection::getSelectionFromMenu(ui, selection);
 					if (!menu_form) continue;
 
-					logger::debug("Got toggled favorite: form_id={}; form_type={}; is-favorited={};"sv,
+					rlog::debug("Got toggled favorite: form_id={}; form_type={}; is-favorited={};"sv,
 						util::string_util::int_to_hex(selection->form_id),
 						selection->formType,
 						selection->favorite);
@@ -168,7 +168,7 @@ uint32_t MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelec
 	if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 	{
 		form_id = static_cast<std::uint32_t>(result.GetNumber());
-		// logger::debug("favorites menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
+		// rlog::debug("favorites menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
 	}
 	if (form_id == 0) { return 0; }
 
@@ -196,7 +196,7 @@ uint32_t MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelec
 			return selection->form_id;
 		}
 	}
-	logger::debug("fell through without finding our object.");
+	rlog::debug("fell through without finding our object.");
 	return 0;
 }
 
@@ -230,7 +230,7 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 	if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 	{
 		RE::FormID form_id = static_cast<std::uint32_t>(result.GetNumber());
-		logger::trace("formid {}"sv, util::string_util::int_to_hex(form_id));
+		rlog::trace("formid {}"sv, util::string_util::int_to_hex(form_id));
 		auto* item_form = RE::TESForm::LookupByID(form_id);
 		if (!item_form) return;
 
@@ -265,7 +265,7 @@ void MenuSelection::makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSe
 	}
 	else
 	{
-		logger::debug(
+		rlog::debug(
 			"magic menu selection lookup failed; got result type: {}"sv, static_cast<uint8_t>(result.GetType()));
 	}
 
@@ -273,7 +273,7 @@ void MenuSelection::makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSe
 
 	for (auto* form : mfaves->spells)
 	{
-		logger::debug(
+		rlog::debug(
 			"mfave form: id={}; name='{}'"sv, util::string_util::int_to_hex(form->GetFormID()), form->GetName());
 		if (form->GetFormID() == form_id)
 		{

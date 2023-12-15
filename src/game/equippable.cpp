@@ -1,8 +1,8 @@
 #include "equippable.h"
 
+#include "gear.h"
 #include "helpers.h"
 #include "player.h"
-#include "gear.h"
 
 #include "lib.rs.h"
 
@@ -77,14 +77,14 @@ namespace equippable
 		if (!item_form) { return empty_huditem(); }
 
 		KeywordAccumulator::clear();
-		auto loggerName = game::displayName(item_form);
+		auto loggerName         = game::displayName(item_form);
 		auto chonker            = helpers::chars_to_vec(loggerName);
 		std::string form_string = helpers::makeFormSpecString(item_form);
 		bool two_handed         = requiresTwoHands(item_form);
 
 		if (item_form->Is(RE::FormType::Ammo))
 		{
-			logger::info("making HudItem for ammo: '{}'"sv, loggerName);
+			rlog::debug("making HudItem for ammo: '{}'"sv, loggerName);
 			const auto* ammo = item_form->As<RE::TESAmmo>()->AsKeywordForm();
 			ammo->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
@@ -100,7 +100,7 @@ namespace equippable
 			const auto* weapon = item_form->As<RE::TESObjectWEAP>();
 			if (weapon)
 			{
-				logger::info("making HudItem for weapon: '{}'"sv, loggerName);
+				rlog::debug("making HudItem for weapon: '{}'"sv, loggerName);
 				weapon->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords = KeywordAccumulator::mKeywords;
 				if (weapon->IsBound()) { keywords->push_back(std::string("OCF_InvColorBound")); }
@@ -114,7 +114,7 @@ namespace equippable
 
 		if (item_form->IsArmor())
 		{
-			logger::info("making HudItem for armor: '{}'"sv, loggerName);
+			rlog::debug("making HudItem for armor: '{}'"sv, loggerName);
 			const auto* armor = item_form->As<RE::TESObjectARMO>();
 			armor->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
@@ -132,7 +132,7 @@ namespace equippable
 		if (item_form->Is(RE::FormType::Light))
 		{
 			// This form type does not have keywords. This presents a problem. Cough.
-			logger::info("making HudItem for light: '{}';"sv, loggerName);
+			rlog::debug("making HudItem for light: '{}';"sv, loggerName);
 			const auto name = std::string(item_form->GetName());
 			if (name.find("Lantern") != std::string::npos)  // yes, very limited in effectiveness
 			{
@@ -145,7 +145,7 @@ namespace equippable
 
 		if (item_form->Is(RE::FormType::Shout))
 		{
-			logger::info("making HudItem for shout: '{}'"sv, loggerName);
+			rlog::debug("making HudItem for shout: '{}'"sv, loggerName);
 			auto* shout = item_form->As<RE::TESShout>();
 
 			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
@@ -171,7 +171,7 @@ namespace equippable
 			if (spell_type == RE::MagicSystem::SpellType::kLesserPower ||
 				spell_type == RE::MagicSystem::SpellType::kPower)
 			{
-				logger::info("making HudItem for power: '{}'"sv, loggerName);
+				rlog::debug("making HudItem for power: '{}'"sv, loggerName);
 				const auto* costliest = spell->GetCostliestEffectItem();
 				if (costliest)
 				{
@@ -188,7 +188,7 @@ namespace equippable
 			}
 
 			// Regular spells.
-			logger::info("making HudItem for spell: '{}'"sv, loggerName);
+			rlog::debug("making HudItem for spell: '{}'"sv, loggerName);
 			const auto* costliest = spell->GetCostliestEffectItem();
 			if (costliest)
 			{
@@ -208,7 +208,7 @@ namespace equippable
 
 		if (item_form->Is(RE::FormType::Scroll))
 		{
-			logger::info("making HudItem for scroll: '{}'"sv, loggerName);
+			rlog::debug("making HudItem for scroll: '{}'"sv, loggerName);
 			auto* scroll = item_form->As<RE::ScrollItem>();
 			if (scroll->GetCostliestEffectItem() && scroll->GetCostliestEffectItem()->baseEffect)
 			{
@@ -233,7 +233,7 @@ namespace equippable
 
 			if (alchemy_potion->IsFood())
 			{
-				logger::info("making HudItem for food: '{}'"sv, loggerName);
+				rlog::debug("making HudItem for food: '{}'"sv, loggerName);
 				alchemy_potion->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords          = KeywordAccumulator::mKeywords;
 				rust::Box<HudItem> item = hud_item_from_keywords(
@@ -242,7 +242,7 @@ namespace equippable
 			}
 			else
 			{
-				logger::info("making HudItem for potion: '{}'"sv, loggerName);
+				rlog::debug("making HudItem for potion: '{}'"sv, loggerName);
 				rust::Box<HudItem> item = potion_from_formdata(alchemy_potion->IsPoison(),
 					static_cast<int32_t>(actor_value),
 					count,
@@ -254,7 +254,7 @@ namespace equippable
 
 		const auto formtype    = item_form->GetFormType();
 		const auto formtypestr = RE::FormTypeToString(formtype);
-		logger::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
+		rlog::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
 			formtypestr,
 			item_form->GetName(),
 			form_string);
@@ -273,7 +273,7 @@ namespace equippable
 
 	void KeywordAccumulator::printKeywords()
 	{
-		if (!mKeywords) { logger::debug("no keywords to print"); }
-		for (std::string kwd : *mKeywords) { logger::info("{}"sv, kwd); }
+		if (!mKeywords) { rlog::debug("no keywords to print"); }
+		for (std::string kwd : *mKeywords) { rlog::info("{}"sv, kwd); }
 	}
 }

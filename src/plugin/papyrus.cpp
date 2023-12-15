@@ -41,7 +41,7 @@ namespace papyrus
 		a_vm->RegisterFunction("GetResolutionWidth", MCM_NAME, get_resolution_width);
 		a_vm->RegisterFunction("GetResolutionHeight", MCM_NAME, get_resolution_height);
 
-		logger::info("Registered papyrus functions for the MCM; classname='{}'."sv, MCM_NAME);
+		rlog::info("Registered papyrus functions for the MCM; classname='{}'."sv, MCM_NAME);
 		return true;
 	}
 
@@ -109,7 +109,7 @@ namespace papyrus
 	bool handleRenameEquipSet(RE::TESQuest*, uint32_t id, RE::BSFixedString fixed)
 	{
 		auto name = std::string(fixed);
-		logger::debug("handleRenameEquipSet(): id={}; new name='{}';", id, name);
+		rlog::debug("handleRenameEquipSet(): id={}; new name='{}';", id, name);
 		return handle_rename_equipset(id, name);
 	}
 
