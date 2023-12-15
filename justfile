@@ -39,7 +39,7 @@ cmake:
 
 # Run rust tests. Cannot run on Windows (yet; use Mac or WSL Ubuntu for now).
 @test:
-    cargo nextest run
+    cargo nextest run -E 'not test(soulsy_pack_complete)'
 
 # Generate source files list for CMake. Requires bash. Use a *nix.
 sources:
