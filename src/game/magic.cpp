@@ -13,12 +13,12 @@ namespace game
 		RE::PlayerCharacter*& player)
 	{
 		auto left = a_slot == game::left_hand_equip_slot();
-		logger::trace(
+		rlog::trace(
 			"try to work spell {}, action {}, left {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action), left);
 
 		if (!a_form->Is(RE::FormType::Spell))
 		{
-			logger::warn("object {} is not a spell. return."sv, a_form->GetName());
+			rlog::warn("object {} is not a spell. return."sv, a_form->GetName());
 			return;
 		}
 
@@ -26,13 +26,13 @@ namespace game
 
 		if (!player->HasSpell(spell))
 		{
-			logger::warn("player does not have spell {}. return."sv, spell->GetName());
+			rlog::warn("player does not have spell {}. return."sv, spell->GetName());
 			return;
 		}
 
 		//maybe check if the spell is already equipped
 		auto casting_type = spell->GetCastingType();
-		logger::trace("spell {} is type {}"sv, spell->GetName(), static_cast<uint32_t>(casting_type));
+		rlog::trace("spell {} is type {}"sv, spell->GetName(), static_cast<uint32_t>(casting_type));
 		if (a_action == action_type::instant && casting_type != RE::MagicSystem::CastingType::kConcentration)
 		{
 			if (true)
@@ -40,7 +40,7 @@ namespace game
 				auto selected_power = player->GetActorRuntimeData().selectedPower;
 				if (selected_power)
 				{
-					logger::warn(
+					rlog::warn(
 						"power/shout {} is equipped, will only cast spell in elden mode if shout slot is empty. return."sv,
 						selected_power->GetName());
 					RE::DebugNotification("Shout Slot not Empty, Skipping Spellcast");
@@ -52,7 +52,7 @@ namespace game
 
 			//might cost nothing if nothing has been equipped into tha hands after start, so it seems
 			auto cost = spell->CalculateMagickaCost(actor);
-			logger::trace("spell cost for {} is {}"sv, spell->GetName(), fmt::format(FMT_STRING("{:.2f}"), cost));
+			rlog::trace("spell cost for {} is {}"sv, spell->GetName(), fmt::format(FMT_STRING("{:.2f}"), cost));
 
 			auto current_magicka = actor->AsActorValueOwner()->GetActorValue(RE::ActorValue::kMagicka);
 			auto dual_cast       = false;
@@ -60,7 +60,7 @@ namespace game
 			{
 				auto* game_setting             = RE::GameSettingCollection::GetSingleton();
 				auto dual_cast_cost_multiplier = game_setting->GetSetting("fMagicDualCastingCostMult")->GetFloat();
-				logger::trace(
+				rlog::trace(
 					"dual cast, multiplier {}"sv, fmt::format(FMT_STRING("{:.2f}"), dual_cast_cost_multiplier));
 				dual_cast = can_dual_cast(cost, current_magicka, dual_cast_cost_multiplier);
 				if (dual_cast)
@@ -69,16 +69,16 @@ namespace game
 					caster->SetDualCasting(true);
 				}
 			}
-			logger::trace("got temp magicka {}, cost {}, can dual cast {}"sv, current_magicka, cost, dual_cast);
+			rlog::trace("got temp magicka {}, cost {}, can dual cast {}"sv, current_magicka, cost, dual_cast);
 
 			if (current_magicka < cost)
 			{
 				if (!RE::UI::GetSingleton()->GetMenu<RE::HUDMenu>())
 				{
-					logger::warn("Will not flash HUD Menu, because I could not find it.");
+					rlog::warn("Will not flash HUD Menu, because I could not find it.");
 				}
 				else { flash_hud_meter(RE::ActorValue::kMagicka); }
-				logger::warn("not enough magicka for spell {}, magicka {}, cost {} return."sv,
+				rlog::warn("not enough magicka for spell {}, magicka {}, cost {} return."sv,
 					a_form->GetName(),
 					current_magicka,
 					cost);
@@ -97,7 +97,7 @@ namespace game
 			auto magnitude     = 1.f;
 			auto effectiveness = 1.f;
 			if (auto* effect = spell->GetCostliestEffectItem()) { magnitude = effect->GetMagnitude(); }
-			logger::trace("casting spell {}, magnitude {}, effectiveness {}"sv,
+			rlog::trace("casting spell {}, magnitude {}, effectiveness {}"sv,
 				spell->GetName(),
 				fmt::format(FMT_STRING("{:.2f}"), magnitude),
 				fmt::format(FMT_STRING("{:.2f}"), effectiveness));
@@ -112,18 +112,18 @@ namespace game
 			const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 			if (left && obj_left && obj_left->formID == spell->formID)
 			{
-				logger::debug(
+				rlog::debug(
 					"Object Left {} is already where it should be already equipped. return."sv, spell->GetName());
 				return;
 			}
 			if (!left && obj_right && obj_right->formID == spell->formID)
 			{
-				logger::debug(
+				rlog::debug(
 					"Object Right {} is already where it should be already equipped. return."sv, spell->GetName());
 				return;
 			}
 
-			logger::trace("calling equip spell {}, left {}"sv, spell->GetName(), left);
+			rlog::trace("calling equip spell {}, left {}"sv, spell->GetName(), left);
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
@@ -131,16 +131,16 @@ namespace game
 			}
 		}
 
-		logger::trace("worked spell {}, action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace("worked spell {}, action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
 	void cast_scroll(const RE::TESForm* form, action_type a_action, RE::PlayerCharacter*& player)
 	{
-		logger::trace("start casting scroll; name='{}'; action {}"sv, form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace("start casting scroll; name='{}'; action {}"sv, form->GetName(), static_cast<uint32_t>(a_action));
 
 		if (!form->Is(RE::FormType::Scroll))
 		{
-			logger::warn("object {} is not a scroll. return."sv, form->GetName());
+			rlog::warn("object {} is not a scroll. return."sv, form->GetName());
 			return;
 		}
 
@@ -150,7 +150,7 @@ namespace game
 
 		if (!obj || item_count == 0)
 		{
-			logger::warn("scroll not found in inventory"sv);
+			rlog::warn("scroll not found in inventory"sv);
 			return;
 		}
 
@@ -171,29 +171,29 @@ namespace game
 			}
 		}
 
-		logger::trace("used scroll {}, action {}. return."sv, form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace("used scroll {}, action {}. return."sv, form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
 	void equip_or_cast_power(RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& player)
 	{
-		logger::trace("try to work power {}, action {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace("try to work power {}, action {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 
 		if (!a_form->Is(RE::FormType::Spell))
 		{
-			logger::warn("object {} is not a spell. return."sv, a_form->GetName());
+			rlog::warn("object {} is not a spell. return."sv, a_form->GetName());
 			return;
 		}
 
 		if (const auto* selected_power = player->GetActorRuntimeData().selectedPower;
 			selected_power && a_action != action_type::instant)
 		{
-			logger::trace("current selected power is {}, is shout {}, is spell {}"sv,
+			rlog::trace("current selected power is {}, is shout {}, is spell {}"sv,
 				selected_power->GetName(),
 				selected_power->Is(RE::FormType::Shout),
 				selected_power->Is(RE::FormType::Spell));
 			if (selected_power->formID == a_form->formID)
 			{
-				logger::debug("no need to equip power {}, it is already equipped. return."sv, a_form->GetName());
+				rlog::debug("no need to equip power {}, it is already equipped. return."sv, a_form->GetName());
 				return;
 			}
 		}
@@ -201,7 +201,7 @@ namespace game
 		auto* spell = a_form->As<RE::SpellItem>();
 		if (!player->HasSpell(spell))
 		{
-			logger::warn("player does not have spell {}. return."sv, spell->GetName());
+			rlog::warn("player does not have spell {}. return."sv, spell->GetName());
 			return;
 		}
 
@@ -211,7 +211,7 @@ namespace game
 			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell); });
 		}
 
-		logger::trace("worked power {} action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace("worked power {} action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
 	}
 
 	RE::MagicSystem::CastingSource get_casting_source(const RE::BGSEquipSlot* a_slot)

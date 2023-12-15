@@ -149,7 +149,7 @@ namespace player
 
 		if (which == Action::Power) { game::unequipShoutSlot(player); }
 		else if (which == Action::Right || which == Action::Left) { game::unequipHand(player, which); }
-		else { logger::debug("somebody called unequipSlot() with slot={};"sv, static_cast<uint8_t>(which)); }
+		else { rlog::debug("somebody called unequipSlot() with slot={};"sv, static_cast<uint8_t>(which)); }
 	}
 
 	void unequipShout()
@@ -236,7 +236,7 @@ namespace player
 
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		count        = inventoryCount(form, form->GetFormType(), player);
-		// logger::trace("item='{}'; count={};"sv, form->GetName(), count);
+		// rlog::trace("item='{}'; count={};"sv, form->GetName(), count);
 
 		return count;
 	}
@@ -247,7 +247,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form)
 		{
-			logger::warn("unable to turn string formspec into valid form in-game: {}"sv, form_spec);
+			rlog::warn("unable to turn string formspec into valid form in-game: {}"sv, form_spec);
 			return false;
 		}
 
@@ -272,7 +272,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		logger::debug("player has: {}; name='{}'; formID={};"sv, has_it, form->GetName(), form_spec);
+		rlog::debug("player has: {}; name='{}'; formID={};"sv, has_it, form->GetName(), form_spec);
 
 		return has_it;
 	}
@@ -289,7 +289,7 @@ namespace player
 		game::boundObjectForForm(form, player, bound_obj, extra);
 		if (!bound_obj) { return; }
 
-		logger::info("Re-equipping item in left hand; name='{}'; formID={}"sv,
+		rlog::info("Re-equipping item in left hand; name='{}'; formID={}"sv,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
 		RE::BGSEquipSlot* slot;

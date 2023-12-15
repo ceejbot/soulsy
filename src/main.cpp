@@ -1,6 +1,6 @@
 #include "cosave.h"
 #include "inventory.h"
-#include "logs.h"
+#include "log.h"
 #include "menus.h"
 #include "papyrus.h"
 #include "sinks.h"
@@ -15,19 +15,10 @@ void init_logger()
 
 	try
 	{
-		auto path = logger::log_directory();
+		auto path = SKSE::log::log_directory();
 		if (!path) { stl::report_and_fail("failed to get standard log path"sv); }
 
 		*path /= fmt::format("{}.log"sv, Version::PROJECT);
-		auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
-		auto log  = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
-
-		log->set_level(spdlog::level::info);
-		log->flush_on(spdlog::level::info);
-
-		spdlog::set_default_logger(std::move(log));
-		spdlog::set_pattern("%H:%M:%S.%f [%l] %s(%#) %v"s);
-
 		const auto input = path->generic_wstring();
 		std::vector<uint16_t> bytes;
 		bytes.reserve(input.length());
@@ -39,7 +30,7 @@ void init_logger()
 	}
 	catch (const std::exception& e)
 	{
-		log::critical("failed, what={}"sv, e.what());
+		rlog::critical("failed, what={}"sv, e.what());
 	}
 }
 
@@ -52,7 +43,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 		case SKSE::MessagingInterface::kDataLoaded:
 			if (ui::ui_renderer::d_3d_init_hook::initialized)
 			{
-				log::debug("SKSE data loaded callback; UI is initialized."sv);
+				rlog::debug("SKSE data loaded callback; UI is initialized."sv);
 				ui::ui_renderer::preloadImages();
 				MenuHook::install();
 				PlayerHook::install();
@@ -61,8 +52,8 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
 		case SKSE::MessagingInterface::kNewGame:
-			// log::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
-			log::info("SKSE kNewGame post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
+			// rlog::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
+			rlog::info("SKSE kNewGame post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
 			registerAllListeners();
 			initialize_hud();
 			break;
@@ -78,8 +69,8 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 {
 	init_logger();
 
-	log::info("---------- {} @ {}.{}.{} loading"sv, Version::PROJECT, Version::MAJOR, Version::MINOR, Version::PATCH);
-	log::info("Game version {}", a_skse->RuntimeVersion().string());
+	rlog::info("---------- {} @ {}.{}.{} loading"sv, Version::PROJECT, Version::MAJOR, Version::MINOR, Version::PATCH);
+	rlog::info("Game version {}", a_skse->RuntimeVersion().string());
 	auto settings = user_settings();
 
 	auto loglevel = static_cast<spdlog::level::level_enum>(settings->log_level_number());
@@ -97,13 +88,13 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(con
 	auto* g_message = SKSE::GetMessagingInterface();
 	if (!g_message)
 	{
-		logger::error("Cannot get the SKSE messaging interface. Stopping initialization."sv);
+		rlog::error("Cannot get the SKSE messaging interface. Stopping initialization."sv);
 		return false;
 	}
 
 	g_message->RegisterListener(message_callback);
 
-	logger::info("{} load successful."sv, Version::PROJECT);
+	rlog::info("{} load successful."sv, Version::PROJECT);
 	return true;
 }
 
@@ -127,14 +118,14 @@ EXTERN_C [[maybe_unused]] __declspec(dllexport) bool SKSEAPI
 
 	if (a_skse->IsEditor())
 	{
-		log::critical("Loaded in editor, marking as incompatible"sv);
+		rlog::critical("Loaded in editor, marking as incompatible"sv);
 		return false;
 	}
 
 	const auto ver = a_skse->RuntimeVersion();
 	if (ver < SKSE::RUNTIME_SSE_1_5_39)
 	{
-		log::critical(FMT_STRING("Unsupported runtime version {}"), ver.string());
+		rlog::critical("Unsupported runtime version {}", ver.string());
 		return false;
 	}
 

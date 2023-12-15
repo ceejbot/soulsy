@@ -67,7 +67,7 @@ KeyEventListener* KeyEventListener::get_singleton()
 void KeyEventListener::registerListener()
 {
 	RE::BSInputDeviceManager::GetSingleton()->AddEventSink(get_singleton());
-	logger::info("Now listening for input events."sv);
+	rlog::info("Now listening for input events."sv);
 }
 
 event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
@@ -99,13 +99,13 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 
 		if (response.stop_timer != Action::None)
 		{
-			// logger::trace("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
+			// rlog::trace("hysteresis timer STOP; slot={}"sv, static_cast<uint8_t>(response.stop_timer));
 			ui::stopTimer(response.stop_timer);
 		}
 
 		if (response.start_timer != Action::None)
 		{
-			// logger::trace("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
+			// rlog::trace("hysteresis timer START; slot={}"sv, static_cast<uint8_t>(response.start_timer));
 			auto settings = user_settings();
 			auto duration = settings->equip_delay_ms();
 			ui::startTimer(response.start_timer, duration);
@@ -130,8 +130,8 @@ void AnimGraphListener::registerListener()
 {
 	auto* player = RE::PlayerCharacter::GetSingleton();
 	auto okay    = player->AddAnimationGraphEventSink(AnimGraphListener::get_singleton());
-	if (okay) { logger::info("Now listening for animation graph events."sv); }
-	// else { logger::warn("Surprising: failed to add an event listener for animation graph events."); }
+	if (okay) { rlog::info("Now listening for animation graph events."sv); }
+	// else { rlog::warn("Surprising: failed to add an event listener for animation graph events."); }
 }
 
 RE::BSEventNotifyControl AnimGraphListener::ProcessEvent(const RE::BSAnimationGraphEvent* event,

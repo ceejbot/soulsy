@@ -34,7 +34,6 @@ set(sources ${sources}
     src/plugin/cosave.cpp
     src/plugin/inventory.cpp
     src/plugin/keycodes.cpp
-    src/plugin/log.cpp
     src/plugin/menus.cpp
     src/plugin/papyrus.cpp
     src/plugin/sinks.cpp

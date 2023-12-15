@@ -152,7 +152,7 @@ namespace helpers
 
 		if (form->IsDynamicForm())
 		{
-			// logger::trace("it is dynamic"sv);
+			// rlog::trace("it is dynamic"sv);
 			form_string =
 				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, string_util::int_to_hex(form->GetFormID()));
 		}
@@ -162,7 +162,7 @@ namespace helpers
 			auto local_form   = form->GetLocalFormID();
 
 			const auto hexified = string_util::int_to_hex(local_form);
-			// logger::trace("source file='{}'; local id={}'; hex={};"sv, source_file, local_form, hexified);
+			// rlog::trace("source file='{}'; local id={}'; hex={};"sv, source_file, local_form, hexified);
 			form_string = fmt::format("{}{}{}", source_file, util::delimiter, hexified);
 		}
 
@@ -173,7 +173,7 @@ namespace helpers
 	{
 		if (a_str.empty())
 		{
-			// logger::debug("formSpecToFormItem() got empty string; this can never return an item.");
+			// rlog::debug("formSpecToFormItem() got empty string; this can never return an item.");
 			return nullptr;
 		}
 		if (!a_str.find(util::delimiter)) { return nullptr; }
@@ -192,7 +192,7 @@ namespace helpers
 
 		if (plugin.empty())
 		{
-			logger::warn("malformed form spec? spec={};"sv, a_str);
+			rlog::warn("malformed form spec? spec={};"sv, a_str);
 			return nullptr;
 		}
 
@@ -205,7 +205,7 @@ namespace helpers
 
 		// if (form != nullptr)
 		// {
-		// 	logger::trace("found form id for form spec='{}'; name='{}'; formID={}",
+		// 	rlog::trace("found form id for form spec='{}'; name='{}'; formID={}",
 		// 		a_str,
 		// 		form->GetName(),
 		// 		string_util::int_to_hex(form->GetFormID()));
@@ -218,13 +218,13 @@ namespace helpers
 	{
 		if (spec.empty())
 		{
-			// logger::debug("Empty string passed to formSpecToHudItem(); returning empty item.");
+			// rlog::debug("Empty string passed to formSpecToHudItem(); returning empty item.");
 			return empty_huditem();
 		}
 		auto* form_item = formSpecToFormItem(spec);
 		if (!form_item)
 		{
-			logger::debug("form item not found for form spec='{}'; Item could be from a removed mod.", spec);
+			rlog::debug("form item not found for form spec='{}'; Item could be from a removed mod.", spec);
 			return empty_huditem();
 		}
 		return equippable::hudItemFromForm(form_item);
@@ -253,7 +253,7 @@ namespace helpers
 		*currentMult             = newFactor;
 
 		isInSlowMotion = true;
-		logger::info("Slow-motion: entered slow time."sv);
+		rlog::info("Slow-motion: entered slow time."sv);
 	}
 
 	void exitSlowMotion()
@@ -265,7 +265,7 @@ namespace helpers
 		// time, or we re-entered. Pin it back down to 1.0.
 		if (*currentMult >= 1.0f)
 		{
-			logger::info("Slow motion: game speed={} but our flag was still set."sv, *currentMult);
+			rlog::info("Slow motion: game speed={} but our flag was still set."sv, *currentMult);
 			*currentMult   = 1.0f;
 			isInSlowMotion = false;
 			return;
@@ -277,7 +277,7 @@ namespace helpers
 		*currentMult = newFactor;
 
 		isInSlowMotion = false;
-		logger::info("Slow motion: returned to normal time."sv);
+		rlog::info("Slow motion: returned to normal time."sv);
 	}
 
 	/*

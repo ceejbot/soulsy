@@ -19,7 +19,7 @@ inline const std::set<RE::FormType> RELEVANT_FORMTYPES_INVENTORY{
 
 void PlayerHook::install()
 {
-	logger::info("Hooking player so we get equip events plus inventory changes..."sv);
+	rlog::info("Hooking player so we get equip events plus inventory changes..."sv);
 
 	REL::Relocation<std::uintptr_t> player_character_vtbl{ RE::VTABLE_PlayerCharacter[0] };
 	add_object_to_container_ = player_character_vtbl.write_vfunc(0x5A, add_object_to_container);
