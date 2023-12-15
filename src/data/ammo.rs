@@ -39,32 +39,34 @@ impl HasKeywords for AmmoType {
     /// Use OCF keywords to identify this ammunition type and map it to
     /// one of the enum variants.
     fn classify(_name: &str, keywords: Vec<String>, _ignored: bool) -> Self {
-        let color = super::color::color_from_keywords(&keywords);
+        let color = super::color::color_from_keywords(&keywords).clone();
 
-        let ammo_keywords: Vec<AmmoType> = keywords
+        let ammo_kinds: Vec<AmmoType> = keywords
             .iter()
             .filter_map(|xs| match xs.as_str() {
-                "ArrowBodkin" => Some(Self::BodkinArrow(color.clone())),
-                "ArrowBroadhead" => Some(Self::BroadheadArrow(color.clone())),
-                "ArrowHammer" => Some(Self::HammerheadArrow(color.clone())),
-                "ArrowCrescent" => Some(Self::CrescentArrow(color.clone())),
-                "ArrowFire" => Some(Self::FireArrow(color.clone())),
-                "ArrowWhistle" => Some(Self::WhistleArrow(color.clone())),
-                "ArrowPractice" => Some(Self::PracticeArrow(color.clone())),
-                "OCF_AmmoTypeArrow" => Some(Self::Arrow(color.clone())),
-                "OCF_AmmoTypeBolt" => Some(Self::Bolt(color.clone())),
-                "OCF_AmmoTypeBullet" => Some(Self::Bullet(color.clone())),
-                "OCF_AmmoTypeDart" => Some(Self::Dart(color.clone())),
-                "OCF_AmmoTypeSlingshot" => Some(Self::Slingshot(color.clone())),
-                "OCF_WeapTypeMelee" => Some(Self::Melee(color.clone())),
-                "WAF_WeapTypeGrenade" => Some(Self::Grenade(color.clone())),
+                "ArrowBodkin" => Some(Self::BodkinArrow(color.clone().unwrap_or_default())),
+                "ArrowBroadhead" => Some(Self::BroadheadArrow(color.clone().unwrap_or_default())),
+                "ArrowHammer" => Some(Self::HammerheadArrow(color.clone().unwrap_or_default())),
+                "ArrowCrescent" => Some(Self::CrescentArrow(color.clone().unwrap_or_default())),
+                "ArrowFire" => Some(Self::FireArrow(
+                    color.clone().unwrap_or_else(|| InvColor::Fire),
+                )),
+                "ArrowWhistle" => Some(Self::WhistleArrow(color.clone().unwrap_or_default())),
+                "ArrowPractice" => Some(Self::PracticeArrow(color.clone().unwrap_or_default())),
+                "OCF_AmmoTypeArrow" => Some(Self::Arrow(color.clone().unwrap_or_default())),
+                "OCF_AmmoTypeBolt" => Some(Self::Bolt(color.clone().unwrap_or_default())),
+                "OCF_AmmoTypeBullet" => Some(Self::Bullet(color.clone().unwrap_or_default())),
+                "OCF_AmmoTypeDart" => Some(Self::Dart(color.clone().unwrap_or_default())),
+                "OCF_AmmoTypeSlingshot" => Some(Self::Slingshot(color.clone().unwrap_or_default())),
+                "OCF_WeapTypeMelee" => Some(Self::Melee(color.clone().unwrap_or_default())),
+                "WAF_WeapTypeGrenade" => Some(Self::Grenade(color.clone().unwrap_or_default())),
                 _ => None,
             })
             .collect();
-        if let Some(keyword) = ammo_keywords.first() {
-            keyword.clone()
+        if let Some(ammo) = ammo_kinds.first() {
+            ammo.clone()
         } else {
-            Self::Arrow(color)
+            Self::Arrow(color.unwrap_or_default())
         }
     }
 }
@@ -95,13 +97,13 @@ impl HasIcon for AmmoType {
             AmmoType::Bolt(_) => &Icon::AmmoBolt,
             AmmoType::Dart(_) => &Icon::AmmoDart,
             AmmoType::Slingshot(_) => &Icon::AmmoSlingshot,
-            AmmoType::BodkinArrow(_) => &Icon::AmmoBodkinArrow,
-            AmmoType::BroadheadArrow(_) => &Icon::AmmoBroadheadArrow,
-            AmmoType::HammerheadArrow(_) => &Icon::AmmoHammerheadArrow,
-            AmmoType::CrescentArrow(_) => &Icon::AmmoCrescentArrow,
-            AmmoType::FireArrow(_) => &Icon::AmmoFireArrow,
-            AmmoType::WhistleArrow(_) => &Icon::AmmoWhistleArrow,
-            AmmoType::PracticeArrow(_) => &Icon::AmmoPracticeArrow,
+            AmmoType::BodkinArrow(_) => &Icon::AmmoArrowBodkin,
+            AmmoType::BroadheadArrow(_) => &Icon::AmmoArrowBroadhead,
+            AmmoType::HammerheadArrow(_) => &Icon::AmmoArrowHammerhead,
+            AmmoType::CrescentArrow(_) => &Icon::AmmoArrowCrescent,
+            AmmoType::FireArrow(_) => &Icon::AmmoArrowFire,
+            AmmoType::WhistleArrow(_) => &Icon::AmmoArrowWhistle,
+            AmmoType::PracticeArrow(_) => &Icon::AmmoArrowPractice,
             _ => &Icon::AmmoArrow,
         }
     }

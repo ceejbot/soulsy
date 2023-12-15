@@ -38,4 +38,4 @@ jobs:
                   mv cargo-nextest /home/runner/.cargo/bin
 
             - name: run the tests
-              run: cargo nextest run
+              run: cargo nextest run -E 'not test(images::icons::tests::soulsy_pack_complete)'

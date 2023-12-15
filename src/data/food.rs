@@ -30,7 +30,7 @@ impl HasIcon for FoodType {
 /// We select color and icon from keywords, so we implement this trait.
 impl HasKeywords for FoodType {
     fn classify(name: &str, keywords: Vec<String>, _twohanded: bool) -> Self {
-        let color = super::color::color_from_keywords(&keywords);
+        let color = super::color::color_from_keywords(&keywords).unwrap_or_default();
         let tags = strings_to_enumset::<FoodKeywords>(&keywords);
         let containers = strings_to_enumset::<ContainerKeywords>(&keywords);
 

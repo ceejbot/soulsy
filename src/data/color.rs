@@ -64,15 +64,15 @@ pub enum InvColor {
     Yellow,
 }
 
-pub fn color_from_keywords(keywords: &[String]) -> InvColor {
+pub fn color_from_keywords(keywords: &[String]) -> Option<InvColor> {
     let color_keywords: Vec<InvColor> = keywords
         .iter()
         .filter_map(|xs| InvColor::try_from(xs.as_str()).ok())
         .collect();
     if let Some(c) = color_keywords.first() {
-        c.clone()
+        Some(c.clone())
     } else {
-        InvColor::default()
+        None
     }
 }
 

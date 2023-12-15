@@ -302,7 +302,7 @@ mod tests {
             "OCF_AccessoryBelt".to_string(),
             "Armor".to_string(),
         ];
-        assert_eq!(color_from_keywords(&input), InvColor::Fire);
+        assert_eq!(color_from_keywords(&input), Some(InvColor::Fire));
 
         let input = vec![
             "Ammo".to_string(),
@@ -316,7 +316,7 @@ mod tests {
             .filter_map(|xs| InvColor::try_from(xs.as_str()).ok())
             .collect();
         assert_eq!(1, color_keywords.len());
-        assert_eq!(color_from_keywords(&input), InvColor::Water);
+        assert_eq!(color_from_keywords(&input), Some(InvColor::Water));
     }
 
     #[test]
