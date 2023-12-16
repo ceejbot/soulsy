@@ -229,7 +229,7 @@ pub mod plugin {
 
     extern "Rust" {
         /// Tell the rust side where to log.
-        fn initialize_rust_logging(logdir: &CxxVector<u16>);
+        fn initialize_logging(logdir: &CxxVector<u16>) -> bool;
 
         // Next are shims for sending C++-originated log lines to the Rust logging
         // facilities. This lets us have a single log file without having to interleave
@@ -283,8 +283,6 @@ pub mod plugin {
         fn link_to_favorites(self: &UserSettings) -> bool;
         /// If icons should be colorful.
         fn colorize_icons(self: &UserSettings) -> bool;
-        /// What log level to use, shared across Rust & C++.
-        fn log_level_number(self: &UserSettings) -> u32;
         /// The identifier to use for this mod in SKSE cosaves. Not exposed in UI.
         fn skse_identifier(self: &UserSettings) -> u32;
 

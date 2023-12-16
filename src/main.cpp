@@ -26,7 +26,7 @@ void init_logger()
 		{
 			bytes.push_back(static_cast<uint16_t>(*iter));
 		}
-		initialize_rust_logging(std::move(bytes));
+		initialize_logging(std::move(bytes));
 	}
 	catch (const std::exception& e)
 	{

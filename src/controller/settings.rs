@@ -7,8 +7,8 @@ use std::sync::Mutex;
 
 use eyre::Result;
 use ini::Ini;
-use log::Level;
 use once_cell::sync::Lazy;
+use spdlog::Level;
 use strum::Display;
 
 use super::keys::Hotkey;
@@ -200,7 +200,11 @@ impl UserSettings {
         self.log_level = read_from_ini(self.log_level, "sLogLevel", options);
         let debug = read_from_ini(false, "bDebugMode", options);
         // Allow the player toggle setting to function while also letting me set a level.
-        if debug && self.log_level > Level::Debug {
+        // We want to enable debug if the current level is info or higher (which is a
+        // smaller integer in implementation).
+        if debug
+            && !spdlog::LevelFilter::MoreSevereEqual(self.log_level).compare(spdlog::Level::Debug)
+        {
             self.log_level = Level::Debug;
         }
 
@@ -269,17 +273,6 @@ impl UserSettings {
 
     pub fn log_level(&self) -> Level {
         self.log_level
-    }
-
-    pub fn log_level_number(&self) -> u32 {
-        // See #defines in spdlog/include/common.h
-        match self.log_level {
-            Level::Error => 4,
-            Level::Warn => 3,
-            Level::Info => 2,
-            Level::Debug => 1,
-            Level::Trace => 0,
-        }
     }
 
     pub fn unequip_with_modifier(&self) -> bool {

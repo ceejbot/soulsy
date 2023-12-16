@@ -23,6 +23,7 @@ resvg = "0.36.0"
 rust-ini = "0.20.0"
 serde = { version = "1.0.190", features = ["derive"] }
 simplelog = "0.12.1"
+spdlog-rs = { version = "0.3.12", features = ["source-location", "log"] }
 strfmt = "0.2.4"
 strum = { version = "0.25.0", features = ["derive"] }
 toml = "0.8.6"
