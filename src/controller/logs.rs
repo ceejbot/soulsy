@@ -1,4 +1,4 @@
-    //! Logging functions exposed to C++. There's an initialization function
+//! Logging functions exposed to C++. There's an initialization function
 //! that must be called to tell the plugin where to log. The other functions
 //! are for C++ to use to share a log file with Rust. For now, C++ must pass
 //! a preformatted-string to these functions. This is wasteful, but I don't
@@ -40,7 +40,10 @@ pub fn initialize_rust_logging(_logdir: &cxx::CxxVector<u16>) {
         // oh dear
         return;
     };
-    log::info!("SoulsyHUD version {} coming online.", env!("CARGO_PKG_VERSION"));
+    log::info!(
+        "SoulsyHUD version {} coming online.",
+        env!("CARGO_PKG_VERSION")
+    );
 }
 
 pub fn log_error(message: String) {

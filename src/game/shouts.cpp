@@ -37,8 +37,7 @@ namespace game
 		{
 			auto* task = SKSE::GetTaskInterface();
 			if (!task) return;
-			rlog::trace(
-				"unequipping shout/power formID={};"sv, util::string_util::int_to_hex(selected_power->formID));
+			rlog::trace("unequipping shout/power formID={};"sv, util::string_util::int_to_hex(selected_power->formID));
 			if (selected_power->Is(RE::FormType::Shout))
 			{
 				task->AddTask(

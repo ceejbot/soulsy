@@ -106,8 +106,8 @@ pub struct SlotLayout {
     count_font_size: f32,
     /// The color of any count size text; 0 alpha means not to draw it at all.
     count_color: Color,
-     /// Width at which to wrap any count text. 0 = no wrap.
-     #[serde(default)]
+    /// Width at which to wrap any count text. 0 = no wrap.
+    #[serde(default)]
     count_wrap_width: f32,
 
     /// The color of any item name text; 0 alpha means not to draw it at all.
@@ -119,7 +119,7 @@ pub struct SlotLayout {
     name_font_size: f32,
     /// Width at which to wrap any name text. 0 = no wrap.
     #[serde(default)]
-    name_wrap_width: f32
+    name_wrap_width: f32,
 }
 
 impl HudLayout1 {

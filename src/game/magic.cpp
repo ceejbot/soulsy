@@ -60,8 +60,7 @@ namespace game
 			{
 				auto* game_setting             = RE::GameSettingCollection::GetSingleton();
 				auto dual_cast_cost_multiplier = game_setting->GetSetting("fMagicDualCastingCostMult")->GetFloat();
-				rlog::trace(
-					"dual cast, multiplier {}"sv, fmt::format(FMT_STRING("{:.2f}"), dual_cast_cost_multiplier));
+				rlog::trace("dual cast, multiplier {}"sv, fmt::format(FMT_STRING("{:.2f}"), dual_cast_cost_multiplier));
 				dual_cast = can_dual_cast(cost, current_magicka, dual_cast_cost_multiplier);
 				if (dual_cast)
 				{
