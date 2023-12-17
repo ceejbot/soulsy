@@ -105,7 +105,7 @@ check-translations:
     rm tmp.txt
 
 # Create a mod archive and 7zip it. Requires bash.
-[linux]
+[unix]
 archive:
     #!/usr/bin/env bash
     set -e
@@ -124,7 +124,7 @@ archive:
     echo "Mod archive for v${version} ready at releases/${release_name}.7z"
 
 # Set up the folder to point the FOMOD tool at to build an installer archive.
-[linux]
+[unix]
 fomod:
     #!/usr/bin/env bash
     set -e
@@ -152,7 +152,7 @@ fomod:
     cp -p layouts/square/SoulsyHUD_layout.toml "$fomod_dir"/square/SKSE/plugins/
 
 # Build mod structures for additional layouts. Bash.
-[linux]
+[unix]
 layouts:
     #!/usr/bin/env bash
 
@@ -229,6 +229,8 @@ plugin-ser:
 spotless: clean
     cargo clean
     rm -rf build
+
+# The rest of these are stubs so windows doesn't just hork.
 
 [windows]
 @fomod:
