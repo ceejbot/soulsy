@@ -157,6 +157,7 @@ impl HudLayout2 {
             alignment: text.alignment,
             contents: text.contents.clone(),
             font_size: text.font_size * self.global_scale,
+            wrap_width: text.wrap_width,
         }
     }
 }
@@ -223,6 +224,8 @@ pub struct TextElement {
     contents: String,
     font_size: f32,
     bounds: Option<Point>,
+    #[serde(default)]
+    wrap_width: f32,
 }
 
 // TODO TODO TODO

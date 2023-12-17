@@ -82,14 +82,14 @@ pub fn key_for_icon(icon: &Icon) -> Icon {
         mapping.insert(icon.clone(), icon.clone());
         icon.clone()
     } else {
-        log::info!("TODO: add svg data for {icon} to this icon pack.");
+        log::info!("NOTE: icon pack does not include '{icon}.svg'; using generic icon.");
         let fb = icon.fallback();
         if icon_to_path(&fb).exists() {
             mapping.insert(icon.clone(), fb.clone());
             fb
         } else {
-            log::debug!(
-                "Fallback icon {fb} failed! path='{}';",
+            log::warn!(
+                "Fallback icon {fb} load failed! path='{}';",
                 icon_to_path(&fb).display()
             );
             mapping.insert(icon.clone(), Icon::IconDefault);

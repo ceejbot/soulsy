@@ -1,4 +1,4 @@
-//! Logging functions exposed to C++. There's an initialization function
+    //! Logging functions exposed to C++. There's an initialization function
 //! that must be called to tell the plugin where to log. The other functions
 //! are for C++ to use to share a log file with Rust. For now, C++ must pass
 //! a preformatted-string to these functions. This is wasteful, but I don't
@@ -33,6 +33,8 @@ pub fn initialize_rust_logging(_logdir: &cxx::CxxVector<u16>) {
     let config = simplelog::ConfigBuilder::new()
         .set_thread_level(LevelFilter::Off)
         .set_level_padding(simplelog::LevelPadding::Right)
+        .set_location_level(LevelFilter::Trace)
+        .set_target_level(LevelFilter::Trace)
         .build();
     let Ok(_) = WriteLogger::init(log_level, config, logfile) else {
         // oh dear

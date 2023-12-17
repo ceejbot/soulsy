@@ -258,7 +258,7 @@ namespace ui
 
 	void ui_renderer::drawText(const std::string text,
 		const ImVec2 center,
-		const float font_size,
+		const float fontSize,
 		const Color color,
 		const Align align,
 		const float wrapWidth)
@@ -289,7 +289,7 @@ namespace ui
 		ImVec2 aligned_loc = ImVec2(center.x + adjustment, center.y);
 
 		ImGui::GetWindowDrawList()->AddText(
-			font, font_size, aligned_loc, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
+			font, fontSize, aligned_loc, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
 	}
 
 	void ui_renderer::init_animation(const animation_type animation_type,
@@ -455,7 +455,7 @@ namespace ui
 				// Let's try a wrap width here. This is going to be wrong, but we'll experiment.
 				if (!entrytxt.empty())
 				{
-					drawText(entrytxt, textPos, label.font_size, label.color, label.alignment, slotLayout.bg_size.x);
+					drawText(entrytxt, textPos, label.font_size, label.color, label.alignment, label.wrap_width);
 				}
 			}
 

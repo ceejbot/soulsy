@@ -105,6 +105,7 @@ check-translations:
     rm tmp.txt
 
 # Create a mod archive and 7zip it. Requires bash.
+[linux]
 archive:
     #!/usr/bin/env bash
     set -e
@@ -122,7 +123,36 @@ archive:
     cd ..
     echo "Mod archive for v${version} ready at releases/${release_name}.7z"
 
+# Set up the folder to point the FOMOD tool at to build an installer archive.
+[linux]
+fomod:
+    #!/usr/bin/env bash
+    set -e
+    version=$(tomato get package.version Cargo.toml)
+    release_name=SoulsyHUD_v${version}
+    fomod_dir="releases/fomod/$release_name"
+    mkdir -p "$fomod_dir/core"
+    cp -rp data/* "$fomod_dir/core"
+    cp -p build/Release/SoulsyHUD.dll "$fomod_dir/core/SoulsyHUD.dll"
+    cp -p build/Release/SoulsyHUD.pdb "$fomod_dir/core/SoulsyHUD.pdb"
+    rm "$fomod_dir/core/scripts/source/TESV_Papyrus_Flags.flg"
+
+    icon_dir="$fomod_dir/icon/SKSE/plugins/resources/icons"
+    mkdir -p "$icon_dir"
+    #cp -p docs/
+    cp -rp layouts/icon-pack-soulsy/*.svg "$icon_dir/"
+
+    mkdir -p "$fomod_dir"/i18n/SKSE/plugins/resources/fonts
+    cp -p layouts/fonts/Inter-Medium.ttf "$fomod_dir"/i18n/SKSE/plugins/resources/fonts/
+    cp -p layouts/SoulsyHUD_i18n.toml "$fomod_dir"/i18n/SKSE/plugins/SoulsyHUD_layout.toml
+
+    mkdir -p "$fomod_dir"/square/SKSE/plugins/resources/backgrounds
+    cp -p layouts/square/slot_bg.svg "$fomod_dir"/square/SKSE/plugins/resources/backgrounds/
+    cp -p layouts/square/hud_bg.svg "$fomod_dir"/square/SKSE/plugins/resources/backgrounds/
+    cp -p layouts/square/SoulsyHUD_layout.toml "$fomod_dir"/square/SKSE/plugins/
+
 # Build mod structures for additional layouts. Bash.
+[linux]
 layouts:
     #!/usr/bin/env bash
 
@@ -199,3 +229,15 @@ plugin-ser:
 spotless: clean
     cargo clean
     rm -rf build
+
+[windows]
+@fomod:
+    echo "Run this recipe in a bash shell."
+
+[windows]
+@layouts:
+    echo "Run this recipe in a bash shell."
+
+[windows]
+@archive:
+    echo "Run this recipe in a bash shell."

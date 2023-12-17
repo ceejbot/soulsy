@@ -106,6 +106,9 @@ pub struct SlotLayout {
     count_font_size: f32,
     /// The color of any count size text; 0 alpha means not to draw it at all.
     count_color: Color,
+     /// Width at which to wrap any count text. 0 = no wrap.
+     #[serde(default)]
+    count_wrap_width: f32,
 
     /// The color of any item name text; 0 alpha means not to draw it at all.
     name_color: Color,
@@ -114,6 +117,9 @@ pub struct SlotLayout {
     /// The font size to use for this item's name.
     #[serde(default)]
     name_font_size: f32,
+    /// Width at which to wrap any name text. 0 = no wrap.
+    #[serde(default)]
+    name_wrap_width: f32
 }
 
 impl HudLayout1 {
@@ -149,6 +155,7 @@ impl HudLayout1 {
                 alignment: slot.align_text,
                 contents: "{name}".to_string(),
                 font_size: slot.name_font_size * self.global_scale,
+                wrap_width: slot.name_wrap_width,
             });
         }
         if slot.count_color.a > 0 {
@@ -161,6 +168,7 @@ impl HudLayout1 {
                 alignment: slot.align_text,
                 contents: "{count}".to_string(),
                 font_size: slot.count_font_size * self.global_scale,
+                wrap_width: slot.count_wrap_width,
             });
         }
 

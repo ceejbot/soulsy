@@ -142,6 +142,7 @@ pub mod plugin {
         alignment: Align,
         contents: String,
         font_size: f32,
+        wrap_width: f32,
     }
 
     /// This enum maps key presses to the desired action. More like a C/java
