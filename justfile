@@ -139,8 +139,13 @@ fomod:
 
     icon_dir="$fomod_dir/icon/SKSE/plugins/resources/icons"
     mkdir -p "$icon_dir"
-    #cp -p docs/
+    cp -p docs/fomod/soulsy.png "$fomod_dir"/icons.png
     cp -rp layouts/icon-pack-soulsy/*.svg "$icon_dir/"
+
+    icon_dir="$fomod_dir/icon/SKSE/plugins/resources/thicc"
+    mkdir -p "$icon_dir"
+    cp -p docs/fomod/thicc.png "$fomod_dir"/thicc.png
+    cp -rp layouts/icon-pack-thicc/*.svg "$icon_dir/"
 
     mkdir -p "$fomod_dir"/i18n/SKSE/plugins/resources/fonts
     cp -p layouts/fonts/Inter-Medium.ttf "$fomod_dir"/i18n/SKSE/plugins/resources/fonts/
