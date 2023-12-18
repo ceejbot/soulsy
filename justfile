@@ -123,6 +123,10 @@ archive:
     cd ..
     echo "Mod archive for v${version} ready at releases/${release_name}.7z"
 
+# fomod_dir="releases/${version}-installer/
+# fomod_dir="releases/$release_name/installer"
+
+
 # Set up the folder to point the FOMOD tool at to build an installer archive.
 [unix]
 fomod:
@@ -130,22 +134,24 @@ fomod:
     set -e
     version=$(tomato get package.version Cargo.toml)
     release_name=SoulsyHUD_v${version}
-    fomod_dir="releases/fomod/$release_name"
+    fomod_dir=releases/fomod/
     mkdir -p "$fomod_dir/core"
     cp -rp data/* "$fomod_dir/core"
     cp -p build/Release/SoulsyHUD.dll "$fomod_dir/core/SoulsyHUD.dll"
     cp -p build/Release/SoulsyHUD.pdb "$fomod_dir/core/SoulsyHUD.pdb"
     rm "$fomod_dir/core/scripts/source/TESV_Papyrus_Flags.flg"
+    cp -p docs/fomod/core.jpg "$fomod_dir"
 
-    icon_dir="$fomod_dir/icon/SKSE/plugins/resources/icons"
+    icon_dir="$fomod_dir/soulsy-icons/"
+    echo "$icon_dir"
     mkdir -p "$icon_dir"
-    cp -p docs/fomod/soulsy.png "$fomod_dir"/icons.png
-    cp -rp layouts/icon-pack-soulsy/*.svg "$icon_dir/"
+    cp -p docs/fomod/soulsy.jpg "$fomod_dir"/
+    cp -p layouts/icon-pack-soulsy/*.svg "$icon_dir/"
 
-    icon_dir="$fomod_dir/icon/SKSE/plugins/resources/thicc"
+    icon_dir="$fomod_dir"/thicc-icons/
     mkdir -p "$icon_dir"
-    cp -p docs/fomod/thicc.png "$fomod_dir"/thicc.png
-    cp -rp layouts/icon-pack-thicc/*.svg "$icon_dir/"
+    cp -p docs/fomod/thicc.jpg "$fomod_dir"/
+    cp -p layouts/icon-pack-thicc/*.svg "$icon_dir"
 
     mkdir -p "$fomod_dir"/i18n/SKSE/plugins/resources/fonts
     cp -p layouts/fonts/Inter-Medium.ttf "$fomod_dir"/i18n/SKSE/plugins/resources/fonts/
