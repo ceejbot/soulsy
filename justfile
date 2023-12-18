@@ -154,11 +154,11 @@ spotless: clean
     echo "Run this recipe in a bash shell."
 
 [windows]
-@check-translations
+@check-translations:
     echo "Run this recipe in a bash shell."
 
 [windows]
-@install
+@install:
     echo "Run this recipe in a bash shell."
 
 [windows]
