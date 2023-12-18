@@ -161,6 +161,8 @@ pub mod plugin {
         Utility,
         /// The activate-utility-item hotkey.
         Activate,
+        /// The equipset cycle hotkey.
+        Equipment,
         /// The HUD toggle hotkey.
         ShowHide,
         /// Refresh the layout by re-reading the toml file.
@@ -174,8 +176,6 @@ pub mod plugin {
         LongPressPower,
         /// Long press the powers/shouts key.
         LongPressUtility,
-        /// The equipset cycle hotkey.
-        Equipment,
     }
 
     /// A high-level item category, used to jump-start item categorization via keywords & form data.
@@ -240,7 +240,8 @@ pub mod plugin {
         fn log_error(message: String);
         /// Log warn level. Use this level for problems the player might want to fix.
         fn log_warn(message: String);
-        /// Log at info level. Use this level for normal operations.
+        /// Log at info level. Use this level for normal operations and to proactively
+        /// inform the player about their settings and cycles. Confirm the results of actions.
         fn log_info(message: String);
         /// Log at debug level. Use this level to help players debug problems.
         fn log_debug(message: String);
@@ -256,6 +257,7 @@ pub mod plugin {
         fn serialize_cycles() -> Vec<u8>;
         /// Serialization format version.
         fn serialize_version() -> u32;
+        /// Callback from C++ when it has loaded cosave data.
         fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32);
         /// On save load or death restore, wipe the hud item cache.
         fn clear_cache();

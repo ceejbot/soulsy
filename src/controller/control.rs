@@ -316,7 +316,7 @@ impl Controller {
             Hotkey::Utility => self.handle_cycle_utility(),
             Hotkey::Left => self.handle_cycle_left(&hotkey),
             Hotkey::Right => self.handle_cycle_right(&hotkey),
-            Hotkey::Equipment => self.handle_equipset_cycle(&hotkey),
+            Hotkey::Equipment => self.handle_cycle_equipset(&hotkey),
             Hotkey::Activate => {
                 let activation_method = le_options.utility_activation_method();
                 if matches!(activation_method, ActivationMethod::Hotkey) {
@@ -1573,8 +1573,29 @@ impl Controller {
         }
     }
 
-    /// Advance the equipment set and start the timer.
-    fn handle_equipset_cycle(&mut self, _hotkey: &Hotkey) -> KeyEventResponse {
+    // ----------- equipment set functions
+
+    /// Handle the power/shouts key being pressed.
+    fn handle_cycle_equipset(&mut self, _hotkey: &Hotkey) -> KeyEventResponse {
+        let le_options = settings();
+        let cycle_method = le_options.cycle_advance_method();
+
+        if matches!(cycle_method, ActivationMethod::Hotkey) {
+            self.advance_cycle_equipset()
+        } else if matches!(cycle_method, ActivationMethod::Modifier) {
+            let hotkey = self.get_tracked_key(&Hotkey::CycleModifier);
+            if hotkey.is_pressed() {
+                self.advance_cycle_equipset()
+            } else {
+                KeyEventResponse::default()
+            }
+        } else {
+            KeyEventResponse::default()
+        }
+    }
+
+    /// Rotate to the next equipment set in the cycle and start the timer.
+    fn advance_cycle_equipset(&mut self) -> KeyEventResponse {
         let candidate = self.cycles.advance_equipset(1);
         if let Some(_next) = candidate {
             KeyEventResponse {
@@ -1595,10 +1616,7 @@ impl Controller {
         let Some(equipset) = self.cycles.get_top_equipset() else {
             return;
         };
-        log::debug!(
-            "enter equip_selected_set(); top set = '{}'",
-            equipset.name()
-        );
+        log::debug!("Switching to equipment set '{}'.", equipset.name());
         if settings().equip_sets_unequip() {
             equipset.empty_slots().iter().for_each(|shift| {
                 unequipSlotByShift(*shift);
