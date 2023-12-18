@@ -1,24 +1,24 @@
 //! All usable icons are defined here as enum variants.
 //!
-//! To add a new icon, you must add a variant name here AND add the
-//! variant to `fallback()`, so the HUD renders something if the file
-//! is missing (e.g., an icon pack dose not include it). If the icon is
-//! added to the core set in the main mod, it is its own fallback and can
-//! be a fallback target. (A test validates that all fallbacks are valid.)
+//! To add a new icon, you must add a variant name here AND add the variant to
+//! `fallback()`, so the HUD renders something if the file is missing (e.g., an
+//! icon pack dose not include it). If the icon is added to the core set in the
+//! main mod, it is its own fallback and can be a fallback target. (A test
+//! validates that all fallbacks are valid.)
 //!
-//! You should then add a file for the icon in one of the icon packs or the
-//! core set. The name of the file *must* be the enum variation name in
-//! snake_case. That is, an icon variant named `SnakeCase` maps to `snake_case.svg`.
+//! You should then add a file for the icon in one of the icon packs or the core
+//! set. The name of the file *must* be the enum variation name in snake_case.
+//! That is, an icon variant named `SnakeCase` maps to `snake_case.svg`.
 //!
 //! When naming icons, follow the principle of most general -> most specific.
 //! For example `ArmorLightHands` starts with the general category of armor,
-//! then narrows it down to light armor, then picks out hands specifically.
-//! This approach makes related icons sort together, which makes them easier
-//! to edit or preview in groups.
+//! then narrows it down to light armor, then picks out hands specifically. This
+//! approach makes related icons sort together, which makes them easier to edit
+//! or preview in groups.
 //!
-//! Top-level icon name categories sort of match data types in the data/ submodule.
-//! Ammo, Armor, Food (Drink also categorized here), Potion, Power, Shout, Spell,
-//! Weapon. This could be tidier.
+//! Top-level icon name categories sort of match data types in the data/
+//! submodule. Ammo, Armor, Food (Drink also categorized here), Potion, Power,
+//! Shout, Spell, Weapon. This could be tidier.
 
 use strum::{Display, EnumString, EnumVariantNames};
 

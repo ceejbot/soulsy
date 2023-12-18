@@ -1,7 +1,7 @@
 //! The layout for the HUD is read from a TOML file. This data is shared between
 //! languages the same way that the user settings are. The Rust side reads the
-//! toml; the C++ side uses the data in layout. The majority of the implementation
-//! is filing in defaults.
+//! toml; the C++ side uses the data in layout. The majority of the
+//! implementation is filing in defaults.
 
 #![allow(non_snake_case, non_camel_case_types)]
 

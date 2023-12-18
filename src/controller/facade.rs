@@ -1,7 +1,8 @@
-//! This module bundles up the public-facing interface of the controller for ease
-//! of import into the bridge. It's the Rust equivalent of the helpers class over
-//! on the C++ side. It can include any logic that doesn't demand the controller.
-//! In particular, it includes a lot of support for papyrus functions.
+//! This module bundles up the public-facing interface of the controller for
+//! ease of import into the bridge. It's the Rust equivalent of the helpers
+//! class over on the C++ side. It can directly implement any logic that doesn't
+//! demand the controller. In particular, it implements some support for
+//! papyrus functions.
 
 use cxx::CxxVector;
 
@@ -136,7 +137,7 @@ pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32) {
         ctrl.refresh_after_load();
         log::info!("Cycles loaded and ready to rock.");
     } else {
-        log::warn!("Cosave load failed. Defaulting to fresh start.");
+        log::warn!("Cosave load failed. Defaulting to fresh start. Is your save corrupt?");
     }
 }
 

@@ -1,3 +1,6 @@
+//! Types shared by all layout variations, including implementations on
+//! types defined in lib.rs.
+
 use std::fmt::Display;
 
 use serde::de::{Deserializer, Error};

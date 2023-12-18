@@ -1,8 +1,9 @@
-//! Rasterize svgs and provide them to the C++ side. C++ controls whether the svgs
-//! are preloaded or lazily loaded. This uses the `resvg` crate which supports
-//! nearly all of the svg standard, with the notable exception of animation. This
-//! module also maintains a mapping of icon key to the icon file found for that
-//! path after fallbacks, so icon data is loaded at most once.
+//! Rasterize svgs and provide them to the C++ side. C++ controls whether the
+//! svgs are preloaded or lazily loaded. This uses the `resvg` crate which
+//! supports nearly all of the svg standard, with the notable exception of
+//! animation. This module also maintains a mapping of icon key to the icon file
+//! found for that path after fallbacks, so icon data is loaded at most once.
+
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;

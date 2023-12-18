@@ -1,3 +1,6 @@
+//! Version 2 of the layout schema. This version is the only one that gets
+//! new features-- v1 is to be retired gently over time.
+
 use eyre::{Context, Result};
 use serde::{Deserialize, Serialize};
 
