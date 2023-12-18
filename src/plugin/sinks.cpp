@@ -9,13 +9,11 @@
 
 #include "lib.rs.h"
 
-
 using event_result = RE::BSEventNotifyControl;
 
-// Where all == both.
 void registerAllListeners()
 {
-	rlog::info("Registering listeners for equip, animation graph, and button events.");
+	rlog::info("Registering listeners for equipment changes, animation graph events, and button events.");
 	EquipEventListener::registerListener();
 	KeyEventListener::registerListener();
 	AnimGraphListener::registerListener();
@@ -112,6 +110,9 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 			ui::startTimer(response.start_timer, duration);
 		}
 
+		// Now wipe out the event data so nothing else acts on it.
+		button->idCode    = keycodes::kInvalid;
+		button->userEvent = "";
 	}  // end event handling for loop
 
 	return event_result::kContinue;
