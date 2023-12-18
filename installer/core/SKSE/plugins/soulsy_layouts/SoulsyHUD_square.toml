@@ -1,0 +1,266 @@
+# A square layout that can show equip sets.
+# This layout uses the new layout design.
+#
+# All SoulsyHUD layouts are written in TOML. To learn more about TOML,
+# visit its official website: https://toml.io/
+#
+# Global scaling factor: the whole hud size changes when you change this.
+global_scale = 1.0
+
+# A named location for the HUD. Use this as a shortcut for common anchor
+# points. These work no matter what the player's screen resolution is, because this
+# is turned into a location point at run-time.
+# Values: bottom_left, bottom_right, top_left, top_right, center,
+# center_top, center_bottom, left_center, right_center
+anchor_name = "bottom_left"
+
+# You can also specify the anchor point like this if a named anchor point
+# doesn't work for your layout. These values are NOT scaled.
+# anchor = { x = 2100.0, y = 825.0 }
+
+# The size of the HUD bounding box. This is used to help place the HUD on the screen
+# but is not enforced in any way. (The HUD isn't clipped to this region, for instance.)
+size = { x = 190.0, y = 250.0 }
+
+# Only draw the ammo slot when a weapon that uses ammo (ranged) is equipped.
+hide_ammo_when_irrelevant = true
+# Hide the left hand slot when a ranged weapon is equipped. This lets you
+# use the same location as the left hand to show ammo.
+hide_left_when_irrelevant = true
+
+# The file containing the typeface to use. Must be truetype. Must be in resources/fonts.
+font = "futura-book-bt.ttf"
+# A font sizing hint to the font loader about what size most of the text will use.
+# Text rendered at this size will look best. This value is scaled before the font is loaded.
+# Text alignment calculations are made using this font size.
+font_size = 18.0
+
+# Enable any of these you need text rendering for.
+# You will need to supply a true-type font with the glyphs; futura doesn't have them.
+# The "Inter" font packaged with the i18 layout does have them.
+chinese_full_glyphs = false
+simplified_chinese_glyphs = false
+cyrillic_glyphs = false
+japanese_glyphs = false
+korean_glyphs = false
+thai_glyphs = false
+vietnamese_glyphs = false
+
+# An optional background image. If your layout doesn't have an overall background, you
+# can safely leave this out. All image elements look like this.
+[background]
+# This is the file name of an SVG, relative to  `./resources/backgrounds`.
+svg = "square_hud.svg"
+# The size to draw the image.
+size = { x = 190.0 , y = 250.0}
+# The color to draw the image with. If alpha is zero, the background is not drawn.
+color = { r = 0, g = 0, b = 0, a = 64 }
+
+# ----- right hand slot
+
+# The slot showing what's in the right hand.
+[right]
+# Where the center of this element is relative to the HUD anchor.
+offset = { x = 375.0, y = 0.0 }
+
+# Optional slot background image: if not present, not drawn. You can have
+# different background images for different slots if you like.
+[right.background]
+svg = "square_slot.svg"
+size = { x = 100.0 , y = 100.0}
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+# the icon element of this slot. Color might be overridden if
+# the user has "colorize icons" enabled.
+[right.icon]
+size = { x = 60.0, y = 60.0 }
+offset = { x = 0.0, y = 0.0 }
+color = { r = 200, g = 200, b = 200, a = 255 }
+
+# Optional display for the slot's hotkey. All hotkey elements look like this.
+[right.hotkey]
+size = { x = 30.0, y = 30.0 }
+offset = { x = -50.0, y = 0.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+# An optional background image for the hotkey. You can leave this out to not
+# draw a background for the hotkey display.
+[right.hotkey.background]
+svg = "key_bg.svg"
+size = { x = 30.0 , y = 30.0}
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+# An array of text elements for this slot. You can have as many
+# as you want, but each one costs time to draw so keep the count low.
+# The text can include values filled in from the item's info. To
+# fill in a value, name it surrounded with curly braces, like the
+# example.
+# Possible values: count, name, kind,
+
+[[right.text]]
+alignment = "center"
+offset = { x = 0.0, y = -75.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 18.0
+contents = "{name}"
+
+# An optional indicator for showing if this item is poisoned.
+[right.poison]
+offset = { x = 25.0, y = 20.0 }
+[right.poison.indicator]
+svg = "../icons/indicator_poison.svg"
+color = {r = 160, g = 240, b = 2, a = 255 }
+size = { x = 25.0, y = 25.0 }
+
+# ----- left hand slot
+
+[left]
+offset = { x = 250.0, y = 0.0 }
+
+[left.background]
+svg = "square_slot.svg"
+size = { x = 100.0 , y = 100.0}
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+[left.icon]
+size = { x = 60.0, y = 60.0 }
+offset = { x = 0.0, y=0.0 }
+color = {r = 200, g = 200, b = 200, a = 255}
+
+[left.hotkey]
+size = { x = 30.0, y = 30.0 }
+offset = { x = -50.0, y = 0.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+[left.hotkey.background]
+svg = "key_bg.svg"
+size = { x = 30.0 , y = 30.0}
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+# An optional indicator for showing if this item is poisoned.
+[left.poison]
+offset = { x = 25.0, y = 20.0 }
+[left.poison.indicator]
+svg = "../icons/indicator_poison.svg"
+color = {r = 160, g = 240, b = 2, a = 255 }
+size = { x = 25.0, y = 25.0 }
+
+[[left.text]]
+alignment = "center"
+offset = { x = 0.0, y = 55.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 18.0
+contents = "{name}"
+
+# ----- utility slot
+
+[utility]
+offset = { x = 125.0, y = 0.0 }
+[utility.background]
+svg = "square_slot.svg"
+size = { x = 100.0 , y = 100.0}
+color = { r = 255, g = 255, b = 255, a = 128 }
+[utility.icon]
+size = { x = 60.0, y = 60.0 }
+offset = { x = 0.0, y=0.0 }
+color = {r = 200, g = 200, b = 200, a = 255}
+[utility.hotkey]
+size = { x = 30.0, y = 30.0 }
+offset = { x = -50.0, y = 0.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+[utility.hotkey.background]
+svg = "key_bg.svg"
+size = { x = 30.0 , y = 30.0}
+color = { r = 255, g = 255, b = 255, a = 128 }
+[[utility.text]]
+alignment = "left"
+offset = { x = 15.0, y = 15.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 24.0
+contents = "{count}"
+[[utility.text]]
+alignment = "center"
+offset = { x = 0.0, y = -75.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 18.0
+contents = "{name}"
+
+# ----- power slot
+
+[power]
+offset = { x = 0.0, y = 0.0 }
+[power.background]
+svg = "square_slot.svg"
+size = { x = 100.0 , y = 100.0}
+color = { r = 255, g = 255, b = 255, a = 128 }
+[power.icon]
+size = { x = 60.0, y = 60.0 }
+offset = { x = 0.0, y=0.0 }
+color = {r = 200, g = 200, b = 200, a = 255}
+[power.hotkey]
+size = { x = 30.0, y = 30.0 }
+offset = { x = -50.0, y = 0.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+[power.hotkey.background]
+svg = "key_bg.svg"
+size = { x = 30.0 , y = 30.0}
+color = { r = 255, g = 255, b = 255, a = 128 }
+
+[[power.text]]
+alignment = "center"
+offset = { x = 0.0, y = 55.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 18.0
+contents = "{name}"
+
+# ----- ammo slot
+
+[ammo]
+offset = { x = 250.0, y = 0.0 }
+[ammo.background]
+svg = "square_slot.svg"
+size = { x = 100.0 , y = 100.0 }
+color = { r = 255, g = 255, b = 255, a = 128 }
+[ammo.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 60.0, y = 60.0 }
+offset = { x = 0.0, y=0.0 }
+[ammo.hotkey]
+size = { x = 30.0, y = 30.0 }
+offset = { x = -50.0, y = 0.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+# Note that this slot separates count and name, and uses
+# a text element for each.
+[[ammo.text]]
+alignment = "left"
+contents = "{count}"
+color = { r = 200, g = 200, b = 200, a = 255 }
+font_size = 24.0
+offset = { x = 15.0, y = 15.0 }
+[[ammo.text]]
+alignment = "center"
+contents = "{name}"
+offset = { x = -50, y =  55.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 18.0
+
+# ----- equipset slot
+
+[equipset]
+align_text = "center"
+offset = { x = 0.0, y = -125.0 }
+[equipset.background]
+svg = "square_slot.svg"
+size = { x = 100.0 , y = 100.0 }
+color = { r = 255, g = 255, b = 255, a = 128 }
+[equipset.icon]
+color = { r = 200, g = 200, b = 200, a = 255 }
+size = { x = 60.0, y = 60.0 }
+offset = { x = 0.0, y=0.0 }
+[equipset.hotkey]
+color = { r = 255, g = 255, b = 255, a = 255 }
+offset = { x = -50.0, y = 0.0 }
+size = { x = 30.0, y = 30.0 }
+[[equipset.text]]
+contents = "{name}"
+offset = { x = 0.0, y = -75.0 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+font_size = 18.0

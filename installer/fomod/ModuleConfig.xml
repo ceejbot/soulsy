@@ -1,0 +1,125 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
+    <moduleName>SoulsyHUD</moduleName>
+    <moduleImage path=":\Users\ceej\Downloads\splash-image.jpeg" />
+    <installSteps order="Explicit">
+        <installStep name="Introduction">
+            <optionalFileGroups order="Explicit">
+                <group name="Core mod" type="SelectAll">
+                    <plugins order="Explicit">
+                        <plugin name="core">
+                            <description>The SKSE plugin dlls, the default layout assets, and the MCM options are all included. This is all you need to get going.</description>
+                            <image path="core.jpg" />
+                            <files>
+                                <folder source="core" destination="" priority="0" />
+                            </files>
+                        </plugin>
+                    </plugins>
+                </group>
+            </optionalFileGroups>
+        </installStep>
+        <installStep name="An optional icon pack">
+            <optionalFileGroups order="Explicit">
+                <group name="Icon packs" type="SelectAtMostOne">
+                    <plugins order="Explicit">
+                        <plugin name="Soulsy icon set">
+                            <description>These are icons chosen specifically for Soulsy. They look different from the usual SkyUI icons, but might be a nice change of pace.</description>
+                            <image path="soulsy.jpg" />
+                            <files>
+                                <folder source="icon-pack-soulsy" destination="SKSE/plugins/resources/icons" priority="0" />
+                            </files>
+                        </plugin>
+                        <plugin name="THICC icon set">
+                            <description>This icon set is used with permission from the THICC icon collection. It will look similar to your game menu icons.</description>
+                            <image path="thicc.jpg" />
+                            <files>
+                                <folder source="icon-pack-thicc" destination="SKSE/plugins/resources/icons" priority="1" />
+                            </files>
+                        </plugin>
+                        </plugin>
+                    </plugins>
+                </group>
+            </optionalFileGroups>
+        </installStep>
+        <installStep name="Layouts">
+            <optionalFileGroups order="Explicit">
+                <group name="Pick a layout to start with." type="SelectExactlyOne">
+                    <plugins order="Ascending">
+                        <plugin name="Default layout">
+                            <description>Use the default layout, a diamond in the lower left of the screen. Uses Futura and harmonizes with the Tarnished UI theme.
+
+All the layouts will be installed for you in the folder `SKSE/plugins/soulsy_layouts`. Copy any of them into place as `SoulsyHUD_Layout.toml` to use that one in-game.</description>
+                            <image>images/layouts-default.jpg</image>
+                            <files />
+                            <typeDescriptor>
+                                <type name="Optional" />
+                            </typeDescriptor>
+                        </plugin>
+                        <plugin name="Top left">
+                            <description>Just like the default layout, but located in the top left of the screen.
+
+All the layouts will be installed for you in the folder `SKSE/plugins/soulsy_layouts`. Copy any of them into place as `SoulsyHUD_Layout.toml` to use that one in-game.</description>
+                            <image>images/layouts-default.jpg</image>
+                            <files>                            <files>
+                                <file source="layouts/SoulsyHUD_topleft.toml" destination="SKSE/plugins/SoulsyHUD_Layout.toml" priority="1" />
+							</files>
+                            <typeDescriptor>
+                                <type name="Optional" />
+                            </typeDescriptor>
+                        </plugin>
+                        <plugin name="Extended character sets">
+                            <description>Just like the default layout, but this specifies a font that supports extended character sets, such as Cyrillic and Chinese. You can edit any layout to use the Inter typeface and to enable the character sets you need. 
+
+All the layouts will be installed for you in the folder `SKSE/plugins/soulsy_layouts`. Copy any of them into place as `SoulsyHUD_Layout.toml` to use that one in-game.</description>
+                            <image>images/layouts-default.jpg</image>
+                            <files>                            <files>
+                                <file source="layouts/SoulsyHUD_i18n.toml" destination="SKSE/plugins/SoulsyHUD_Layout.toml" priority="1" />
+							</files>
+                            <typeDescriptor>
+                                <type name="Optional" />
+                            </typeDescriptor>
+                        </plugin>
+                        <plugin name="Squares">
+                            <files>
+                                <file source="layouts/SoulsyHUD_square.toml" destination="SKSE/plugins/SoulsyHUD_Layout.toml" priority="1" />
+                            </files>
+                            <description>Squares in a line along the bottom left of the screen.
+
+All the layouts will be installed for you in the folder `SKSE/plugins/soulsy_layouts`. Copy any of them into place as `SoulsyHUD_Layout.toml` to use that one in-game.</description>
+                            <image />
+                            </conditionFlags>
+                            <typeDescriptor>
+                                <type name="Optional" />
+                            </typeDescriptor>
+                        </plugin>
+                        <plugin name="Centered">
+                            <files>
+                                <file source="layouts/SoulsyHUD_centered.toml" destination="SKSE/plugins/SoulsyHUD_Layout.toml" priority="1" />
+                            </files>
+                            <description>The HUD is spread out in boxes around the player character in the center of the screen.
+
+All the layouts will be installed for you in the folder `SKSE/plugins/soulsy_layouts`. Copy any of them into place as `SoulsyHUD_Layout.toml` to use that one in-game.</description>
+                            <image />
+                            </conditionFlags>
+                            <typeDescriptor>
+                                <type name="Optional" />
+                            </typeDescriptor>
+                        </plugin>
+						<plugin name="Minimal">
+                            <files>
+                                <file source="layouts/SoulsyHUD_minimal.toml" destination="SKSE/plugins/SoulsyHUD_Layout.toml" priority="1" />
+                            </files>
+                            <description>A minimal layout with icons and a tiny bit of text, in the lower left.
+
+All the layouts will be installed for you in the folder `SKSE/plugins/soulsy_layouts`. Copy any of them into place as `SoulsyHUD_Layout.toml` to use that one in-game.</description>
+                            <image />
+                            </conditionFlags>
+                            <typeDescriptor>
+                                <type name="Optional" />
+                            </typeDescriptor>
+                        </plugin>
+                    </plugins>
+                </group>
+            </optionalFileGroups>
+        </installStep>
+    </installSteps>
+</config>

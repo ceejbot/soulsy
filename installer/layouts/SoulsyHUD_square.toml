@@ -49,8 +49,8 @@ vietnamese_glyphs = false
 # An optional background image. If your layout doesn't have an overall background, you
 # can safely leave this out. All image elements look like this.
 [background]
-# This is the file name of an SVG that must be in resources/backgrounds.
-svg = "hud_bg.svg"
+# This is the file name of an SVG, relative to  `./resources/backgrounds`.
+svg = "square_hud.svg"
 # The size to draw the image.
 size = { x = 190.0 , y = 250.0}
 # The color to draw the image with. If alpha is zero, the background is not drawn.
@@ -66,7 +66,7 @@ offset = { x = 375.0, y = 0.0 }
 # Optional slot background image: if not present, not drawn. You can have
 # different background images for different slots if you like.
 [right.background]
-svg = "slot_bg.svg"
+svg = "square_slot.svg"
 size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
@@ -117,7 +117,7 @@ size = { x = 25.0, y = 25.0 }
 offset = { x = 250.0, y = 0.0 }
 
 [left.background]
-svg = "slot_bg.svg"
+svg = "square_slot.svg"
 size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
@@ -155,7 +155,7 @@ contents = "{name}"
 [utility]
 offset = { x = 125.0, y = 0.0 }
 [utility.background]
-svg = "slot_bg.svg"
+svg = "square_slot.svg"
 size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 [utility.icon]
@@ -188,7 +188,7 @@ contents = "{name}"
 [power]
 offset = { x = 0.0, y = 0.0 }
 [power.background]
-svg = "slot_bg.svg"
+svg = "square_slot.svg"
 size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 [power.icon]
@@ -216,7 +216,7 @@ contents = "{name}"
 [ammo]
 offset = { x = 250.0, y = 0.0 }
 [ammo.background]
-svg = "slot_bg.svg"
+svg = "square_slot.svg"
 size = { x = 100.0 , y = 100.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
 [ammo.icon]
@@ -248,7 +248,7 @@ font_size = 18.0
 align_text = "center"
 offset = { x = 0.0, y = -125.0 }
 [equipset.background]
-svg = "slot_bg.svg"
+svg = "square_slot.svg"
 size = { x = 100.0 , y = 100.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
 [equipset.icon]
