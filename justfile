@@ -24,7 +24,6 @@ cmake:
 
 # Use cargo & cmake to compile the mod in release mode. Requires Windows.
 @build:
-    # if (test-path build/Release/SoulsyHUD.dll) { rm build/Release/SoulsyHUD.dll }
     cargo build --release
     cmake --build --preset vs2022-windows --config Release
 
@@ -46,6 +45,7 @@ cmake:
 	cargo nextest run -- soulsy_pack_complete thicc_pack_complete
 
 # Generate source files list for CMake. Requires bash. Use a *nix.
+[unix]
 sources:
     #!/bin/bash
     set -e
@@ -62,6 +62,7 @@ sources:
     rm test.txt
 
 # Set the crate version and tag the repo to match. Requires bash.
+[unix]
 tag VERSION:
     #!/usr/bin/env bash
     set -e
@@ -75,6 +76,7 @@ tag VERSION:
     echo "Release tagged for version v{{VERSION}}"
 
 # Copy the built mod files to my test mod.
+[unix]
 install:
     #!/usr/bin/env bash
     echo "copying to live mod for testing..."
@@ -83,6 +85,7 @@ install:
     cp -p build/Release/SoulsyHUD.{dll,pdb} "$outdir"/SKSE/plugins/
 
 # Copy English translation to other translation files.
+[unix]
 translations:
     #!/usr/bin/env bash
     declare -a langs=(czech french german italian japanese polish russian spanish)
@@ -91,6 +94,7 @@ translations:
     done
 
 # check that all $ strings in config have matching translation strings
+[unix]
 check-translations:
     #!/usr/bin/env bash
     converted=$(iconv -f utf-16 -t utf-8 data/Interface/Translations/SoulsyHUD_english.txt > tmp.txt)
@@ -147,4 +151,24 @@ spotless: clean
 
 [windows]
 @archive:
+    echo "Run this recipe in a bash shell."
+
+[windows]
+@check-translations
+    echo "Run this recipe in a bash shell."
+
+[windows]
+@install
+    echo "Run this recipe in a bash shell."
+
+[windows]
+@translations:
+    echo "Run this recipe in a bash shell."
+
+[windows]
+@tag VERSION:
+	echo "Run this in a bash shell or somewhere with sed on the path."
+
+[windows]
+@sources:
     echo "Run this recipe in a bash shell."
