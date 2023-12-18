@@ -68,7 +68,7 @@ offset = { x = -41.0, y = 41.0 }
 size = { x = 30.0, y = 30.0 }
 [[power.text]]
 alignment = "left"
-offset = { x = 110.0, y = 110.0 }
+offset = { x = 60.0, y = -13.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 20.0
 contents = "{name}"

@@ -98,8 +98,8 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 
 [[right.text]]
 alignment = "left"
-offset = { x = -50.0, y = -75.0 }
-text_wrap = 100.0
+offset = { x = -50.0, y = 55.0 }
+wrap_width = 105.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -147,7 +147,7 @@ size = { x = 25.0, y = 25.0 }
 [[left.text]]
 alignment = "left"
 offset = { x = -50.0, y = 55.0 }
-text_wrap = 100.0
+wrap_width = 100.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -180,8 +180,8 @@ font_size = 24.0
 contents = "{count}"
 [[utility.text]]
 alignment = "left"
-offset = { x = -50.0, y = -75.0 }
-text_wrap = 100.0
+offset = { x = -50.0, y = 55.0 }
+wrap_width = 105.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -210,7 +210,7 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 [[power.text]]
 alignment = "left"
 offset = { x = -50.0, y = 55.0 }
-text_wrap = 100.0
+wrap_width = 100.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -240,11 +240,12 @@ color = { r = 200, g = 200, b = 200, a = 255 }
 font_size = 24.0
 offset = { x = 15.0, y = 15.0 }
 [[ammo.text]]
-alignment = "center"
-contents = "{name}"
-offset = { x = -50, y =  55.0 }
+alignment = "left"
+offset = { x = -50.0, y = 55.0 }
+wrap_width = 105.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
+contents = "{name}"
 
 # ----- equipset slot
 
@@ -264,8 +265,8 @@ offset = { x = -50.0, y = 0.0 }
 size = { x = 30.0, y = 30.0 }
 [[equipset.text]]
 alignment = "left"
-offset = { x = -50.0, y = -75.0 }
-text_wrap = 100.0
+offset = { x = -50.0, y = 55.0 }
+wrap_width = 105.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"

@@ -3,7 +3,7 @@ set shell := ["bash", "-uc"]
 set dotenv-load := true
 
 SPRIGGIT := "~/bin/spriggit"
-TESTMOD := "/mnt/g/MO2Skyrim/Soulsy HUD dev version/"
+TESTMOD := "/mnt/g/MO2Skyrim/SoulsyHUD fomod test/"
 
 # List available recipes.
 help:
@@ -80,7 +80,6 @@ install:
     echo "copying to live mod for testing..."
     outdir="{{TESTMOD}}"
     rsync -a installer/core/ "$outdir"
-    cp -rp data/* "$outdir"
     cp -p build/Release/SoulsyHUD.{dll,pdb} "$outdir"/SKSE/plugins/
 
 # Copy English translation to other translation files.

@@ -61,6 +61,8 @@ You can change almost every aspect of the HUD, and edit the locations and appear
 
 If you read the [theming article](https://www.nexusmods.com/skyrimspecialedition/articles/5633) for more details on how to change layouts to match your game UI's theme.
 
+More icons! Look at the requirements section on the mod description page to find more layouts and even some really nice icon packs. I want to call out [Komegaki's weapon icons](https://www.nexusmods.com/skyrimspecialedition/mods/106432), which you can use to make your menus, Wheeler, and Soulsy use the same hand-crafted icon set.
+
 ## Bug reports and feature requests
 
 The comments have sticky posts with future plans for a few more features and some polish work before Soulsy reaches 1.0. If there's something you'd really like it to do, please leave a comment! Most Soulsy features have been added because somebody asked for them.
