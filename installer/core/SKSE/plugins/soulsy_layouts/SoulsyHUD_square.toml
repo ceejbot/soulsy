@@ -97,8 +97,9 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 # Possible values: count, name, kind,
 
 [[right.text]]
-alignment = "center"
-offset = { x = 0.0, y = -75.0 }
+alignment = "left"
+offset = { x = -50.0, y = -75.0 }
+text_wrap = 100.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -144,8 +145,9 @@ color = {r = 160, g = 240, b = 2, a = 255 }
 size = { x = 25.0, y = 25.0 }
 
 [[left.text]]
-alignment = "center"
-offset = { x = 0.0, y = 55.0 }
+alignment = "left"
+offset = { x = -50.0, y = 55.0 }
+text_wrap = 100.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -177,8 +179,9 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 24.0
 contents = "{count}"
 [[utility.text]]
-alignment = "center"
-offset = { x = 0.0, y = -75.0 }
+alignment = "left"
+offset = { x = -50.0, y = -75.0 }
+text_wrap = 100.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -205,8 +208,9 @@ size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
 
 [[power.text]]
-alignment = "center"
-offset = { x = 0.0, y = 55.0 }
+alignment = "left"
+offset = { x = -50.0, y = 55.0 }
+text_wrap = 100.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
 contents = "{name}"
@@ -245,7 +249,6 @@ font_size = 18.0
 # ----- equipset slot
 
 [equipset]
-align_text = "center"
 offset = { x = 0.0, y = -125.0 }
 [equipset.background]
 svg = "square_slot.svg"
@@ -260,7 +263,9 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -50.0, y = 0.0 }
 size = { x = 30.0, y = 30.0 }
 [[equipset.text]]
-contents = "{name}"
-offset = { x = 0.0, y = -75.0 }
+alignment = "left"
+offset = { x = -50.0, y = -75.0 }
+text_wrap = 100.0
 color = { r = 255, g = 255, b = 255, a = 255 }
 font_size = 18.0
+contents = "{name}"

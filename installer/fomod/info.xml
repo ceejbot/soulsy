@@ -1,3 +1,15 @@
-<fomod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://fomod.bellcube.dev/schemas/info.xsd"><Name>SoulsyHUD</Name><Author>ceejbot</Author><Version>0.13.8</Version><Website>https://www.nexusmods.com/skyrimspecialedition/mods/96210</Website><Description>Soulsy is a fast, lightweight, themable Souls-style hotkey HUD for Skyrim SE and AE. It is inspired by hotkey mods like Elden Equip, iEquip, and espcially LamasTinyHud. It's implemented as a SKSE plugin with only enough papyrus to make MCM go. 
+<fomod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://fomod.bellcube.dev/schemas/info.xsd">
+    <Name>SoulsyHUD</Name>
+    <Author>ceejbot</Author>
+    <Version>0.13.8</Version>
+    <Website>https://www.nexusmods.com/skyrimspecialedition/mods/96210</Website>
+    <Description>Soulsy is a fast, lightweight, themable Souls-style hotkey HUD for Skyrim SE and
+        AE. It is inspired by hotkey mods like Elden Equip, iEquip, and espcially LamasTinyHud. It's
+        implemented as a SKSE plugin with only enough papyrus to make MCM go.
 
-You can design your own layouts and themes, or choose one from this installer. There are two icon packs and two themes in addition to the default ones.</Description><Groups>User Interface</Groups><Id>96210</Id></fomod>
+        You can design your own layouts and themes, or choose one from this installer. There are two
+        icon packs and two themes in addition to the default ones.</Description>
+    <Groups>User Interface</Groups>
+    <Id>96210</Id>
+</fomod>

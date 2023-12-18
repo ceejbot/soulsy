@@ -26,7 +26,10 @@ pub fn icon_map() -> std::sync::MutexGuard<'static, HashMap<Icon, Icon>> {
 }
 
 /// Path for icons relative to the game dir.
+#[cfg(not(test))]
 const ICON_SVG_PATH: &str = "data/SKSE/plugins/resources/icons/";
+#[cfg(test)]
+const ICON_SVG_PATH: &str = "installer/core/SKSE/plugins/resources/icons/";
 
 /// C++ should call this before trying to load any icon data.
 pub fn get_icon_key(name: String) -> String {
@@ -150,7 +153,7 @@ mod tests {
         let full = icon_to_path(&icon);
         assert_eq!(
             full.clone().to_string_lossy(),
-            "data/SKSE/plugins/resources/icons/weapon_sword_one_handed.svg".to_string()
+            "installer/core/SKSE/plugins/resources/icons/weapon_sword_one_handed.svg".to_string()
         );
         let loaded = load_and_rasterize(&full, Some(128))
             .expect("should return okay for a known-present file");
@@ -167,7 +170,8 @@ mod tests {
 
     #[test]
     fn rasterize_unscaled() {
-        let previous = "data/SKSE/plugins/resources/icons/weapon_sword_one_handed.svg".to_string();
+        let previous =
+            "installer/core/SKSE/plugins/resources/icons/weapon_sword_one_handed.svg".to_string();
         let loaded = rasterize_by_path(previous);
         assert!(!loaded.buffer.is_empty());
         assert_eq!(
@@ -175,7 +179,7 @@ mod tests {
             loaded.width as usize * loaded.height as usize * 4
         );
 
-        let full = "layouts/icon-pack-soulsy/shout_call_dragon.svg".to_string();
+        let full = "installer/icon-pack-soulsy/shout_call_dragon.svg".to_string();
         let loaded = rasterize_by_path(full);
         assert!(!loaded.buffer.is_empty());
         assert_eq!(

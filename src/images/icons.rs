@@ -442,8 +442,8 @@ mod tests {
     #[test]
     fn soulsy_pack_complete() {
         let icon_paths = [
-            "data/SKSE/plugins/resources/icons/",
-            "layouts/icon-pack-soulsy",
+            "installer/core/SKSE/plugins/resources/icons/",
+            "installer/icon-pack-soulsy",
         ];
         let missing: Vec<&&str> = Icon::VARIANTS
             .iter()
@@ -464,11 +464,10 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn thicc_pack_complete() {
         let icon_paths = [
-            "data/SKSE/plugins/resources/icons/",
-            "layouts/icon-pack-thicc",
+            "installer/core/SKSE/plugins/resources/icons/",
+            "installer/icon-pack-thicc",
         ];
         let missing: Vec<String> = Icon::VARIANTS
             .iter()

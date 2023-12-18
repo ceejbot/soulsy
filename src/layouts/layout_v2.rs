@@ -77,7 +77,7 @@ impl HudLayout2 {
     }
 
     pub fn fallback() -> Self {
-        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_Layout.toml");
+        let buf = include_str!("../../installer/core/SKSE/plugins/SoulsyHUD_Layout.toml");
         match toml::from_str::<HudLayout2>(buf) {
             Ok(v) => v,
             Err(e) => {
@@ -294,7 +294,7 @@ mod tests {
 
     #[test]
     fn default_layout_valid() {
-        let buf = include_str!("../../data/SKSE/plugins/SoulsyHUD_Layout.toml");
+        let buf = include_str!("../../installer/core/SKSE/plugins/SoulsyHUD_Layout.toml");
         match toml::from_str::<HudLayout2>(buf) {
             Ok(v) => {
                 assert_eq!(v.anchor_point().x, 150.0);
@@ -350,7 +350,9 @@ mod tests {
 
     #[test]
     fn centered_layout_valid() {
-        let buf = include_str!("../../layouts/SoulsyHUD_centered.toml");
+        let buf = include_str!(
+            "../../installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_centered.toml"
+        );
         let centered: HudLayout2 = toml::from_str(buf).expect("layout should be valid toml");
         assert_eq!(centered.anchor_name, NamedAnchor::Center);
         assert_eq!(centered.anchor_point().x, 1720.0);
@@ -359,7 +361,8 @@ mod tests {
 
     #[test]
     fn topleft_layout_valid() {
-        let buf = include_str!("../../layouts/SoulsyHUD_topleft.toml");
+        let buf =
+            include_str!("../../installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_topleft.toml");
         let layout: HudLayout2 = toml::from_str(buf).expect("layout should be valid toml");
         assert_eq!(layout.anchor_name, NamedAnchor::None);
         assert_eq!(layout.anchor_point().x, 150.0);
@@ -368,7 +371,8 @@ mod tests {
 
     #[test]
     fn minimal_layout_valid() {
-        let data = include_str!("../../layouts/SoulsyHUD_minimal.toml");
+        let data =
+            include_str!("../../installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_minimal.toml");
         let specific: HudLayout2 =
             toml::from_str(data).expect("minimal layout should be valid toml");
         assert_eq!(specific.anchor_name, NamedAnchor::BottomLeft);
@@ -380,6 +384,31 @@ mod tests {
                 assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
                 assert_eq!(v.anchor_point().x, 150.0);
                 assert_eq!(v.anchor_point().y, 1315.0);
+            }
+        }
+    }
+
+    #[test]
+    fn i18n_layout_valid() {
+        let data =
+            include_str!("../../installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_i18n.toml");
+        let specific: HudLayout2 = match toml::from_str::<HudLayout2>(data) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("i18n layout is invalid as a v2 layout.");
+                eprintln!("{e:#}");
+                unreachable!();
+            }
+        };
+        assert_eq!(specific.anchor_name, NamedAnchor::BottomLeft);
+        let minimal: Layout =
+            toml::from_str(data).expect("serde should figure out which layout schema");
+        match minimal {
+            Layout::Version1(_) => unreachable!(),
+            Layout::Version2(v) => {
+                assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
+                assert_eq!(v.anchor_point().x, 150.0);
+                assert_eq!(v.anchor_point().y, 1290.0);
             }
         }
     }

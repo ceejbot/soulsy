@@ -10,7 +10,7 @@ help:
     just -l
 
 # Build everything from a clean repo. One-stop shop.
-full-build: tools cmake build archive layouts
+full-build: tools cmake build archive
 
 # Install required tools.
 @tools:
@@ -39,7 +39,11 @@ cmake:
 
 # Run rust tests. Cannot run on Windows (yet; use Mac or WSL Ubuntu for now).
 @test:
-    cargo nextest run -E 'not test(soulsy_pack_complete)'
+    cargo nextest run -E 'not test(/.*pack_complete/)'
+
+# Run icon checks.
+@test-icons:
+	cargo nextest run -- soulsy_pack_complete thicc_pack_complete
 
 # Generate source files list for CMake. Requires bash. Use a *nix.
 sources:
@@ -113,77 +117,15 @@ archive:
     release_name=SoulsyHUD_v${version}
     mkdir -p "releases/$release_name"
     cp -rp installer/* "releases/${release_name}/"
-    cp -p build/Release/SoulsyHUD.dll "releases/${release_name}/SKSE/plugins/SoulsyHUD.dll"
-    cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}/SKSE/plugins/SoulsyHUD.pdb"
-    rm "releases/${release_name}/scripts/source/TESV_Papyrus_Flags.flg"
+    cp -p build/Release/SoulsyHUD.dll "releases/${release_name}/core/SKSE/plugins/SoulsyHUD.dll"
+    cp -p build/Release/SoulsyHUD.pdb "releases/${release_name}/core/SKSE/plugins/SoulsyHUD.pdb"
+    rm "releases/${release_name}/core/scripts/source/TESV_Papyrus_Flags.flg"
     cd releases
-    rm -f "$release_name".7z
-    7z a "$release_name".7z "$release_name"
+    rm -f "$release_name"_fomod.7z
+    7z a "$release_name"_fomod.7z "$release_name"
     rm -rf "$release_name"
     cd ..
     echo "Mod archive for v${version} ready at releases/${release_name}.7z"
-
-# Build mod structures for additional layouts. Bash.
-[unix]
-layouts:
-    #!/usr/bin/env bash
-
-    ar=$(which 7zz)
-    if [[ -z "$ar" ]]; then
-        ar=$(which 7z)
-    fi
-    if [[ -z "$ar" ]]; then
-        echo "7zip not found at 7z or 7zz. You need to install or alias it to archive."
-        exit 1
-    fi
-
-    set -e
-
-    mkdir -p releases
-    for layout in layouts/*.toml; do
-        name="${layout/layouts\/SoulsyHUD_/}"
-        name="SoulsyHUD-layout-${name/.toml/}"
-        dest="releases/${name}/SKSE/plugins"
-        mkdir -p "releases/${name}/SKSE/plugins"
-        cp -p "$layout" "$dest/SoulsyHUD_Layout.toml"
-        font=$(tomato get font "$dest/SoulsyHUD_Layout.toml")
-        if [[ "$font" =~ "Inter" ]]; then
-            mkdir -p "$dest/resources/fonts"
-            cp -p "layouts/fonts/${font}" "$dest/resources/fonts"
-        fi
-
-        cd releases
-        ${ar} -y -bsp0 -bso0 a "${name}.7z" "${name}"
-        rm -rf "${name}"
-        cd ..
-        echo "Built ${name}.7z"
-    done
-
-    # Build the equip-sets-aware layout
-    dest="releases/SoulsyHUD_layout_square/SKSE/plugins"
-    mkdir -p "$dest/resources/backgrounds"
-    cp -p layouts/square/SoulsyHUD_layout.toml $dest
-    cp -p layouts/square/*.svg "$dest/resources/backgrounds/"
-
-    # build the Soulsy icon pack
-    dest="releases/SoulsyHUD_icon_pack/SKSE/plugins/resources/icons"
-    mkdir -p "$dest"
-    cp -rp layouts/icon-pack-soulsy/*.svg "$dest/"
-
-    # build the THICC icon pack
-    dest="releases/SoulsyHUD_THICC_icon_pack/SKSE/plugins/resources/icons"
-    mkdir -p "$dest"
-    cp -rp layouts/icon-pack-thicc/*.svg "$dest/"
-
-    archive_dirs="SoulsyHUD_icon_pack SoulsyHUD_THICC_icon_pack SoulsyHUD_layout_square"
-    cd releases
-    for i in $archive_dirs; do
-        rm -f "$i.7z"
-         ${ar} -y -bsp0 -bso0 a "$i.7z" "$i"
-        rm -rf "$i"
-        echo "Built $i.7z"
-    done
-    cd ..
 
 # Use spriggit to dump the plugin to text.
 plugin-ser:
@@ -203,10 +145,6 @@ spotless: clean
     rm -rf build
 
 # The rest of these are stubs so windows doesn't just hork.
-
-[windows]
-@layouts:
-    echo "Run this recipe in a bash shell."
 
 [windows]
 @archive:

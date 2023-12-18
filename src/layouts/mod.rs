@@ -190,7 +190,7 @@ pub fn anchor_point(
 
 impl Default for LayoutFlattened {
     fn default() -> Self {
-        todo!()
+        Layout::default().flatten()
     }
 }
 
@@ -255,8 +255,10 @@ mod tests {
     fn can_load_v2_layouts() {
         let squarev1 = Layout::read_from_file("tests/fixtures/layout-v1.toml")
             .expect("the original square layout can be loaded");
-        let squarev2 = Layout::read_from_file("layouts/square/SoulsyHUD_Layout.toml")
-            .expect("the square layout has been ported");
+        let squarev2 = Layout::read_from_file(
+            "installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_square.toml",
+        )
+        .expect("the square layout has been ported");
         let flat1 = squarev1.flatten();
         let flat2 = squarev2.flatten();
         assert_eq!(flat1.bg_size, flat2.bg_size);
@@ -281,8 +283,20 @@ mod tests {
 
     #[test]
     fn default_layout_exists() {
-        let fpath = std::path::Path::new("data/SKSE/plugins/SoulsyHUD_Layout.toml");
+        let fpath = std::path::Path::new("installer/core/SKSE/plugins/SoulsyHUD_Layout.toml");
         assert!(fpath.exists());
+    }
+
+    #[test]
+    fn default_flattened_layout_exists() {
+        let defaulted = LayoutFlattened::default();
+        assert_eq!(
+            defaulted.anchor,
+            Point {
+                x: 150.0,
+                y: 1290.0
+            }
+        );
     }
 
     #[test]
