@@ -1,16 +1,28 @@
+//! All usable icons are defined here as enum variants.
+//!
+//! To add a new icon, you must add a variant name here AND add the
+//! variant to `fallback()`, so the HUD renders something if the file
+//! is missing (e.g., an icon pack dose not include it). If the icon is
+//! added to the core set in the main mod, it is its own fallback and can
+//! be a fallback target. (A test validates that all fallbacks are valid.)
+//!
+//! You should then add a file for the icon in one of the icon packs or the
+//! core set. The name of the file *must* be the enum variation name in
+//! snake_case. That is, an icon variant named `SnakeCase` maps to `snake_case.svg`.
+//!
+//! When naming icons, follow the principle of most general -> most specific.
+//! For example `ArmorLightHands` starts with the general category of armor,
+//! then narrows it down to light armor, then picks out hands specifically.
+//! This approach makes related icons sort together, which makes them easier
+//! to edit or preview in groups.
+//!
+//! Top-level icon name categories sort of match data types in the data/ submodule.
+//! Ammo, Armor, Food (Drink also categorized here), Potion, Power, Shout, Spell,
+//! Weapon. This could be tidier.
+
 use strum::{Display, EnumString, EnumVariantNames};
 
-/// All usable icons are defined here as enum variants.
-///
-/// To add a new icon, you must add a variant name here AND add the
-/// variant to `fallback()`, so the HUD renders something if the file
-/// is missing (e.g., an icon pack dose not include it). If the icon is
-/// added to the core set in the main mod, it is its own fallback and can
-/// be a fallback target. (This is not enforced by types.)
-///
-/// You should then add a file for the icon in one of the icon packs or the
-/// core set. The name of the file *must* be the enum variation name in
-/// snake_case. That is, a variation named SnakeCase becomes `snake_case.svg`.
+/// The Icon enum. Each variant maps to a known icon type.
 #[derive(Debug, Clone, Default, Hash, PartialEq, Eq, EnumString, EnumVariantNames, Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum Icon {
@@ -416,6 +428,7 @@ impl Icon {
     }
 }
 
+/// For tests, pick a random icon to use for randomly-generated items.
 #[cfg(test)]
 pub fn random_icon() -> Icon {
     use std::str::FromStr;
@@ -430,6 +443,60 @@ pub fn random_icon() -> Icon {
     }
 }
 
+/// Check if an icon is in the core set.
+#[cfg(test)]
+pub fn is_in_core_set(icon: &Icon) -> bool {
+    match icon {
+        Icon::Alteration => true,
+        Icon::AmmoArrow => true,
+        Icon::ArmorClothing => true,
+        Icon::ArmorHeavy => true,
+        Icon::ArmorLight => true,
+        Icon::ArmorMask => true,
+        Icon::ArmorShieldHeavy => true,
+        Icon::Conjuration => true,
+        Icon::Destruction => true,
+        Icon::Food => true,
+        Icon::HandToHand => true,
+        Icon::IconDefault => true,
+        Icon::Illusion => true,
+        Icon::PotionDefault => true,
+        Icon::PotionHealth => true,
+        Icon::PotionMagicka => true,
+        Icon::PotionPoison => true,
+        Icon::PotionResistFire => true,
+        Icon::PotionResistFrost => true,
+        Icon::PotionResistShock => true,
+        Icon::PotionStamina => true,
+        Icon::Power => true,
+        Icon::Restoration => true,
+        Icon::Scroll => true,
+        Icon::Shout => true,
+        Icon::MiscLantern => true,
+        Icon::MiscTorch => true,
+        Icon::SpellFire => true,
+        Icon::SpellFrost => true,
+        Icon::SpellShock => true,
+        Icon::WeaponAxeOneHanded => true,
+        Icon::WeaponAxeTwoHanded => true,
+        Icon::WeaponBow => true,
+        Icon::WeaponClaw => true,
+        Icon::WeaponCrossbow => true,
+        Icon::WeaponDagger => true,
+        Icon::WeaponHalberd => true,
+        Icon::WeaponKatana => true,
+        Icon::WeaponMace => true,
+        Icon::WeaponPike => true,
+        Icon::WeaponQuarterstaff => true,
+        Icon::WeaponRapier => true,
+        Icon::WeaponStaff => true,
+        Icon::WeaponSwordOneHanded => true,
+        Icon::WeaponSwordTwoHanded => true,
+        Icon::WeaponWhip => true,
+        _ => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
@@ -438,6 +505,52 @@ mod tests {
     use strum::VariantNames;
 
     use super::*;
+
+    #[test]
+    fn validate_fallbacks() {
+        let wrong: Vec<&&str> = Icon::VARIANTS
+            .iter()
+            .filter(|variant| {
+                let icon =
+                    Icon::from_str(variant).expect("icon names should darn well turn into icons");
+                let fpath: PathBuf = [
+                    "installer/core/SKSE/plugins/resources/icons/",
+                    icon.icon_file().as_str(),
+                ]
+                .iter()
+                .collect();
+
+                if fpath.exists() != is_in_core_set(&icon) {
+                    eprintln!(
+                        "{icon:?} wrong: file is in core set={} but function says {}; {}",
+                        fpath.exists(),
+                        is_in_core_set(&icon),
+                        icon.icon_file()
+                    );
+                    true
+                } else {
+                    false
+                }
+            })
+            .collect();
+        assert!(wrong.is_empty());
+
+        // now make sure every fallback is okay
+        let bad_fallback: Vec<&&str> = Icon::VARIANTS
+            .iter()
+            .filter(|variant| {
+                let icon =
+                    Icon::from_str(variant).expect("icon names should darn well turn into icons");
+                if is_in_core_set(&icon.fallback()) {
+                    false
+                } else {
+                    eprintln!("{icon:?} has bad fallback: {:?}", icon.fallback());
+                    true
+                }
+            })
+            .collect();
+        assert!(bad_fallback.is_empty());
+    }
 
     #[test]
     fn soulsy_pack_complete() {
