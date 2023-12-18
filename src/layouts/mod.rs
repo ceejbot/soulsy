@@ -283,7 +283,9 @@ mod tests {
 
     #[test]
     fn default_layout_exists() {
-        let fpath = std::path::Path::new("installer/core/SKSE/plugins/SoulsyHUD_Layout.toml");
+        let fpath = std::path::Path::new(
+            "installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_default.toml",
+        );
         assert!(fpath.exists());
     }
 

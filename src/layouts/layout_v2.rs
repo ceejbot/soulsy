@@ -77,7 +77,8 @@ impl HudLayout2 {
     }
 
     pub fn fallback() -> Self {
-        let buf = include_str!("../../installer/core/SKSE/plugins/SoulsyHUD_Layout.toml");
+        let buf =
+            include_str!("../../installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_default.toml");
         match toml::from_str::<HudLayout2>(buf) {
             Ok(v) => v,
             Err(e) => {
@@ -294,7 +295,8 @@ mod tests {
 
     #[test]
     fn default_layout_valid() {
-        let buf = include_str!("../../installer/core/SKSE/plugins/SoulsyHUD_Layout.toml");
+        let buf =
+            include_str!("../../installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_default.toml");
         match toml::from_str::<HudLayout2>(buf) {
             Ok(v) => {
                 assert_eq!(v.anchor_point().x, 150.0);
