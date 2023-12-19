@@ -82,7 +82,7 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 	{
 		if (event->eventType != RE::INPUT_EVENT_TYPE::kButton) { continue; }
 
-		const auto* button =
+		auto* button =
 			static_cast<RE::ButtonEvent*>(event);  // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 
 		// This offsets the button by an amount that varies based on what originated the

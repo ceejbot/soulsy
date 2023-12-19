@@ -1725,7 +1725,7 @@ impl From<u32> for Action {
             Action::RefreshLayout
         } else if value == settings.equipset() as u32 {
             Action::Equipment
-        } else if settings.unequip_hotkey() > 0 && value == settings.unequip_hotkey() as u32 {
+        } else if value == settings.unequip_hotkey() as u32 {
             Action::UnequipHands
         } else {
             Action::None

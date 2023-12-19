@@ -196,6 +196,7 @@ Event OnConfigOpen()
     pEnableActivateHotkey = (activateEnum == 0)
 
     int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
+    pEnableUnequipHotkey = (unequipEnum == 4)
     pEnableUnequipModifier = (unequipEnum == 2)
     pEnableLongPressMatchOption = (unequipEnum != 1)
 

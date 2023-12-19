@@ -148,6 +148,8 @@ impl From<u32> for Hotkey {
             Hotkey::ShowHide
         } else if v == settings.activate() {
             Hotkey::Activate
+        } else if v == settings.unequip_hotkey() as u32 {
+            Hotkey::UnequipHands
         } else if settings.activate_modifier().is_positive()
             && v == settings.activate_modifier().unsigned_abs()
         {

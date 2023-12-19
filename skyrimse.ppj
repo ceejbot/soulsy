@@ -1,19 +1,19 @@
 <?xml version='1.0'?><!-- Game is either sse, tesv, or fo4 -->
-<PapyrusProject xmlns="PapyrusProject.xsd" 
-    Flags="TESV_Papyrus_Flags.flg" 
-    Game="sse" 
-    Output="data\scripts" 
-    Optimize="true" 
+<PapyrusProject xmlns="PapyrusProject.xsd"
+    Flags="TESV_Papyrus_Flags.flg"
+    Game="sse"
+    Output="installer\core\scripts"
+    Optimize="true"
     Anonymize="true"
-    Release="false" 
+    Release="false"
     Final="false">
     <Imports>
-        <Import>.\data\scripts\source</Import>
-        <Import>G:\SteamLibrary\steamapps\common\Skyrim Special Edition\Data\Source\Scripts</Import>
-        <Import>G:\Vortex Mods\skyrimse\MCM SDK\Source\Scripts</Import>
-        <Import>G:\Vortex Mods\skyrimse\SkyUI_5.1_SDK\Scripts</Import>
+        <Import>.\installer\core\scripts\source</Import>
+        <Import>G:\MO2Skyrim\ScriptSource\Source\Scripts</Import>
+        <Import>G:\MO2Skyrim\MCM SDK\Source\Scripts</Import>
+        <Import>G:\MO2Skyrim\SkyUI_5.1_SDK\Scripts\Source</Import>
     </Imports>
     <Folders>
-        <Folder>.\data\scripts\source</Folder>
+        <Folder>.\installer\core\scripts\source</Folder>
     </Folders>
 </PapyrusProject>
