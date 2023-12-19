@@ -26,6 +26,7 @@ pub enum Hotkey {
     Right,
     Equipment,
     Activate,
+    UnequipHands,
     Refresh,
     ShowHide,
     UnequipModifier,
@@ -122,6 +123,7 @@ impl From<&Action> for Hotkey {
             Action::ShowHide => Hotkey::ShowHide,
             Action::Utility => Hotkey::Utility,
             Action::RefreshLayout => Hotkey::Refresh,
+            Action::UnequipHands => Hotkey::UnequipHands,
             _ => Hotkey::None,
         }
     }

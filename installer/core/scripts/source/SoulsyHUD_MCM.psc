@@ -6,6 +6,7 @@ bool property pEnableActivateHotkey = false auto
 bool property pCycleNeedsModifier = false auto
 bool property pMenuNeedsModifier = false auto
 bool property pEnableUnequipModifier = false auto
+bool property pEnableUnequipHotkey = false auto
 bool property pEnableLongPressMatchOption = true auto
 
 int property pCycleToShow = 0 auto
@@ -162,6 +163,7 @@ Event OnSettingChange(String changedID)
     elseif (changedID == "uHowToUnequip:Controls")
         int unequipEnum = GetModSettingInt("uHowToUnequip:Controls")
         pEnableUnequipModifier = (unequipEnum == 2)
+        pEnableUnequipHotkey = (unequipEnum == 4)
         pEnableLongPressMatchOption = (unequipEnum != 1)
         if unequipEnum == 1
             SetModSettingBool("bLongPressMatches:Controls", false)

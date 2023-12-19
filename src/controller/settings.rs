@@ -90,6 +90,8 @@ pub struct UserSettings {
     unarmed_handling: UnarmedMethod,
     /// An optional modifier key for unequipping a specific slot. iUnequipModifierKey
     unequip_modifier: i32,
+    /// An optional dedicated hotkey for unequipping both hands. iUnequipHotkey
+    unequip_hotkey: i32,
 
     /// Matching left and right hands. bLongPressMatches
     long_press_matches: bool,
@@ -148,6 +150,7 @@ impl Default for UserSettings {
             link_to_favorites: false,
             unarmed_handling: UnarmedMethod::None,
             unequip_modifier: -1,
+            unequip_hotkey: -1,
             equip_delay_ms: 750, // in milliseconds
             long_press_ms: 1250, // in milliseconds
             autofade: true,
@@ -229,6 +232,7 @@ impl UserSettings {
         self.unarmed_handling = read_from_ini(self.unarmed_handling, "uHowToUnequip", controls);
         self.unequip_modifier =
             read_from_ini(self.unequip_modifier, "iUnequipModifierKey", controls);
+        self.unequip_hotkey = read_from_ini(self.unequip_hotkey, "iUnequipHotkey", controls);
 
         self.equip_delay_ms = u32::clamp(
             read_from_ini(self.equip_delay_ms, "uEquipDelay", options),
@@ -282,15 +286,18 @@ impl UserSettings {
         }
     }
 
-    pub fn unequip_with_modifier(&self) -> bool {
-        // hiding the implementation here, possibly pointlessly
-        self.unequip_modifier > 0
-    }
     pub fn unequip_method(&self) -> &UnarmedMethod {
         &self.unarmed_handling
     }
     pub fn unequip_modifier(&self) -> i32 {
         self.unequip_modifier
+    }
+    pub fn unequip_hotkey(&self) -> i32 {
+        if matches!(self.unarmed_handling, UnarmedMethod::Hotkey) {
+            self.unequip_hotkey
+        } else {
+            -1
+        }
     }
 
     pub fn start_long_press_timer(&self, key: &Hotkey) -> bool {
@@ -350,7 +357,7 @@ impl UserSettings {
             HudElement::Right => self.right,
             HudElement::Ammo => self.left, // This is objectively correct.
             HudElement::EquipSet => self.equipset as u32,
-            _ => self.refresh_layout, // Required because this is a C-style enum.
+            _ => self.refresh_layout, // Required because this is a C-style enum. But wrong.
         }
     }
 
@@ -379,6 +386,7 @@ impl UserSettings {
     pub fn activate_modifier(&self) -> i32 {
         self.activate_modifier
     }
+
     pub fn activate(&self) -> u32 {
         self.activate
     }
@@ -509,6 +517,8 @@ pub enum UnarmedMethod {
     Modifier,
     /// Add unarmed combat to the slots for left and right hand.
     AddToCycles,
+    /// Use a dedicated hotkey to switch to bare fists.
+    Hotkey,
 }
 
 impl FromIniStr for UnarmedMethod {
@@ -518,6 +528,7 @@ impl FromIniStr for UnarmedMethod {
             "1" => Some(UnarmedMethod::LongPress),
             "2" => Some(UnarmedMethod::Modifier),
             "3" => Some(UnarmedMethod::AddToCycles),
+            "4" => Some(UnarmedMethod::Hotkey),
             _ => None,
         }
     }
@@ -604,6 +615,7 @@ impl std::fmt::Display for UserSettings {
            link_to_favorites: {}
             unarmed_handling: {}
             unequip_modifier: {}
+              unequip_hotkey: {}
               equip_delay_ms: {} ms
                long_press_ms: {} ms
                     autofade: {}
@@ -635,6 +647,7 @@ impl std::fmt::Display for UserSettings {
             self.link_to_favorites,
             self.unarmed_handling,
             self.unequip_modifier,
+            self.unequip_hotkey,
             self.equip_delay_ms,
             self.long_press_ms,
             self.autofade,

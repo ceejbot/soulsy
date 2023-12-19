@@ -69,11 +69,7 @@ pub fn color_from_keywords(keywords: &[String]) -> Option<InvColor> {
         .iter()
         .filter_map(|xs| InvColor::try_from(xs.as_str()).ok())
         .collect();
-    if let Some(c) = color_keywords.first() {
-        Some(c.clone())
-    } else {
-        None
-    }
+    color_keywords.first().cloned()
 }
 
 impl TryFrom<&str> for InvColor {

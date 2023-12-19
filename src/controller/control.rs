@@ -325,6 +325,14 @@ impl Controller {
                     KeyEventResponse::default()
                 }
             }
+            Hotkey::UnequipHands => {
+                let unarmed_method = le_options.unequip_method();
+                if matches!(unarmed_method, UnarmedMethod::Hotkey) {
+                    self.disarm_player()
+                } else {
+                    KeyEventResponse::default()
+                }
+            }
             Hotkey::Refresh => {
                 Layout::refresh();
                 KeyEventResponse::handled()
@@ -457,6 +465,7 @@ impl Controller {
                 unequipmod.is_pressed()
             }
             UnarmedMethod::AddToCycles => false,
+            UnarmedMethod::Hotkey => false, // this hotkey has its own handler
         };
 
         if unequip_requested {
@@ -527,6 +536,11 @@ impl Controller {
             RequestedAction::Consume => KeyEventResponse::default(),
             RequestedAction::None => KeyEventResponse::default(),
         }
+    }
+
+    fn disarm_player(&mut self) -> KeyEventResponse {
+        self.do_hand_action(RequestedAction::Unequip, Action::Left, CycleSlot::Left);
+        self.do_hand_action(RequestedAction::Unequip, Action::Right, CycleSlot::Right)
     }
 
     /// Match hands to each other; that is, dual-wield whatever is in the hand we
@@ -1711,6 +1725,8 @@ impl From<u32> for Action {
             Action::RefreshLayout
         } else if value == settings.equipset() as u32 {
             Action::Equipment
+        } else if settings.unequip_hotkey() > 0 && value == settings.unequip_hotkey() as u32 {
+            Action::UnequipHands
         } else {
             Action::None
         }

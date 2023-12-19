@@ -48,9 +48,7 @@ impl HasKeywords for AmmoType {
                 "ArrowBroadhead" => Some(Self::BroadheadArrow(color.clone().unwrap_or_default())),
                 "ArrowHammer" => Some(Self::HammerheadArrow(color.clone().unwrap_or_default())),
                 "ArrowCrescent" => Some(Self::CrescentArrow(color.clone().unwrap_or_default())),
-                "ArrowFire" => Some(Self::FireArrow(
-                    color.clone().unwrap_or_else(|| InvColor::Fire),
-                )),
+                "ArrowFire" => Some(Self::FireArrow(color.clone().unwrap_or(InvColor::Fire))),
                 "ArrowWhistle" => Some(Self::WhistleArrow(color.clone().unwrap_or_default())),
                 "ArrowPractice" => Some(Self::PracticeArrow(color.clone().unwrap_or_default())),
                 "OCF_AmmoTypeArrow" => Some(Self::Arrow(color.clone().unwrap_or_default())),

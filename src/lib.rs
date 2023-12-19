@@ -163,6 +163,8 @@ pub mod plugin {
         Activate,
         /// The equipset cycle hotkey.
         Equipment,
+        /// The unequip hands hotkey.
+        UnequipHands,
         /// The HUD toggle hotkey.
         ShowHide,
         /// Refresh the layout by re-reading the toml file.

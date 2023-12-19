@@ -133,7 +133,8 @@
                             "$SoulsyHUD_Unarmed_Enum_None",
                             "$SoulsyHUD_Unarmed_Enum_LongPress",
                             "$SoulsyHUD_Unarmed_Enum_Mod",
-                            "$SoulsyHUD_Unarmed_Enum_Add"
+                            "$SoulsyHUD_Unarmed_Enum_Add",
+                            "$SoulsyHUD_Unarmed_Enum_Hotkey"
                         ],
                         "sourceType": "ModSettingInt",
                         "defaultValue": 0
@@ -161,8 +162,28 @@
                 },
                 {
                     "type": "hiddenToggle",
-                    "text": "hidden toggle for long-press-to-match setting",
+                    "text": "hidden toggle for unequip dedicated hotkey",
                     "groupControl": 4,
+                    "valueOptions": {
+                        "sourceType": "PropertyValueBool",
+                        "propertyName": "pEnableUnequipHotkey"
+                    }
+                },
+                {
+                    "id": "iUnequipHotkey:Controls",
+                    "text": "$SoulsyHUD_Controls_UnequipHotkey_Text",
+                    "help": "$SoulsyHUD_Controls_UnequipHotkey_Help",
+                    "groupCondition": 4,
+                    "groupBehavior": "skip",
+                    "type": "keymap",
+                    "valueOptions": {
+                        "sourceType": "ModSettingInt"
+                    }
+                },
+                {
+                    "type": "hiddenToggle",
+                    "text": "hidden toggle for long-press-to-match setting",
+                    "groupControl": 5,
                     "valueOptions": {
                         "sourceType": "PropertyValueBool",
                         "propertyName": "pEnableLongPressMatchOption"
@@ -176,7 +197,7 @@
                     "valueOptions": {
                         "sourceType": "ModSettingBool"
                     },
-                    "groupCondition": 4,
+                    "groupCondition": 5,
                     "groupBehavior": "skip"
                 },
                 {
@@ -220,7 +241,7 @@
                 {
                     "type": "hiddenToggle",
                     "text": "hidden toggle for utility activate modifier",
-                    "groupControl": 5,
+                    "groupControl": 6,
                     "valueOptions": {
                         "sourceType": "PropertyValueBool",
                         "propertyName": "pEnableActivateModifier"
@@ -230,7 +251,7 @@
                     "id": "iUtilityActivateModifier:Controls",
                     "text": "$SoulsyHUD_Controls_ActivateModifier_Text",
                     "help": "$SoulsyHUD_Controls_ActivateModifier_Help",
-                    "groupCondition": 5,
+                    "groupCondition": 6,
                     "groupBehavior": "skip",
                     "type": "keymap",
                     "valueOptions": {
@@ -240,7 +261,7 @@
                 {
                     "type": "hiddenToggle",
                     "text": "hidden toggle for utility hotkey",
-                    "groupControl": 6,
+                    "groupControl": 7,
                     "valueOptions": {
                         "sourceType": "PropertyValueBool",
                         "propertyName": "pEnableActivateHotkey"
@@ -250,7 +271,7 @@
                     "id": "uUtilityActivateKey:Controls",
                     "text": "$SoulsyHUD_Controls_ActivateKey_Text",
                     "help": "$SoulsyHUD_Controls_ActivateKey_Help",
-                    "groupCondition": 6,
+                    "groupCondition": 7,
                     "groupBehavior": "skip",
                     "type": "keymap",
                     "valueOptions": {
@@ -364,7 +385,6 @@
                     "text": "$SoulsyHUD_Controls_ShowHideKey_Text",
                     "help": "$SoulsyHUD_Controls_ShowHideKey_Help",
                     "type": "keymap",
-                    "groupBehavior": "skip",
                     "valueOptions": {
                         "sourceType": "ModSettingInt"
                     }

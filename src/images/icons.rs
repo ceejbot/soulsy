@@ -446,55 +446,55 @@ pub fn random_icon() -> Icon {
 /// Check if an icon is in the core set.
 #[cfg(test)]
 pub fn is_in_core_set(icon: &Icon) -> bool {
-    match icon {
-        Icon::Alteration => true,
-        Icon::AmmoArrow => true,
-        Icon::ArmorClothing => true,
-        Icon::ArmorHeavy => true,
-        Icon::ArmorLight => true,
-        Icon::ArmorMask => true,
-        Icon::ArmorShieldHeavy => true,
-        Icon::Conjuration => true,
-        Icon::Destruction => true,
-        Icon::Food => true,
-        Icon::HandToHand => true,
-        Icon::IconDefault => true,
-        Icon::Illusion => true,
-        Icon::PotionDefault => true,
-        Icon::PotionHealth => true,
-        Icon::PotionMagicka => true,
-        Icon::PotionPoison => true,
-        Icon::PotionResistFire => true,
-        Icon::PotionResistFrost => true,
-        Icon::PotionResistShock => true,
-        Icon::PotionStamina => true,
-        Icon::Power => true,
-        Icon::Restoration => true,
-        Icon::Scroll => true,
-        Icon::Shout => true,
-        Icon::MiscLantern => true,
-        Icon::MiscTorch => true,
-        Icon::SpellFire => true,
-        Icon::SpellFrost => true,
-        Icon::SpellShock => true,
-        Icon::WeaponAxeOneHanded => true,
-        Icon::WeaponAxeTwoHanded => true,
-        Icon::WeaponBow => true,
-        Icon::WeaponClaw => true,
-        Icon::WeaponCrossbow => true,
-        Icon::WeaponDagger => true,
-        Icon::WeaponHalberd => true,
-        Icon::WeaponKatana => true,
-        Icon::WeaponMace => true,
-        Icon::WeaponPike => true,
-        Icon::WeaponQuarterstaff => true,
-        Icon::WeaponRapier => true,
-        Icon::WeaponStaff => true,
-        Icon::WeaponSwordOneHanded => true,
-        Icon::WeaponSwordTwoHanded => true,
-        Icon::WeaponWhip => true,
-        _ => false,
-    }
+    matches!(
+        icon,
+        Icon::Alteration
+            | Icon::AmmoArrow
+            | Icon::ArmorClothing
+            | Icon::ArmorHeavy
+            | Icon::ArmorLight
+            | Icon::ArmorMask
+            | Icon::ArmorShieldHeavy
+            | Icon::Conjuration
+            | Icon::Destruction
+            | Icon::Food
+            | Icon::HandToHand
+            | Icon::IconDefault
+            | Icon::Illusion
+            | Icon::PotionDefault
+            | Icon::PotionHealth
+            | Icon::PotionMagicka
+            | Icon::PotionPoison
+            | Icon::PotionResistFire
+            | Icon::PotionResistFrost
+            | Icon::PotionResistShock
+            | Icon::PotionStamina
+            | Icon::Power
+            | Icon::Restoration
+            | Icon::Scroll
+            | Icon::Shout
+            | Icon::MiscLantern
+            | Icon::MiscTorch
+            | Icon::SpellFire
+            | Icon::SpellFrost
+            | Icon::SpellShock
+            | Icon::WeaponAxeOneHanded
+            | Icon::WeaponAxeTwoHanded
+            | Icon::WeaponBow
+            | Icon::WeaponClaw
+            | Icon::WeaponCrossbow
+            | Icon::WeaponDagger
+            | Icon::WeaponHalberd
+            | Icon::WeaponKatana
+            | Icon::WeaponMace
+            | Icon::WeaponPike
+            | Icon::WeaponQuarterstaff
+            | Icon::WeaponRapier
+            | Icon::WeaponStaff
+            | Icon::WeaponSwordOneHanded
+            | Icon::WeaponSwordTwoHanded
+            | Icon::WeaponWhip
+    )
 }
 
 #[cfg(test)]
