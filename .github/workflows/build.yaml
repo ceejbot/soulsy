@@ -1,72 +1,68 @@
 name: Build SoulsyHUD
 on:
-  push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    push:
+        tags:
+            - "v*"
+    workflow_dispatch:
 permissions:
-  contents: write
+    contents: write
 
 env:
-  CARGO_TERM_COLOR: always
-  VCPKG_COMMIT_ID: 9edb1b8e590cc086563301d735cae4b6e732d2d2
-  CMAKE_BUILD_TYPE: Release
+    CARGO_TERM_COLOR: always
+    VCPKG_COMMIT_ID: 9edb1b8e590cc086563301d735cae4b6e732d2d2
+    CMAKE_BUILD_TYPE: Release
 
 jobs:
-  compile:
-    name: build plugin
-    runs-on: windows-latest
-    steps:
-        - uses: actions/checkout@v3
-          with:
-              submodules: true
-        - uses: actions-rs/toolchain@v1
-          with:
-              toolchain: stable
-              override: true
-        - uses: actions/cache@v3
-          with:
-              path: |
-                  ~/.cargo/registry
-                  ~/.cargo/git
-                  target
-                  build
-                  vcpkg-installed
-              key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
-              restore-keys: |
-                  ${{ runner.os }}-cargo-
-                  ${{ runner.os }}-
-        - uses: ilammy/msvc-dev-cmd@v1.10.0
-        - uses: lukka/run-vcpkg@v11.1
-          with:
-              vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+    compile:
+        name: build plugin
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  submodules: true
+            - uses: actions/cache@v3
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      target
+                      build
+                      vcpkg-installed
+                  key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-cargo-
+                      ${{ runner.os }}-
+            - uses: ilammy/msvc-dev-cmd@v1.10.0
+            - uses: lukka/run-vcpkg@v11.1
+              with:
+                  vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
 
-        - name: build the the DLL
-          uses: lukka/run-cmake@v10.0
-          with:
-              cmakeListsTxtPath: CMakeLists.txt
-              configurePreset: 'vs2022-windows'
-              buildPreset: 'vs2022-windows'
-              buildPresetCmdString: "['--build', '--preset', '$[env.BUILD_PRESET_NAME]', '--config', 'Release']"
+            - name: build the the DLL
+              uses: lukka/run-cmake@v10.0
+              with:
+                  cmakeListsTxtPath: CMakeLists.txt
+                  configurePreset: "vs2022-windows"
+                  buildPreset: "vs2022-windows"
+                  buildPresetCmdString: "['--build', '--preset', '$[env.BUILD_PRESET_NAME]', '--config', 'Release']"
 
-        - name: build mod directory
-          shell: bash
-          run: |
-              mkdir -p SoulsyHUD
-              cp -r data/* SoulsyHUD/
-              cp build/Release/SoulsyHUD.dll SoulsyHUD/SKSE/plugins/SoulsyHUD.dll
-              cp build/Release/SoulsyHUD.pdb SoulsyHUD/SKSE/plugins/SoulsyHUD.pdb
-              rm -rf SoulsyHUD/scripts/source
+            - name: build mod directory
+              shell: bash
+              run: |
+                  mkdir -p SoulsyHUD
+                  cp -r installer/* SoulsyHUD/
+                  cp build/Release/SoulsyHUD.dll SoulsyHUD/core/SKSE/plugins/SoulsyHUD.dll
+                  cp build/Release/SoulsyHUD.pdb SoulsyHUD/core/SKSE/plugins/SoulsyHUD.pdb
+                  rm -rf SoulsyHUD/core/scripts/source/TESV_Papyrus_Flags.flg
 
-        - name: 7zip compress it
-          run: 7z a SoulsyHUD.7z ./SoulsyHUD
+            - name: 7zip compress it
+              run: 7z a SoulsyHUD_fomod.7z ./SoulsyHUD
 
-        - name: create a tagged release and upload the archive
-          uses: ncipollo/release-action@v1
-          env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            name: SoulsyHUD ${{ github.ref_name }}
-            tag: ${{ github.ref_name }}
-            draft: true
-            artifacts: "SoulsyHUD.7z"
+            - name: create a tagged release and upload the archive
+              uses: ncipollo/release-action@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  name: SoulsyHUD ${{ github.ref_name }}
+                  tag: ${{ github.ref_name }}
+                  draft: true
+                  artifacts: "SoulsyHUD.7z"
