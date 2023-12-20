@@ -1,7 +1,7 @@
 [package]
 name = "soulsy"
 description = "A minimal Souls-like HUD & hotkeys mod for Skyrim AE. SKSE plugin."
-version = "0.13.7"
+version = "0.14.0"
 edition = "2021"
 rust-version = "1.71.1"
 authors = ["C J Silverio <ceejceej@gmail.com>"]
