@@ -34,6 +34,7 @@ impl HasKeywords for FoodType {
         let tags = strings_to_enumset::<FoodKeywords>(&keywords);
         let containers = strings_to_enumset::<ContainerKeywords>(&keywords);
 
+        // Set operations to keep all this brainless and somewhat readable.
         let icon = if !ICON_TEA.is_disjoint(tags) {
             Icon::DrinkTea
         } else if !ICON_WATER.is_disjoint(tags) {
