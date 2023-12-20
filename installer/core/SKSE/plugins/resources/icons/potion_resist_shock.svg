@@ -1,34 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   height="512"
-   width="512"
-   version="1.1"
-   id="svg520"
-   sodipodi:docname="potion_shock_resist.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs524" />
-  <sodipodi:namedview
-     id="namedview522"
-     pagecolor="#505050"
-     bordercolor="#ffffff"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="1"
-     inkscape:deskcolor="#505050"
-     showgrid="false" />
-  <g
-     transform="matrix(12.337349,0,0,12.337349,255.69157,256)"
-     id="g518">
-    <path
-       d="M 6.1,-1.85 H 1.3 L -4.75,7.7 H 0 L -5.9,17.05 5.75,5.2 H 1.65 L 6.1,-1.85 m -4.7,-18.9 q 1.7,0 1.7,1.75 v 0.7 h 1.15 q 0.55,0 0.95,0.4 l 0.4,1.15 q 0,0.65 -0.4,1.25 l -0.75,0.45 -0.35,0.75 -0.55,0.1 H 3.5 v 5.15 q 8.8,5.2 8.45,11.4 -0.5,9.6 -3.8,18.4 H -8.2 q -3.2,-8.55 -3.7,-18.2 -0.35,-6.2 8.45,-11.45 v -5.3 H -3.5 q -0.4,0 -0.6,-0.3 -0.25,-0.2 -0.3,-0.55 -0.55,-0.05 -0.85,-0.45 -0.4,-0.6 -0.4,-1.25 l 0.4,-1.15 q 0.4,-0.4 0.9,-0.4 h 1.3 V -19 q 0,-1.75 1.55,-1.75 h 2.9"
-       fill="#eaab00"
-       fill-rule="evenodd"
-       stroke="none"
-       id="path516" />
-  </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 296 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(4.34082,0,0,4.34082,12.3713,19.7507)">
+        <path d="M17.6,76.35L31.15,76.35L14.25,102.95L47.5,69.25L35.85,69.25L48.5,49.2L34.9,49.2L17.6,76.35M26.8,-4.55L35.15,-4.55C38.317,-4.55 39.9,-2.917 39.9,0.35L39.9,2.35L43.25,2.35C44.283,2.35 45.2,2.75 46,3.55C46.7,4.85 47.05,5.95 47.05,6.85C47.05,8.083 46.7,9.233 46,10.3L43.85,11.65L43.05,13.2L42.85,13.8L41.25,14L41.05,14L41.05,28.65C57.783,38.517 65.833,49.333 65.2,61.1C64.2,79.367 60.583,96.8 54.35,113.4L7.8,113.4C1.7,97.2 -1.833,79.95 -2.8,61.65C-3.433,49.883 4.617,39.067 21.35,29.2L21.35,14L21.1,14C20.333,14 19.767,13.733 19.4,13.2C19,12.8 18.717,12.283 18.55,11.65C17.55,11.55 16.75,11.1 16.15,10.3C15.417,9.233 15.05,8.083 15.05,6.85C15.05,5.95 15.417,4.85 16.15,3.55C16.95,2.75 17.833,2.35 18.8,2.35L22.45,2.35L22.45,0.35C22.45,-2.917 23.9,-4.55 26.8,-4.55" style="fill:white;"/>
+    </g>
 </svg>

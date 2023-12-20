@@ -107,25 +107,6 @@ impl BaseType {
         }
     }
 
-    pub fn icon_fallback(&self) -> Icon {
-        match self {
-            BaseType::Empty => Icon::IconDefault,
-            BaseType::Ammo(_) => Icon::AmmoArrow,
-            BaseType::Armor(_) => Icon::ArmorHeavy,
-            BaseType::Food(_) => Icon::Food,
-            BaseType::HandToHand => Icon::HandToHand,
-            BaseType::Light(_) => Icon::MiscTorch,
-            BaseType::Potion(_) => Icon::PotionDefault,
-            BaseType::PotionProxy(_) => Icon::PotionDefault,
-            BaseType::Power(_) => Icon::Power,
-            BaseType::Scroll(_) => Icon::Scroll,
-            BaseType::Shout(_) => Icon::Shout,
-            BaseType::Spell(t) => t.icon_fallback(), // will fall back to magic school icon
-            BaseType::Weapon(_) => Icon::WeaponSwordOneHanded,
-            BaseType::Equipset(_) => Icon::ArmorHeavy,
-        }
-    }
-
     pub fn count_matters(&self) -> bool {
         match *self {
             BaseType::Empty => false,
