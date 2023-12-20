@@ -130,6 +130,26 @@ archive:
     cd ..
     echo "Mod archive for v${version} ready at releases/${release_name}.7z"
 
+# Make the two icon pack archives.
+packs:
+	#!/usr/bin/env bash
+	set -e
+	ar="7z"
+	if [ -z $(which $ar) ]; then
+		ar="7zz"
+	fi
+	mkdir -p releases/SoulsyHUD_{soulsy,thicc}_icon_pack/SKSE/plugins/resources/icons
+	rsync -a installer/icon-pack-soulsy/ releases/SoulsyHUD_soulsy_icon_pack/SKSE/plugins/resources/icons
+	rsync -a installer/icon-pack-thicc/ releases/SoulsyHUD_thicc_icon_pack/SKSE/plugins/resources/icons
+	cd releases
+	rm -f SoulsyHUD_thicc_icon_pack.7z
+	"$ar" a SoulsyHUD_thicc_icon_pack.7z SoulsyHUD_thicc_icon_pack
+	rm -f SoulsyHUD_soulsy_icon_pack.7z
+	"$ar" a SoulsyHUD_soulsy_icon_pack.7z SoulsyHUD_soulsy_icon_pack
+	rm -rf SoulsyHUD_soulsy_icon_pack/ SoulsyHUD_thicc_icon_pack/
+	echo "Two mod packs archived in releases/"
+
+
 # Use spriggit to dump the plugin to text.
 plugin-ser:
     {{SPRIGGIT}} serialize --InputPath ./data/SoulsyHUD.esl --OutputPath ./plugin/ --GameRelease SkyrimSE --PackageName Spriggit.Json
