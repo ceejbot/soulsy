@@ -190,15 +190,10 @@ impl CycleData {
         }
     }
 
-    pub fn remove_zero_count_items(&mut self, form_spec: &str, kind: &BaseType, count: u32) {
-        // If count is zero, remove from any cycles it's in.
-        // If count is zero and item is equipped, advance the relevant cycle. <-- not happening erk
-        if count > 0 {
-            return;
-        }
-
+    pub fn remove_zero_count_items(&mut self, form_spec: &str, kind: &BaseType) {
         if kind.is_utility() {
             self.utility.filter_id(form_spec);
+            return;
         }
         if kind.left_hand_ok() {
             self.left.filter_id(form_spec);

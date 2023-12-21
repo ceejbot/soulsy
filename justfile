@@ -3,7 +3,7 @@ set shell := ["bash", "-uc"]
 set dotenv-load := true
 
 SPRIGGIT := "~/bin/spriggit"
-TESTMOD := "/mnt/g/MO2Skyrim/SoulsyHUD fomod test/"
+TESTMOD := "/mnt/g/MO2Skyrim/Soulsy HUD dev version"
 
 # List available recipes.
 help:
