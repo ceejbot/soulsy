@@ -458,4 +458,22 @@ mod tests {
         let id = cycle.find_next_id();
         assert_eq!(id, 1);
     }
+
+    #[test]
+    fn filtering() {
+        use crate::data::item_cache::ItemCache;
+        let mut cache = ItemCache::new();
+        let mut cycle = Vec::<String>::new();
+
+        let item = cache.get(&"form-one".to_string());
+        assert!(cycle.add(&item.form_string()));
+        let item2 = cache.get(&"form-two".to_string());
+        assert!(cycle.add(&item2.form_string()));
+        let item3 = cache.get(&"form-three".to_string());
+        cycle.add(&item3.form_string());
+        assert_eq!(cycle.len(), 3);
+
+        assert!(cycle.filter_id(&"form-two"));
+        assert_eq!(cycle.len(), 2);
+    }
 }

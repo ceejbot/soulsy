@@ -226,24 +226,32 @@ impl Controller {
                 }
             }
         } else {
+            // This entire code block is unlikely to execute because we are
+            // consistently getting the unequip message first. Unfortunately
+            // we have no idea at that time *why* the unequip event happened.
             if let Some(candidate) = self.visible.get_mut(&HudElement::Left) {
                 if candidate.form_string() == *form_spec {
                     candidate.set_count(new_count);
+                    if new_count == 0 {
+                        self.advance_hand_cycle(&CycleSlot::Left);
+                    }
                 }
             }
             if let Some(candidate) = self.visible.get_mut(&HudElement::Right) {
                 if candidate.form_string() == *form_spec {
                     candidate.set_count(new_count);
+                    if new_count == 0 {
+                        self.advance_hand_cycle(&CycleSlot::Right);
+                    }
                 }
             }
         }
-
-        self.cycles
-            .remove_zero_count_items(form_spec.as_str(), &kind, new_count);
-
         if new_count > 0 {
             return;
         }
+
+        self.cycles
+            .remove_zero_count_items(form_spec.as_str(), &kind);
 
         // The count of the inventory item went to zero. We need to check
         // if we must equip/ready something else now.
