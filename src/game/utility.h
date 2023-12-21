@@ -4,26 +4,23 @@
 
 namespace game
 {
-	void equipAmmoByForm(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
+	void equipAmmoByForm(const RE::TESForm* a_form, RE::PlayerCharacter*& thePlayer);
 	void unequipCurrentAmmo();
 
 	// Equip this armor. Does nothing if it's already equipped.
-	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player);
+	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer);
 	// Equip if unequipped, un-equip if equipped already.
-	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& player);
+	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer);
 	// reurns true if anything was unequipped.
 	bool unequipArmor(RE::TESBoundObject*& a_obj,
-		RE::PlayerCharacter*& a_player,
+		RE::PlayerCharacter*& thePlayer,
 		RE::ActorEquipManager*& a_actor_equip_manager);
 
-	void consumePotion(const RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
+	void consumePotion(const RE::TESForm* a_form, RE::PlayerCharacter*& thePlayer);
 	void consumeBestOption(RE::ActorValue a_actor_value);
-	void poisonWeapon(RE::PlayerCharacter*& a_player,
-		RE::AlchemyItem*& a_poison,
-		RE::ExtraDataList* extra,
-		uint32_t remaining);
+	void poisonWeapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& a_poison, uint32_t remaining);
 
-	void playSound(RE::BGSSoundDescriptor* a_sound_descriptor_form, RE::PlayerCharacter*& a_player);
+	void playSound(RE::BGSSoundDescriptor* a_sound_descriptor_form, RE::PlayerCharacter*& thePlayer);
 
 	class perk_visitor : public RE::PerkEntryVisitor
 	{
