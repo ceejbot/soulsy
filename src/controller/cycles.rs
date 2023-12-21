@@ -201,10 +201,10 @@ impl CycleData {
             self.utility.filter_id(form_spec);
         }
         if kind.left_hand_ok() {
-            self.utility.filter_id(form_spec);
+            self.left.filter_id(form_spec);
         }
         if kind.right_hand_ok() {
-            self.utility.filter_id(form_spec);
+            self.right.filter_id(form_spec);
         }
     }
 
