@@ -2,6 +2,7 @@
 //! new features-- v1 is to be retired gently over time.
 
 use eyre::{Context, Result};
+use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
 
 use std::fmt::Display;
