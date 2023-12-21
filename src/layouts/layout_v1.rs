@@ -209,6 +209,7 @@ impl HudLayout1 {
             meter_fill_color: Color::invisible(),
             meter_start_angle: 0.0f32,
             meter_end_angle: 0.0f32,
+            meter_arc_width: 0.0f32,
 
             text,
         }
