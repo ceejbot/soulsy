@@ -100,6 +100,7 @@ pub struct UserSettings {
     showhide: u32,
     /// A hotkey for re-reading the layout from toml and redrawing. uRefreshKey
     refresh_layout: u32,
+
     /// The number of milliseconds to delay before equipping a selection. Max 2500, min 0.
     equip_delay_ms: u32,
     /// The number of milliseconds it takes for a press to be a long one.
@@ -110,12 +111,14 @@ pub struct UserSettings {
     fade_time: u32,
     /// Max alpha: the most transparent the HUD goes.
     max_alpha: f32,
-    /// The controller kind to show in the UX. Matches the controller_set enum in key_path.h
-    controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
+
     /// Whether to slow down time when cycling
     cycling_slows_time: bool,
     /// How much to slow down time.
     slow_time_factor: f32,
+
+    /// The controller kind to show in the UX. Matches the controller_set enum in key_path.h
+    controller_kind: u32, // 0 = pc, 1 = ps, 2 = xbox
     /// True if the player wants us to cycle through ammo.
     cycle_ammo: bool,
     /// True if icons should be drawn in living color.
@@ -447,19 +450,7 @@ impl UserSettings {
     }
 }
 
-/// General-purpose enum for how to activate things.
-#[derive(Debug, Clone, strum::Display, Copy)]
-pub enum ActivationMethod {
-    /// Tap the hotkey.
-    Hotkey,
-    /// Long-press the hotkey.
-    LongPress,
-    /// Use a modifier plus the hotkey.
-    Modifier,
-}
-
-// Trait and implementations for reading from the ini file
-
+/// Generic for reading a typed value from the ini structure.
 fn read_from_ini<T: FromIniStr>(default: T, key: &str, section: &ini::Properties) -> T {
     if let Some(str_val) = section.get(key) {
         if let Some(v) = T::from_ini(str_val) {
@@ -472,10 +463,22 @@ fn read_from_ini<T: FromIniStr>(default: T, key: &str, section: &ini::Properties
     }
 }
 
+/// Trait and implementations for reading from the ini file
 trait FromIniStr {
     fn from_ini(value: &str) -> Option<Self>
     where
         Self: Sized;
+}
+
+/// General-purpose enum for how to activate things.
+#[derive(Debug, Clone, strum::Display, Copy)]
+pub enum ActivationMethod {
+    /// Tap the hotkey.
+    Hotkey,
+    /// Long-press the hotkey.
+    LongPress,
+    /// Use a modifier plus the hotkey.
+    Modifier,
 }
 
 impl FromIniStr for ActivationMethod {
