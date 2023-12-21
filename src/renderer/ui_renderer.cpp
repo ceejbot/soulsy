@@ -279,14 +279,13 @@ namespace ui
 			logger::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
 		}
 		const auto radius = meter_size.x / 2.0f;
-		const auto width  = 10.0f;  // HACK HACK HACK TODO
+		const auto width  = slotLayout.meter_arc_width;
 
-		ImVec2 start = ImVec2(meter_center.x + radius * cosf(slotLayout.meter_start_angle),
-			meter_center.y + radius * sinf(slotLayout.meter_start_angle));
-		// level is a percentage IIUC but might not be so this might have to change once I start
-		// looking at real values...
+		ImVec2 start           = ImVec2(meter_center.x + radius * cosf(slotLayout.meter_start_angle),
+            meter_center.y + radius * sinf(slotLayout.meter_start_angle));
 		const float startAngle = slotLayout.meter_end_angle;
-		const float endAngle   = (slotLayout.meter_end_angle - slotLayout.meter_start_angle) * level / 100.0f;
+		// level is a percentage
+		const float endAngle = (slotLayout.meter_end_angle - slotLayout.meter_start_angle) * level / 100.0f;
 		ImVec2 end = ImVec2(meter_center.x + radius * cosf(endAngle), meter_center.y + radius * sinf(endAngle));
 
 		const ImU32 fill_color = IM_COL32(slotLayout.meter_fill_color.r,
@@ -331,8 +330,8 @@ namespace ui
 			const std::array<ImVec2, 4> bgRotated = rotateRect(center, bgSize, angle);
 			const std::array<ImVec2, 4> centerRot = rotateRect(center, fillSize, angle);
 			// now slide that fg rect down to nestle in the bottom left corner of the bg rect
-			const auto xdiff = bgRotated[0].x - centerRot[0].x - std::fabs(bgSize.x - fillSize.x) * 0.5f;
-			const auto ydiff = bgRotated[0].y - centerRot[0].y - std::fabs(bgSize.y - fillSize.y) * 0.5f;
+			const auto xdiff                = bgRotated[0].x - centerRot[0].x - std::fabs(bgSize.x - fillSize.x) * 0.5f;
+			const auto ydiff                = bgRotated[0].y - centerRot[0].y - std::fabs(bgSize.y - fillSize.y) * 0.5f;
 			std::array<ImVec2, 4> fgRotated = {
 				ImVec2(centerRot[0].x - xdiff, centerRot[0].y + ydiff),
 				ImVec2(centerRot[1].x - xdiff, centerRot[1].y + ydiff),

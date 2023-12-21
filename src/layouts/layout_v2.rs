@@ -5,6 +5,7 @@ use eyre::{Context, Result};
 use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
 
+use core::f32;
 use std::fmt::Display;
 
 use super::shared::*;
@@ -146,72 +147,8 @@ impl HudLayout2 {
             meter_fill_color,
             meter_start_angle,
             meter_end_angle,
-        ) = match meter {
-            MeterElement::None => (
-                MeterKind::None,
-                Point::origin(),
-                Point::origin(),
-                String::new(),
-                Color::invisible(),
-                String::new(),
-                Point::origin(),
-                Color::invisible(),
-                0.0f32,
-                0.0f32,
-            ),
-            MeterElement::Rectangular {
-                angle,
-                offset,
-                size,
-                svg,
-                empty_color,
-                fill_svg,
-                fill_size,
-                fill_color,
-            } => {
-                let kind = MeterKind::Rectangular;
-                let meter_center = center.translate(&offset.scale(self.global_scale));
-                let filled_svg = fill_svg.unwrap_or_default();
-                let filled_size = fill_size.unwrap_or_default();
-
-                (
-                    kind,
-                    meter_center,
-                    size.scale(self.global_scale),
-                    svg,
-                    empty_color,
-                    filled_svg,
-                    filled_size,
-                    fill_color,
-                    angle as f32 * std::f32::consts::PI / 180.0f32,
-                    0.0f32,
-                )
-            }
-            MeterElement::CircleArc {
-                offset,
-                size,
-                svg,
-                empty_color,
-                fill_color,
-                start_angle,
-                end_angle,
-            } => {
-                let meter_center = center.translate(&offset.scale(self.global_scale));
-
-                (
-                    MeterKind::CircleArc,
-                    meter_center,
-                    size.scale(self.global_scale),
-                    svg,
-                    empty_color,
-                    String::new(),
-                    Point::origin(),
-                    fill_color,
-                    start_angle as f32 * std::f32::consts::PI / 180.0f32,
-                    end_angle as f32 * std::f32::consts::PI / 180.0f32,
-                )
-            }
-        };
+            meter_arc_width,
+        ) = meter.tuple_for_flattening(&center, self.global_scale);
 
         SlotFlattened {
             element,
@@ -242,6 +179,7 @@ impl HudLayout2 {
             meter_fill_color,
             meter_start_angle,
             meter_end_angle,
+            meter_arc_width,
             text,
         }
     }
@@ -364,23 +302,40 @@ pub enum MeterElement {
     #[default]
     None,
     Rectangular {
+        /// How to rotate the entire meter.
         angle: u32,
+        /// Location of the meter offset from the slot center.
         offset: Point,
+        /// width and height of the meter, pre rotation.
         size: Point,
-        svg: String, // background svg
+        /// The filename of an svg to use for the background.
+        svg: String,
+        /// The color to draw the background in for the not-full parts.
         empty_color: Color,
-        fill_svg: Option<String>, // will re-use the empty image, clipped, if not present
-        fill_size: Option<Point>, // if we do not have a fill image
-        fill_color: Color,        // always need a fill color, though
+        /// An optional filled-bar svg. Re-uses the empty image, clipped, if not present.
+        fill_svg: Option<String>,
+        /// Size of the area to flood-fill with color if we do not have a fill svg.
+        fill_size: Option<Point>,
+        /// The color to draw the filled part of the meter with.
+        fill_color: Color,
     },
     CircleArc {
+        /// Location of the meter offset from the slot center.
         offset: Point,
+        /// The size to draw the meter's svg.
         size: Point,
+        /// The image to draw.
         svg: String,
+        /// The color to use for the image.
         empty_color: Color,
+        /// The color to use for the filled arc.
         fill_color: Color,
+        /// The angle at which the fill starts. 0 is >, 90 is ^, 180 is <, 270 is v
         start_angle: u32, // in degrees, 0-360
-        end_angle: u32,   // in degrees, 0-360, must be > end_angle
+        /// The end angle.
+        end_angle: u32, // in degrees, 0-360, must be > end_angle
+        /// Width of the fill arc.
+        fill_width: f32,
     },
 }
 
@@ -411,6 +366,95 @@ impl MeterElement {
             MeterElement::None => 0,
             MeterElement::Rectangular { angle, .. } => angle,
             MeterElement::CircleArc { start_angle, .. } => start_angle,
+        }
+    }
+
+    pub fn tuple_for_flattening(
+        &self,
+        slot_center: &Point,
+        scale: f32,
+    ) -> (
+        MeterKind,
+        Point,
+        Point,
+        String,
+        Color,
+        String,
+        Point,
+        Color,
+        f32,
+        f32,
+        f32,
+    ) {
+        match self {
+            MeterElement::None => (
+                MeterKind::None,
+                Point::origin(),
+                Point::origin(),
+                String::new(),
+                Color::invisible(),
+                String::new(),
+                Point::origin(),
+                Color::invisible(),
+                0.0f32,
+                0.0f32,
+                0.0f32,
+            ),
+            MeterElement::Rectangular {
+                angle,
+                offset,
+                size,
+                svg,
+                empty_color,
+                fill_svg,
+                fill_size,
+                fill_color,
+            } => {
+                let kind = MeterKind::Rectangular;
+                let meter_center = slot_center.translate(&offset.scale(scale));
+                let filled_svg = fill_svg.clone().unwrap_or_default();
+                let filled_size = fill_size.clone().unwrap_or_default();
+
+                (
+                    kind,
+                    meter_center,
+                    size.scale(scale),
+                    svg.clone(),
+                    empty_color.clone(),
+                    filled_svg,
+                    filled_size,
+                    fill_color.clone(),
+                    *angle as f32 * std::f32::consts::PI / 180.0f32,
+                    0.0f32,
+                    0.0f32,
+                )
+            }
+            MeterElement::CircleArc {
+                offset,
+                size,
+                svg,
+                empty_color,
+                fill_color,
+                start_angle,
+                end_angle,
+                fill_width,
+            } => {
+                let meter_center = slot_center.translate(&offset.scale(scale));
+
+                (
+                    MeterKind::CircleArc,
+                    meter_center,
+                    size.scale(scale),
+                    svg.clone(),
+                    empty_color.clone(),
+                    String::new(),
+                    Point::origin(),
+                    fill_color.clone(),
+                    *start_angle as f32 * std::f32::consts::PI / 180.0f32,
+                    *end_angle as f32 * std::f32::consts::PI / 180.0f32,
+                    *fill_width,
+                )
+            }
         }
     }
 }
