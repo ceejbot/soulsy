@@ -91,7 +91,12 @@ impl HudItem {
     }
 
     pub fn fmtstr(&self, fmt: String) -> String {
-        match strfmt(&fmt, &self.format_vars) {
+        // This implementation caches nothing. It might be fast enough?
+        // needs measurement
+        let charge = self.charge_level();
+        let mut vars = self.format_vars.clone();
+        vars.insert("charge".to_string(), format!("{:.0}", charge));
+        match strfmt(&fmt, &vars) {
             Ok(v) => v,
             Err(e) => {
                 log::trace!("Failed to render format string for HUD item; error: {e:#}");
