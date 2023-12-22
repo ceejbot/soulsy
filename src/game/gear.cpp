@@ -255,7 +255,7 @@ namespace game
 
 		if (form->formID == util::unarmed)
 		{
-			logger::debug("unequipping this slot by request!"sv);
+			rlog::debug("unequipping this slot by request!"sv);
 			unequipLeftOrRightSlot(thePlayer, slot);
 			return;
 		}
