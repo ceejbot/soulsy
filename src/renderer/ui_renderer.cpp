@@ -280,7 +280,7 @@ namespace ui
 
 		if (meter_size.x != meter_size.y)
 		{
-			logger::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
+			rlog::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
 		}
 		const auto radius = meter_size.x / 2.0f;
 		const auto width  = slotLayout.meter_arc_width;
