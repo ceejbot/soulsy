@@ -1,5 +1,9 @@
 # Theming SoulsyHUD
 
+⚠️  This article describes version 1 of SoulsyHUD's layouts. Version 1 is not being updated with new features. If you want the newest features-- like poison indicated, text wrapping, and enchantment charge displays-- check out the article on version 2 instead.
+
+---
+
 Nearly every aspect of the HUD layout can be changed by editing the layout file. This article explains how to do that, starting with fast and easy edits to change the HUD location, then going into ways to make your own very different-looking layouts.
 
 The optional files have a variety of layouts intended to show how varied they can be.
