@@ -122,6 +122,8 @@ size = { x = 25.0, y = 25.0 }
 angle = 90
 # An offset for the center of the meter, from the center of the slot.
 offset = { x = 60.0, y = 0.0 }
+# How to draw the empty part of the meter, or any decoration around the meter.
+[right.meter.background]
 # This size is the size of the image before rotation!
 size = { x = 100.0, y = 20.0 }
 # The SVG file to use for the progress bar. This should like in the
@@ -129,16 +131,17 @@ size = { x = 100.0, y = 20.0 }
 # `../icons/file_in_icons_dir.svg` if you need to.
 svg = "meter_bar_filled.svg"
 # The color for the background, or empty part, of the meter.
-empty_color = { r = 0, g = 0, b = 0, a = 255 }
-# You can skip the filled svg if you want. If you do this, the filled portion
-# of the meter will re-use the background image, but shortened to indicate
-# the percentage of the meter that's filled. E.g., 50% full would be half the
-# length.
-# fill_svg = "different_image.svg"
+color = { r = 0, g = 0, b = 0, a = 255 }
+[right.meter.filled]
+# You can leave the filled svg empty if you want. If you do this, the
+# filled portion of the meter will re-use the background image, but
+# shortened to indicate the percentage of the meter that's filled.
+# E.g., 50% full would be half the length.
+svg = ""
 # The size of the filled meter when the charge/fuel/whatever is at max.
-# fill_size = { x = 96.0, y = 16.0 }
+size = { x = 96.0, y = 16.0 }
 # The color for the filled part of the meter.
-fill_color = { r = 255, g = 30, b = 128, a = 255 }
+color = { r = 255, g = 30, b = 128, a = 255 }
 
 # ----- left hand slot
 
@@ -183,12 +186,14 @@ contents = "{name}"
 [left.meter]
 angle = 0 # horizontal
 offset = { x = 0.0, y = -60.0 }
+[left.meter.background]
 size = { x = 100.0, y = 20.0 }
 svg = "meter_bar_empty.svg"
-empty_color = { r = 255, g = 255, b = 255, a = 255 }
-fill_svg = "meter_bar_filled.svg"
-fill_size = { x = 98.0, y = 16.0 }
-fill_color = { r = 59, g = 106, b = 249, a = 200 }
+color = { r = 255, g = 255, b = 255, a = 255 }
+[left.meter.filled]
+svg = "meter_bar_filled.svg"
+size = { x = 98.0, y = 16.0 }
+color = { r = 59, g = 106, b = 249, a = 200 }
 
 # ----- utility slot
 
