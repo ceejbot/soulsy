@@ -306,18 +306,10 @@ pub enum MeterElement {
         angle: u32,
         /// Location of the meter offset from the slot center.
         offset: Point,
-        /// width and height of the meter, pre rotation.
-        size: Point,
-        /// The filename of an svg to use for the background.
-        svg: String,
-        /// The color to draw the background in for the not-full parts.
-        empty_color: Color,
-        /// An optional filled-bar svg. Re-uses the empty image, clipped, if not present.
-        fill_svg: Option<String>,
-        /// Size of the area to flood-fill with color if we do not have a fill svg.
-        fill_size: Option<Point>,
-        /// The color to draw the filled part of the meter with.
-        fill_color: Color,
+        /// The background of the meter, aka the empty part.
+        background: ImageElement,
+        /// The filled part of the meter
+        filled: ImageElement,
     },
     CircleArc {
         /// Location of the meter offset from the slot center.
@@ -350,14 +342,14 @@ impl MeterElement {
     pub fn size(&self) -> Point {
         match self {
             MeterElement::None => Point::origin(),
-            MeterElement::Rectangular { size, .. } => size.clone(),
+            MeterElement::Rectangular { background, .. } => background.size.clone(),
             MeterElement::CircleArc { size, .. } => size.clone(),
         }
     }
     pub fn bg_img_path(&self) -> &str {
         match self {
             MeterElement::None => "",
-            MeterElement::Rectangular { svg, .. } => svg.as_str(),
+            MeterElement::Rectangular { background, .. } => background.svg.as_str(),
             MeterElement::CircleArc { svg, .. } => svg.as_str(),
         }
     }
@@ -403,27 +395,23 @@ impl MeterElement {
             MeterElement::Rectangular {
                 angle,
                 offset,
-                size,
-                svg,
-                empty_color,
-                fill_svg,
-                fill_size,
-                fill_color,
+                background,
+                filled,
             } => {
                 let kind = MeterKind::Rectangular;
                 let meter_center = slot_center.translate(&offset.scale(scale));
-                let filled_svg = fill_svg.clone().unwrap_or_default();
-                let filled_size = fill_size.clone().unwrap_or_default();
+                let filled_svg = filled.svg.clone();
+                let filled_size = filled.size.clone();
 
                 (
                     kind,
                     meter_center,
-                    size.scale(scale),
-                    svg.clone(),
-                    empty_color.clone(),
+                    background.size.scale(scale),
+                    background.svg.clone(),
+                    background.color.clone(),
                     filled_svg,
                     filled_size,
-                    fill_color.clone(),
+                    filled.color.clone(),
                     *angle as f32 * std::f32::consts::PI / 180.0f32,
                     0.0f32,
                     0.0f32,
@@ -672,11 +660,14 @@ mod tests {
     fn can_deserialize_vert_meter() {
         let data = r#"angle = 90
         offset = { x = 20.0, y = 20.0 }
-        size = { x = 100.0, y = 0.0 }
+        [background]
+        size = { x = 100.0, y = 20.0 }
         svg = "meter_bar_empty.svg"
-        empty_color = { r = 255, g = 255, b = 255, a = 255 }
-        fill_svg = "meter_bar_filled.svg"
-        fill_color = { r = 59, g = 106, b = 249, a = 200 }"#;
+        color = { r = 255, g = 255, b = 255, a = 255 }
+        [filled]
+        svg = "meter_bar_filled.svg"
+        size = { x = 98.0, y = 18.0 }
+        color = { r = 59, g = 106, b = 249, a = 200 }"#;
         let meter: MeterElement = match toml::from_str(data) {
             Ok(v) => v,
             Err(e) => {
@@ -692,11 +683,14 @@ mod tests {
     fn can_deserialize_horiz_meter() {
         let data = r#"angle = 0 # horizontal
         offset = { x = 20.0, y = 20.0 }
-        size = { x = 100.0, y = 0.0 }
+        [background]
+        size = { x = 100.0, y = 10.0 }
         svg = "meter_bar_empty.svg"
-        empty_color = { r = 255, g = 255, b = 255, a = 255 }
-        fill_svg = "meter_bar_filled.svg"
-        fill_color = { r = 59, g = 106, b = 249, a = 200 }"#;
+        color = { r = 255, g = 255, b = 255, a = 255 }
+        [filled]
+        svg = "meter_bar_filled.svg"
+        size = { x = 98.0, y = 10.0 }
+        color = { r = 59, g = 106, b = 249, a = 200 }"#;
         let meter: MeterElement = match toml::from_str(data) {
             Ok(v) => v,
             Err(e) => {
@@ -704,7 +698,7 @@ mod tests {
                 panic!("horizontal test fixture should be valid meter");
             }
         };
-        assert_eq!(meter.size(), Point { x: 100.0, y: 0.0 });
+        assert_eq!(meter.size(), Point { x: 100.0, y: 10.0 });
     }
 
     #[test]
@@ -715,7 +709,8 @@ mod tests {
         empty_color = { r = 0, g = 0, b = 0, a = 255 }
         fill_color =  { r = 255, g = 255, b = 255, a = 255 }
         start_angle = 0
-        end_angle = 180"#;
+        end_angle = 180
+        fill_width = 10.0"#;
         let meter: MeterElement = match toml::from_str(data) {
             Ok(v) => v,
             Err(e) => {
@@ -786,8 +781,8 @@ mod tests {
             }
         };
 
-        assert!(layout.power.meter.is_none());
-        assert!(layout.utility.meter.is_some());
+        assert!(layout.power.meter.is_some());
+        assert!(layout.utility.meter.is_none());
         assert!(layout.right.meter.is_some());
         assert!(layout.left.meter.is_some());
 
