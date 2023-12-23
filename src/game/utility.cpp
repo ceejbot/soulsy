@@ -18,8 +18,8 @@ namespace game
 	void equipAmmoByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer)
 	{
 		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(form, thePlayer, obj, extra);
+		EquippableItemData* data = nullptr;
+		auto remaining           = boundObjectForForm(form, thePlayer, obj, data);
 
 		if (!obj || remaining == 0)
 		{
@@ -87,8 +87,8 @@ namespace game
 		// This is a toggle in reality. Also, use this as a model for other equip funcs.
 		// rlog::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(form, thePlayer, obj, extra);
+		EquippableItemData* data = nullptr;
+		auto remaining           = boundObjectForForm(form, thePlayer, obj, data);
 
 		if (!obj || remaining == 0)
 		{
@@ -119,8 +119,8 @@ namespace game
 	{
 		// rlog::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(form, thePlayer, obj, extra);
+		EquippableItemData* data = nullptr;
+		auto remaining           = boundObjectForForm(form, thePlayer, obj, data);
 
 		if (!obj || remaining == 0)
 		{
@@ -146,8 +146,8 @@ namespace game
 			potionForm->GetName());
 
 		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(potionForm, thePlayer, obj, extra);
+		EquippableItemData* data = nullptr;
+		auto remaining           = boundObjectForForm(potionForm, thePlayer, obj, data);
 
 		if (!obj || remaining == 0)
 		{
@@ -177,9 +177,7 @@ namespace game
 		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, alchemyItem); });
 	}
 
-	void poisonWeapon(RE::PlayerCharacter*& thePlayer,
-		RE::AlchemyItem*& poison,
-		uint32_t remaining)
+	void poisonWeapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& poison, uint32_t remaining)
 	{
 		auto* task = SKSE::GetTaskInterface();
 		if (!task) { return; }

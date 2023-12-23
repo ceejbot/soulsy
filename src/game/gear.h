@@ -3,10 +3,32 @@
 // Equipping and unequipping armor and weapons, as well as answering questions
 // about equipped gear.
 
+#include <string>
 enum class Action : ::std::uint8_t;
 
 namespace game
 {
+	// This struct holds useful information gleaned from item extra data,
+	// for convenience when building hud items, equipping an item, or
+	// unequipping it. If you make one, you are responsible for deleting it.
+	struct EquippableItemData
+	{
+		int count       = 0;
+		bool isWorn     = false;
+		bool isWornLeft = false;
+		bool isFavorite = false;
+		bool isPoisoned = false;
+		// std::string fullName;  // maybe?
+		// enchantment charge?
+
+		RE::ExtraDataList* itemExtraList;
+
+		RE::ExtraDataList* wornExtraList;
+		RE::ExtraDataList* wornLeftExtraList;
+
+		EquippableItemData();
+	};
+
 	// Ask the game for the right hand slot.
 	RE::BGSEquipSlot* right_hand_equip_slot();
 	// Ask the game for the left hand slot.
@@ -20,7 +42,7 @@ namespace game
 	int boundObjectForForm(const RE::TESForm* form,
 		RE::PlayerCharacter*& the_player,
 		RE::TESBoundObject*& outval,
-		RE::ExtraDataList*& outextra);
+		EquippableItemData*& outdata);
 	// Similar to boundObjectForForm(), but fills out an inventory entry instead of extra data lists.
 	bool inventoryEntryDataFor(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::InventoryEntryData*& outentry);
 
@@ -46,4 +68,5 @@ namespace game
 	// then immediately unequips the dummy dagger item (if found) to make sure the item shown
 	// in the hand is updated properly.
 	void unequipLeftOrRightSlot(RE::PlayerCharacter*& the_player, RE::BGSEquipSlot*& slot);
+
 }

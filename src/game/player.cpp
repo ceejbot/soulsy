@@ -46,9 +46,9 @@ namespace player
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
 		if (!item_form) return std::string("unarmed_proxy");
 
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		game::boundObjectForForm(item_form, player, bound_obj, extra);
+		RE::TESBoundObject* bound_obj  = nullptr;
+		game::EquippableItemData* data = nullptr;
+		game::boundObjectForForm(item_form, player, bound_obj, data);
 
 		if (bound_obj) { return helpers::makeFormSpecString(bound_obj); }
 		else { return helpers::makeFormSpecString(item_form); }
@@ -63,9 +63,9 @@ namespace player
 		auto* item_form = RE::TESForm::LookupByID(obj->formID);
 		if (!item_form) return std::string("unarmed_proxy");
 
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		game::boundObjectForForm(item_form, player, bound_obj, extra);
+		RE::TESBoundObject* bound_obj  = nullptr;
+		game::EquippableItemData* data = nullptr;
+		game::boundObjectForForm(item_form, player, bound_obj, data);
 
 		if (bound_obj) { return helpers::makeFormSpecString(bound_obj); }
 		else { return helpers::makeFormSpecString(item_form); }
@@ -284,9 +284,9 @@ namespace player
 
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		game::boundObjectForForm(form, player, bound_obj, extra);
+		RE::TESBoundObject* bound_obj  = nullptr;
+		game::EquippableItemData* data = nullptr;
+		game::boundObjectForForm(form, player, bound_obj, data);
 		if (!bound_obj) { return; }
 
 		rlog::info("Re-equipping item in left hand; name='{}'; formID={}"sv,

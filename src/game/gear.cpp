@@ -9,6 +9,17 @@
 
 namespace game
 {
+	EquippableItemData::EquippableItemData()
+		: count(0)
+		, itemExtraList(NULL)
+		, wornExtraList(NULL)
+		, wornLeftExtraList(NULL)
+		, isWorn(false)
+		, isWornLeft(false)
+		, isFavorite(false)
+	{
+	}
+
 	RE::BGSEquipSlot* right_hand_equip_slot()
 	{
 		using func_t = decltype(&right_hand_equip_slot);
@@ -59,46 +70,67 @@ namespace game
 	int boundObjectForForm(const RE::TESForm* form,
 		RE::PlayerCharacter*& the_player,
 		RE::TESBoundObject*& outobj,
-		RE::ExtraDataList*& outextra)
+		EquippableItemData*& outEquipData)
 	{
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
+		RE::TESBoundObject* foundObject = nullptr;
+		RE::ExtraDataList* extra        = nullptr;
+		EquippableItemData equipData    = EquippableItemData();
 		std::vector<RE::ExtraDataList*> extra_vector;
 
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(the_player, form->GetFormType());
 
-		auto item_count = 0;
-		for (const auto& [item, inv_data] : candidates)
+		auto count = 0;
+		for (const auto& [item, inventoryData] : candidates)
 		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
+			const auto& [num_items, entry] = inventoryData;
+			// TODO after base case is working, refactor to allow comparing to the
+			// exact item name we want to equip. This will need to get passed down
+			// from the equip-item call on the Rust side, because rust has this data.
+			if (entry->object->formID == form->formID)
 			{
-				bound_obj                   = item;
-				item_count                  = num_items;
-				auto simple_extra_data_list = entry->extraLists;
+				foundObject     = item;
+				equipData.count = num_items;
+				count           = num_items;
+				auto simpleList = entry->extraLists;
 
-				if (simple_extra_data_list)
+				if (simpleList)
 				{
-					for (auto* extra_data : *simple_extra_data_list)
+					for (auto* extraData : *simpleList)
 					{
-						extra = extra_data;
-						extra_vector.push_back(extra_data);
+						extra           = extraData;
+						bool isWorn     = extraData->HasType(RE::ExtraDataType::kWorn);
+						bool isWornLeft = extraData->HasType(RE::ExtraDataType::kWornLeft);
+						equipData.isFavorite |= extraData->HasType(RE::ExtraDataType::kHotkey);
+						equipData.isPoisoned |= extraData->HasType(RE::ExtraDataType::kPoison);
+
+						if (isWorn)
+						{
+							equipData.isWorn        = isWorn;
+							equipData.wornExtraList = extraData;
+						}
+						else if (isWornLeft)
+						{
+							equipData.isWornLeft        = true;
+							equipData.wornLeftExtraList = extraData;
+						}
+						else { equipData.itemExtraList = extraData; }
 					}
 				}
 				break;
 			}
 		}
 
-		if (!bound_obj) { return 0; }
+		if (!foundObject) { return 0; }
 
 		rlog::trace("found {} instance for bound object; name='{}'; formID={};"sv,
-			item_count,
+			count,
 			form->GetName(),
 			util::string_util::int_to_hex(form->formID));
 
-		if (!extra_vector.empty()) { outextra = extra_vector.back(); }
-		outobj = bound_obj;
-		return item_count;
+		outobj       = foundObject;
+		outEquipData = &equipData;
+		return count;
 	}
 
 	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& the_player)
@@ -120,10 +152,10 @@ namespace game
 	{
 		// TODO I don't think this handles spells
 		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		auto* the_player              = RE::PlayerCharacter::GetSingleton();
-		game::boundObjectForForm(form, the_player, bound_obj, extra);
-		if (extra) { return extra->HasType(RE::ExtraDataType::kHotkey); }
+		EquippableItemData* data      = nullptr;
+		auto* thePlayer               = RE::PlayerCharacter::GetSingleton();
+		game::boundObjectForForm(form, thePlayer, bound_obj, data);
+		if (data) { return data->isFavorite; }
 		return false;
 	}
 
@@ -131,9 +163,9 @@ namespace game
 	{
 		auto* the_player            = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* obj     = nullptr;
-		RE::ExtraDataList* extra    = nullptr;
-		[[maybe_unused]] auto count = boundObjectForForm(form, the_player, obj, extra);
-		if (extra) { return extra->HasType(RE::ExtraDataType::kPoison); }
+		EquippableItemData* data    = nullptr;
+		[[maybe_unused]] auto count = boundObjectForForm(form, the_player, obj, data);
+		if (data) { return data->isPoisoned; }
 		return false;
 	}
 
@@ -175,7 +207,7 @@ namespace game
 		return form->GetName();
 	}
 
-	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& thePlayer)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
@@ -186,40 +218,41 @@ namespace game
 		if (form->formID == util::unarmed)
 		{
 			rlog::debug("unequipping this slot by request!"sv);
-			unequipLeftOrRightSlot(player, slot);
+			unequipLeftOrRightSlot(thePlayer, slot);
 			return;
 		}
 		else if (form->Is(RE::FormType::Spell))
 		{
-			// We do not want to look for a bound object for spells.
-			equipSpellByFormAndSlot(form, slot, player);
+			// We do not want to look for a bound object for spells. Q: why not?
+			equipSpellByFormAndSlot(form, slot, thePlayer);
 			return;
 		}
 
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		auto item_count               = boundObjectForForm(form, player, bound_obj, extra);
-		if (!bound_obj)
+		RE::TESBoundObject* equipObject = nullptr;
+		RE::ExtraDataList* extra        = nullptr;
+		EquippableItemData* data        = nullptr;
+		auto item_count                 = boundObjectForForm(form, thePlayer, equipObject, data);
+		if (!equipObject)
 		{
 			rlog::debug("unable to find bound object for name='{}'"sv, form->GetName());
 			return;
 		}
 
-		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto* obj_right = thePlayer->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = thePlayer->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 
-		const auto obj_equipped_left  = obj_left && obj_left->formID == bound_obj->formID;
-		const auto obj_equipped_right = obj_right && obj_right->formID == bound_obj->formID;
+		const auto obj_equipped_left  = obj_left && obj_left->formID == equipObject->formID;
+		const auto obj_equipped_right = obj_right && obj_right->formID == equipObject->formID;
 
 		if (slot_is_left && obj_equipped_left)
 		{
-			rlog::debug("item already equipped in left hand. name='{}'"sv, bound_obj->GetName());
+			rlog::debug("item already equipped in left hand. name='{}'"sv, equipObject->GetName());
 			return;
 		}
 
 		if (!slot_is_left && obj_equipped_right)
 		{
-			rlog::debug("item already equipped in right hand. name='{}'"sv, bound_obj->GetName());
+			rlog::debug("item already equipped in right hand. name='{}'"sv, equipObject->GetName());
 			return;
 		}
 
@@ -227,26 +260,29 @@ namespace game
 		if (obj_equipped_left) { equipped_count++; }
 		if (obj_equipped_right) { equipped_count++; }
 		rlog::debug("checking how many '{}' we have available; count={}; equipped_count={}"sv,
-			bound_obj->GetName(),
+			equipObject->GetName(),
 			item_count,
 			equipped_count);
 
 		if (item_count == equipped_count)
 		{
 			// The game might try to equip something else, according to mlthelama.
-			unequipLeftOrRightSlot(player, slot);
+			unequipLeftOrRightSlot(thePlayer, slot);
 			return;
 		}
 
 		rlog::debug("queuing task to equip '{}'; left={}; formID={};"sv,
 			form->GetName(),
 			slot_is_left,
-			util::string_util::int_to_hex(bound_obj->formID));
+			util::string_util::int_to_hex(equipObject->formID));
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, nullptr, 1, slot); });
+				[=]() {
+					RE::ActorEquipManager::GetSingleton()->EquipObject(
+						thePlayer, equipObject, data->itemExtraList, 1, slot);
+				});
 		}
 	}
 

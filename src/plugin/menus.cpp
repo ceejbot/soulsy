@@ -3,6 +3,7 @@
 #include "equippable.h"
 #include "gear.h"
 #include "keycodes.h"
+#include "log.h"
 #include "util/string_util.h"
 
 #include "lib.rs.h"
@@ -22,7 +23,7 @@ inline const std::set<RE::FormType> RELEVANT_FORMTYPES_ALL{
 
 void MenuHook::install()
 {
-	rlog::info("Hooking menus to get keystrokes..."sv);
+	rlog::info("Hooking menus to get keystrokes...");
 
 	REL::Relocation<std::uintptr_t> menu_controls_vtbl{ RE::VTABLE_MenuControls[0] };
 	process_event_ = menu_controls_vtbl.write_vfunc(0x1, &MenuHook::process_event);
@@ -138,8 +139,8 @@ MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid)
 
 	auto* player                    = RE::PlayerCharacter::GetSingleton();
 	RE::TESBoundObject* boundObject = nullptr;
-	RE::ExtraDataList* extra        = nullptr;
-	game::boundObjectForForm(item_form, player, boundObject, extra);
+	game::EquippableItemData* data  = nullptr;
+	game::boundObjectForForm(item_form, player, boundObject, data);
 
 	if (boundObject)
 	{
@@ -234,10 +235,10 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 		auto* item_form = RE::TESForm::LookupByID(form_id);
 		if (!item_form) return;
 
-		auto* player                  = RE::PlayerCharacter::GetSingleton();
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		game::boundObjectForForm(item_form, player, bound_obj, extra);
+		auto* player                   = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* bound_obj  = nullptr;
+		game::EquippableItemData* data = nullptr;
+		game::boundObjectForForm(item_form, player, bound_obj, data);
 
 		auto* selection     = new MenuSelection(form_id);
 		selection->count    = 0;

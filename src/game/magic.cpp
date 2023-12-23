@@ -144,8 +144,8 @@ namespace game
 		}
 
 		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto item_count          = boundObjectForForm(form, player, obj, extra);
+		EquippableItemData* data = nullptr;
+		auto item_count          = boundObjectForForm(form, player, obj, data);
 
 		if (!obj || item_count == 0)
 		{
@@ -166,7 +166,8 @@ namespace game
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
-				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, obj); });
+				task->AddTask(
+					[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, obj, data->itemExtraList); });
 			}
 		}
 
