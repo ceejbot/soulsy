@@ -4,10 +4,12 @@
 // about equipped gear.
 
 #include <string>
-enum class Action : ::std::uint8_t;
+#include "soulsy.h"
 
 namespace game
 {
+	using namespace soulsy;
+
 	// This struct holds useful information gleaned from item extra data,
 	// for convenience when building hud items, equipping an item, or
 	// unequipping it. If you make one, you are responsible for deleting it.

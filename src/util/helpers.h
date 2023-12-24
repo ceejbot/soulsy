@@ -1,12 +1,11 @@
 ﻿#pragma once
 
 #include "rust/cxx.h"
+#include "soulsy.h"
 
 // This namespace is for rust/C++ bridge helpers as well as any
 // decision-making that needs a single source of truth. It's
 // badly-named.
-
-struct HudItem;
 
 namespace helpers
 {

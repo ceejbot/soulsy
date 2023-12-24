@@ -4,16 +4,21 @@
 #include "image_path.h"
 
 // Forward declarations of the types we're getting from Rust.
-enum class Action : ::std::uint8_t;
-enum class Align : ::std::uint8_t;
-struct HudLayout;
-struct SlotLayout;
-struct Point;
-struct Color;
-struct LoadedImage;
+namespace soulsy
+{
+	enum class Action : ::std::uint8_t;
+	enum class Align : ::std::uint8_t;
+	struct HudLayout;
+	struct SlotLayout;
+	struct Point;
+	struct Color;
+	struct LoadedImage;
+}
 
 namespace ui
 {
+	using namespace soulsy;
+
 	struct TextureData
 	{
 		ID3D11ShaderResourceView* texture = nullptr;
@@ -42,6 +47,8 @@ namespace ui
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
 	{
+		using Color = soulsy::Color;
+
 		struct wnd_proc_hook
 		{
 			static LRESULT thunk(HWND h_wnd, UINT u_msg, WPARAM w_param, LPARAM l_param);

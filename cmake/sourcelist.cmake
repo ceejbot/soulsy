@@ -16,6 +16,7 @@ set(headers ${headers}
     src/renderer/animation_handler.h
     src/renderer/image_path.h
     src/renderer/ui_renderer.h
+    src/soulsy.h
     src/util/constant.h
     src/util/helpers.h
     src/util/key_path.h

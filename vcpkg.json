@@ -11,7 +11,9 @@
         },
         "fmt",
         "spdlog",
-        "rapidcsv"
+        "rapidcsv",
+        "directxtk",
+        "rsm-binary-io"
     ],
     "overrides": [
         {

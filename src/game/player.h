@@ -3,10 +3,7 @@
 #include "helpers.h"
 
 #include "rust/cxx.h"
-
-struct HudItem;
-struct EquippedData;
-enum class Action : ::std::uint8_t;
+#include "soulsy.h"
 
 namespace player
 {

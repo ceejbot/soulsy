@@ -8,6 +8,8 @@
 
 #include "lib.rs.h"
 
+using namespace soulsy;
+
 namespace ui
 {
 	static std::map<animation_type, std::vector<TextureData>> animation_frame_map = {};

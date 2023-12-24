@@ -8,6 +8,8 @@
 
 #include "lib.rs.h"
 
+using namespace soulsy;
+
 namespace game
 {
 	// ---------- ammo

@@ -19,7 +19,7 @@ use layouts::hud_layout;
 /// affordances of the `cxx` crate. At build time `cxx_build` generates the
 /// header files required by the C++ side. The macros expand in-line to generate
 /// the matching Rust code.
-#[cxx::bridge]
+#[cxx::bridge(namespace = "soulsy")]
 pub mod plugin {
     // ceejbot says: organize into namespaces; getting pretty cluttered
 
