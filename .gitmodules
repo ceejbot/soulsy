@@ -1,3 +1,4 @@
 [submodule "extern/CommonLibSSE-NG"]
 	path = extern/CommonLibSSE-NG
 	url = https://github.com/ceejbot/CommonLibSSE-NG
+	branch = ng
