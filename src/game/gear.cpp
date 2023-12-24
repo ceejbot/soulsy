@@ -177,7 +177,7 @@ namespace game
 		auto* thePlayer          = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
-		rlog::debug("isItemPoisoned() calling boundObjectForForm()");
+		// rlog::debug("isItemPoisoned() calling boundObjectForForm()");
 		[[maybe_unused]] auto count = boundObjectForForm(form, thePlayer, obj, data);
 		if (data) { return data->isPoisoned; }
 		return false;

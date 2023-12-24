@@ -339,6 +339,11 @@ pub mod plugin {
             form_string: String,
             count: u32,
         ) -> Box<HudItem>;
+        fn categorize_shout(
+            keywords: &CxxVector<CxxString>,
+            bytes_ffi: &CxxVector<u8>,
+            form_string: String,
+        ) -> Box<HudItem>;
 
         /// Build a HUD item from a rough category and a list of keywords from OCF and other mods.
         fn hud_item_from_keywords(

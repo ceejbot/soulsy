@@ -8,7 +8,7 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 set(NAME "SoulsyHUD")
-set(VERSION 0.14.1.0)
+set(VERSION 0.15.0.0)
 
 project(
     ${NAME}
@@ -221,6 +221,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/util
     ${CARGO_TARGET_DIR}/cxxbridge/soulsy/src
     ${CARGO_TARGET_DIR}/cxxbridge
+    ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
 # The last few of these are surprising, but are pulled in by some of the rust crates

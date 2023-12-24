@@ -1,24 +1,24 @@
 {
-    "name": "soulsyhud",
-    "version-string": "0.13.7",
-    "description": "hotkey and hud for Skyrim AE",
-    "homepage": "https://github.com/ceejbot/soulsy",
-    "license": "GPL-2.0-or-later",
-    "dependencies": [
-        {
-            "name": "imgui",
-            "features": ["dx11-binding", "win32-binding"]
-        },
-        "fmt",
-        "spdlog",
-        "rapidcsv",
-        "directxtk",
-        "rsm-binary-io"
-    ],
-    "overrides": [
-        {
-            "name": "imgui",
-            "version": "1.88"
-        }
-    ]
+  "name": "soulsyhud",
+  "version-string": "0.15.0",
+  "description": "hotkey and hud for Skyrim AE",
+  "homepage": "https://github.com/ceejbot/soulsy",
+  "license": "GPL-2.0-or-later",
+  "dependencies": [
+    {
+      "name": "imgui",
+      "features": ["dx11-binding", "win32-binding"]
+    },
+    "fmt",
+    "spdlog",
+    "rapidcsv",
+    "directxtk",
+    "rsm-binary-io"
+  ],
+  "overrides": [
+    {
+      "name": "imgui",
+      "version": "1.88"
+    }
+  ]
 }

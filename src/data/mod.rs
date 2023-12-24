@@ -96,6 +96,18 @@ pub fn magic_from_spelldata(
     Box::new(result)
 }
 
+pub fn categorize_shout(
+    keywords_ffi: &CxxVector<CxxString>,
+    bytes_ffi: &CxxVector<u8>,
+    form_string: String,
+) -> Box<HudItem> {
+    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
+    let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
+    let kind = BaseType::Shout(ShoutType::new(keywords));
+    let result = HudItem::preclassified(name_bytes, form_string, 1, kind);
+    Box::new(result)
+}
+
 pub fn simple_from_formdata(
     kind: ItemCategory,
     bytes_ffi: &CxxVector<u8>,

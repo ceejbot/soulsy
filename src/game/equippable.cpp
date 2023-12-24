@@ -90,20 +90,13 @@ namespace equippable
 			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
 			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
 
-			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
-			if (!effect) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
-			effect->ForEachKeyword(KeywordAccumulator::collect);
+			spell->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
-
-			auto data               = fillOutSpellData(false, 1, effect);
-			rust::Box<HudItem> item = magic_from_spelldata(
-				ItemCategory::Shout, std::move(data), *keywords, std::move(chonker), form_string, 1);
-			return item;
+			categorize_shout(*keywords, std::move(chonker), form_string);
 		}
 
 		if (form->Is(RE::FormType::Spell))
 		{
-			rlog::info("handling spells");
 			auto* spell           = form->As<RE::SpellItem>();
 			const auto spell_type = spell->GetSpellType();
 
