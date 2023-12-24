@@ -10,8 +10,6 @@
 
 namespace game
 {
-	using string_util = util::string_util;
-
 	// ---------- ammo
 
 	void equipAmmoByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer)

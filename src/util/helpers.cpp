@@ -11,8 +11,6 @@
 
 namespace helpers
 {
-	using string_util = util::string_util;
-
 	// play a denied/failure/no sound
 	void honk()
 	{

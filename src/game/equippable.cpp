@@ -153,7 +153,7 @@ namespace equippable
 		return empty_huditem();
 	}
 
-	rust::Box<HudItem> hudItemFromForm(const RE::TESForm* form)
+	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form)
 	{
 		if (!form) { return empty_huditem(); }
 
@@ -165,7 +165,7 @@ namespace equippable
 		game::EquippableItemData* itemData = nullptr;
 		game::boundObjectForForm(form, thePlayer, boundObject, itemData);
 
-		if (!data || !boundObject)
+		if (!itemData || !boundObject)
 		{
 			rlog::warn("Inventory object not found in inventory. {}", rlog::formatAsHex(form->GetFormID()));
 			return empty_huditem();
@@ -271,7 +271,7 @@ namespace equippable
 				const auto* effect      = alchemy_potion->GetCostliestEffectItem()->baseEffect;
 				auto actor_value        = effect->data.primaryAV;
 				rust::Box<HudItem> item = potion_from_formdata(
-					alchemy_potion->IsPoison(), static_cast<int32_t>(actor_value), count, std::move(chonker), formSpec);
+					alchemy_potion->IsPoison(), static_cast<int32_t>(actor_value), itemData->count, std::move(chonker), formSpec);
 				return item;
 			}
 		}

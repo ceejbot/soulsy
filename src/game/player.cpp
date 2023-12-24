@@ -12,8 +12,6 @@
 
 namespace player
 {
-	using string_util = util::string_util;
-
 	rust::Vec<uint16_t> playerName()
 	{
 		auto* name  = RE::PlayerCharacter::GetSingleton()->GetName();
