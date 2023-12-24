@@ -43,9 +43,9 @@ namespace game
 
 	bool inventoryEntryDataFor(const RE::TESForm* form, RE::InventoryEntryData*& outentry)
 	{
-		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
-			player::getInventoryForType(the_player, form->GetFormType());
+			player::getInventoryForType(thePlayer, form->GetFormType());
 		RE::InventoryEntryData entryData;
 		bool found = false;
 
@@ -68,17 +68,16 @@ namespace game
 	}
 
 	int boundObjectForForm(const RE::TESForm* form,
-		RE::PlayerCharacter*& the_player,
+		RE::PlayerCharacter*& thePlayer,
 		RE::TESBoundObject*& outobj,
 		EquippableItemData*& outEquipData)
 	{
 		RE::TESBoundObject* foundObject = nullptr;
-		RE::ExtraDataList* extra        = nullptr;
 		EquippableItemData equipData    = EquippableItemData();
 		std::vector<RE::ExtraDataList*> extra_vector;
 
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
-			player::getInventoryForType(the_player, form->GetFormType());
+			player::getInventoryForType(thePlayer, form->GetFormType());
 
 		auto count = 0;
 		for (const auto& [item, inventoryData] : candidates)
@@ -96,9 +95,13 @@ namespace game
 
 				if (simpleList)
 				{
+					// Here we follow the SKSE's example in building a data structure
+					// a little easier to use in making decisions about the object.
+					// Another approach would be to fix up or make local replacements
+					// for the clib functions that walk the extra data every time to
+					// answer these questions.
 					for (auto* extraData : *simpleList)
 					{
-						extra           = extraData;
 						bool isWorn     = extraData->HasType(RE::ExtraDataType::kWorn);
 						bool isWornLeft = extraData->HasType(RE::ExtraDataType::kWornLeft);
 						equipData.isFavorite |= extraData->HasType(RE::ExtraDataType::kHotkey);
@@ -106,15 +109,23 @@ namespace game
 
 						if (isWorn)
 						{
-							equipData.isWorn        = isWorn;
+							// This bool should only be set if we have a deep name match (see comment above)
+							equipData.isWorn = isWorn;
+							// This extra data is already equipped from the item.
 							equipData.wornExtraList = extraData;
 						}
 						else if (isWornLeft)
 						{
-							equipData.isWornLeft        = true;
+							// This bool should only be set if we have a deep name match (see comment above)
+							equipData.isWornLeft = true;
+							// Extra data in effect already from being equipped in the left hand.
 							equipData.wornLeftExtraList = extraData;
 						}
-						else { equipData.itemExtraList = extraData; }
+						else
+						{
+							// Extra data that needs to be equipped if this item is equipped.
+							equipData.itemExtraList = extraData;
+						}
 					}
 				}
 				break;
@@ -123,20 +134,20 @@ namespace game
 
 		if (!foundObject) { return 0; }
 
-		rlog::trace("found {} instance for bound object; name='{}'; formID={};"sv,
+		rlog::debug("found {} instance for bound object; name='{}'; formID={};"sv,
 			count,
 			form->GetName(),
-			util::string_util::int_to_hex(form->formID));
+			rlog::formatAsHex(form->formID));
 
 		outobj       = foundObject;
 		outEquipData = &equipData;
 		return count;
 	}
 
-	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& the_player)
+	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& thePlayer)
 	{
 		auto worn = false;
-		for (const auto& [item, inv_data] : player::getInventoryForType(the_player, RE::FormType::Armor))
+		for (const auto& [item, inv_data] : player::getInventoryForType(thePlayer, RE::FormType::Armor))
 		{
 			const auto& [count, entry] = inv_data;
 			if (entry && entry->object && (entry->object->formID == bound_obj->formID) && entry->IsWorn())
@@ -161,10 +172,10 @@ namespace game
 
 	bool isItemPoisoned(const RE::TESForm* form)
 	{
-		auto* the_player            = RE::PlayerCharacter::GetSingleton();
+		auto* thePlayer            = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* obj     = nullptr;
 		EquippableItemData* data    = nullptr;
-		[[maybe_unused]] auto count = boundObjectForForm(form, the_player, obj, data);
+		[[maybe_unused]] auto count = boundObjectForForm(form, thePlayer, obj, data);
 		if (data) { return data->isPoisoned; }
 		return false;
 	}
@@ -180,9 +191,9 @@ namespace game
 
 	const char* displayName(const RE::TESForm* form)
 	{
-		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
-			player::getInventoryForType(the_player, form->GetFormType());
+			player::getInventoryForType(thePlayer, form->GetFormType());
 
 		for (const auto& [item, inv_data] : candidates)
 		{
@@ -273,7 +284,7 @@ namespace game
 		rlog::debug("queuing task to equip '{}'; left={}; formID={};"sv,
 			form->GetName(),
 			slot_is_left,
-			util::string_util::int_to_hex(equipObject->formID));
+			rlog::formatAsHex(equipObject->formID));
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
@@ -334,7 +345,7 @@ namespace game
 		rlog::debug("queued task to equip '{}'; left={}; formID={};"sv,
 			form->GetName(),
 			slot_is_left,
-			util::string_util::int_to_hex(form->formID));
+			rlog::formatAsHex(form->formID));
 	}
 
 	void unequipHand(RE::PlayerCharacter*& player, Action which)

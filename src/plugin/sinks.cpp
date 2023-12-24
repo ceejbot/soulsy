@@ -49,6 +49,10 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 		if (current_ammo && current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
 	}
 
+	const auto formtype    = form->GetFormType();
+	const auto name = std::string(game::displayName(form));
+	rlog::debug("equip event: {} '{}'; equipped", RE::FormTypeToString(formtype), name);
+
 	std::string worn_right = helpers::makeFormSpecString(right_eq);
 	std::string worn_left  = helpers::makeFormSpecString(left_eq);
 	std::string form_spec  = helpers::makeFormSpecString(form);

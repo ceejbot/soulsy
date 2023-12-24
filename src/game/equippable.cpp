@@ -72,11 +72,100 @@ namespace equippable
 		return data;
 	}
 
+	rust::Box<HudItem> nonInventoryHudItem(RE::TESForm* item_form)
+	{
+		if (!item_form) { return empty_huditem(); }
+
+		auto loggerName         = game::displayName(item_form);
+		auto chonker            = helpers::chars_to_vec(loggerName);
+		std::string form_string = helpers::makeFormSpecString(item_form);
+		bool two_handed         = requiresTwoHands(item_form);
+
+		if (item_form->Is(RE::FormType::Shout))
+		{
+			rlog::debug("making HudItem for shout: '{}'"sv, loggerName);
+			auto* shout = item_form->As<RE::TESShout>();
+
+			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
+			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+
+			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
+			if (!effect) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+			effect->ForEachKeyword(KeywordAccumulator::collect);
+			auto& keywords = KeywordAccumulator::mKeywords;
+
+			auto data               = fillOutSpellData(false, 1, effect);
+			rust::Box<HudItem> item = magic_from_spelldata(
+				ItemCategory::Shout, std::move(data), *keywords, std::move(chonker), form_string, 1);
+			return item;
+		}
+
+		if (item_form->Is(RE::FormType::Spell))
+		{
+			auto* spell           = item_form->As<RE::SpellItem>();
+			const auto spell_type = spell->GetSpellType();
+
+			if (spell_type == RE::MagicSystem::SpellType::kLesserPower ||
+				spell_type == RE::MagicSystem::SpellType::kPower)
+			{
+				rlog::debug("making HudItem for power: '{}'"sv, loggerName);
+				const auto* costliest = spell->GetCostliestEffectItem();
+				if (costliest)
+				{
+					const auto* effect = costliest->baseEffect;
+					if (effect)
+					{
+						effect->ForEachKeyword(KeywordAccumulator::collect);
+						auto& keywords          = KeywordAccumulator::mKeywords;
+						rust::Box<HudItem> item = hud_item_from_keywords(
+							ItemCategory::Power, *keywords, std::move(chonker), form_string, 1, false);
+						return item;
+					}
+				}
+			}
+
+			// Regular spells.
+			rlog::debug("making HudItem for spell: '{}'"sv, loggerName);
+			const auto* costliest = spell->GetCostliestEffectItem();
+			if (costliest)
+			{
+				const auto* effect = costliest->baseEffect;
+				if (effect)
+				{
+					effect->ForEachKeyword(KeywordAccumulator::collect);
+					auto& keywords          = KeywordAccumulator::mKeywords;
+					auto skill_level        = effect->GetMinimumSkillLevel();
+					auto data               = fillOutSpellData(two_handed, skill_level, effect);
+					rust::Box<HudItem> item = magic_from_spelldata(
+						ItemCategory::Spell, std::move(data), *keywords, std::move(chonker), form_string, 1);
+					return item;
+				}
+			}
+		}
+
+		const auto formtype    = item_form->GetFormType();
+		const auto formtypestr = RE::FormTypeToString(formtype);
+		rlog::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
+			formtypestr,
+			loggerName,
+			form_string);
+		return empty_huditem();
+	}
+
 	rust::Box<HudItem> hudItemFromForm(RE::TESForm* item_form)
 	{
 		if (!item_form) { return empty_huditem(); }
 
 		KeywordAccumulator::clear();
+		if (!item_form->IsInventoryObject()) { return nonInventoryHudItem(item_form); }
+
+		auto* player                    = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* boundObject = nullptr;
+		game::EquippableItemData* data  = nullptr;
+		game::boundObjectForForm(item_form, player, boundObject, data);
+
+
 		auto loggerName         = game::displayName(item_form);
 		auto chonker            = helpers::chars_to_vec(loggerName);
 		std::string form_string = helpers::makeFormSpecString(item_form);
@@ -143,68 +232,6 @@ namespace equippable
 			return item;
 		}
 
-		if (item_form->Is(RE::FormType::Shout))
-		{
-			rlog::debug("making HudItem for shout: '{}'"sv, loggerName);
-			auto* shout = item_form->As<RE::TESShout>();
-
-			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
-			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
-			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
-
-			const auto* effect = spell->GetCostliestEffectItem()->baseEffect;
-			if (!effect) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
-			effect->ForEachKeyword(KeywordAccumulator::collect);
-			auto& keywords = KeywordAccumulator::mKeywords;
-
-			auto data               = fillOutSpellData(false, 1, effect);
-			rust::Box<HudItem> item = magic_from_spelldata(
-				ItemCategory::Shout, std::move(data), *keywords, std::move(chonker), form_string, 1);
-			return item;
-		}
-
-		if (item_form->Is(RE::FormType::Spell))
-		{
-			auto* spell           = item_form->As<RE::SpellItem>();
-			const auto spell_type = spell->GetSpellType();
-
-			if (spell_type == RE::MagicSystem::SpellType::kLesserPower ||
-				spell_type == RE::MagicSystem::SpellType::kPower)
-			{
-				rlog::debug("making HudItem for power: '{}'"sv, loggerName);
-				const auto* costliest = spell->GetCostliestEffectItem();
-				if (costliest)
-				{
-					const auto* effect = costliest->baseEffect;
-					if (effect)
-					{
-						effect->ForEachKeyword(KeywordAccumulator::collect);
-						auto& keywords          = KeywordAccumulator::mKeywords;
-						rust::Box<HudItem> item = hud_item_from_keywords(
-							ItemCategory::Power, *keywords, std::move(chonker), form_string, 1, false);
-						return item;
-					}
-				}
-			}
-
-			// Regular spells.
-			rlog::debug("making HudItem for spell: '{}'"sv, loggerName);
-			const auto* costliest = spell->GetCostliestEffectItem();
-			if (costliest)
-			{
-				const auto* effect = costliest->baseEffect;
-				if (effect)
-				{
-					effect->ForEachKeyword(KeywordAccumulator::collect);
-					auto& keywords          = KeywordAccumulator::mKeywords;
-					auto skill_level        = effect->GetMinimumSkillLevel();
-					auto data               = fillOutSpellData(two_handed, skill_level, effect);
-					rust::Box<HudItem> item = magic_from_spelldata(
-						ItemCategory::Spell, std::move(data), *keywords, std::move(chonker), form_string, 1);
-					return item;
-				}
-			}
-		}
 
 		if (item_form->Is(RE::FormType::Scroll))
 		{
@@ -256,7 +283,7 @@ namespace equippable
 		const auto formtypestr = RE::FormTypeToString(formtype);
 		rlog::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
 			formtypestr,
-			item_form->GetName(),
+			loggerName,
 			form_string);
 		return empty_huditem();
 	}
