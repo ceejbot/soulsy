@@ -68,10 +68,11 @@ namespace ui
 			rlog::error("Cannot find game renderer. Initialization failed.");
 			return;
 		}
+		const auto rendererData = renderer->GetRendererDataSingleton();
 
-		const auto context   = renderer->data.context;
-		const auto swapChain = renderer->data.renderWindows->swapChain;
-		const auto forwarder = renderer->data.forwarder;
+		const auto context   = rendererData->context;
+		const auto swapChain = rendererData->renderWindows->swapChain;
+		const auto forwarder = rendererData->forwarder;
 
 		rlog::info("Getting DXGI swapchain..."sv);
 		auto* swapchain = swapChain;
@@ -186,10 +187,11 @@ namespace ui
 		const auto renderer = RE::BSGraphics::Renderer::GetSingleton();
 		if (!renderer)
 		{
-			rlog::error("Cannot find render manager. Initialization failed."sv);
+			rlog::error("Cannot find render manager. Unable to build new texture."sv);
 			return false;
 		}
-		const auto forwarder = renderer->data.forwarder;
+		const auto rendererData = renderer->GetRendererDataSingleton();
+		const auto forwarder = rendererData->forwarder;
 
 		// Create texture
 		D3D11_TEXTURE2D_DESC desc;

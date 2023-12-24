@@ -2,23 +2,10 @@
 
 #include "animation_handler.h"
 #include "image_path.h"
-
-// Forward declarations of the types we're getting from Rust.
-namespace soulsy
-{
-	enum class Action : ::std::uint8_t;
-	enum class Align : ::std::uint8_t;
-	struct HudLayout;
-	struct SlotLayout;
-	struct Point;
-	struct Color;
-	struct LoadedImage;
-}
+#include "soulsy.h"
 
 namespace ui
 {
-	using namespace soulsy;
-
 	struct TextureData
 	{
 		ID3D11ShaderResourceView* texture = nullptr;
