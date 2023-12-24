@@ -242,10 +242,9 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 
 		auto* selection     = new MenuSelection(form_id);
 		selection->count    = 0;
-		selection->poisoned = extra ? extra->HasType(RE::ExtraDataType::kPoison) : false;
-		selection->favorite = !(extra ? extra->HasType(RE::ExtraDataType::kHotkey) : false);
-		selection->equipped =
-			extra ? extra->HasType(RE::ExtraDataType::kWorn) || extra->HasType(RE::ExtraDataType::kWornLeft) : false;
+		selection->poisoned = data ? data->isPoisoned : false;
+		selection->favorite = data ? data->isFavorite : false;
+		selection->equipped = data ? data->isWorn || data->isWornLeft : false;
 		selection->bound_obj = bound_obj;
 		selection->form      = item_form;
 		outSelection         = selection;

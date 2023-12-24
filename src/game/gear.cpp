@@ -229,7 +229,6 @@ namespace game
 		}
 
 		RE::TESBoundObject* equipObject = nullptr;
-		RE::ExtraDataList* extra        = nullptr;
 		EquippableItemData* data        = nullptr;
 		auto item_count                 = boundObjectForForm(form, thePlayer, equipObject, data);
 		if (!equipObject)

@@ -302,7 +302,7 @@ namespace player
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, extra, 1, slot); });
+				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, data->itemExtraList, 1, slot); });
 		}
 	}
 
