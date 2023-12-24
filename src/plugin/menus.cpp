@@ -4,7 +4,6 @@
 #include "gear.h"
 #include "keycodes.h"
 #include "log.h"
-#include "util/string_util.h"
 
 #include "lib.rs.h"
 
@@ -88,7 +87,7 @@ RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 					if (!menu_form) continue;
 
 					rlog::debug("Got toggled favorite: form_id={}; form_type={}; is-favorited={};"sv,
-						util::string_util::int_to_hex(selection->form_id),
+						rlog::formatAsHex(selection->form_id),
 						selection->formType,
 						selection->favorite);
 
@@ -169,7 +168,7 @@ uint32_t MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelec
 	if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 	{
 		form_id = static_cast<std::uint32_t>(result.GetNumber());
-		// rlog::debug("favorites menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
+		// rlog::debug("favorites menu selection has formid {}"sv, rlog::formatAsHex(form_id));
 	}
 	if (form_id == 0) { return 0; }
 
@@ -231,7 +230,7 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 	if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 	{
 		RE::FormID form_id = static_cast<std::uint32_t>(result.GetNumber());
-		rlog::trace("formid {}"sv, util::string_util::int_to_hex(form_id));
+		rlog::trace("formid {}"sv, rlog::formatAsHex(form_id));
 		auto* item_form = RE::TESForm::LookupByID(form_id);
 		if (!item_form) return;
 
@@ -240,11 +239,11 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 		game::EquippableItemData* data = nullptr;
 		game::boundObjectForForm(item_form, player, bound_obj, data);
 
-		auto* selection     = new MenuSelection(form_id);
-		selection->count    = 0;
-		selection->poisoned = data ? data->isPoisoned : false;
-		selection->favorite = data ? data->isFavorite : false;
-		selection->equipped = data ? data->isWorn || data->isWornLeft : false;
+		auto* selection      = new MenuSelection(form_id);
+		selection->count     = 0;
+		selection->poisoned  = data ? data->isPoisoned : false;
+		selection->favorite  = data ? data->isFavorite : false;
+		selection->equipped  = data ? data->isWorn || data->isWornLeft : false;
 		selection->bound_obj = bound_obj;
 		selection->form      = item_form;
 		outSelection         = selection;
@@ -273,8 +272,7 @@ void MenuSelection::makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSe
 
 	for (auto* form : mfaves->spells)
 	{
-		rlog::debug(
-			"mfave form: id={}; name='{}'"sv, util::string_util::int_to_hex(form->GetFormID()), form->GetName());
+		rlog::debug("mfave form: id={}; name='{}'"sv, rlog::formatAsHex(form->GetFormID()), form->GetName());
 		if (form->GetFormID() == form_id)
 		{
 			// match time

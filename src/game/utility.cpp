@@ -5,7 +5,6 @@
 #include "gear.h"
 #include "helpers.h"
 #include "player.h"
-#include "string_util.h"
 
 #include "lib.rs.h"
 
@@ -29,13 +28,12 @@ namespace game
 
 		if (const auto* current_ammo = thePlayer->GetCurrentAmmo(); current_ammo && current_ammo->formID == obj->formID)
 		{
-			// rlog::trace("ammo is already equipped; bound formID={}"sv, string_util::int_to_hex(obj->formID));
+			// rlog::trace("ammo is already equipped; bound formID={}"sv, rlog::formatAsHex(obj->formID));
 			return;
 		}
 
-		rlog::debug("queuing task to equip ammo; name='{}'; bound formID={}"sv,
-			obj->GetName(),
-			string_util::int_to_hex(obj->formID));
+		rlog::debug(
+			"queuing task to equip ammo; name='{}'; bound formID={}"sv, obj->GetName(), rlog::formatAsHex(obj->formID));
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
@@ -59,9 +57,7 @@ namespace game
 			{
 				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->UnequipObject(thePlayer, ammo); });
 			}
-			rlog::debug("ammo unequipped; name='{}'; formID={}"sv,
-				ammo->GetName(),
-				util::string_util::int_to_hex(ammo->formID));
+			rlog::debug("ammo unequipped; name='{}'; formID={}"sv, ammo->GetName(), rlog::formatAsHex(ammo->formID));
 		}
 	}
 
@@ -142,7 +138,7 @@ namespace game
 	void consumePotion(const RE::TESForm* potionForm, RE::PlayerCharacter*& thePlayer)
 	{
 		rlog::trace("consumePotion called; form_id={}; potion='{}';"sv,
-			util::string_util::int_to_hex(potionForm->formID),
+			rlog::formatAsHex(potionForm->formID),
 			potionForm->GetName());
 
 		RE::TESBoundObject* obj  = nullptr;
@@ -161,7 +157,7 @@ namespace game
 			helpers::honk();
 			rlog::warn("bound object is not an alchemy item? name='{}'; formID={};"sv,
 				obj->GetName(),
-				string_util::int_to_hex(obj->formID));
+				rlog::formatAsHex(obj->formID));
 			return;
 		}
 
@@ -329,7 +325,7 @@ namespace game
 		const auto* entry_point = static_cast<RE::BGSEntryPointPerkEntry*>(perk_entry);
 		const auto* perk        = entry_point->perk;
 
-		rlog::trace("perk formID={}; name='{}';"sv, string_util::int_to_hex(perk->formID), perk->GetName());
+		rlog::trace("perk formID={}; name='{}';"sv, rlog::formatAsHex(perk->formID), perk->GetName());
 
 		// This was originally intended to handle many variations of the poison
 		// dose perk-- it should calculate the correct value from vanilla,

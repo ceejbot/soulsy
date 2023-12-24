@@ -13,12 +13,12 @@ namespace game
 	// unequipping it. If you make one, you are responsible for deleting it.
 	struct EquippableItemData
 	{
-		int count       = 0;
-		bool isWorn     = false;
-		bool isWornLeft = false;
-		bool isFavorite = false;
-		bool isPoisoned = false;
-		// std::string fullName;  // maybe?
+		int count        = 0;
+		bool isWorn      = false;
+		bool isWornLeft  = false;
+		bool isFavorite  = false;
+		bool isPoisoned  = false;
+		std::string name = std::string("");
 		// enchantment charge?
 
 		RE::ExtraDataList* itemExtraList;

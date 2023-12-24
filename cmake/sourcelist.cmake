@@ -20,7 +20,6 @@ set(headers ${headers}
     src/util/helpers.h
     src/util/key_path.h
     src/util/offset.h
-    src/util/string_util.h
 )
 set(sources ${sources}
     ${headers}

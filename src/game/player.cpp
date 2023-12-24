@@ -7,7 +7,6 @@
 
 #include "helpers.h"
 #include "offset.h"
-#include "string_util.h"
 
 #include "lib.rs.h"
 
@@ -289,9 +288,8 @@ namespace player
 		game::boundObjectForForm(form, player, bound_obj, data);
 		if (!bound_obj) { return; }
 
-		rlog::info("Re-equipping item in left hand; name='{}'; formID={}"sv,
-			form->GetName(),
-			util::string_util::int_to_hex(form->formID));
+		rlog::info(
+			"Re-equipping item in left hand; name='{}'; formID={}"sv, form->GetName(), rlog::formatAsHex(form->formID));
 		RE::BGSEquipSlot* slot;
 
 		if (which == Action::Left) { slot = game::left_hand_equip_slot(); }
@@ -302,7 +300,9 @@ namespace player
 		if (task)
 		{
 			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, data->itemExtraList, 1, slot); });
+				[=]() {
+					RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, data->itemExtraList, 1, slot);
+				});
 		}
 	}
 

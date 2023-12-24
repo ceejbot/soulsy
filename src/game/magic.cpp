@@ -3,7 +3,6 @@
 #include "gear.h"
 #include "offset.h"
 #include "player.h"
-#include "string_util.h"
 
 namespace game
 {

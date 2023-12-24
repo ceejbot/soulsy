@@ -56,7 +56,7 @@ namespace equippable
 		return RE::ActorValue::kNone;
 	}
 
-	rust::Box<SpellData> fillOutSpellData(bool two_handed, int32_t skill_level, const RE::EffectSetting* effect)
+	rust::Box<SpellData> fillOutSpellData(bool twoHanded, int32_t skill_level, const RE::EffectSetting* effect)
 	{
 		auto isHostile = effect->IsHostile();
 		auto archetype = effect->data.archetype;
@@ -65,26 +65,26 @@ namespace equippable
 
 		rust::Box<SpellData> data = fill_out_spell_data(isHostile,
 			static_cast<std::underlying_type_t<RE::ActorValue>>(resist),
-			two_handed,
+			twoHanded,
 			static_cast<std::underlying_type_t<RE::ActorValue>>(school),
 			skill_level,
 			static_cast<std::underlying_type_t<RE::EffectSetting::Archetype>>(archetype));
 		return data;
 	}
 
-	rust::Box<HudItem> nonInventoryHudItem(RE::TESForm* item_form)
+	rust::Box<HudItem> nonInventoryHudItem(RE::TESForm* form)
 	{
-		if (!item_form) { return empty_huditem(); }
+		if (!form) { return empty_huditem(); }
 
-		auto loggerName         = game::displayName(item_form);
+		auto loggerName         = game::displayName(form);
 		auto chonker            = helpers::chars_to_vec(loggerName);
-		std::string form_string = helpers::makeFormSpecString(item_form);
-		bool two_handed         = requiresTwoHands(item_form);
+		std::string form_string = helpers::makeFormSpecString(form);
+		bool two_handed         = requiresTwoHands(form);
 
-		if (item_form->Is(RE::FormType::Shout))
+		if (form->Is(RE::FormType::Shout))
 		{
 			rlog::debug("making HudItem for shout: '{}'"sv, loggerName);
-			auto* shout = item_form->As<RE::TESShout>();
+			auto* shout = form->As<RE::TESShout>();
 
 			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
 			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
@@ -101,9 +101,9 @@ namespace equippable
 			return item;
 		}
 
-		if (item_form->Is(RE::FormType::Spell))
+		if (form->Is(RE::FormType::Spell))
 		{
-			auto* spell           = item_form->As<RE::SpellItem>();
+			auto* spell           = form->As<RE::SpellItem>();
 			const auto spell_type = spell->GetSpellType();
 
 			if (spell_type == RE::MagicSystem::SpellType::kLesserPower ||
@@ -144,7 +144,7 @@ namespace equippable
 			}
 		}
 
-		const auto formtype    = item_form->GetFormType();
+		const auto formtype    = form->GetFormType();
 		const auto formtypestr = RE::FormTypeToString(formtype);
 		rlog::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
 			formtypestr,
@@ -153,63 +153,64 @@ namespace equippable
 		return empty_huditem();
 	}
 
-	rust::Box<HudItem> hudItemFromForm(RE::TESForm* item_form)
+	rust::Box<HudItem> hudItemFromForm(const RE::TESForm* form)
 	{
-		if (!item_form) { return empty_huditem(); }
+		if (!form) { return empty_huditem(); }
 
 		KeywordAccumulator::clear();
-		if (!item_form->IsInventoryObject()) { return nonInventoryHudItem(item_form); }
+		if (!form->IsInventoryObject()) { return nonInventoryHudItem(form); }
 
-		auto* player                    = RE::PlayerCharacter::GetSingleton();
-		RE::TESBoundObject* boundObject = nullptr;
-		game::EquippableItemData* data  = nullptr;
-		game::boundObjectForForm(item_form, player, boundObject, data);
+		auto* thePlayer                    = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* boundObject    = nullptr;
+		game::EquippableItemData* itemData = nullptr;
+		game::boundObjectForForm(form, thePlayer, boundObject, itemData);
 
-
-		auto loggerName         = game::displayName(item_form);
-		auto chonker            = helpers::chars_to_vec(loggerName);
-		std::string form_string = helpers::makeFormSpecString(item_form);
-		bool two_handed         = requiresTwoHands(item_form);
-
-		if (item_form->Is(RE::FormType::Ammo))
+		if (!data || !boundObject)
 		{
-			rlog::debug("making HudItem for ammo: '{}'"sv, loggerName);
-			const auto* ammo = item_form->As<RE::TESAmmo>()->AsKeywordForm();
+			rlog::warn("Inventory object not found in inventory. {}", rlog::formatAsHex(form->GetFormID()));
+			return empty_huditem();
+		}
+
+		auto chonker         = helpers::chars_to_vec(itemData->name.c_str());
+		std::string formSpec = helpers::makeFormSpecString(boundObject);
+		bool twoHanded       = requiresTwoHands(form);
+
+		if (form->Is(RE::FormType::Ammo))
+		{
+			rlog::debug("making HudItem for ammo: '{}'"sv, itemData->name);
+			const auto* ammo = form->As<RE::TESAmmo>()->AsKeywordForm();
 			ammo->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
-			auto count     = player::getInventoryCountByForm(item_form);
 
-			rust::Box<HudItem> item =
-				hud_item_from_keywords(ItemCategory::Ammo, *keywords, std::move(chonker), form_string, count, false);
+			rust::Box<HudItem> item = hud_item_from_keywords(
+				ItemCategory::Ammo, *keywords, std::move(chonker), formSpec, itemData->count, false);
 			return item;
 		}
 
-		if (item_form->IsWeapon())
+		if (form->IsWeapon())
 		{
-			const auto* weapon = item_form->As<RE::TESObjectWEAP>();
+			const auto* weapon = form->As<RE::TESObjectWEAP>();
 			if (weapon)
 			{
-				rlog::debug("making HudItem for weapon: '{}'"sv, loggerName);
+				rlog::debug("making HudItem for weapon: '{}'"sv, itemData->name);
 				weapon->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords = KeywordAccumulator::mKeywords;
 				if (weapon->IsBound()) { keywords->push_back(std::string("OCF_InvColorBound")); }
-				auto count              = player::getInventoryCountByForm(item_form);
 				rust::Box<HudItem> item = hud_item_from_keywords(
-					ItemCategory::Weapon, *keywords, std::move(chonker), form_string, count, two_handed);
+					ItemCategory::Weapon, *keywords, std::move(chonker), formSpec, itemData->count, twoHanded);
 
 				return item;
 			}
 		}
 
-		if (item_form->IsArmor())
+		if (form->IsArmor())
 		{
-			rlog::debug("making HudItem for armor: '{}'"sv, loggerName);
-			const auto* armor = item_form->As<RE::TESObjectARMO>();
+			rlog::debug("making HudItem for armor: '{}'"sv, itemData->name);
+			const auto* armor = form->As<RE::TESObjectARMO>();
 			armor->ForEachKeyword(KeywordAccumulator::collect);
-			auto& keywords = KeywordAccumulator::mKeywords;
-			auto count     = player::getInventoryCountByForm(item_form);
-			rust::Box<HudItem> item =
-				hud_item_from_keywords(ItemCategory::Armor, *keywords, std::move(chonker), form_string, count, false);
+			auto& keywords          = KeywordAccumulator::mKeywords;
+			rust::Box<HudItem> item = hud_item_from_keywords(
+				ItemCategory::Armor, *keywords, std::move(chonker), formSpec, itemData->count, false);
 
 			return item;
 		}
@@ -218,73 +219,69 @@ namespace equippable
 		// and wearable lights (usually lanterns). The wearable ones are armor, and
 		// have just been taken care of in the previous block. This block handles
 		// the other types. These go into the left hand!
-		if (item_form->Is(RE::FormType::Light))
+		if (form->Is(RE::FormType::Light))
 		{
 			// This form type does not have keywords. This presents a problem. Cough.
-			rlog::debug("making HudItem for light: '{}';"sv, loggerName);
-			const auto name = std::string(item_form->GetName());
-			if (name.find("Lantern") != std::string::npos)  // yes, very limited in effectiveness
+			rlog::debug("making HudItem for light: '{}';"sv, itemData->name);
+			const auto name = std::string(form->GetName());
+			if (name.find("Lantern") != std::string::npos)  // yes, very limited in effectiveness; TODO
 			{
-				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Lantern, std::move(chonker), form_string);
+				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Lantern, std::move(chonker), formSpec);
 				return item;
 			}
-			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Torch, std::move(chonker), form_string);
+			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Torch, std::move(chonker), formSpec);
 			return item;
 		}
 
 
-		if (item_form->Is(RE::FormType::Scroll))
+		if (form->Is(RE::FormType::Scroll))
 		{
-			rlog::debug("making HudItem for scroll: '{}'"sv, loggerName);
-			auto* scroll = item_form->As<RE::ScrollItem>();
+			rlog::debug("making HudItem for scroll: '{}'"sv, itemData->name);
+			auto* scroll = form->As<RE::ScrollItem>();
 			if (scroll->GetCostliestEffectItem() && scroll->GetCostliestEffectItem()->baseEffect)
 			{
 				const auto effect = scroll->GetCostliestEffectItem()->baseEffect;
 				effect->ForEachKeyword(KeywordAccumulator::collect);
-				auto& keywords   = KeywordAccumulator::mKeywords;
-				auto skill_level = effect->GetMinimumSkillLevel();
+				auto& keywords  = KeywordAccumulator::mKeywords;
+				auto skillLevel = effect->GetMinimumSkillLevel();
 
-				auto data               = fillOutSpellData(two_handed, skill_level, effect);
+				auto data               = fillOutSpellData(twoHanded, skillLevel, effect);
 				rust::Box<HudItem> item = magic_from_spelldata(
-					ItemCategory::Scroll, std::move(data), *keywords, std::move(chonker), form_string, 1);
+					ItemCategory::Scroll, std::move(data), *keywords, std::move(chonker), formSpec, itemData->count);
 				return item;
 			}
 		}
 
-		if (item_form->Is(RE::FormType::AlchemyItem))
+		if (form->Is(RE::FormType::AlchemyItem))
 		{
-			auto count           = player::getInventoryCountByForm(item_form);
-			auto* alchemy_potion = item_form->As<RE::AlchemyItem>();
-			const auto* effect   = alchemy_potion->GetCostliestEffectItem()->baseEffect;
-			auto actor_value     = effect->data.primaryAV;
+			auto* alchemy_potion = form->As<RE::AlchemyItem>();
 
 			if (alchemy_potion->IsFood())
 			{
-				rlog::debug("making HudItem for food: '{}'"sv, loggerName);
+				rlog::debug("making HudItem for food: '{}'"sv, itemData->name);
 				alchemy_potion->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords          = KeywordAccumulator::mKeywords;
 				rust::Box<HudItem> item = hud_item_from_keywords(
-					ItemCategory::Food, *keywords, std::move(chonker), form_string, count, false);
+					ItemCategory::Food, *keywords, std::move(chonker), formSpec, itemData->count, false);
 				return item;
 			}
 			else
 			{
-				rlog::debug("making HudItem for potion: '{}'"sv, loggerName);
-				rust::Box<HudItem> item = potion_from_formdata(alchemy_potion->IsPoison(),
-					static_cast<int32_t>(actor_value),
-					count,
-					std::move(chonker),
-					form_string);
+				rlog::debug("making HudItem for potion: '{}'"sv, itemData->name);
+				const auto* effect      = alchemy_potion->GetCostliestEffectItem()->baseEffect;
+				auto actor_value        = effect->data.primaryAV;
+				rust::Box<HudItem> item = potion_from_formdata(
+					alchemy_potion->IsPoison(), static_cast<int32_t>(actor_value), count, std::move(chonker), formSpec);
 				return item;
 			}
 		}
 
-		const auto formtype    = item_form->GetFormType();
+		const auto formtype    = form->GetFormType();
 		const auto formtypestr = RE::FormTypeToString(formtype);
 		rlog::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
 			formtypestr,
-			loggerName,
-			form_string);
+			itemData->name,
+			formSpec);
 		return empty_huditem();
 	}
 

@@ -3,7 +3,6 @@
 #include "constant.h"
 #include "offset.h"
 #include "player.h"
-#include "string_util.h"
 
 #include "lib.rs.h"
 
@@ -17,6 +16,7 @@ namespace game
 		, isWorn(false)
 		, isWornLeft(false)
 		, isFavorite(false)
+		, name(std::string(""))
 	{
 	}
 
@@ -107,10 +107,20 @@ namespace game
 						equipData.isFavorite |= extraData->HasType(RE::ExtraDataType::kHotkey);
 						equipData.isPoisoned |= extraData->HasType(RE::ExtraDataType::kPoison);
 
+						auto* baseTypeData = extraData->GetByType(RE::ExtraDataType::kTextDisplayData);
+						if (baseTypeData)
+						{
+							auto* extraTxt = static_cast<RE::ExtraTextDisplayData*>(baseTypeData);
+							if (extraTxt->customNameLength > 0)
+							{
+								equipData.name = std::string(extraTxt->displayName.c_str());
+							}
+						}
+
 						if (isWorn)
 						{
 							// This bool should only be set if we have a deep name match (see comment above)
-							equipData.isWorn = isWorn;
+							equipData.isWorn = true;
 							// This extra data is already equipped from the item.
 							equipData.wornExtraList = extraData;
 						}
@@ -172,7 +182,7 @@ namespace game
 
 	bool isItemPoisoned(const RE::TESForm* form)
 	{
-		auto* thePlayer            = RE::PlayerCharacter::GetSingleton();
+		auto* thePlayer             = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* obj     = nullptr;
 		EquippableItemData* data    = nullptr;
 		[[maybe_unused]] auto count = boundObjectForForm(form, thePlayer, obj, data);

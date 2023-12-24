@@ -2,7 +2,6 @@
 
 #include "offset.h"
 #include "player.h"
-#include "string_util.h"
 
 // For game implementation reasons, this also includes spells.
 // Lesser powers are spells that go into the shout slot, IIUC.
@@ -37,7 +36,7 @@ namespace game
 		{
 			auto* task = SKSE::GetTaskInterface();
 			if (!task) return;
-			rlog::trace("unequipping shout/power formID={};"sv, util::string_util::int_to_hex(selected_power->formID));
+			rlog::trace("unequipping shout/power formID={};"sv, rlog::formatAsHex(selected_power->formID));
 			if (selected_power->Is(RE::FormType::Shout))
 			{
 				task->AddTask(

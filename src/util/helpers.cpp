@@ -4,7 +4,6 @@
 #include "equippable.h"
 #include "gear.h"
 #include "player.h"
-#include "string_util.h"
 #include "ui_renderer.h"
 #include "utility.h"
 
@@ -154,14 +153,14 @@ namespace helpers
 		{
 			// rlog::trace("it is dynamic"sv);
 			form_string =
-				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, string_util::int_to_hex(form->GetFormID()));
+				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, rlog::formatAsHex(form->GetFormID()));
 		}
 		else
 		{
 			auto* source_file = form->sourceFiles.array->front()->fileName;
 			auto local_form   = form->GetLocalFormID();
 
-			const auto hexified = string_util::int_to_hex(local_form);
+			const auto hexified = rlog::formatAsHex(local_form);
 			// rlog::trace("source file='{}'; local id={}'; hex={};"sv, source_file, local_form, hexified);
 			form_string = fmt::format("{}{}{}", source_file, util::delimiter, hexified);
 		}
@@ -208,7 +207,7 @@ namespace helpers
 		// 	rlog::trace("found form id for form spec='{}'; name='{}'; formID={}",
 		// 		a_str,
 		// 		form->GetName(),
-		// 		string_util::int_to_hex(form->GetFormID()));
+		// 		rlog::formatAsHex(form->GetFormID()));
 		// }
 
 		return form;
