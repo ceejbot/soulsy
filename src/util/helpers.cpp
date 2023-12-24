@@ -11,6 +11,9 @@
 
 namespace helpers
 {
+	using UEFLAG = RE::UserEvents::USER_EVENT_FLAG;
+
+
 	// play a denied/failure/no sound
 	void honk()
 	{
@@ -105,14 +108,54 @@ namespace helpers
 		bool hudInappropriate = !ui || ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() ||
 		                        !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>() ||
 		                        ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
+		// 06:46:19 [INFO ] paused: false; cursor hidden: true; showing menus: true; hudmenu: true; loading menu open: false
+
 		if (hudInappropriate) { return false; }
 
 		const auto* control_map = RE::ControlMap::GetSingleton();
 		bool playerNotInControl =
 			!control_map || !control_map->IsMovementControlsEnabled() ||
 			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
-		if (playerNotInControl) { return false; }
 
+
+		if (control_map)
+		{
+			const auto activate =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kActivate);
+			const auto console =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kConsole);
+			const auto fighting =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kFighting);
+			const auto looking =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kLooking);
+			const auto menu = control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kMenu);
+			const auto mainfour =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kMainFour);
+			const auto movement =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kMovement);
+			const auto povswitch =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kPOVSwitch);
+			const auto sneaking =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kSneaking);
+			const auto vats = control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kVATS);
+			const auto zoom =
+				control_map->GetRuntimeData().enabledControls.all(RE::UserEvents::USER_EVENT_FLAG::kWheelZoom);
+			rlog::info("activate: {}; console: {}; fighting: {}; looking: {}; menu: {}; mainfour: {}; movement: {}\n; "
+					   "povswitch: {}; sneaking: {}; vats: {}; zoom: {};",
+				activate,
+				console,
+				fighting,
+				looking,
+				menu,
+				mainfour,
+				movement,
+				povswitch,
+				sneaking,
+				vats,
+				zoom);
+		}
+
+		if (playerNotInControl) { return false; }
 		return true;
 	}
 

@@ -191,7 +191,7 @@ namespace ui
 			return false;
 		}
 		const auto rendererData = renderer->GetRendererDataSingleton();
-		const auto forwarder = rendererData->forwarder;
+		const auto forwarder    = rendererData->forwarder;
 
 		// Create texture
 		D3D11_TEXTURE2D_DESC desc;
@@ -507,6 +507,7 @@ namespace ui
 		if (!helpers::hudAllowedOnScreen()) return;
 		makeFadeDecision();
 		advanceTransition(timeDelta);
+		rlog::debug("middle of drawHud(); alpha={}", gHudAlpha);
 		if (gHudAlpha == 0.0f) { return; }
 
 		static constexpr ImGuiWindowFlags window_flags =
@@ -766,6 +767,8 @@ namespace ui
 		// Now the autofade decision.
 		if (helpers::hudShouldAutoFadeOut())
 		{
+			rlog::debug("we think we should be fading OUT now.");
+
 			if (gDoingBriefPeek)
 			{
 				if (gHudAlpha < gMaxAlpha) { return; }
@@ -776,6 +779,7 @@ namespace ui
 		}
 		else if (helpers::hudShouldAutoFadeIn())
 		{
+			rlog::debug("we should be fading in now.");
 			if ((gHudAlpha < gMaxAlpha && !gIsFading) || (gIsFading && !doFadeIn))
 			{
 				startAlphaTransition(true, gMaxAlpha);

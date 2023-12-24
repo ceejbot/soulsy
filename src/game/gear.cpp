@@ -10,13 +10,13 @@ namespace game
 {
 	EquippableItemData::EquippableItemData()
 		: count(0)
-		, itemExtraList(NULL)
-		, wornExtraList(NULL)
-		, wornLeftExtraList(NULL)
+		, itemExtraList(nullptr)
+		, wornExtraList(nullptr)
+		, wornLeftExtraList(nullptr)
 		, isWorn(false)
 		, isWornLeft(false)
 		, isFavorite(false)
-		, name(std::string(""))
+		, name(nullptr)
 	{
 	}
 
@@ -80,6 +80,8 @@ namespace game
 			player::getInventoryForType(thePlayer, form->GetFormType());
 
 		auto count = 0;
+		std::vector<RE::ExtraDataList*> extraDataCopy;
+
 		for (const auto& [item, inventoryData] : candidates)
 		{
 			const auto& [num_items, entry] = inventoryData;
@@ -102,39 +104,21 @@ namespace game
 					// answer these questions.
 					for (auto* extraData : *simpleList)
 					{
+						extraDataCopy.push_back(extraData);
 						bool isWorn     = extraData->HasType(RE::ExtraDataType::kWorn);
 						bool isWornLeft = extraData->HasType(RE::ExtraDataType::kWornLeft);
 						equipData.isFavorite |= extraData->HasType(RE::ExtraDataType::kHotkey);
 						equipData.isPoisoned |= extraData->HasType(RE::ExtraDataType::kPoison);
 
-						auto* baseTypeData = extraData->GetByType(RE::ExtraDataType::kTextDisplayData);
-						if (baseTypeData)
-						{
-							auto* extraTxt = static_cast<RE::ExtraTextDisplayData*>(baseTypeData);
-							if (extraTxt->customNameLength > 0)
-							{
-								equipData.name = std::string(extraTxt->displayName.c_str());
-							}
-						}
-
 						if (isWorn)
 						{
 							// This bool should only be set if we have a deep name match (see comment above)
 							equipData.isWorn = true;
-							// This extra data is already equipped from the item.
-							equipData.wornExtraList = extraData;
 						}
 						else if (isWornLeft)
 						{
 							// This bool should only be set if we have a deep name match (see comment above)
 							equipData.isWornLeft = true;
-							// Extra data in effect already from being equipped in the left hand.
-							equipData.wornLeftExtraList = extraData;
-						}
-						else
-						{
-							// Extra data that needs to be equipped if this item is equipped.
-							equipData.itemExtraList = extraData;
 						}
 					}
 				}
@@ -148,6 +132,13 @@ namespace game
 			count,
 			form->GetName(),
 			rlog::formatAsHex(form->formID));
+
+		if (extraDataCopy.size() > 0)
+		{
+			if (equipData.isWorn) { equipData.wornExtraList = extraDataCopy.back(); }
+			else if (equipData.isWornLeft) { equipData.wornLeftExtraList = extraDataCopy.back(); }
+			else { equipData.itemExtraList = extraDataCopy.back(); }
+		}
 
 		outobj       = foundObject;
 		outEquipData = &equipData;
