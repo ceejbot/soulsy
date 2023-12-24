@@ -2,7 +2,7 @@
 //!
 //! To add a new icon, you must add a variant name here AND add the variant to
 //! `fallback()`, so the HUD renders something if the file is missing (e.g., an
-//! icon pack dose not include it). If the icon is added to the core set in the
+//! icon pack does not include it). If the icon is added to the core set in the
 //! main mod, it is its own fallback and can be a fallback target. (A test
 //! validates that all fallbacks are valid.)
 //!
@@ -111,6 +111,7 @@ pub enum Icon {
     ShoutAnimalAllegiance,
     ShoutAuraWhisper,
     ShoutBattleFury,
+    ShoutBecomeEthereal,
     ShoutBendWill,
     ShoutBreathAttack,
     ShoutCallDragon,
@@ -123,6 +124,8 @@ pub enum Icon {
     ShoutDragonrend,
     ShoutDrainVitality,
     ShoutElementalFury,
+    ShoutFireBreath,
+    ShoutFrostBreath,
     ShoutIceForm,
     ShoutKynesPeace,
     ShoutMarkedForDeath,
@@ -373,6 +376,7 @@ impl Icon {
             Icon::ShoutAnimalAllegiance => Icon::Shout,
             Icon::ShoutAuraWhisper => Icon::Shout,
             Icon::ShoutBattleFury => Icon::Shout,
+            Icon::ShoutBecomeEthereal => Icon::Shout,
             Icon::ShoutBendWill => Icon::Shout,
             Icon::ShoutBreathAttack => Icon::Shout,
             Icon::ShoutCallDragon => Icon::Shout,
@@ -385,6 +389,8 @@ impl Icon {
             Icon::ShoutDragonrend => Icon::Shout,
             Icon::ShoutDrainVitality => Icon::Shout,
             Icon::ShoutElementalFury => Icon::Shout,
+            Icon::ShoutFireBreath => Icon::Shout,
+            Icon::ShoutFrostBreath => Icon::Shout,
             Icon::ShoutIceForm => Icon::Shout,
             Icon::ShoutKynesPeace => Icon::Shout,
             Icon::ShoutMarkedForDeath => Icon::Shout,

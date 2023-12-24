@@ -1,3 +1,7 @@
+use std::collections::HashMap;
+
+use once_cell::sync::Lazy;
+
 use super::color::InvColor;
 use super::keywords::*;
 use super::{strings_to_enumset, HasIcon};
@@ -34,62 +38,16 @@ impl HasIcon for ShoutType {
 impl ShoutType {
     pub fn new(tags: Vec<String>) -> Self {
         let keywords = strings_to_enumset::<SpellKeywords>(&tags);
-
-        let variant = if keywords.contains(SpellKeywords::Shout_AnimalAllegiance) {
-            ShoutVariant::AnimalAllegiance
-        } else if keywords.contains(SpellKeywords::Shout_AuraWhisper) {
-            ShoutVariant::AuraWhisper
-        } else if keywords.contains(SpellKeywords::Shout_BattleFury) {
-            ShoutVariant::BattleFury
-        } else if keywords.contains(SpellKeywords::Shout_BecomeEthereal) {
-            ShoutVariant::BecomeEthereal
-        } else if keywords.contains(SpellKeywords::Shout_BendWill) {
-            ShoutVariant::BendWill
-        } else if keywords.contains(SpellKeywords::Shout_CallDragon) {
-            ShoutVariant::CallDragon
-        } else if keywords.contains(SpellKeywords::Shout_CallOfValor) {
-            ShoutVariant::CallOfValor
-        } else if keywords.contains(SpellKeywords::Shout_ClearSkies) {
-            ShoutVariant::ClearSkies
-        } else if keywords.contains(SpellKeywords::Shout_Disarm) {
-            ShoutVariant::Disarm
-        } else if keywords.contains(SpellKeywords::Shout_Dismay) {
-            ShoutVariant::Dismay
-        } else if keywords.contains(SpellKeywords::Shout_DragonAspect) {
-            ShoutVariant::DragonAspect
-        } else if keywords.contains(SpellKeywords::Shout_Dragonrend) {
-            ShoutVariant::Dragonrend
-        } else if keywords.contains(SpellKeywords::Shout_DrainVitality) {
-            ShoutVariant::DrainVitality
-        } else if keywords.contains(SpellKeywords::Shout_ElementalFury) {
-            ShoutVariant::ElementalFury
-        } else if keywords.contains(SpellKeywords::Shout_FireBreath) {
-            ShoutVariant::FireBreath
-        } else if keywords.contains(SpellKeywords::Shout_FrostBreath) {
-            ShoutVariant::FrostBreath
-        } else if keywords.contains(SpellKeywords::Shout_IceForm) {
-            ShoutVariant::IceForm
-        } else if keywords.contains(SpellKeywords::Shout_KynesPeace) {
-            ShoutVariant::KynesPeace
-        } else if keywords.contains(SpellKeywords::Shout_MarkedForDeath) {
-            ShoutVariant::MarkedForDeath
-        } else if keywords.contains(SpellKeywords::Shout_Slowtime) {
-            ShoutVariant::Slowtime
-        } else if keywords.contains(SpellKeywords::Shout_SoulTear) {
-            ShoutVariant::SoulTear
-        } else if keywords.contains(SpellKeywords::Shout_StormCall) {
-            ShoutVariant::StormCall
-        } else if keywords.contains(SpellKeywords::Shout_SummonDurnehviir) {
-            ShoutVariant::SummonDurnehviir
-        } else if keywords.contains(SpellKeywords::Shout_ThrowVoice) {
-            ShoutVariant::ThrowVoice
-        } else if keywords.contains(SpellKeywords::Shout_UnrelentingForce) {
-            ShoutVariant::UnrelentingForce
-        } else if keywords.contains(SpellKeywords::Shout_WhirlwindSprint) {
-            ShoutVariant::WhirlwindSprint
-        } else {
-            ShoutVariant::Unclassified
-        };
+        let (variant, icon) = SHOUT_MAPPING
+            .iter()
+            .find_map(|(k, v)| {
+                if keywords.contains(*k) {
+                    Some(v.clone())
+                } else {
+                    None
+                }
+            })
+            .unwrap_or((ShoutVariant::Unclassified, Icon::Shout));
 
         let color = match variant {
             ShoutVariant::AnimalAllegiance => InvColor::Green,
@@ -102,76 +60,8 @@ impl ShoutType {
             ShoutVariant::IceForm => InvColor::Frost,
             ShoutVariant::KynesPeace => InvColor::Green,
             ShoutVariant::MarkedForDeath => InvColor::Poison,
-            ShoutVariant::StormCall => InvColor::Shock,
+            ShoutVariant::Stormcall => InvColor::Shock,
             _ => InvColor::White,
-        };
-
-        let icon = match variant {
-            ShoutVariant::AnimalAllegiance => Icon::ShoutAnimalAllegiance,
-            ShoutVariant::AuraWhisper => Icon::ShoutAuraWhisper,
-            ShoutVariant::BattleFury => Icon::ShoutBattleFury,
-            ShoutVariant::BecomeEthereal => Icon::Shout,
-            ShoutVariant::BendWill => Icon::ShoutBendWill,
-            ShoutVariant::CallDragon => Icon::ShoutCallDragon,
-            ShoutVariant::CallOfValor => Icon::ShoutCallOfValor,
-            ShoutVariant::ClearSkies => Icon::ShoutClearSkies,
-            ShoutVariant::Cyclone => Icon::ShoutCyclone,
-            ShoutVariant::Disarm => Icon::ShoutDisarm,
-            ShoutVariant::Dismay => Icon::ShoutDismay,
-            ShoutVariant::DragonAspect => Icon::ShoutDragonAspect,
-            ShoutVariant::Dragonrend => Icon::ShoutDragonrend,
-            ShoutVariant::DrainVitality => Icon::ShoutDrainVitality,
-            ShoutVariant::ElementalFury => Icon::ShoutElementalFury,
-            ShoutVariant::FireBreath => Icon::ShoutBreathAttack,
-            ShoutVariant::FrostBreath => Icon::ShoutBreathAttack,
-            ShoutVariant::IceForm => Icon::ShoutIceForm,
-            ShoutVariant::KynesPeace => Icon::ShoutKynesPeace,
-            ShoutVariant::MarkedForDeath => Icon::ShoutMarkedForDeath,
-            ShoutVariant::PhantomForm => Icon::ShoutPhantomForm,
-            ShoutVariant::Slowtime => Icon::ShoutSlowtime,
-            ShoutVariant::SoulTear => Icon::ShoutSoulTear,
-            ShoutVariant::StormCall => Icon::ShoutStormcall,
-            ShoutVariant::SummonDurnehviir => Icon::ShoutSummonDurnehviir,
-            ShoutVariant::ThrowVoice => Icon::ShoutThrowVoice,
-            ShoutVariant::UnrelentingForce => Icon::ShoutUnrelentingForce,
-            ShoutVariant::WhirlwindSprint => Icon::ShoutWhirlwindSprint,
-            // unused dawnguard shout
-            ShoutVariant::SummonUndead => Icon::Shout,
-            // stormcrown
-            ShoutVariant::LightningBreath => Icon::ShoutLightningBreath,
-            ShoutVariant::PoisonBreath => Icon::ShoutPoisonBreath,
-
-            // thunderchild shouts
-            ShoutVariant::AlessiasLove => Icon::ShoutAlessiasLove,
-            ShoutVariant::Annihilate => Icon::ShoutAnnihilate,
-            ShoutVariant::ArcaneHelix => Icon::ShoutArcaneHelix,
-            ShoutVariant::Armageddon => Icon::ShoutArmageddon,
-            ShoutVariant::Curse => Icon::ShoutCurse,
-            ShoutVariant::DanceOfTheDead => Icon::ShoutDanceOfTheDead,
-            ShoutVariant::Earthquake => Icon::ShoutEarthquake,
-            ShoutVariant::EssenceRip => Icon::ShoutEssenceRip,
-            ShoutVariant::Evocation => Icon::ShoutEvocation,
-            ShoutVariant::Geomagnetism => Icon::ShoutGeomagnetism,
-            ShoutVariant::Iceborn => Icon::ShoutIceborn,
-            ShoutVariant::JonesShadow => Icon::ShoutJonesShadow,
-            ShoutVariant::Kingsbane => Icon::ShoutKingsbane,
-            ShoutVariant::Lifestream => Icon::ShoutLifestream,
-            ShoutVariant::LightningShield => Icon::ShoutLightningShield,
-            ShoutVariant::Oblivion => Icon::ShoutOblivion,
-            ShoutVariant::PhantomDecoy => Icon::ShoutPhantomDecoy,
-            ShoutVariant::Riftwalk => Icon::ShoutRiftwalk,
-            ShoutVariant::Shattersphere => Icon::ShoutShattersphere,
-            ShoutVariant::ShorsWrath => Icon::ShoutShorsWrath,
-            ShoutVariant::ShroudOfSnowfall => Icon::ShoutShroudOfSnowfall,
-            ShoutVariant::SpeakUntoTheStars => Icon::ShoutSpeakUntoTheStars,
-            ShoutVariant::SplinterTwins => Icon::ShoutSplinterTwins,
-            ShoutVariant::Stormblast => Icon::ShoutStormblast,
-            ShoutVariant::TheConqueror => Icon::ShoutTheConqueror,
-            ShoutVariant::Trueshot => Icon::ShoutTrueshot,
-            ShoutVariant::WailOfTheBanshee => Icon::ShoutWailOfTheBanshee,
-            ShoutVariant::Wanderlust => Icon::ShoutWanderlust,
-            ShoutVariant::Warcry => Icon::ShoutWarcry,
-            ShoutVariant::Unclassified => Icon::Shout,
         };
 
         Self {
@@ -210,7 +100,7 @@ impl ShoutType {
             ShoutVariant::PhantomForm => "Fiik-lo-sah!",
             ShoutVariant::Slowtime => "Tiid-klo-ui!",
             ShoutVariant::SoulTear => "Rii-vaaz-zol!",
-            ShoutVariant::StormCall => "Strun-bah-qo!",
+            ShoutVariant::Stormcall => "Strun-bah-qo!",
             ShoutVariant::SummonDurnehviir => "Dur-neh-viir!",
             ShoutVariant::ThrowVoice => "Zul-mey-gut!",
             ShoutVariant::UnrelentingForce => "Fus-ro-dah!",
@@ -281,7 +171,7 @@ pub enum ShoutVariant {
     PoisonBreath,
     Slowtime,
     SoulTear,
-    StormCall,
+    Stormcall,
     SummonDurnehviir,
     ThrowVoice,
     UnrelentingForce,
@@ -321,3 +211,240 @@ pub enum ShoutVariant {
     #[default]
     Unclassified,
 }
+
+static SHOUT_MAPPING: Lazy<HashMap<SpellKeywords, (ShoutVariant, Icon)>> = Lazy::new(|| {
+    HashMap::from([
+        (
+            SpellKeywords::Shout_Curse,
+            (ShoutVariant::Curse, Icon::ShoutCurse),
+        ),
+        (
+            SpellKeywords::Shout_Warcry,
+            (ShoutVariant::Warcry, Icon::ShoutWarcry),
+        ),
+        // vanilla shouts
+        (
+            SpellKeywords::Shout_AnimalAllegiance,
+            (ShoutVariant::AnimalAllegiance, Icon::ShoutAnimalAllegiance),
+        ),
+        (
+            SpellKeywords::Shout_AuraWhisper,
+            (ShoutVariant::AuraWhisper, Icon::ShoutAuraWhisper),
+        ),
+        (
+            SpellKeywords::Shout_BattleFury,
+            (ShoutVariant::BattleFury, Icon::ShoutBattleFury),
+        ),
+        (
+            SpellKeywords::Shout_BecomeEthereal,
+            (ShoutVariant::BecomeEthereal, Icon::ShoutBecomeEthereal),
+        ),
+        (
+            SpellKeywords::Shout_BendWill,
+            (ShoutVariant::BendWill, Icon::ShoutBendWill),
+        ),
+        (
+            SpellKeywords::Shout_CallDragon,
+            (ShoutVariant::CallDragon, Icon::ShoutCallDragon),
+        ),
+        (
+            SpellKeywords::Shout_CallOfValor,
+            (ShoutVariant::CallOfValor, Icon::ShoutCallOfValor),
+        ),
+        (
+            SpellKeywords::Shout_ClearSkies,
+            (ShoutVariant::ClearSkies, Icon::ShoutClearSkies),
+        ),
+        (
+            SpellKeywords::Shout_Disarm,
+            (ShoutVariant::Disarm, Icon::ShoutDisarm),
+        ),
+        (
+            SpellKeywords::Shout_Dismay,
+            (ShoutVariant::Dismay, Icon::ShoutDismay),
+        ),
+        (
+            SpellKeywords::Shout_DragonAspect,
+            (ShoutVariant::DragonAspect, Icon::ShoutDragonAspect),
+        ),
+        (
+            SpellKeywords::Shout_Dragonrend,
+            (ShoutVariant::Dragonrend, Icon::ShoutDragonrend),
+        ),
+        (
+            SpellKeywords::Shout_DrainVitality,
+            (ShoutVariant::DrainVitality, Icon::ShoutDrainVitality),
+        ),
+        (
+            SpellKeywords::Shout_ElementalFury,
+            (ShoutVariant::ElementalFury, Icon::ShoutElementalFury),
+        ),
+        (
+            SpellKeywords::Shout_FireBreath,
+            (ShoutVariant::FireBreath, Icon::ShoutFireBreath),
+        ),
+        (
+            SpellKeywords::Shout_FrostBreath,
+            (ShoutVariant::FrostBreath, Icon::ShoutFrostBreath),
+        ),
+        (
+            SpellKeywords::Shout_IceForm,
+            (ShoutVariant::IceForm, Icon::ShoutIceForm),
+        ),
+        (
+            SpellKeywords::Shout_KynesPeace,
+            (ShoutVariant::KynesPeace, Icon::ShoutKynesPeace),
+        ),
+        (
+            SpellKeywords::Shout_MarkedForDeath,
+            (ShoutVariant::MarkedForDeath, Icon::ShoutMarkedForDeath),
+        ),
+        (
+            SpellKeywords::Shout_Slowtime,
+            (ShoutVariant::Slowtime, Icon::ShoutSlowtime),
+        ),
+        (
+            SpellKeywords::Shout_SoulTear,
+            (ShoutVariant::SoulTear, Icon::ShoutSoulTear),
+        ),
+        (
+            SpellKeywords::Shout_Stormcall,
+            (ShoutVariant::Stormcall, Icon::ShoutStormcall),
+        ),
+        (
+            SpellKeywords::Shout_SummonDurnehviir,
+            (ShoutVariant::SummonDurnehviir, Icon::ShoutSummonDurnehviir),
+        ),
+        (
+            SpellKeywords::Shout_ThrowVoice,
+            (ShoutVariant::ThrowVoice, Icon::ShoutThrowVoice),
+        ),
+        (
+            SpellKeywords::Shout_UnrelentingForce,
+            (ShoutVariant::UnrelentingForce, Icon::ShoutUnrelentingForce),
+        ),
+        (
+            SpellKeywords::Shout_WhirlwindSprint,
+            (ShoutVariant::WhirlwindSprint, Icon::ShoutWhirlwindSprint),
+        ),
+        (
+            SpellKeywords::Shout_PhantomForm,
+            (ShoutVariant::PhantomForm, Icon::ShoutPhantomForm),
+        ),
+        (
+            SpellKeywords::Shout_AlessiasLove,
+            (ShoutVariant::AlessiasLove, Icon::ShoutAlessiasLove),
+        ),
+        (
+            SpellKeywords::Shout_Annihilate,
+            (ShoutVariant::Annihilate, Icon::ShoutAnnihilate),
+        ),
+        (
+            SpellKeywords::Shout_ArcaneHelix,
+            (ShoutVariant::ArcaneHelix, Icon::ShoutArcaneHelix),
+        ),
+        (
+            SpellKeywords::Shout_Armageddon,
+            (ShoutVariant::Armageddon, Icon::ShoutArmageddon),
+        ),
+        (
+            SpellKeywords::Shout_Curse,
+            (ShoutVariant::Curse, Icon::ShoutCurse),
+        ),
+        (
+            SpellKeywords::Shout_DanceOfTheDead,
+            (ShoutVariant::DanceOfTheDead, Icon::ShoutDanceOfTheDead),
+        ),
+        (
+            SpellKeywords::Shout_Earthquake,
+            (ShoutVariant::Earthquake, Icon::ShoutEarthquake),
+        ),
+        (
+            SpellKeywords::Shout_EssenceRip,
+            (ShoutVariant::EssenceRip, Icon::ShoutEssenceRip),
+        ),
+        (
+            SpellKeywords::Shout_Evocation,
+            (ShoutVariant::Evocation, Icon::ShoutEvocation),
+        ),
+        (
+            SpellKeywords::Shout_Geomagnetism,
+            (ShoutVariant::Geomagnetism, Icon::ShoutGeomagnetism),
+        ),
+        (
+            SpellKeywords::Shout_Iceborn,
+            (ShoutVariant::Iceborn, Icon::ShoutIceborn),
+        ),
+        (
+            SpellKeywords::Shout_JonesShadow,
+            (ShoutVariant::JonesShadow, Icon::ShoutJonesShadow),
+        ),
+        (
+            SpellKeywords::Shout_Kingsbane,
+            (ShoutVariant::Kingsbane, Icon::ShoutKingsbane),
+        ),
+        (
+            SpellKeywords::Shout_Lifestream,
+            (ShoutVariant::Lifestream, Icon::ShoutLifestream),
+        ),
+        (
+            SpellKeywords::Shout_LightningShield,
+            (ShoutVariant::LightningShield, Icon::ShoutLightningShield),
+        ),
+        (
+            SpellKeywords::Shout_Oblivion,
+            (ShoutVariant::Oblivion, Icon::ShoutOblivion),
+        ),
+        (
+            SpellKeywords::Shout_PhantomDecoy,
+            (ShoutVariant::PhantomDecoy, Icon::ShoutPhantomDecoy),
+        ),
+        (
+            SpellKeywords::Shout_Riftwalk,
+            (ShoutVariant::Riftwalk, Icon::ShoutRiftwalk),
+        ),
+        (
+            SpellKeywords::Shout_Shattersphere,
+            (ShoutVariant::Shattersphere, Icon::ShoutShattersphere),
+        ),
+        (
+            SpellKeywords::Shout_ShorsWrath,
+            (ShoutVariant::ShorsWrath, Icon::ShoutShorsWrath),
+        ),
+        (
+            SpellKeywords::Shout_ShroudOfSnowfall,
+            (ShoutVariant::ShroudOfSnowfall, Icon::ShoutShroudOfSnowfall),
+        ),
+        (
+            SpellKeywords::Shout_SpeakUntoTheStars,
+            (
+                ShoutVariant::SpeakUntoTheStars,
+                Icon::ShoutSpeakUntoTheStars,
+            ),
+        ),
+        (
+            SpellKeywords::Shout_SplinterTwins,
+            (ShoutVariant::SplinterTwins, Icon::ShoutSplinterTwins),
+        ),
+        (
+            SpellKeywords::Shout_Stormblast,
+            (ShoutVariant::Stormblast, Icon::ShoutStormblast),
+        ),
+        (
+            SpellKeywords::Shout_TheConqueror,
+            (ShoutVariant::TheConqueror, Icon::ShoutTheConqueror),
+        ),
+        (
+            SpellKeywords::Shout_Trueshot,
+            (ShoutVariant::Trueshot, Icon::ShoutTrueshot),
+        ),
+        (
+            SpellKeywords::Shout_WailOfTheBanshee,
+            (ShoutVariant::WailOfTheBanshee, Icon::ShoutWailOfTheBanshee),
+        ),
+        (
+            SpellKeywords::Shout_Wanderlust,
+            (ShoutVariant::Wanderlust, Icon::ShoutWanderlust),
+        ),
+    ])
+});
