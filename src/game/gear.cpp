@@ -128,7 +128,7 @@ namespace game
 
 		if (!foundObject) { return 0; }
 
-		rlog::debug("found {} instance for bound object; name='{}'; formID={};"sv,
+		rlog::trace("found {} instance for bound object; name='{}'; formID={};"sv,
 			count,
 			form->GetName(),
 			rlog::formatAsHex(form->formID));
