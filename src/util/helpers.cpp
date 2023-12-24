@@ -61,10 +61,30 @@ namespace helpers
 	// Handles photo mode and possibly others.
 	static constexpr auto requiredControlFlags = static_cast<RE::ControlMap::UEFlag>(1036);
 
+	// Returns true if the player can use movement and gameplay controls.
+	// Returns false during the intro, for examples.
+	bool playerInControl()
+	{
+		const auto* controlMap = RE::ControlMap::GetSingleton();
+		if (!controlMap) { return false; }
+		// debugging things...
+		const auto canMove = controlMap->IsMovementControlsEnabled();
+		rlog::info("got {} back from movement controls check", canMove);
+		if (controlMap->contextPriorityStack)
+		{
+			const auto inGameplay =
+				controlMap->contextPriorityStack.back() == RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
+			rlog::info("got {} back from context stack check", inGameplay);
+			return inGameplay && canMove;
+		}
+		else { rlog::info("context stack appears to be borked."); }
+		return canMove;
+	}
+
 	bool ignoreKeyEvents()
 	{
 		// We pay attention to keypress events when:
-		// - we are in normal gameplace mode
+		// - we are in normal gameplay mode
 		// - the item, magic, or favorites menus are visible
 		// We ignore them when other menus are up or when controls are disabled for quest reasons.
 
