@@ -5,11 +5,15 @@
 namespace soulsy
 {
 	enum class Action : ::std::uint8_t;
-	struct HudItem;
+	enum class Align : ::std::uint8_t;
+	struct Color;
 	struct EquippedData;
-struct SpellData;
-struct Color;
-
+	struct HudItem;
+	struct HudLayout;
+	struct LoadedImage;
+	struct Point;
+	struct SlotLayout;
+	struct SpellData;
 }
 
 using namespace soulsy;
