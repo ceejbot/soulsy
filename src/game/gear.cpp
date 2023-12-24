@@ -175,6 +175,7 @@ namespace game
 		RE::TESBoundObject* bound_obj = nullptr;
 		EquippableItemData* data      = nullptr;
 		auto* thePlayer               = RE::PlayerCharacter::GetSingleton();
+		rlog::debug("isItemFavorited() calling boundObjectForForm()");
 		game::boundObjectForForm(form, thePlayer, bound_obj, data);
 		if (data) { return data->isFavorite; }
 		return false;
@@ -182,9 +183,10 @@ namespace game
 
 	bool isItemPoisoned(const RE::TESForm* form)
 	{
-		auto* thePlayer             = RE::PlayerCharacter::GetSingleton();
-		RE::TESBoundObject* obj     = nullptr;
-		EquippableItemData* data    = nullptr;
+		auto* thePlayer          = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* obj  = nullptr;
+		EquippableItemData* data = nullptr;
+		rlog::debug("isItemPoisoned() calling boundObjectForForm()");
 		[[maybe_unused]] auto count = boundObjectForForm(form, thePlayer, obj, data);
 		if (data) { return data->isPoisoned; }
 		return false;
@@ -251,7 +253,8 @@ namespace game
 
 		RE::TESBoundObject* equipObject = nullptr;
 		EquippableItemData* data        = nullptr;
-		auto item_count                 = boundObjectForForm(form, thePlayer, equipObject, data);
+		rlog::debug("equipIemByFormAndSlot() calling boundObjectForForm()");
+		auto item_count = boundObjectForForm(form, thePlayer, equipObject, data);
 		if (!equipObject)
 		{
 			rlog::debug("unable to find bound object for name='{}'"sv, form->GetName());
