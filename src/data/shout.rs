@@ -71,6 +71,14 @@ impl ShoutType {
         }
     }
 
+    pub fn construct(icon: Icon, color: InvColor, variant: ShoutVariant) -> Self {
+        Self {
+            icon,
+            color,
+            variant,
+        }
+    }
+
     pub fn variant(&self) -> &ShoutVariant {
         &self.variant
     }

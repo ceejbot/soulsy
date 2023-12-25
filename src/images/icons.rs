@@ -137,6 +137,7 @@ pub enum Icon {
     ShoutThrowVoice,
     ShoutUnrelentingForce,
     ShoutWhirlwindSprint,
+    ShoutSoulCairnSummon,
     // Stormcrown's modest additions.
     ShoutLightningBreath,
     ShoutPoisonBreath,
@@ -402,6 +403,7 @@ impl Icon {
             Icon::ShoutThrowVoice => Icon::Shout,
             Icon::ShoutUnrelentingForce => Icon::Shout,
             Icon::ShoutWhirlwindSprint => Icon::Shout,
+            Icon::ShoutSoulCairnSummon => Icon::Shout,
             // stormcrown
             Icon::ShoutLightningBreath => Icon::Shout,
             Icon::ShoutPoisonBreath => Icon::Shout,
@@ -605,6 +607,7 @@ mod tests {
     use std::path::PathBuf;
     use std::str::FromStr;
 
+    use once_cell::sync::Lazy;
     use strum::VariantNames;
 
     use super::*;
@@ -702,6 +705,120 @@ mod tests {
             })
             .collect();
         assert!(missing.is_empty(), "{missing:#?}");
+    }
+
+    // sanity-checking the rune icon packs before I hand them over
+
+    static VANILLA_SHOUTS: Lazy<Vec<Icon>> = Lazy::new(|| {
+        vec![
+            Icon::ShoutAnimalAllegiance,
+            Icon::ShoutAuraWhisper,
+            Icon::ShoutBattleFury,
+            Icon::ShoutBecomeEthereal,
+            Icon::ShoutBendWill,
+            Icon::ShoutBreathAttack,
+            Icon::ShoutCallDragon,
+            Icon::ShoutCallOfValor,
+            Icon::ShoutClearSkies,
+            Icon::ShoutCyclone,
+            Icon::ShoutDisarm,
+            Icon::ShoutDismay,
+            Icon::ShoutDragonAspect,
+            Icon::ShoutDragonrend,
+            Icon::ShoutDrainVitality,
+            Icon::ShoutElementalFury,
+            Icon::ShoutFireBreath,
+            Icon::ShoutFrostBreath,
+            Icon::ShoutIceForm,
+            Icon::ShoutKynesPeace,
+            Icon::ShoutMarkedForDeath,
+            Icon::ShoutPhantomForm,
+            Icon::ShoutSlowtime,
+            Icon::ShoutSoulTear,
+            Icon::ShoutStormcall,
+            Icon::ShoutSummonDurnehviir,
+            Icon::ShoutThrowVoice,
+            Icon::ShoutUnrelentingForce,
+            Icon::ShoutWhirlwindSprint,
+        ]
+    });
+
+    #[test]
+    #[ignore]
+    fn validate_rune_icons() {
+        let missing: Vec<&Icon> = VANILLA_SHOUTS
+            .iter()
+            .filter(|icon| {
+                let fpath: PathBuf = ["layouts/unused/soulsy_vanilla", icon.icon_file().as_str()]
+                    .iter()
+                    .collect();
+
+                if !fpath.exists() {
+                    eprintln!("{icon:?} missing: vanilla rune shout");
+                    true
+                } else {
+                    false
+                }
+            })
+            .collect();
+        assert!(missing.is_empty());
+    }
+
+    #[test]
+    #[ignore]
+    fn validate_thunderchild_icons() {
+        let mut thunderchild_shouts: Vec<Icon> = vec![
+            Icon::ShoutAlessiasLove,
+            Icon::ShoutAnnihilate,
+            Icon::ShoutArcaneHelix,
+            Icon::ShoutArmageddon,
+            Icon::ShoutCurse,
+            Icon::ShoutDanceOfTheDead,
+            Icon::ShoutEarthquake,
+            Icon::ShoutEssenceRip,
+            Icon::ShoutEvocation,
+            Icon::ShoutGeomagnetism,
+            Icon::ShoutIceborn,
+            Icon::ShoutJonesShadow,
+            Icon::ShoutKingsbane,
+            Icon::ShoutLifestream,
+            Icon::ShoutLightningShield,
+            Icon::ShoutOblivion,
+            Icon::ShoutPhantomDecoy,
+            Icon::ShoutRiftwalk,
+            Icon::ShoutShattersphere,
+            Icon::ShoutShorsWrath,
+            Icon::ShoutShroudOfSnowfall,
+            Icon::ShoutSpeakUntoTheStars,
+            Icon::ShoutSplinterTwins,
+            Icon::ShoutStormblast,
+            Icon::ShoutTheConqueror,
+            Icon::ShoutTrueshot,
+            Icon::ShoutWailOfTheBanshee,
+            Icon::ShoutWanderlust,
+            Icon::ShoutWarcry,
+        ];
+        thunderchild_shouts.extend_from_slice(VANILLA_SHOUTS.as_slice());
+
+        let missing: Vec<&Icon> = thunderchild_shouts
+            .iter()
+            .filter(|icon| {
+                let fpath: PathBuf = [
+                    "layouts/unused/soulsy_thunderchild",
+                    icon.icon_file().as_str(),
+                ]
+                .iter()
+                .collect();
+
+                if !fpath.exists() {
+                    eprintln!("{icon:?} missing: thunderchild shout");
+                    true
+                } else {
+                    false
+                }
+            })
+            .collect();
+        assert!(missing.is_empty());
     }
 
     #[test]
