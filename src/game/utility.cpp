@@ -85,7 +85,7 @@ namespace game
 		// rlog::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
-		rlog::debug("toggleArmorByForm() calling boundObjectForForm()");
+		rlog::debug("toggleArmorByForm() calling boundObjectMatchName()");
 		auto remaining = boundObjectMatchName(form, nameToMatch, obj, data);
 
 		if (!obj || remaining == 0)
@@ -117,7 +117,7 @@ namespace game
 		// rlog::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
-		rlog::debug("equipArmorByForm() calling boundObjectForForm()");
+		rlog::debug("equipArmorByForm() calling boundObjectMatchName()");
 		auto remaining = boundObjectMatchName(form, nameToMatch, obj, data);
 
 		if (!obj || remaining == 0)

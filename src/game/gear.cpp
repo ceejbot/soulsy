@@ -131,7 +131,9 @@ namespace game
 
 		if (!foundObject) { return 0; }
 
-		rlog::debug("found worn bound object '{}';" rlog::formatAsHex(foundObject->formID));
+		rlog::debug("boundObjectForWornItem(constraint={}) found formid='{}';",
+			static_cast<std::underlying_type_t<WornWhere>>(constraint),
+			rlog::formatAsHex(foundObject->formID));
 
 		if (extraDataCopy.size() > 0)
 		{
@@ -202,7 +204,7 @@ namespace game
 		if (!foundObject) { return 0; }
 
 		rlog::debug(
-			"found bound object matching name '{}'; formID={};"sv, nameToMatch, rlog::formatAsHex(foundObject->formID));
+			"boundObjectMatchName '{}'; found formID={};"sv, nameToMatch, rlog::formatAsHex(foundObject->formID));
 
 		if (extraDataCopy.size() > 0)
 		{
@@ -308,7 +310,6 @@ namespace game
 		// TODO I don't think this handles spells
 		RE::TESBoundObject* bound_obj = nullptr;
 		EquippableItemData* data      = nullptr;
-		auto* thePlayer               = RE::PlayerCharacter::GetSingleton();
 		rlog::debug("isItemFavorited() calling boundObjectForForm()");
 		game::boundObjectForForm(form, bound_obj, data);
 		if (data) { return data->isFavorite; }
@@ -317,7 +318,6 @@ namespace game
 
 	bool isItemPoisoned(const RE::TESForm* form)
 	{
-		auto* thePlayer          = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
 		// rlog::debug("isItemPoisoned() calling boundObjectForForm()");
@@ -390,7 +390,7 @@ namespace game
 
 		RE::TESBoundObject* equipObject = nullptr;
 		EquippableItemData* data        = nullptr;
-		rlog::debug("equipIemByFormAndSlot() calling boundObjectForForm()");
+		rlog::debug("equipIemByFormAndSlot() calling boundObjectMatchName('{}')", nameToMatch);
 		auto foundCount = boundObjectMatchName(form, nameToMatch, equipObject, data);
 		if (foundCount == 0)
 		{
