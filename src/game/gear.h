@@ -10,6 +10,13 @@ namespace game
 {
 	using namespace soulsy;
 
+	enum class WornWhere
+	{
+		kAnywhere,
+		kRightOnly,
+		kLeftOnly,
+	};
+
 	// This struct holds useful information gleaned from item extra data,
 	// for convenience when building hud items, equipping an item, or
 	// unequipping it. If you make one, you are responsible for deleting it.
@@ -36,13 +43,27 @@ namespace game
 	// Ask the game for the shouts/powers slot.
 	RE::BGSEquipSlot* power_equip_slot();
 
-	// Find a bound object matching this form in the player's inventory. Caller must provide
-	// pointers to bound object and extra data list references to receive found data. Returns
-	// the number of such items the player has in their inventory.
-	int boundObjectForForm(const RE::TESForm* form,
-		RE::PlayerCharacter*& the_player,
-		RE::TESBoundObject*& outval,
-		EquippableItemData*& outdata);
+	// The next functions find a bound object matching this form in the player's
+	// inventory. Caller must provide pointers to bound object and extra data list
+	// references to receive found data.
+	// All return the number of such items the player has in their inventory.
+
+	// Finds only items worn in the specified hand. Pass anywhere for armor or if you
+	// don't care which hand.
+	int boundObjectForWornItem(const RE::TESForm* form,
+		WornWhere constraint,
+		RE::TESBoundObject*& outobj,
+		EquippableItemData*& outEquipData);
+
+	// Returns only exact name matches.
+	int boundObjectMatchName(const RE::TESForm* form,
+		const std::string& nameToMatch,
+		RE::TESBoundObject*& outobj,
+		EquippableItemData*& outEquipData);
+
+	// Returns first found.
+	int boundObjectForForm(const RE::TESForm* form, RE::TESBoundObject*& outobj, EquippableItemData*& outEquipData);
+
 	// Similar to boundObjectForForm(), but fills out an inventory entry instead of extra data lists.
 	bool inventoryEntryDataFor(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::InventoryEntryData*& outentry);
 
@@ -58,7 +79,10 @@ namespace game
 	const char* displayName(const RE::TESForm* form);
 
 	// Equip a form in either the left or right hand. Handles weapons/shields directly, but delegates spells.
-	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
+	void equipItemByFormAndSlot(RE::TESForm* form,
+		RE::BGSEquipSlot*& slot,
+		RE::PlayerCharacter*& the_player,
+		const std::string& nameToMatch);
 	// Equip a spell in either the left or right hand.
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 

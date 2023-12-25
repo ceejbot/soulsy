@@ -544,13 +544,13 @@ pub mod plugin {
         /// Equip the spell matching the form spec.
         fn equipMagic(form_spec: &CxxString, which: Action);
         /// Equip the weapon matching the form spec.
-        fn equipWeapon(form_spec: &CxxString, which: Action);
+        fn equipWeapon(form_spec: &CxxString, which: Action, name: &CxxString);
         /// Re-equip an item in the left hand. This forces an un-equip first.
-        fn reequipHand(which: Action, form_spec: &CxxString);
+        fn reequipHand(which: Action, form_spec: &CxxString, name: &CxxString);
         /// Toggle the armor matching the form spec.
-        fn toggleArmor(form_spec: &CxxString);
+        fn toggleArmor(form_spec: &CxxString, name: &CxxString);
         /// Equip the armor; do not toggle.
-        fn equipArmor(form_spec: &CxxString);
+        fn equipArmor(form_spec: &CxxString, name: &CxxString);
         /// Equip the ammo matching the form spec.
         fn equipAmmo(form_spec: &CxxString);
         /// Potions great and small.

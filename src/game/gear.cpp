@@ -66,11 +66,93 @@ namespace game
 		return found;
 	}
 
-	int boundObjectForForm(const RE::TESForm* form,
-		RE::PlayerCharacter*& thePlayer,
+	// Returns only matches that are currently equipped. If you w
+	int boundObjectForWornItem(const RE::TESForm* form,
+		WornWhere constraint,
 		RE::TESBoundObject*& outobj,
 		EquippableItemData*& outEquipData)
 	{
+		// TODO
+		// filter matches by is-worn
+	}
+
+	// Returns only exact name matches.
+	int boundObjectMatchName(const RE::TESForm* form,
+		const std::string& nameToMatch,
+		RE::TESBoundObject*& outobj,
+		EquippableItemData*& outEquipData)
+	{
+		const auto* baseName = form->GetName();
+		// If we don't need to match the name, we don't do that work.
+		if (std::string(baseName) == nameToMatch) { return boundObjectForForm(form, outobj, outEquipData); }
+
+		auto* thePlayer                 = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* foundObject = nullptr;
+		EquippableItemData equipData    = EquippableItemData();
+		std::vector<RE::ExtraDataList*> extra_vector;
+
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		std::vector<RE::ExtraDataList*> extraDataCopy;
+
+		for (const auto& [item, inventoryData] : candidates)
+		{
+			const auto& [countHeld, entry] = inventoryData;
+			if (entry->object->formID == form->formID)
+			{
+				// there are two caes where we know we have a match:
+				// first, when countHeld == 1
+				// second, the name matches
+				if (countHeld > 1)
+				{
+					const auto* candidateName = std::string(entry->GetDisplayName());
+					if (candidateName != nameToMatch) { continue; }
+				}
+				// we have a match. This next part is probably extractable into a function.
+				foundObject     = item;
+				equipData.count = 1;
+
+				auto simpleList = entry->extraLists;
+				if (simpleList)
+				{
+					for (auto* extraData : *simpleList)
+					{
+						extraDataCopy.push_back(extraData);
+						bool isWorn     = extraData->HasType(RE::ExtraDataType::kWorn);
+						bool isWornLeft = extraData->HasType(RE::ExtraDataType::kWornLeft);
+						equipData.isFavorite |= extraData->HasType(RE::ExtraDataType::kHotkey);
+						equipData.isPoisoned |= extraData->HasType(RE::ExtraDataType::kPoison);
+
+						if (isWorn) { equipData.isWorn = true; }
+						else if (isWornLeft) { equipData.isWornLeft = true; }
+					}
+				}
+				break;
+			}  // end of if block
+		}      // end of candidates loop
+
+		if (!foundObject) { return 0; }
+
+		rlog::debug(
+			"found bound object matching name '{}'; formID={};"sv, nameToMatch, rlog::formatAsHex(foundObject->formID));
+
+		if (extraDataCopy.size() > 0)
+		{
+			if (equipData.isWorn) { equipData.wornExtraList = extraDataCopy.back(); }
+			else if (equipData.isWornLeft) { equipData.wornLeftExtraList = extraDataCopy.back(); }
+			else { equipData.itemExtraList = extraDataCopy.back(); }
+		}
+
+		outobj       = foundObject;
+		outEquipData = &equipData;
+		return equipData.count;
+	}
+
+	// Returns first found.
+	int boundObjectForForm(const RE::TESForm* form, RE::TESBoundObject*& outobj, EquippableItemData*& outEquipData)
+	{
+		auto* thePlayer                 = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* foundObject = nullptr;
 		EquippableItemData equipData    = EquippableItemData();
 		std::vector<RE::ExtraDataList*> extra_vector;
@@ -84,9 +166,6 @@ namespace game
 		for (const auto& [item, inventoryData] : candidates)
 		{
 			const auto& [num_items, entry] = inventoryData;
-			// TODO after base case is working, refactor to allow comparing to the
-			// exact item name we want to equip. This will need to get passed down
-			// from the equip-item call on the Rust side, because rust has this data.
 			if (entry->object->formID == form->formID)
 			{
 				foundObject     = item;
@@ -166,7 +245,7 @@ namespace game
 		EquippableItemData* data      = nullptr;
 		auto* thePlayer               = RE::PlayerCharacter::GetSingleton();
 		rlog::debug("isItemFavorited() calling boundObjectForForm()");
-		game::boundObjectForForm(form, thePlayer, bound_obj, data);
+		game::boundObjectForForm(form, bound_obj, data);
 		if (data) { return data->isFavorite; }
 		return false;
 	}
@@ -177,7 +256,7 @@ namespace game
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
 		// rlog::debug("isItemPoisoned() calling boundObjectForForm()");
-		[[maybe_unused]] auto count = boundObjectForForm(form, thePlayer, obj, data);
+		[[maybe_unused]] auto count = boundObjectForForm(form, obj, data);
 		if (data) { return data->isPoisoned; }
 		return false;
 	}
@@ -220,7 +299,10 @@ namespace game
 		return form->GetName();
 	}
 
-	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& thePlayer)
+	void equipItemByFormAndSlot(RE::TESForm* form,
+		RE::BGSEquipSlot*& slot,
+		RE::PlayerCharacter*& thePlayer,
+		const std::string& nameToMatch)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
@@ -244,10 +326,10 @@ namespace game
 		RE::TESBoundObject* equipObject = nullptr;
 		EquippableItemData* data        = nullptr;
 		rlog::debug("equipIemByFormAndSlot() calling boundObjectForForm()");
-		auto item_count = boundObjectForForm(form, thePlayer, equipObject, data);
-		if (!equipObject)
+		auto foundCount = boundObjectMatchName(form, nameToMatch, equipObject, data);
+		if (foundCount == 0)
 		{
-			rlog::debug("unable to find bound object for name='{}'"sv, form->GetName());
+			rlog::debug("unable to find bound object for name='{}'"sv, nameToMatch);
 			return;
 		}
 

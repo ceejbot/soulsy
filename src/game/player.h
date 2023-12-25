@@ -35,13 +35,13 @@ namespace player
 	void unequipShout();
 	void equipShout(const std::string& form_spec);
 	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout);
-	void reequipHand(Action which, const std::string& form_spec);
-	void toggleArmor(const std::string& form_spec);
-	void equipArmor(const std::string& form_spec);
-	void unequipSlotByShift(uint8_t shift);
+	void reequipHand(Action which, const std::string& form_spec, const std::string& nameToMatch);
+	void equipWeapon(const std::string& form_spec, Action slot, const std::string& nameToMatch);
 	void equipMagic(const std::string& form_spec, Action slot);
-	void equipWeapon(const std::string& form_spec, Action slot);
 	void equipAmmo(const std::string& form_spec);
+	void toggleArmor(const std::string& form_spec, const std::string& nameToMatch);
+	void equipArmor(const std::string& form_spec, const std::string& nameToMatch);
+	void unequipSlotByShift(uint8_t shift);
 
 	void consumePotion(const std::string& form_spec);
 

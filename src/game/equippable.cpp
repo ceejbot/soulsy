@@ -157,7 +157,7 @@ namespace equippable
 		auto* thePlayer                    = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* boundObject    = nullptr;
 		game::EquippableItemData* itemData = nullptr;
-		game::boundObjectForForm(form, thePlayer, boundObject, itemData);
+		game::boundObjectForForm(form, boundObject, itemData);
 
 		if (!itemData || !boundObject)
 		{

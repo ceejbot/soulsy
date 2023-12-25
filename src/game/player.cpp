@@ -36,20 +36,21 @@ namespace player
 
 	rust::String specEquippedLeft()
 	{
-		auto* player   = RE::PlayerCharacter::GetSingleton();
+		auto* player = RE::PlayerCharacter::GetSingleton();
+		// I think this is a form already????
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 		if (!obj) return std::string("unarmed_proxy");
 
-		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return std::string("unarmed_proxy");
+		auto* form = RE::TESForm::LookupByID(obj->formID);
+		if (!form) return std::string("unarmed_proxy");
 
-		RE::TESBoundObject* bound_obj  = nullptr;
+		RE::TESBoundObject* bound      = nullptr;
 		game::EquippableItemData* data = nullptr;
 		rlog::debug("specEquippedLeft() calling boundObjectForForm()");
-		game::boundObjectForForm(item_form, player, bound_obj, data);
+		game::boundObjectForWornItem(form, game::WornWhere::kLeftOnly, bound, data);
 
-		if (bound_obj) { return helpers::makeFormSpecString(bound_obj); }
-		else { return helpers::makeFormSpecString(item_form); }
+		if (bound) { return helpers::makeFormSpecString(bound); }
+		else { return helpers::makeFormSpecString(form); }
 	}
 
 	rust::String specEquippedRight()
@@ -58,16 +59,16 @@ namespace player
 		const auto obj = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
 		if (!obj) return std::string("unarmed_proxy");
 
-		auto* item_form = RE::TESForm::LookupByID(obj->formID);
-		if (!item_form) return std::string("unarmed_proxy");
+		auto* form = RE::TESForm::LookupByID(obj->formID);
+		if (!form) return std::string("unarmed_proxy");
 
-		RE::TESBoundObject* bound_obj  = nullptr;
+		RE::TESBoundObject* bound      = nullptr;
 		game::EquippableItemData* data = nullptr;
 		rlog::debug("specEquippedRight() calling boundObjectForForm()");
-		game::boundObjectForForm(item_form, player, bound_obj, data);
+		game::boundObjectForWornItem(form, game::WornWhere::kRightOnly, bound, data);
 
-		if (bound_obj) { return helpers::makeFormSpecString(bound_obj); }
-		else { return helpers::makeFormSpecString(item_form); }
+		if (bound) { return helpers::makeFormSpecString(bound); }
+		else { return helpers::makeFormSpecString(form); }
 	}
 
 	rust::String specEquippedPower()
@@ -174,29 +175,29 @@ namespace player
 		game::equipSpellByFormAndSlot(form, equip_slot, player);
 	}
 
-	void equipWeapon(const std::string& form_spec, Action slot)
+	void equipWeapon(const std::string& form_spec, Action slot, const std::string& nameToMatch)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player     = RE::PlayerCharacter::GetSingleton();
 		auto* equip_slot = (slot == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot());
-		game::equipItemByFormAndSlot(form, equip_slot, player);
+		game::equipItemByFormAndSlot(form, equip_slot, player, nameToMatch);
 	}
 
-	void toggleArmor(const std::string& form_spec)
+	void toggleArmor(const std::string& form_spec, const std::string& nameToMatch)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		game::toggleArmorByForm(form, player);
+		game::toggleArmorByForm(form, player, nameToMatch);
 	}
 
-	void equipArmor(const std::string& form_spec)
+	void equipArmor(const std::string& form_spec, const std::string& nameToMatch)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		game::equipArmorByForm(form, player);
+		game::equipArmorByForm(form, player, nameToMatch);
 	}
 
 	void equipAmmo(const std::string& form_spec)
@@ -276,14 +277,14 @@ namespace player
 		return has_it;
 	}
 
-	void reequipHand(Action which, const std::string& form_spec)
+	void reequipHand(Action which, const std::string& form_spec, const std::string& nameToMatch)
 	{
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 
 		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		auto* slot      = which == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot();
-		game::equipItemByFormAndSlot(form, slot, thePlayer);
+		game::equipItemByFormAndSlot(form, slot, thePlayer, nameToMatch);
 	}
 
 	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)

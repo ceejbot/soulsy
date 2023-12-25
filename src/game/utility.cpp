@@ -19,7 +19,7 @@ namespace game
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
 		rlog::debug("equipAmmoByForm() calling boundObjectForForm()");
-		auto remaining = boundObjectForForm(form, thePlayer, obj, data);
+		auto remaining = boundObjectForForm(form, obj, data);
 
 		if (!obj || remaining == 0)
 		{
@@ -79,14 +79,14 @@ namespace game
 		return isWorn;
 	}
 
-	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer)
+	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch)
 	{
 		// This is a toggle in reality. Also, use this as a model for other equip funcs.
 		// rlog::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
 		rlog::debug("toggleArmorByForm() calling boundObjectForForm()");
-		auto remaining = boundObjectForForm(form, thePlayer, obj, data);
+		auto remaining = boundObjectMatchName(form, nameToMatch, obj, data);
 
 		if (!obj || remaining == 0)
 		{
@@ -101,25 +101,24 @@ namespace game
 			return;
 		}
 
-		const auto is_worn  = isItemWorn(obj, thePlayer);
 		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-		if (is_worn)
+		if (data->isWorn)
 		{
-			task->AddTask([=]() { equip_manager->UnequipObject(thePlayer, obj); });
+			task->AddTask([=]() { equip_manager->UnequipObject(thePlayer, obj, data->wornExtraList); });
 		}
 		else
 		{
-			task->AddTask([=]() { equip_manager->EquipObject(thePlayer, obj); });
+			task->AddTask([=]() { equip_manager->EquipObject(thePlayer, obj, data->itemExtraList); });
 		}
 	}
 
-	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer)
+	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch)
 	{
 		// rlog::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
 		rlog::debug("equipArmorByForm() calling boundObjectForForm()");
-		auto remaining = boundObjectForForm(form, thePlayer, obj, data);
+		auto remaining = boundObjectMatchName(form, nameToMatch, obj, data);
 
 		if (!obj || remaining == 0)
 		{
@@ -127,12 +126,11 @@ namespace game
 			return;
 		}
 
-		const auto is_worn = isItemWorn(obj, thePlayer);
-		if (!is_worn)
+		if (!data->isWorn)
 		{
 			auto* task         = SKSE::GetTaskInterface();
 			auto* equipManager = RE::ActorEquipManager::GetSingleton();
-			task->AddTask([=]() { equipManager->EquipObject(thePlayer, obj); });
+			task->AddTask([=]() { equipManager->EquipObject(thePlayer, obj, data->itemExtraList); });
 		}
 	}
 
@@ -147,7 +145,7 @@ namespace game
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
 		rlog::debug("consumePotion() calling boundObjectForForm()");
-		auto remaining = boundObjectForForm(potionForm, thePlayer, obj, data);
+		auto remaining = boundObjectForForm(potionForm, obj, data);
 
 		if (!obj || remaining == 0)
 		{
@@ -174,7 +172,8 @@ namespace game
 
 		auto* task = SKSE::GetTaskInterface();
 		if (!task) { return; }
-		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, alchemyItem); });
+		task->AddTask(
+			[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, alchemyItem, data->itemExtraList); });
 	}
 
 	void poisonWeapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& poison, uint32_t remaining)

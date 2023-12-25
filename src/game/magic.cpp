@@ -144,7 +144,7 @@ namespace game
 
 		RE::TESBoundObject* obj  = nullptr;
 		EquippableItemData* data = nullptr;
-		auto item_count          = boundObjectForForm(form, player, obj, data);
+		auto item_count          = boundObjectForForm(form, obj, data);
 
 		if (!obj || item_count == 0)
 		{
