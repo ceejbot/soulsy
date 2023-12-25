@@ -311,7 +311,7 @@ namespace game
 		const std::string& nameToMatch)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
-		rlog::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
+		rlog::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
 			form->GetName(),
 			slot_is_left,
 			form->GetFormType());
@@ -386,7 +386,7 @@ namespace game
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
-		rlog::debug("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
+		rlog::trace("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
 			form->GetName(),
 			slot_is_left,
 			form->GetFormType());

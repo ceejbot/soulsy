@@ -983,7 +983,7 @@ impl Controller {
         if !self.left_hand_cached.is_empty() {
             let unarmed = HudItem::make_unarmed_proxy();
             let prev_left = self.left_hand_cached.clone();
-            log::debug!(
+            log::trace!(
                 "re-requipping what we previously had in the LEFT hand; spec={};",
                 prev_left
             );
@@ -1134,7 +1134,7 @@ impl Controller {
 
         let treat_as_two_hander = self.treat_as_two_handed(&item);
         let switching = item.two_handed() != self.two_hander_equipped;
-        log::debug!("weapon grip normally={}; alt-grip={}; we are treating it like: 2-hander={treat_as_two_hander}; switching={switching};",
+        log::trace!("weapon grip normally={}; alt-grip={}; we are treating it like: 2-hander={treat_as_two_hander}; switching={switching};",
             item.two_handed(), self.cgo_alt_grip);
         self.two_hander_equipped = item.two_handed();
 
@@ -1292,7 +1292,7 @@ impl Controller {
         }
 
         log::info!(
-            "HUD updated. Now showing: power='{}'; left='{}'; right='{}'; ammo='{}';",
+            "HUD initialized. Now showing: power='{}'; left='{}'; right='{}'; ammo='{}';",
             power.name(),
             left_entry.name(),
             right_entry.name(),
