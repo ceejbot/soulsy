@@ -66,14 +66,83 @@ namespace game
 		return found;
 	}
 
-	// Returns only matches that are currently equipped. If you w
+	// The next three functions have some refactoring opportunities, as they
+	// say. However, I am first getting them working properly before cleaning up.
+
+	// Returns only matches that are currently equipped, so 0, 1, or 2 are your
+	// only possible return values. Heh.
 	int boundObjectForWornItem(const RE::TESForm* form,
 		WornWhere constraint,
 		RE::TESBoundObject*& outobj,
 		EquippableItemData*& outEquipData)
 	{
-		// TODO
-		// filter matches by is-worn
+		auto* thePlayer                 = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* foundObject = nullptr;
+		EquippableItemData equipData    = EquippableItemData();
+		std::vector<RE::ExtraDataList*> extraDataCopy;
+
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		bool matchFound = false;
+		for (const auto& [item, inventoryData] : candidates)
+		{
+			const auto& [countHeld, entry] = inventoryData;
+
+			if (entry->object->formID == form->formID)
+			{
+				EquippableItemData tmpData = EquippableItemData();
+				std::vector<RE::ExtraDataList*> tmpExtra;
+				// We walk extra data and wait until we have a worn item
+				// before we decide we have a match.
+				auto simpleList = entry->extraLists;
+				if (simpleList)
+				{
+					for (auto* extraData : *simpleList)
+					{
+						tmpExtra.push_back(extraData);
+						bool isWorn     = extraData->HasType(RE::ExtraDataType::kWorn);
+						bool isWornLeft = extraData->HasType(RE::ExtraDataType::kWornLeft);
+
+						if (isWornLeft)
+						{
+							matchFound = constraint == WornWhere::kLeftOnly || constraint == WornWhere::kAnywhere;
+						}
+						else if (isWorn)
+						{
+							matchFound = constraint == WornWhere::kRightOnly || constraint == WornWhere::kAnywhere;
+						}
+
+						tmpData.isFavorite |= extraData->HasType(RE::ExtraDataType::kHotkey);
+						tmpData.isPoisoned |= extraData->HasType(RE::ExtraDataType::kPoison);
+
+						if (isWorn) { tmpData.isWorn = true; }
+						else if (isWornLeft) { tmpData.isWornLeft = true; }
+					}
+				}
+				if (matchFound)
+				{
+					extraDataCopy = tmpExtra;
+					equipData     = tmpData;
+					break;
+				}
+			}  // end of if block
+		}      // end of candidates loop
+
+		if (!foundObject) { return 0; }
+
+		rlog::debug("found worn bound object '{}';" rlog::formatAsHex(foundObject->formID));
+
+		if (extraDataCopy.size() > 0)
+		{
+			if (equipData.isWorn) { equipData.wornExtraList = extraDataCopy.back(); }
+			else if (equipData.isWornLeft) { equipData.wornLeftExtraList = extraDataCopy.back(); }
+			else { equipData.itemExtraList = extraDataCopy.back(); }
+		}
+
+		outobj       = foundObject;
+		outEquipData = &equipData;
+		return equipData.count;
 	}
 
 	// Returns only exact name matches.
@@ -89,21 +158,19 @@ namespace game
 		auto* thePlayer                 = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* foundObject = nullptr;
 		EquippableItemData equipData    = EquippableItemData();
-		std::vector<RE::ExtraDataList*> extra_vector;
+		std::vector<RE::ExtraDataList*> extraDataCopy;
 
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(thePlayer, form->GetFormType());
-
-		std::vector<RE::ExtraDataList*> extraDataCopy;
 
 		for (const auto& [item, inventoryData] : candidates)
 		{
 			const auto& [countHeld, entry] = inventoryData;
 			if (entry->object->formID == form->formID)
 			{
-				// there are two caes where we know we have a match:
+				// there are two cases where we know we have a match:
 				// first, when countHeld == 1
-				// second, the name matches
+				// second, when the name matches
 				if (countHeld > 1)
 				{
 					const auto candidateName = std::string(entry->GetDisplayName());
@@ -155,14 +222,12 @@ namespace game
 		auto* thePlayer                 = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* foundObject = nullptr;
 		EquippableItemData equipData    = EquippableItemData();
-		std::vector<RE::ExtraDataList*> extra_vector;
+		std::vector<RE::ExtraDataList*> extraDataCopy;
 
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(thePlayer, form->GetFormType());
 
 		auto count = 0;
-		std::vector<RE::ExtraDataList*> extraDataCopy;
-
 		for (const auto& [item, inventoryData] : candidates)
 		{
 			const auto& [num_items, entry] = inventoryData;
