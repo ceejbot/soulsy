@@ -154,7 +154,6 @@ namespace equippable
 		KeywordAccumulator::clear();
 		if (!form->IsInventoryObject()) { return nonInventoryHudItem(form); }
 
-		auto* thePlayer                    = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* boundObject    = nullptr;
 		game::EquippableItemData* itemData = nullptr;
 		game::boundObjectForForm(form, boundObject, itemData);

@@ -106,7 +106,7 @@ namespace game
 				// second, the name matches
 				if (countHeld > 1)
 				{
-					const auto* candidateName = std::string(entry->GetDisplayName());
+					const auto candidateName = std::string(entry->GetDisplayName());
 					if (candidateName != nameToMatch) { continue; }
 				}
 				// we have a match. This next part is probably extractable into a function.
@@ -356,10 +356,10 @@ namespace game
 		if (obj_equipped_right) { equipped_count++; }
 		rlog::trace("checking how many '{}' we have available; count={}; equipped_count={}"sv,
 			equipObject->GetName(),
-			item_count,
+			foundCount,
 			equipped_count);
 
-		if (item_count == equipped_count)
+		if (foundCount == equipped_count)
 		{
 			// The game might try to equip something else, according to mlthelama.
 			unequipLeftOrRightSlot(thePlayer, slot);
@@ -383,12 +383,6 @@ namespace game
 
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
-		if (form->Is(RE::FormType::Scroll))
-		{
-			equipItemByFormAndSlot(form, slot, player);
-			return;
-		}
-
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::debug("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
 			form->GetName(),
