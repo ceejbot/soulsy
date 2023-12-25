@@ -72,27 +72,34 @@ namespace equippable
 		return data;
 	}
 
-	rust::Box<HudItem> nonInventoryHudItem(RE::TESForm* form)
+	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form)
 	{
 		if (!form) { return empty_huditem(); }
 
-		auto loggerName         = game::displayName(form);
-		auto chonker            = helpers::chars_to_vec(loggerName);
-		std::string form_string = helpers::makeFormSpecString(form);
-		bool two_handed         = requiresTwoHands(form);
+		RE::TESBoundObject* boundObject = nullptr;
+		RE::ExtraDataList* extraData    = nullptr;
+		const auto count                = game::boundObjectForForm(form, boundObject, extraData);
+
+		auto loggerName = boundObject ? game::displayName(boundObject) : game::displayName(form);
+		auto chonker    = helpers::chars_to_vec(loggerName);
+		std::string formSpec =
+			boundObject ? helpers::makeFormSpecString(boundObject) : helpers::makeFormSpecString(form);
+		bool twoHanded = requiresTwoHands(form);
+
+		KeywordAccumulator::clear();
 
 		if (form->Is(RE::FormType::Shout))
 		{
 			rlog::trace("making HudItem for shout: '{}'"sv, loggerName);
 			auto* shout = form->As<RE::TESShout>();
 
-			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), formSpec);
 			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
-			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), form_string);
+			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), formSpec);
 
 			spell->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
-			categorize_shout(*keywords, std::move(chonker), form_string);
+			return categorize_shout(*keywords, std::move(chonker), formSpec);
 		}
 
 		if (form->Is(RE::FormType::Spell))
@@ -113,7 +120,7 @@ namespace equippable
 						effect->ForEachKeyword(KeywordAccumulator::collect);
 						auto& keywords          = KeywordAccumulator::mKeywords;
 						rust::Box<HudItem> item = hud_item_from_keywords(
-							ItemCategory::Power, *keywords, std::move(chonker), form_string, 1, false);
+							ItemCategory::Power, *keywords, std::move(chonker), formSpec, 1, false);
 						return item;
 					}
 				}
@@ -130,44 +137,13 @@ namespace equippable
 					effect->ForEachKeyword(KeywordAccumulator::collect);
 					auto& keywords          = KeywordAccumulator::mKeywords;
 					auto skill_level        = effect->GetMinimumSkillLevel();
-					auto data               = fillOutSpellData(two_handed, skill_level, effect);
+					auto data               = fillOutSpellData(twoHanded, skill_level, effect);
 					rust::Box<HudItem> item = magic_from_spelldata(
-						ItemCategory::Spell, std::move(data), *keywords, std::move(chonker), form_string, 1);
+						ItemCategory::Spell, std::move(data), *keywords, std::move(chonker), formSpec, 1);
 					return item;
 				}
 			}
 		}
-
-		const auto formtype    = form->GetFormType();
-		const auto formtypestr = RE::FormTypeToString(formtype);
-		rlog::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",
-			formtypestr,
-			loggerName,
-			form_string);
-		return empty_huditem();
-	}
-
-	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form)
-	{
-		if (!form) { return empty_huditem(); }
-
-		KeywordAccumulator::clear();
-		if (!form->IsInventoryObject()) { return nonInventoryHudItem(form); }
-
-		RE::TESBoundObject* boundObject = nullptr;
-		RE::ExtraDataList* extraData    = nullptr;
-		const auto count                = game::boundObjectForForm(form, boundObject, extraData);
-
-		if (!boundObject)
-		{
-			rlog::warn("Inventory object not found in inventory. {}", rlog::formatAsHex(form->GetFormID()));
-			return empty_huditem();
-		}
-
-		auto loggerName      = game::displayName(form);
-		auto chonker         = helpers::chars_to_vec(loggerName);
-		std::string formSpec = helpers::makeFormSpecString(boundObject);
-		bool twoHanded       = requiresTwoHands(form);
 
 		if (form->Is(RE::FormType::Ammo))
 		{

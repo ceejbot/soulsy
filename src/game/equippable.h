@@ -9,8 +9,6 @@
 namespace equippable
 {
 	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form);
-	// Handles spells, shouts, etc.
-	rust::Box<HudItem> nonInventoryHudItem(RE::TESForm* item_form);
 	rust::Box<SpellData> fillOutSpellData(bool two_handed, int32_t skill_level, const RE::EffectSetting* effect);
 
 	bool requiresTwoHands(RE::TESForm*& form);
