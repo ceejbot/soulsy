@@ -162,7 +162,7 @@ namespace game
 		auto* alchemyItem = obj->As<RE::AlchemyItem>();
 		if (alchemyItem->IsPoison())
 		{
-			poisonWeapon(thePlayer, alchemyItem, remaining);
+			poisonWeapon(thePlayer, alchemyItem, remaining, extraData);
 			return;
 		}
 

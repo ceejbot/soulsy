@@ -156,9 +156,9 @@ namespace equippable
 
 		RE::TESBoundObject* boundObject = nullptr;
 		RE::ExtraDataList* extraData    = nullptr;
-		game::boundObjectForForm(form, boundObject, extraData);
+		const auto count                = game::boundObjectForForm(form, boundObject, extraData);
 
-		if (!itemData || !boundObject)
+		if (!boundObject)
 		{
 			rlog::warn("Inventory object not found in inventory. {}", rlog::formatAsHex(form->GetFormID()));
 			return empty_huditem();
@@ -176,8 +176,8 @@ namespace equippable
 			ammo->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
 
-			rust::Box<HudItem> item = hud_item_from_keywords(
-				ItemCategory::Ammo, *keywords, std::move(chonker), formSpec, itemData->count, false);
+			rust::Box<HudItem> item =
+				hud_item_from_keywords(ItemCategory::Ammo, *keywords, std::move(chonker), formSpec, count, false);
 			return item;
 		}
 
@@ -191,7 +191,7 @@ namespace equippable
 				auto& keywords = KeywordAccumulator::mKeywords;
 				if (weapon->IsBound()) { keywords->push_back(std::string("OCF_InvColorBound")); }
 				rust::Box<HudItem> item = hud_item_from_keywords(
-					ItemCategory::Weapon, *keywords, std::move(chonker), formSpec, itemData->count, twoHanded);
+					ItemCategory::Weapon, *keywords, std::move(chonker), formSpec, count, twoHanded);
 
 				return item;
 			}
@@ -202,9 +202,9 @@ namespace equippable
 			rlog::debug("making HudItem for armor: '{}'"sv, loggerName);
 			const auto* armor = form->As<RE::TESObjectARMO>();
 			armor->ForEachKeyword(KeywordAccumulator::collect);
-			auto& keywords          = KeywordAccumulator::mKeywords;
-			rust::Box<HudItem> item = hud_item_from_keywords(
-				ItemCategory::Armor, *keywords, std::move(chonker), formSpec, itemData->count, false);
+			auto& keywords = KeywordAccumulator::mKeywords;
+			rust::Box<HudItem> item =
+				hud_item_from_keywords(ItemCategory::Armor, *keywords, std::move(chonker), formSpec, count, false);
 
 			return item;
 		}
@@ -241,7 +241,7 @@ namespace equippable
 
 				auto data               = fillOutSpellData(twoHanded, skillLevel, effect);
 				rust::Box<HudItem> item = magic_from_spelldata(
-					ItemCategory::Scroll, std::move(data), *keywords, std::move(chonker), formSpec, itemData->count);
+					ItemCategory::Scroll, std::move(data), *keywords, std::move(chonker), formSpec, count);
 				return item;
 			}
 		}
@@ -254,9 +254,9 @@ namespace equippable
 			{
 				rlog::debug("making HudItem for food: '{}'"sv, loggerName);
 				alchemy_potion->ForEachKeyword(KeywordAccumulator::collect);
-				auto& keywords          = KeywordAccumulator::mKeywords;
-				rust::Box<HudItem> item = hud_item_from_keywords(
-					ItemCategory::Food, *keywords, std::move(chonker), formSpec, itemData->count, false);
+				auto& keywords = KeywordAccumulator::mKeywords;
+				rust::Box<HudItem> item =
+					hud_item_from_keywords(ItemCategory::Food, *keywords, std::move(chonker), formSpec, count, false);
 				return item;
 			}
 			else
@@ -264,11 +264,8 @@ namespace equippable
 				rlog::debug("making HudItem for potion: '{}'"sv, loggerName);
 				const auto* effect      = alchemy_potion->GetCostliestEffectItem()->baseEffect;
 				auto actor_value        = effect->data.primaryAV;
-				rust::Box<HudItem> item = potion_from_formdata(alchemy_potion->IsPoison(),
-					static_cast<int32_t>(actor_value),
-					itemData->count,
-					std::move(chonker),
-					formSpec);
+				rust::Box<HudItem> item = potion_from_formdata(
+					alchemy_potion->IsPoison(), static_cast<int32_t>(actor_value), count, std::move(chonker), formSpec);
 				return item;
 			}
 		}
