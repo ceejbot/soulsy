@@ -113,7 +113,7 @@ impl ShoutType {
             ShoutVariant::ThrowVoice => "Zul-mey-gut!",
             ShoutVariant::UnrelentingForce => "Fus-ro-dah!",
             ShoutVariant::WhirlwindSprint => "Wuld-nah-kest!",
-            ShoutVariant::SummonUndead => "Diil-qoth-zaam!",
+            ShoutVariant::SoulCairnSummon => "Diil-qoth-zaam!",
             // stormcrown
             ShoutVariant::LightningBreath => "Strun-gaar-kest",
             ShoutVariant::PoisonBreath => "Laas-slen-aus",
@@ -173,10 +173,8 @@ pub enum ShoutVariant {
     FrostBreath,
     IceForm,
     KynesPeace,
-    LightningBreath,
     MarkedForDeath,
     PhantomForm,
-    PoisonBreath,
     Slowtime,
     SoulTear,
     Stormcall,
@@ -185,7 +183,10 @@ pub enum ShoutVariant {
     UnrelentingForce,
     WhirlwindSprint,
     // unused dawnguard shout
-    SummonUndead,
+    SoulCairnSummon,
+    // Stormcrown
+    LightningBreath,
+    PoisonBreath,
     // Thunderchild shouts
     AlessiasLove,
     Annihilate,
@@ -454,5 +455,105 @@ static SHOUT_MAPPING: Lazy<HashMap<SpellKeywords, (ShoutVariant, Icon)>> = Lazy:
             SpellKeywords::Shout_Wanderlust,
             (ShoutVariant::Wanderlust, Icon::ShoutWanderlust),
         ),
+        (
+            SpellKeywords::Shout_LightningBreath,
+            (ShoutVariant::LightningBreath, Icon::ShoutLightningBreath),
+        ),
+        (
+            SpellKeywords::Shout_PoisonBreath,
+            (ShoutVariant::PoisonBreath, Icon::ShoutPoisonBreath),
+        ),
+        (
+            SpellKeywords::Shout_SoulCairnSummon,
+            (ShoutVariant::SoulCairnSummon, Icon::ShoutSoulCairnSummon),
+        ),
     ])
 });
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn all_keywords_used() {
+        let shoutwords: Vec<SpellKeywords> = vec![
+            SpellKeywords::Shout_AnimalAllegiance,
+            SpellKeywords::Shout_AuraWhisper,
+            SpellKeywords::Shout_BattleFury,
+            SpellKeywords::Shout_BecomeEthereal,
+            SpellKeywords::Shout_BendWill,
+            SpellKeywords::Shout_CallDragon,
+            SpellKeywords::Shout_CallOfValor,
+            SpellKeywords::Shout_ClearSkies,
+            SpellKeywords::Shout_Disarm,
+            SpellKeywords::Shout_Dismay,
+            SpellKeywords::Shout_DragonAspect,
+            SpellKeywords::Shout_Dragonrend,
+            SpellKeywords::Shout_DrainVitality,
+            SpellKeywords::Shout_ElementalFury,
+            SpellKeywords::Shout_FireBreath,
+            SpellKeywords::Shout_FrostBreath,
+            SpellKeywords::Shout_IceForm,
+            SpellKeywords::Shout_KynesPeace,
+            SpellKeywords::Shout_MarkedForDeath,
+            SpellKeywords::Shout_Slowtime,
+            SpellKeywords::Shout_SoulTear,
+            SpellKeywords::Shout_Stormcall,
+            SpellKeywords::Shout_SummonDurnehviir,
+            SpellKeywords::Shout_ThrowVoice,
+            SpellKeywords::Shout_UnrelentingForce,
+            SpellKeywords::Shout_WhirlwindSprint,
+            // Dawnguard unused spell
+            SpellKeywords::Shout_SoulCairnSummon,
+            // ForcefulTongue
+            SpellKeywords::Shout_PhantomForm,
+            // Stormcrown
+            SpellKeywords::Shout_LightningBreath,
+            SpellKeywords::Shout_PoisonBreath,
+            // Thunderchild
+            SpellKeywords::Shout_AlessiasLove,
+            SpellKeywords::Shout_Annihilate,
+            SpellKeywords::Shout_ArcaneHelix,
+            SpellKeywords::Shout_Armageddon,
+            SpellKeywords::Shout_Curse,
+            SpellKeywords::Shout_DanceOfTheDead,
+            SpellKeywords::Shout_Earthquake,
+            SpellKeywords::Shout_EssenceRip,
+            SpellKeywords::Shout_Evocation,
+            SpellKeywords::Shout_Geomagnetism,
+            SpellKeywords::Shout_Iceborn,
+            SpellKeywords::Shout_JonesShadow,
+            SpellKeywords::Shout_Kingsbane,
+            SpellKeywords::Shout_Lifestream,
+            SpellKeywords::Shout_LightningShield,
+            SpellKeywords::Shout_Oblivion,
+            SpellKeywords::Shout_PhantomDecoy,
+            SpellKeywords::Shout_Riftwalk,
+            SpellKeywords::Shout_Shattersphere,
+            SpellKeywords::Shout_ShorsWrath,
+            SpellKeywords::Shout_ShroudOfSnowfall,
+            SpellKeywords::Shout_SpeakUntoTheStars,
+            SpellKeywords::Shout_SplinterTwins,
+            SpellKeywords::Shout_Stormblast,
+            SpellKeywords::Shout_TheConqueror,
+            SpellKeywords::Shout_Trueshot,
+            SpellKeywords::Shout_WailOfTheBanshee,
+            SpellKeywords::Shout_Wanderlust,
+            SpellKeywords::Shout_Warcry,
+        ];
+
+        let unused: Vec<&SpellKeywords> = shoutwords
+            .iter()
+            .filter(|xs| {
+                let shout = ShoutType::new(vec![xs.to_string()]);
+                if matches!(shout.variant, ShoutVariant::Unclassified) {
+                    eprintln!("{xs} turned into unclassified shout");
+                    true
+                } else {
+                    false
+                }
+            })
+            .collect();
+        assert!(unused.is_empty());
+    }
+}
