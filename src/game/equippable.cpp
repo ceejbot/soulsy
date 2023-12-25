@@ -154,9 +154,9 @@ namespace equippable
 		KeywordAccumulator::clear();
 		if (!form->IsInventoryObject()) { return nonInventoryHudItem(form); }
 
-		RE::TESBoundObject* boundObject    = nullptr;
-		game::EquippableItemData* itemData = nullptr;
-		game::boundObjectForForm(form, boundObject, itemData);
+		RE::TESBoundObject* boundObject = nullptr;
+		RE::ExtraDataList* extraData    = nullptr;
+		game::boundObjectForForm(form, boundObject, extraData);
 
 		if (!itemData || !boundObject)
 		{

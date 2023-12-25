@@ -44,10 +44,10 @@ namespace player
 		auto* form = RE::TESForm::LookupByID(obj->formID);
 		if (!form) return std::string("unarmed_proxy");
 
-		RE::TESBoundObject* bound      = nullptr;
-		game::EquippableItemData* data = nullptr;
+		RE::TESBoundObject* bound    = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
 		rlog::debug("specEquippedLeft() calling boundObjectForWornItem()");
-		game::boundObjectForWornItem(form, game::WornWhere::kLeftOnly, bound, data);
+		game::boundObjectForWornItem(form, game::WornWhere::kLeftOnly, bound, extraData);
 
 		if (bound) { return helpers::makeFormSpecString(bound); }
 		else { return helpers::makeFormSpecString(form); }
@@ -62,10 +62,10 @@ namespace player
 		auto* form = RE::TESForm::LookupByID(obj->formID);
 		if (!form) return std::string("unarmed_proxy");
 
-		RE::TESBoundObject* bound      = nullptr;
-		game::EquippableItemData* data = nullptr;
+		RE::TESBoundObject* bound    = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
 		rlog::debug("specEquippedRight() calling boundObjectForWornItem()");
-		game::boundObjectForWornItem(form, game::WornWhere::kRightOnly, bound, data);
+		game::boundObjectForWornItem(form, game::WornWhere::kRightOnly, bound, extraData);
 
 		if (bound) { return helpers::makeFormSpecString(bound); }
 		else { return helpers::makeFormSpecString(form); }

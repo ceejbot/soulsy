@@ -18,7 +18,10 @@ namespace game
 
 	void consumePotion(const RE::TESForm* a_form, RE::PlayerCharacter*& thePlayer);
 	void consumeBestOption(RE::ActorValue a_actor_value);
-	void poisonWeapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& a_poison, uint32_t remaining);
+	void poisonWeapon(RE::PlayerCharacter*& thePlayer,
+		RE::AlchemyItem*& a_poison,
+		uint32_t remaining,
+		RE::ExtraDataList* extraData);
 
 	void playSound(RE::BGSSoundDescriptor* a_sound_descriptor_form, RE::PlayerCharacter*& thePlayer);
 

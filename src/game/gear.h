@@ -53,16 +53,16 @@ namespace game
 	int boundObjectForWornItem(const RE::TESForm* form,
 		WornWhere constraint,
 		RE::TESBoundObject*& outobj,
-		EquippableItemData*& outEquipData);
+		RE::ExtraDataList* outextra);
 
 	// Returns only exact name matches.
 	int boundObjectMatchName(const RE::TESForm* form,
 		const std::string& nameToMatch,
 		RE::TESBoundObject*& outobj,
-		EquippableItemData*& outEquipData);
+		RE::ExtraDataList* outextra);
 
 	// Returns first found.
-	int boundObjectForForm(const RE::TESForm* form, RE::TESBoundObject*& outobj, EquippableItemData*& outEquipData);
+	int boundObjectForForm(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::ExtraDataList* outextra);
 
 	// Similar to boundObjectForForm(), but fills out an inventory entry instead of extra data lists.
 	bool inventoryEntryDataFor(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::InventoryEntryData*& outentry);

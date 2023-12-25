@@ -1,5 +1,6 @@
 #include "utility.h"
 
+#include "RE/A/Actor.h"
 #include "constant.h"
 #include "equippable.h"
 #include "gear.h"
@@ -16,10 +17,10 @@ namespace game
 
 	void equipAmmoByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer)
 	{
-		RE::TESBoundObject* obj  = nullptr;
-		EquippableItemData* data = nullptr;
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
 		rlog::debug("equipAmmoByForm() calling boundObjectForForm()");
-		auto remaining = boundObjectForForm(form, obj, data);
+		auto remaining = boundObjectForForm(form, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -83,54 +84,49 @@ namespace game
 	{
 		// This is a toggle in reality. Also, use this as a model for other equip funcs.
 		// rlog::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
-		RE::TESBoundObject* obj  = nullptr;
-		EquippableItemData* data = nullptr;
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
 		rlog::debug("toggleArmorByForm() calling boundObjectMatchName()");
-		auto remaining = boundObjectMatchName(form, nameToMatch, obj, data);
+		auto remaining = boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
-			rlog::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
+			rlog::warn("could not find armor in player inventory; name='{}';"sv, nameToMatch);
 			return;
 		}
 
-		auto* task = SKSE::GetTaskInterface();
-		if (!task)
+		auto* task         = SKSE::GetTaskInterface();
+		auto* equipManager = RE::ActorEquipManager::GetSingleton();
+		const auto isWorn  = isItemWorn(obj, thePlayer);
+		if (isWorn)
 		{
-			rlog::warn("could not find SKSE task interface! Cannot act."sv);
-			return;
-		}
-
-		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-		if (data->isWorn)
-		{
-			task->AddTask([=]() { equip_manager->UnequipObject(thePlayer, obj, data->wornExtraList); });
+			task->AddTask([=]() { equipManager->UnequipObject(thePlayer, obj, extraData); });
 		}
 		else
 		{
-			task->AddTask([=]() { equip_manager->EquipObject(thePlayer, obj, data->itemExtraList); });
+			task->AddTask([=]() { equipManager->EquipObject(thePlayer, obj, extraData); });
 		}
 	}
 
 	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch)
 	{
 		// rlog::trace("attempting to equip armor; name='{}';"sv, form->GetName());
-		RE::TESBoundObject* obj  = nullptr;
-		EquippableItemData* data = nullptr;
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
 		rlog::debug("equipArmorByForm() calling boundObjectMatchName()");
-		auto remaining = boundObjectMatchName(form, nameToMatch, obj, data);
+		auto remaining = boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
-			rlog::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
+			rlog::warn("could not find armor in player inventory; name='{}';"sv, nameToMatch);
 			return;
 		}
 
-		if (!data->isWorn)
+		if (!isItemWorn(obj, thePlayer))
 		{
 			auto* task         = SKSE::GetTaskInterface();
 			auto* equipManager = RE::ActorEquipManager::GetSingleton();
-			task->AddTask([=]() { equipManager->EquipObject(thePlayer, obj, data->itemExtraList); });
+			task->AddTask([=]() { equipManager->EquipObject(thePlayer, obj, extraData); });
 		}
 	}
 
@@ -142,10 +138,10 @@ namespace game
 			rlog::formatAsHex(potionForm->formID),
 			potionForm->GetName());
 
-		RE::TESBoundObject* obj  = nullptr;
-		EquippableItemData* data = nullptr;
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
 		rlog::debug("consumePotion() calling boundObjectForForm()");
-		auto remaining = boundObjectForForm(potionForm, obj, data);
+		auto remaining = boundObjectForForm(potionForm, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -172,11 +168,13 @@ namespace game
 
 		auto* task = SKSE::GetTaskInterface();
 		if (!task) { return; }
-		task->AddTask(
-			[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, alchemyItem, data->itemExtraList); });
+		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, alchemyItem, extraData); });
 	}
 
-	void poisonWeapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& poison, uint32_t remaining)
+	void poisonWeapon(RE::PlayerCharacter*& thePlayer,
+		RE::AlchemyItem*& poison,
+		uint32_t remaining,
+		RE::ExtraDataList* extraData)
 	{
 		auto* task = SKSE::GetTaskInterface();
 		if (!task) { return; }
@@ -185,9 +183,10 @@ namespace game
 		if (right_eq && right_eq->IsWeapon())
 		{
 			task->AddTask(
-				[=]() {
+				[=]()
+				{
 					RE::ActorEquipManager::GetSingleton()->EquipObject(
-						thePlayer, poison, nullptr, 1, game::right_hand_equip_slot());
+						thePlayer, poison, extraData, 1, game::right_hand_equip_slot());
 				});
 			remaining--;
 		}
@@ -197,7 +196,7 @@ namespace game
 			task->AddTask(
 				[=]() {
 					RE::ActorEquipManager::GetSingleton()->EquipObject(
-						thePlayer, poison, nullptr, 1, game::left_hand_equip_slot());
+						thePlayer, poison, extraData, 1, game::left_hand_equip_slot());
 				});
 		}
 	}

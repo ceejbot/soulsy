@@ -1,5 +1,6 @@
 ﻿#include "magic.h"
 
+#include "RE/A/Actor.h"
 #include "gear.h"
 #include "offset.h"
 #include "player.h"
@@ -142,9 +143,9 @@ namespace game
 			return;
 		}
 
-		RE::TESBoundObject* obj  = nullptr;
-		EquippableItemData* data = nullptr;
-		auto item_count          = boundObjectForForm(form, obj, data);
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
+		auto item_count              = boundObjectForForm(form, obj, extraData);
 
 		if (!obj || item_count == 0)
 		{
@@ -165,8 +166,7 @@ namespace game
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
-				task->AddTask(
-					[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, obj, data->itemExtraList); });
+				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, obj, extraData); });
 			}
 		}
 
