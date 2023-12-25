@@ -19,8 +19,7 @@ namespace game
 	{
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		rlog::debug("equipAmmoByForm() calling boundObjectForForm()");
-		auto remaining = boundObjectForForm(form, obj, extraData);
+		auto remaining               = boundObjectForForm(form, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -86,8 +85,7 @@ namespace game
 		// rlog::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		rlog::debug("toggleArmorByForm() calling boundObjectMatchName()");
-		auto remaining = boundObjectMatchName(form, nameToMatch, obj, extraData);
+		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -113,8 +111,7 @@ namespace game
 		// rlog::trace("attempting to equip armor; name='{}';"sv, form->GetName());
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		rlog::debug("equipArmorByForm() calling boundObjectMatchName()");
-		auto remaining = boundObjectMatchName(form, nameToMatch, obj, extraData);
+		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -140,8 +137,7 @@ namespace game
 
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		rlog::debug("consumePotion() calling boundObjectForForm()");
-		auto remaining = boundObjectForForm(potionForm, obj, extraData);
+		auto remaining               = boundObjectForForm(potionForm, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{

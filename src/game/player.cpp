@@ -46,7 +46,6 @@ namespace player
 
 		RE::TESBoundObject* bound    = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		rlog::debug("specEquippedLeft() calling boundObjectForWornItem()");
 		game::boundObjectForWornItem(form, game::WornWhere::kLeftOnly, bound, extraData);
 
 		if (bound) { return helpers::makeFormSpecString(bound); }
@@ -64,7 +63,6 @@ namespace player
 
 		RE::TESBoundObject* bound    = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		rlog::debug("specEquippedRight() calling boundObjectForWornItem()");
 		game::boundObjectForWornItem(form, game::WornWhere::kRightOnly, bound, extraData);
 
 		if (bound) { return helpers::makeFormSpecString(bound); }

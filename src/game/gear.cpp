@@ -254,7 +254,6 @@ namespace game
 		// TODO I don't think this handles spells
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extraData  = nullptr;
-		rlog::debug("isItemFavorited() calling boundObjectForForm()");
 		game::boundObjectForForm(form, bound_obj, extraData);
 		if (extraData) { return extraData->HasType(RE::ExtraDataType::kHotkey); }
 		return false;
@@ -264,8 +263,7 @@ namespace game
 	{
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		// rlog::debug("isItemPoisoned() calling boundObjectForForm()");
-		[[maybe_unused]] auto count = boundObjectForForm(form, obj, extraData);
+		[[maybe_unused]] auto count  = boundObjectForForm(form, obj, extraData);
 		if (extraData) { return extraData->HasType(RE::ExtraDataType::kPoison); }
 		return false;
 	}
@@ -273,7 +271,6 @@ namespace game
 	float itemChargeLevel(const RE::TESForm* form)
 	{
 		RE::InventoryEntryData* inventoryEntry = nullptr;
-
 		if (!inventoryEntryDataFor(form, inventoryEntry)) { return 0.0f; }
 		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
 		return static_cast<float>(charge.value_or(0.0));
@@ -334,8 +331,7 @@ namespace game
 
 		RE::TESBoundObject* equipObject = nullptr;
 		RE::ExtraDataList* extraData    = nullptr;
-		rlog::debug("equipIemByFormAndSlot() calling boundObjectMatchName('{}')", nameToMatch);
-		auto foundCount = boundObjectMatchName(form, nameToMatch, equipObject, extraData);
+		auto foundCount                 = boundObjectMatchName(form, nameToMatch, equipObject, extraData);
 		if (foundCount == 0)
 		{
 			rlog::debug("unable to find bound object for name='{}'"sv, nameToMatch);

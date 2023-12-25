@@ -711,7 +711,7 @@ namespace ui
 		gGoalAlpha = std::clamp(goal, 0.0f, gMaxAlpha);
 		if (becomeVisible && gHudAlpha >= gMaxAlpha) { return; }
 		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
-		rlog::debug("startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv,
+		rlog::trace("startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv,
 			becomeVisible,
 			gGoalAlpha,
 			gHudAlpha);

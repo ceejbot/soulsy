@@ -138,7 +138,6 @@ MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid)
 
 	RE::TESBoundObject* boundObject = nullptr;
 	RE::ExtraDataList* extraData    = nullptr;
-	rlog::debug("menu selection constructor calling boundObjectForForm()");
 	game::boundObjectForForm(item_form, boundObject, extraData);
 
 	if (boundObject)
@@ -236,7 +235,6 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extraData  = nullptr;
-		rlog::debug("makeFromInventoryMenu() calling boundObjectForForm()");
 		game::boundObjectForForm(item_form, bound_obj, extraData);
 
 		auto* selection      = new MenuSelection(form_id);
