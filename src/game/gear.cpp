@@ -16,7 +16,6 @@ namespace game
 		, isWorn(false)
 		, isWornLeft(false)
 		, isFavorite(false)
-		, name(nullptr)
 	{
 	}
 
@@ -273,7 +272,7 @@ namespace game
 		auto equipped_count = 0;
 		if (obj_equipped_left) { equipped_count++; }
 		if (obj_equipped_right) { equipped_count++; }
-		rlog::debug("checking how many '{}' we have available; count={}; equipped_count={}"sv,
+		rlog::trace("checking how many '{}' we have available; count={}; equipped_count={}"sv,
 			equipObject->GetName(),
 			item_count,
 			equipped_count);

@@ -67,17 +67,7 @@ namespace helpers
 	{
 		const auto* controlMap = RE::ControlMap::GetSingleton();
 		if (!controlMap) { return false; }
-		// debugging things...
 		const auto canMove = controlMap->IsMovementControlsEnabled();
-		rlog::info("got {} back from movement controls check", canMove);
-		if (controlMap->contextPriorityStack.size() > 0)
-		{
-			const auto inGameplay =
-				controlMap->contextPriorityStack.back() == RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
-			rlog::info("got {} back from context stack check", inGameplay);
-			return inGameplay && canMove;
-		}
-		else { rlog::info("context stack appears to be borked."); }
 		return canMove;
 	}
 
@@ -96,7 +86,10 @@ namespace helpers
 		if (ui->GameIsPaused() || ui->IsMenuOpen("LootMenu")) return true;
 		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>()) { return true; }
 
+
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
+		if (!playerInControl()) { return true; }
+		/*
 		const auto* control_map = RE::ControlMap::GetSingleton();
 		if (!control_map || !control_map->IsMovementControlsEnabled() ||
 			!control_map->AreControlsEnabled(requiredControlFlags) || !control_map->IsActivateControlsEnabled() ||
@@ -104,8 +97,9 @@ namespace helpers
 		{
 			return true;
 		}
+		*/
 
-		return false;
+		return false;  // FOR NOW
 	}
 
 	bool gamepadInUse()
@@ -130,9 +124,8 @@ namespace helpers
 		                        ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
 		if (hudInappropriate) { return false; }
 
-		const auto playerNotInControl = !playerInControl();
-		// This is always false, and the context priority stack usage crashes. so.
-		if (playerNotInControl && false) { return false; }  // a good compiler would complain about this.
+		if (!playerInControl()) { return false; }
+
 		return true;
 	}
 

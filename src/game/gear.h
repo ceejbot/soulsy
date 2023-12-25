@@ -20,13 +20,11 @@ namespace game
 		bool isWornLeft = false;
 		bool isFavorite = false;
 		bool isPoisoned = false;
-		char* name      = nullptr;
 		// enchantment charge?
 
-		RE::ExtraDataList* itemExtraList;
-
-		RE::ExtraDataList* wornExtraList;
-		RE::ExtraDataList* wornLeftExtraList;
+		RE::ExtraDataList* itemExtraList     = nullptr;
+		RE::ExtraDataList* wornExtraList     = nullptr;
+		RE::ExtraDataList* wornLeftExtraList = nullptr;
 
 		EquippableItemData();
 	};

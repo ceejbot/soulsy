@@ -281,30 +281,9 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 
-		auto* player = RE::PlayerCharacter::GetSingleton();
-
-		RE::TESBoundObject* bound_obj  = nullptr;
-		game::EquippableItemData* data = nullptr;
-		rlog::debug("reequipHand() calling boundObjectForForm()");
-		game::boundObjectForForm(form, player, bound_obj, data);
-		if (!bound_obj) { return; }
-
-		rlog::info(
-			"Re-equipping item in left hand; name='{}'; formID={}"sv, form->GetName(), rlog::formatAsHex(form->formID));
-		RE::BGSEquipSlot* slot;
-
-		if (which == Action::Left) { slot = game::left_hand_equip_slot(); }
-		else { slot = game::right_hand_equip_slot(); }
-
-
-		auto* task = SKSE::GetTaskInterface();
-		if (task)
-		{
-			task->AddTask(
-				[=]() {
-					RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, data->itemExtraList, 1, slot);
-				});
-		}
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+		auto* slot      = which == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot();
+		game::equipItemByFormAndSlot(form, slot, thePlayer);
 	}
 
 	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
