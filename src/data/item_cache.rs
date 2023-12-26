@@ -139,7 +139,7 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
 
     let name = petname::petname(2, " ");
     let item = HudItem::preclassified(
-        name.as_bytes().to_vec(),
+        name,
         form_string.to_owned(),
         2,
         super::BaseType::Weapon(WeaponType::new(
