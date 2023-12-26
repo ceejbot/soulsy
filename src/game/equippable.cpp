@@ -80,9 +80,9 @@ namespace equippable
 		RE::ExtraDataList* extraData    = nullptr;
 		const auto count                = game::boundObjectForForm(form, boundObject, extraData);
 
-		auto fullname = boundObject ? game::displayName(boundObject) : game::displayName(form);
-		auto chonker  = helpers::chars_to_vec(fullname);
-		auto safename = convert_to_string_doggedly(chonker);
+		rlog::info("entering hudItemFromForm() for {}", rlog::formatAsHex(form->GetFormID()));
+
+		auto safename = boundObject ? helpers::displayNameAsUtf8(boundObject) : helpers::displayNameAsUtf8(form);
 		std::string formSpec =
 			boundObject ? helpers::makeFormSpecString(boundObject) : helpers::makeFormSpecString(form);
 		bool twoHanded = requiresTwoHands(form);
@@ -94,13 +94,13 @@ namespace equippable
 			rlog::trace("making HudItem for shout: '{}'"sv, safename);
 			auto* shout = form->As<RE::TESShout>();
 
-			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), formSpec);
+			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(safename), formSpec);
 			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
-			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(chonker), formSpec);
+			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(safename), formSpec);
 
 			spell->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
-			return categorize_shout(*keywords, std::move(chonker), formSpec);
+			return categorize_shout(*keywords, std::move(safename), formSpec);
 		}
 
 		if (form->Is(RE::FormType::Spell))
@@ -121,7 +121,7 @@ namespace equippable
 						effect->ForEachKeyword(KeywordAccumulator::collect);
 						auto& keywords          = KeywordAccumulator::mKeywords;
 						rust::Box<HudItem> item = hud_item_from_keywords(
-							ItemCategory::Power, *keywords, std::move(chonker), formSpec, 1, false);
+							ItemCategory::Power, *keywords, std::move(safename), formSpec, 1, false);
 						return item;
 					}
 				}
@@ -140,7 +140,7 @@ namespace equippable
 					auto skill_level        = effect->GetMinimumSkillLevel();
 					auto data               = fillOutSpellData(twoHanded, skill_level, effect);
 					rust::Box<HudItem> item = magic_from_spelldata(
-						ItemCategory::Spell, std::move(data), *keywords, std::move(chonker), formSpec, 1);
+						ItemCategory::Spell, std::move(data), *keywords, std::move(safename), formSpec, 1);
 					return item;
 				}
 			}
@@ -154,7 +154,7 @@ namespace equippable
 			auto& keywords = KeywordAccumulator::mKeywords;
 
 			rust::Box<HudItem> item =
-				hud_item_from_keywords(ItemCategory::Ammo, *keywords, std::move(chonker), formSpec, count, false);
+				hud_item_from_keywords(ItemCategory::Ammo, *keywords, std::move(safename), formSpec, count, false);
 			return item;
 		}
 
@@ -168,7 +168,7 @@ namespace equippable
 				auto& keywords = KeywordAccumulator::mKeywords;
 				if (weapon->IsBound()) { keywords->push_back(std::string("OCF_InvColorBound")); }
 				rust::Box<HudItem> item = hud_item_from_keywords(
-					ItemCategory::Weapon, *keywords, std::move(chonker), formSpec, count, twoHanded);
+					ItemCategory::Weapon, *keywords, std::move(safename), formSpec, count, twoHanded);
 
 				return item;
 			}
@@ -181,7 +181,7 @@ namespace equippable
 			armor->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
 			rust::Box<HudItem> item =
-				hud_item_from_keywords(ItemCategory::Armor, *keywords, std::move(chonker), formSpec, count, false);
+				hud_item_from_keywords(ItemCategory::Armor, *keywords, std::move(safename), formSpec, count, false);
 
 			return item;
 		}
@@ -194,13 +194,13 @@ namespace equippable
 		{
 			// This form type does not have keywords. This presents a problem. Cough.
 			rlog::trace("making HudItem for light: '{}';"sv, safename);
-			const auto name = std::string(form->GetName());
-			if (name.find("Lantern") != std::string::npos)  // yes, very limited in effectiveness; TODO
+			const auto name = std::string(form->GetName());  // this use of GetName() is okay
+			if (name.find("Lantern") != std::string::npos)   // yes, very limited in effectiveness; TODO
 			{
-				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Lantern, std::move(chonker), formSpec);
+				rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Lantern, std::move(safename), formSpec);
 				return item;
 			}
-			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Torch, std::move(chonker), formSpec);
+			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Torch, std::move(safename), formSpec);
 			return item;
 		}
 
@@ -218,7 +218,7 @@ namespace equippable
 
 				auto data               = fillOutSpellData(twoHanded, skillLevel, effect);
 				rust::Box<HudItem> item = magic_from_spelldata(
-					ItemCategory::Scroll, std::move(data), *keywords, std::move(chonker), formSpec, count);
+					ItemCategory::Scroll, std::move(data), *keywords, std::move(safename), formSpec, count);
 				return item;
 			}
 		}
@@ -233,7 +233,7 @@ namespace equippable
 				alchemy_potion->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords = KeywordAccumulator::mKeywords;
 				rust::Box<HudItem> item =
-					hud_item_from_keywords(ItemCategory::Food, *keywords, std::move(chonker), formSpec, count, false);
+					hud_item_from_keywords(ItemCategory::Food, *keywords, std::move(safename), formSpec, count, false);
 				return item;
 			}
 			else
@@ -241,8 +241,11 @@ namespace equippable
 				rlog::trace("making HudItem for potion: '{}'"sv, safename);
 				const auto* effect      = alchemy_potion->GetCostliestEffectItem()->baseEffect;
 				auto actor_value        = effect->data.primaryAV;
-				rust::Box<HudItem> item = potion_from_formdata(
-					alchemy_potion->IsPoison(), static_cast<int32_t>(actor_value), count, std::move(chonker), formSpec);
+				rust::Box<HudItem> item = potion_from_formdata(alchemy_potion->IsPoison(),
+					static_cast<int32_t>(actor_value),
+					count,
+					std::move(safename),
+					formSpec);
 				return item;
 			}
 		}

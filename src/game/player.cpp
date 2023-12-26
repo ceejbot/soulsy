@@ -12,17 +12,6 @@
 
 namespace player
 {
-	rust::Vec<uint16_t> playerName()
-	{
-		auto* name  = RE::PlayerCharacter::GetSingleton()->GetName();
-		auto cbytes = helpers::chars_to_vec(name);
-		rust::Vec<uint16_t> bytes;
-		bytes.reserve(cbytes.size() + 1);
-		for (auto iter = cbytes.cbegin(); iter != cbytes.cend(); iter++) { bytes.push_back(*iter); }
-
-		return std::move(bytes);
-	}
-
 	bool isInCombat() { return RE::PlayerCharacter::GetSingleton()->IsInCombat(); }
 
 	bool weaponsAreDrawn() { return RE::PlayerCharacter::GetSingleton()->AsActorState()->IsWeaponDrawn(); }
@@ -234,7 +223,7 @@ namespace player
 
 		auto* player = RE::PlayerCharacter::GetSingleton();
 		count        = inventoryCount(form, form->GetFormType(), player);
-		// rlog::trace("item='{}'; count={};"sv, form->GetName(), count);
+		// rlog::trace("item='{}'; count={};"sv, helpers::nameAsUtf8(form), count);
 
 		return count;
 	}
@@ -270,7 +259,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		rlog::debug("player has: {}; name='{}'; formID={};"sv, has_it, form->GetName(), form_spec);
+		rlog::debug("player has: {}; name='{}'; formID={};"sv, has_it, helpers::nameAsUtf8(form), form_spec);
 
 		return has_it;
 	}

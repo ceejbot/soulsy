@@ -23,7 +23,7 @@ namespace game
 
 		if (!obj || remaining == 0)
 		{
-			rlog::warn("Ammo not found in inventory! name='{}';"sv, form->GetName());
+			rlog::warn("Ammo not found in inventory! name='{}';"sv, helpers::nameAsUtf8(form));
 			return;
 		}
 
@@ -33,8 +33,9 @@ namespace game
 			return;
 		}
 
-		rlog::debug(
-			"queuing task to equip ammo; name='{}'; bound formID={}"sv, obj->GetName(), rlog::formatAsHex(obj->formID));
+		rlog::debug("queuing task to equip ammo; name='{}'; bound formID={}"sv,
+			helpers::nameAsUtf8(obj),
+			rlog::formatAsHex(obj->formID));
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
@@ -58,7 +59,8 @@ namespace game
 			{
 				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->UnequipObject(thePlayer, ammo); });
 			}
-			rlog::debug("ammo unequipped; name='{}'; formID={}"sv, ammo->GetName(), rlog::formatAsHex(ammo->formID));
+			rlog::debug(
+				"ammo unequipped; name='{}'; formID={}"sv, helpers::nameAsUtf8(ammo), rlog::formatAsHex(ammo->formID));
 		}
 	}
 
@@ -74,7 +76,7 @@ namespace game
 			{
 				task->AddTask([=]() { equipManager->UnequipObject(thePlayer, item); });
 			}
-			// rlog::trace("unequipped armor; name='{}';"sv, item->GetName());
+			// rlog::trace("unequipped armor; name='{}';"sv, helpers::nameAsUtf8(item));
 		}
 		return isWorn;
 	}
@@ -82,7 +84,7 @@ namespace game
 	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch)
 	{
 		// This is a toggle in reality. Also, use this as a model for other equip funcs.
-		// rlog::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
+		// rlog::trace("attempting to toggle armor; name='{}';"sv, helpers::nameAsUtf8(form));
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
 		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
@@ -108,7 +110,7 @@ namespace game
 
 	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch)
 	{
-		// rlog::trace("attempting to equip armor; name='{}';"sv, form->GetName());
+		// rlog::trace("attempting to equip armor; name='{}';"sv, helpers::nameAsUtf8(form));
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
 		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
@@ -133,7 +135,7 @@ namespace game
 	{
 		rlog::trace("consumePotion called; form_id={}; potion='{}';"sv,
 			rlog::formatAsHex(potionForm->formID),
-			potionForm->GetName());
+			helpers::nameAsUtf8(potionForm));
 
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
@@ -150,7 +152,7 @@ namespace game
 		{
 			helpers::honk();
 			rlog::warn("bound object is not an alchemy item? name='{}'; formID={};"sv,
-				obj->GetName(),
+				helpers::nameAsUtf8(obj),
 				rlog::formatAsHex(obj->formID));
 			return;
 		}
@@ -299,7 +301,7 @@ namespace game
 			rlog::debug("after considering {} candidates, found a potion: rating={}; name='{}';"sv,
 				vitalStat,
 				prevRating,
-				obj->GetName());
+				helpers::nameAsUtf8(obj));
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
@@ -323,7 +325,7 @@ namespace game
 		const auto* entry_point = static_cast<RE::BGSEntryPointPerkEntry*>(perk_entry);
 		const auto* perk        = entry_point->perk;
 
-		rlog::trace("perk formID={}; name='{}';"sv, rlog::formatAsHex(perk->formID), perk->GetName());
+		rlog::trace("perk formID={}; name='{}';"sv, rlog::formatAsHex(perk->formID), helpers::nameAsUtf8(perk));
 
 		// This was originally intended to handle many variations of the poison
 		// dose perk-- it should calculate the correct value from vanilla,

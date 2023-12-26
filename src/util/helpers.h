@@ -36,6 +36,8 @@ namespace helpers
 	bool isPoisonedByFormSpec(const std::string& form_spec);
 	float chargeLevelByFormSpec(const std::string& form_spec);
 
+	std::string nameAsUtf8(const RE::TESForm* form);
+	std::string displayNameAsUtf8(const RE::TESForm* form);
 	std::string vec_to_stdstring(rust::Vec<uint8_t> input);
 	std::vector<uint8_t> chars_to_vec(const char* input);
 

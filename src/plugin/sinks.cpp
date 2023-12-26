@@ -50,7 +50,7 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 	}
 
 	const auto formtype = form->GetFormType();
-	const auto name     = std::string(game::displayName(form));
+	const auto name     = helpers::displayNameAsUtf8(form);
 	if (event->equipped) { rlog::debug("equip event: {} '{}' equipped", RE::FormTypeToString(formtype), name); }
 	else { rlog::debug("equip event: {} '{}' removed", RE::FormTypeToString(formtype), name); }
 

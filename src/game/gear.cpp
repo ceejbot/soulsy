@@ -2,6 +2,7 @@
 
 #include "RE/E/ExtraDataTypes.h"
 #include "constant.h"
+#include "helpers.h"
 #include "offset.h"
 #include "player.h"
 
@@ -147,7 +148,7 @@ namespace game
 		RE::TESBoundObject*& outobj,
 		RE::ExtraDataList* outextra)
 	{
-		const auto* baseName = form->GetName();
+		const auto* baseName = form->GetName();  // this use of GetName() is okay
 		// If we don't need to match the name, we don't do that work.
 		if (std::string(baseName) == nameToMatch) { return boundObjectForForm(form, outobj, outextra); }
 
@@ -226,7 +227,7 @@ namespace game
 
 		rlog::trace("found {} instance(s) for bound object; name='{}'; formID={};"sv,
 			count,
-			form->GetName(),
+			helpers::nameAsUtf8(form),
 			rlog::formatAsHex(form->formID));
 
 		if (extraDataCopy.size() > 0) { outextra = extraDataCopy.back(); }
@@ -312,7 +313,7 @@ namespace game
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
-			form->GetName(),
+			helpers::nameAsUtf8(form),
 			slot_is_left,
 			form->GetFormType());
 
@@ -346,13 +347,13 @@ namespace game
 
 		if (slot_is_left && obj_equipped_left)
 		{
-			rlog::debug("item already equipped in left hand. name='{}'"sv, equipObject->GetName());
+			rlog::debug("item already equipped in left hand. name='{}'"sv, helpers::nameAsUtf8(equipObject));
 			return;
 		}
 
 		if (!slot_is_left && obj_equipped_right)
 		{
-			rlog::debug("item already equipped in right hand. name='{}'"sv, equipObject->GetName());
+			rlog::debug("item already equipped in right hand. name='{}'"sv, helpers::nameAsUtf8(equipObject));
 			return;
 		}
 
@@ -360,7 +361,7 @@ namespace game
 		if (obj_equipped_left) { equipped_count++; }
 		if (obj_equipped_right) { equipped_count++; }
 		rlog::trace("checking how many '{}' we have available; count={}; equipped_count={}"sv,
-			equipObject->GetName(),
+			helpers::nameAsUtf8(equipObject),
 			foundCount,
 			equipped_count);
 
@@ -372,7 +373,7 @@ namespace game
 		}
 
 		rlog::debug("queuing task to equip '{}'; left={}; formID={};"sv,
-			form->GetName(),
+			helpers::nameAsUtf8(form),
 			slot_is_left,
 			rlog::formatAsHex(equipObject->formID));
 		auto* task = SKSE::GetTaskInterface();
@@ -387,7 +388,7 @@ namespace game
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::trace("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
-			form->GetName(),
+			helpers::nameAsUtf8(form),
 			slot_is_left,
 			form->GetFormType());
 
@@ -399,13 +400,13 @@ namespace game
 
 		if (slot_is_left && obj_equipped_left)
 		{
-			rlog::debug("spell already equipped in left hand. name='{}'"sv, form->GetName());
+			rlog::debug("spell already equipped in left hand. name='{}'"sv, helpers::nameAsUtf8(form));
 			return;
 		}
 
 		if (!slot_is_left && obj_equipped_right)
 		{
-			rlog::debug("spell already equipped in right hand. name='{}'"sv, form->GetName());
+			rlog::debug("spell already equipped in right hand. name='{}'"sv, helpers::nameAsUtf8(form));
 			return;
 		}
 
@@ -424,7 +425,7 @@ namespace game
 		}
 
 		rlog::debug("queued task to equip '{}'; left={}; formID={};"sv,
-			form->GetName(),
+			helpers::nameAsUtf8(form),
 			slot_is_left,
 			rlog::formatAsHex(form->formID));
 	}

@@ -250,9 +250,8 @@ pub mod plugin {
         /// Log at trace level. Use this level for debugging programming problems.
         fn log_trace(message: String);
 
-        /// Decode a vector of bytes from a ucs2 string to a utf-8 string.
-        /// Goes to some lengths to return a result even if it's lossy.
-        fn convert_to_string_doggedly(bytes: Vec<u8>) -> String;
+        /// Decode a vector of bytes from a windows codepage string to a utf-8 string.
+        fn string_to_utf8(bytes: &CxxVector<u8>) -> String;
 
         /// Trigger rust to read config, figure out what the player has equipped,
         /// and figure out what it should draw.
@@ -335,13 +334,13 @@ pub mod plugin {
             which: ItemCategory,
             spelldata: Box<SpellData>,
             keywords: &CxxVector<CxxString>,
-            bytes_ffi: &CxxVector<u8>,
+            name: String,
             form_string: String,
             count: u32,
         ) -> Box<HudItem>;
         fn categorize_shout(
             keywords: &CxxVector<CxxString>,
-            bytes_ffi: &CxxVector<u8>,
+            name: String,
             form_string: String,
         ) -> Box<HudItem>;
 
@@ -349,7 +348,7 @@ pub mod plugin {
         fn hud_item_from_keywords(
             category: ItemCategory,
             keywords: &CxxVector<CxxString>,
-            bytes_ffi: &CxxVector<u8>,
+            name: String,
             form_string: String,
             count: u32,
             twohanded: bool,
@@ -359,14 +358,14 @@ pub mod plugin {
             is_poison: bool,
             effect: i32,
             count: u32,
-            bytes_ffi: &CxxVector<u8>,
+            name: String,
             form_string: String,
         ) -> Box<HudItem>;
         /// Build a very simple item, one where the rough category can specify everything. Only used
         /// now for lights & shouts as a fallback.
         fn simple_from_formdata(
             kind: ItemCategory,
-            bytes_ffi: &CxxVector<u8>,
+            name: String,
             form_string: String,
         ) -> Box<HudItem>;
         /// Build an empty HUD item.
@@ -504,9 +503,6 @@ pub mod plugin {
     #[namespace = "player"]
     unsafe extern "C++" {
         include!("player.h");
-
-        /// Get the player's name as a vec of wide bytes. Might not be valid utf8.
-        fn playerName() -> Vec<u16>;
 
         /// Is the player in combat?
         fn isInCombat() -> bool;

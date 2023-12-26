@@ -25,8 +25,6 @@ namespace player
 
 	rust::Box<EquippedData> getEquippedItems();
 
-	rust::Vec<uint16_t> playerName();
-
 	bool isInCombat();
 	bool weaponsAreDrawn();
 	bool hasRangedEquipped();

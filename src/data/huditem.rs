@@ -6,7 +6,6 @@ use strfmt::strfmt;
 
 use super::base::BaseType;
 use super::HasIcon;
-use crate::facade::convert_to_string_doggedly;
 use crate::images::icons::Icon;
 use crate::plugin::{chargeLevelByFormSpec, isPoisonedByFormSpec, Color, ItemCategory};
 
@@ -30,12 +29,11 @@ impl HudItem {
     pub fn from_keywords(
         category: ItemCategory,
         keywords: Vec<String>,
-        name_bytes: Vec<u8>,
+        name: String,
         form_string: String,
         count: u32,
         twohanded: bool,
     ) -> Self {
-        let name = convert_to_string_doggedly(name_bytes);
         // log::trace!("calling BaseType::classify() with keywords={keywords:?};");
         let kind: BaseType = BaseType::classify(name.as_str(), category, keywords, twohanded);
         let format_vars = HudItem::make_format_vars(name.clone(), count);
@@ -48,13 +46,7 @@ impl HudItem {
         }
     }
 
-    pub fn preclassified(
-        name_bytes: Vec<u8>,
-        form_string: String,
-        count: u32,
-        kind: BaseType,
-    ) -> Self {
-        let name = convert_to_string_doggedly(name_bytes);
+    pub fn preclassified(name: String, form_string: String, count: u32, kind: BaseType) -> Self {
         let format_vars = HudItem::make_format_vars(name.clone(), count);
         Self {
             name,
@@ -78,7 +70,7 @@ impl HudItem {
 
     pub fn make_unarmed_proxy() -> Self {
         HudItem::preclassified(
-            "Unarmed".as_bytes().to_vec(),
+            "Unarmed".to_string(),
             "unarmed_proxy".to_string(),
             1,
             BaseType::HandToHand,

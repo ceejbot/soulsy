@@ -13,12 +13,14 @@ namespace game
 		RE::PlayerCharacter*& player)
 	{
 		auto left = a_slot == game::left_hand_equip_slot();
-		rlog::trace(
-			"try to work spell {}, action {}, left {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action), left);
+		rlog::trace("try to work spell {}, action {}, left {}"sv,
+			helpers::nameAsUtf8(a_form),
+			static_cast<uint32_t>(a_action),
+			left);
 
 		if (!a_form->Is(RE::FormType::Spell))
 		{
-			rlog::warn("object {} is not a spell. return."sv, a_form->GetName());
+			rlog::warn("object {} is not a spell. return."sv, helpers::nameAsUtf8(a_form));
 			return;
 		}
 
@@ -26,13 +28,13 @@ namespace game
 
 		if (!player->HasSpell(spell))
 		{
-			rlog::warn("player does not have spell {}. return."sv, spell->GetName());
+			rlog::warn("player does not have spell {}. return."sv, helpers::nameAsUtf8(spell));
 			return;
 		}
 
 		//maybe check if the spell is already equipped
 		auto casting_type = spell->GetCastingType();
-		rlog::trace("spell {} is type {}"sv, spell->GetName(), static_cast<uint32_t>(casting_type));
+		rlog::trace("spell {} is type {}"sv, helpers::nameAsUtf8(spell), static_cast<uint32_t>(casting_type));
 		if (a_action == action_type::instant && casting_type != RE::MagicSystem::CastingType::kConcentration)
 		{
 			if (true)
@@ -42,7 +44,7 @@ namespace game
 				{
 					rlog::warn(
 						"power/shout {} is equipped, will only cast spell in elden mode if shout slot is empty. return."sv,
-						selected_power->GetName());
+						helpers::nameAsUtf8(selected_power));
 					RE::DebugNotification("Shout Slot not Empty, Skipping Spellcast");
 					return;
 				}
@@ -52,7 +54,8 @@ namespace game
 
 			//might cost nothing if nothing has been equipped into tha hands after start, so it seems
 			auto cost = spell->CalculateMagickaCost(actor);
-			rlog::trace("spell cost for {} is {}"sv, spell->GetName(), fmt::format(FMT_STRING("{:.2f}"), cost));
+			rlog::trace(
+				"spell cost for {} is {}"sv, helpers::nameAsUtf8(spell), fmt::format(FMT_STRING("{:.2f}"), cost));
 
 			auto current_magicka = actor->AsActorValueOwner()->GetActorValue(RE::ActorValue::kMagicka);
 			auto dual_cast       = false;
@@ -78,7 +81,7 @@ namespace game
 				}
 				else { flash_hud_meter(RE::ActorValue::kMagicka); }
 				rlog::warn("not enough magicka for spell {}, magicka {}, cost {} return."sv,
-					a_form->GetName(),
+					helpers::nameAsUtf8(a_form),
 					current_magicka,
 					cost);
 				return;
@@ -97,7 +100,7 @@ namespace game
 			auto effectiveness = 1.f;
 			if (auto* effect = spell->GetCostliestEffectItem()) { magnitude = effect->GetMagnitude(); }
 			rlog::trace("casting spell {}, magnitude {}, effectiveness {}"sv,
-				spell->GetName(),
+				helpers::nameAsUtf8(spell),
 				fmt::format(FMT_STRING("{:.2f}"), magnitude),
 				fmt::format(FMT_STRING("{:.2f}"), effectiveness));
 			caster->CastSpellImmediate(
@@ -111,18 +114,18 @@ namespace game
 			const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 			if (left && obj_left && obj_left->formID == spell->formID)
 			{
-				rlog::debug(
-					"Object Left {} is already where it should be already equipped. return."sv, spell->GetName());
+				rlog::debug("Object Left {} is already where it should be already equipped. return."sv,
+					helpers::nameAsUtf8(spell));
 				return;
 			}
 			if (!left && obj_right && obj_right->formID == spell->formID)
 			{
-				rlog::debug(
-					"Object Right {} is already where it should be already equipped. return."sv, spell->GetName());
+				rlog::debug("Object Right {} is already where it should be already equipped. return."sv,
+					helpers::nameAsUtf8(spell));
 				return;
 			}
 
-			rlog::trace("calling equip spell {}, left {}"sv, spell->GetName(), left);
+			rlog::trace("calling equip spell {}, left {}"sv, helpers::nameAsUtf8(spell), left);
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
@@ -130,16 +133,18 @@ namespace game
 			}
 		}
 
-		rlog::trace("worked spell {}, action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace(
+			"worked spell {}, action {}. return."sv, helpers::nameAsUtf8(a_form), static_cast<uint32_t>(a_action));
 	}
 
 	void cast_scroll(const RE::TESForm* form, action_type a_action, RE::PlayerCharacter*& player)
 	{
-		rlog::trace("start casting scroll; name='{}'; action {}"sv, form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace(
+			"start casting scroll; name='{}'; action {}"sv, helpers::nameAsUtf8(form), static_cast<uint32_t>(a_action));
 
 		if (!form->Is(RE::FormType::Scroll))
 		{
-			rlog::warn("object {} is not a scroll. return."sv, form->GetName());
+			rlog::warn("object {} is not a scroll. return."sv, helpers::nameAsUtf8(form));
 			return;
 		}
 
@@ -170,16 +175,16 @@ namespace game
 			}
 		}
 
-		rlog::trace("used scroll {}, action {}. return."sv, form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace("used scroll {}, action {}. return."sv, helpers::nameAsUtf8(form), static_cast<uint32_t>(a_action));
 	}
 
 	void equip_or_cast_power(RE::TESForm* a_form, action_type a_action, RE::PlayerCharacter*& player)
 	{
-		rlog::trace("try to work power {}, action {}"sv, a_form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace("try to work power {}, action {}"sv, helpers::nameAsUtf8(a_form), static_cast<uint32_t>(a_action));
 
 		if (!a_form->Is(RE::FormType::Spell))
 		{
-			rlog::warn("object {} is not a spell. return."sv, a_form->GetName());
+			rlog::warn("object {} is not a spell. return."sv, helpers::nameAsUtf8(a_form));
 			return;
 		}
 
@@ -187,12 +192,13 @@ namespace game
 			selected_power && a_action != action_type::instant)
 		{
 			rlog::trace("current selected power is {}, is shout {}, is spell {}"sv,
-				selected_power->GetName(),
+				helpers::nameAsUtf8(selected_power),
 				selected_power->Is(RE::FormType::Shout),
 				selected_power->Is(RE::FormType::Spell));
 			if (selected_power->formID == a_form->formID)
 			{
-				rlog::debug("no need to equip power {}, it is already equipped. return."sv, a_form->GetName());
+				rlog::debug(
+					"no need to equip power {}, it is already equipped. return."sv, helpers::nameAsUtf8(a_form));
 				return;
 			}
 		}
@@ -200,7 +206,7 @@ namespace game
 		auto* spell = a_form->As<RE::SpellItem>();
 		if (!player->HasSpell(spell))
 		{
-			rlog::warn("player does not have spell {}. return."sv, spell->GetName());
+			rlog::warn("player does not have spell {}. return."sv, helpers::nameAsUtf8(spell));
 			return;
 		}
 
@@ -210,7 +216,8 @@ namespace game
 			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell); });
 		}
 
-		rlog::trace("worked power {} action {}. return."sv, a_form->GetName(), static_cast<uint32_t>(a_action));
+		rlog::trace(
+			"worked power {} action {}. return."sv, helpers::nameAsUtf8(a_form), static_cast<uint32_t>(a_action));
 	}
 
 	RE::MagicSystem::CastingSource get_casting_source(const RE::BGSEquipSlot* a_slot)

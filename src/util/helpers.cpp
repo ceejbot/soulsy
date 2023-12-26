@@ -32,6 +32,25 @@ namespace helpers
 	// How you know I've been replaced by a pod person: if I ever declare that
 	// I love dealing with strings in systems programming languages.
 
+	std::string nameAsUtf8(const RE::TESForm* form)
+	{
+		// absolutely must never look for a bound object for this puppy.
+		// It is called by bound object finder functions.
+		auto name     = form->GetName();  // this use is required
+		auto chonker  = helpers::chars_to_vec(name);
+		auto safename = std::string(string_to_utf8(chonker));
+		return safename;
+	}
+
+	std::string displayNameAsUtf8(const RE::TESForm* form)
+	{
+		// Do not call this from bound object finder functions.
+		auto name     = game::displayName(form);
+		auto chonker  = helpers::chars_to_vec(name);
+		auto safename = std::string(string_to_utf8(chonker));
+		return safename;
+	}
+
 	std::vector<uint8_t> chars_to_vec(const char* input)
 	{
 		if (!input) { return std::move(std::vector<uint8_t>()); }
@@ -217,7 +236,7 @@ namespace helpers
 		// {
 		// 	rlog::trace("found form id for form spec='{}'; name='{}'; formID={}",
 		// 		a_str,
-		// 		form->GetName(),
+		// 		helpers::nameAsUtf8(form),
 		// 		rlog::formatAsHex(form->GetFormID()));
 		// }
 

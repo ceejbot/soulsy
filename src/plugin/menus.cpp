@@ -272,7 +272,7 @@ void MenuSelection::makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSe
 
 	for (auto* form : mfaves->spells)
 	{
-		rlog::debug("mfave form: id={}; name='{}'"sv, rlog::formatAsHex(form->GetFormID()), form->GetName());
+		rlog::debug("mfave form: id={}; name='{}'"sv, rlog::formatAsHex(form->GetFormID()), helpers::nameAsUtf8(form));
 		if (form->GetFormID() == form_id)
 		{
 			// match time

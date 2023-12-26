@@ -43,22 +43,14 @@ pub fn empty_huditem() -> Box<HudItem> {
 pub fn hud_item_from_keywords(
     category: ItemCategory,
     keywords_ffi: &CxxVector<CxxString>,
-    bytes_ffi: &CxxVector<u8>,
+    name: String,
     form_string: String,
     count: u32,
     twohanded: bool,
 ) -> Box<HudItem> {
     // #[allow(clippy::map_clone)]
-    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
-    let result = HudItem::from_keywords(
-        category,
-        keywords,
-        name_bytes,
-        form_string,
-        count,
-        twohanded,
-    );
+    let result = HudItem::from_keywords(category, keywords, name, form_string, count, twohanded);
     Box::new(result)
 }
 
@@ -78,11 +70,10 @@ pub fn magic_from_spelldata(
     which: ItemCategory,
     #[allow(clippy::boxed_local)] spelldata: Box<SpellData>, // this is coming from C++
     keywords_ffi: &CxxVector<CxxString>,
-    bytes_ffi: &CxxVector<u8>,
+    name: String,
     form_string: String,
     count: u32,
 ) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let data = *spelldata; // unbox
     let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
 
@@ -92,28 +83,22 @@ pub fn magic_from_spelldata(
         ItemCategory::Shout => BaseType::Shout(ShoutType::new(keywords)),
         _ => BaseType::Spell(SpellType::new(data, keywords)),
     };
-    let result = HudItem::preclassified(name_bytes, form_string, count, kind);
+    let result = HudItem::preclassified(name, form_string, count, kind);
     Box::new(result)
 }
 
 pub fn categorize_shout(
     keywords_ffi: &CxxVector<CxxString>,
-    bytes_ffi: &CxxVector<u8>,
+    name: String,
     form_string: String,
 ) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
     let kind = BaseType::Shout(ShoutType::new(keywords));
-    let result = HudItem::preclassified(name_bytes, form_string, 1, kind);
+    let result = HudItem::preclassified(name, form_string, 1, kind);
     Box::new(result)
 }
 
-pub fn simple_from_formdata(
-    kind: ItemCategory,
-    bytes_ffi: &CxxVector<u8>,
-    form_string: String,
-) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
+pub fn simple_from_formdata(kind: ItemCategory, name: String, form_string: String) -> Box<HudItem> {
     let classification = match kind {
         ItemCategory::HandToHand => BaseType::HandToHand,
         ItemCategory::Lantern => BaseType::Light(base::LightType::Lantern),
@@ -123,7 +108,7 @@ pub fn simple_from_formdata(
         ItemCategory::Shout => BaseType::Shout(ShoutType::default()),
         _ => BaseType::Empty,
     };
-    let result = HudItem::preclassified(name_bytes, form_string, 1, classification);
+    let result = HudItem::preclassified(name, form_string, 1, classification);
     Box::new(result)
 }
 
@@ -131,12 +116,11 @@ pub fn potion_from_formdata(
     is_poison: bool,
     effect: i32,
     count: u32,
-    bytes_ffi: &CxxVector<u8>,
+    name: String,
     form_string: String,
 ) -> Box<HudItem> {
-    let name_bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
     let kind = PotionType::from_effect(is_poison, effect.into());
-    let result = HudItem::preclassified(name_bytes, form_string, count, BaseType::Potion(kind));
+    let result = HudItem::preclassified(name, form_string, count, BaseType::Potion(kind));
     Box::new(result)
 }
 
@@ -146,7 +130,7 @@ pub fn make_magicka_proxy() -> HudItem {
     #[cfg(not(test))]
     let count = magickaPotionCount();
     HudItem::preclassified(
-        "Best Magicka".as_bytes().to_vec(),
+        "Best Magicka".to_string(),
         "magicka_proxy".to_string(),
         count,
         BaseType::PotionProxy(Proxy::Magicka),
@@ -159,7 +143,7 @@ pub fn make_health_proxy() -> HudItem {
     #[cfg(not(test))]
     let count = healthPotionCount();
     HudItem::preclassified(
-        "Best Health".as_bytes().to_vec(),
+        "Best Health".to_string(),
         "health_proxy".to_string(),
         count,
         BaseType::PotionProxy(Proxy::Health),
@@ -172,7 +156,7 @@ pub fn make_stamina_proxy() -> HudItem {
     #[cfg(not(test))]
     let count = staminaPotionCount();
     HudItem::preclassified(
-        "Best Stamina".as_bytes().to_vec(),
+        "Best Stamina".to_string(),
         "stamina_proxy".to_string(),
         count,
         BaseType::PotionProxy(Proxy::Stamina),
@@ -238,11 +222,11 @@ mod tests {
             "OCF_WeapTypeHalberd2H".to_string(),
         ];
 
-        let name_bytes = "Placeholder".as_bytes().to_vec();
+        let name = "Placeholder".to_string();
         let item = HudItem::from_keywords(
             ItemCategory::Weapon,
             kwds,
-            name_bytes,
+            name,
             "placeholder|0xcafed00d".to_string(),
             2,
             true,
