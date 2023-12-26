@@ -408,19 +408,7 @@ namespace ui
 				continue;
 			}
 
-			auto entry_name = std::string("");
-			// We use the data cached in the entry if at all possible
-			if (entry->name_is_utf8()) { entry_name = std::string(entry->name()); }
-			else
-			{
-				// use the bytes from the cstring, which are identical to the data the form gave us
-				// note that imgui cannot draw non-utf8-valid characters, so we'll get the ?? subs.
-				// I am *guessing* that the Flash menus are old enough that they handle UCS-16 BE
-				// data, which is why people do it. OMFG this explains the translation files too.
-				auto bytes = entry->name_bytes();
-				entry_name = helpers::vec_to_stdstring(bytes);
-			}
-
+			auto entry_name        = std::string(entry->name());
 			const auto hotkey      = settings->hotkey_for(slotLayout.element);
 			const auto slot_center = ImVec2(slotLayout.center.x, slotLayout.center.y);
 

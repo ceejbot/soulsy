@@ -159,7 +159,7 @@ mod tests {
     fn test_constructor_works() {
         let spec = "test-spec".to_string();
         let item = fetch_game_item(&spec);
-        assert!(item.name_is_utf8());
+        assert!(!item.name().is_empty());
         assert_eq!(item.form_string(), spec);
     }
 }

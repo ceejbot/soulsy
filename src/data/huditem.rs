@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::ffi::CString;
 use std::fmt::Display;
 
 use cxx::let_cxx_string;
@@ -7,6 +6,7 @@ use strfmt::strfmt;
 
 use super::base::BaseType;
 use super::HasIcon;
+use crate::facade::convert_to_string_doggedly;
 use crate::images::icons::Icon;
 use crate::plugin::{chargeLevelByFormSpec, isPoisonedByFormSpec, Color, ItemCategory};
 
@@ -14,10 +14,6 @@ use crate::plugin::{chargeLevelByFormSpec, isPoisonedByFormSpec, Color, ItemCate
 /// that drives the HUD cached for fast access.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct HudItem {
-    /// Player-visible name as its underlying bytes.
-    name_bytes: Vec<u8>,
-    /// a bit saying if we had to lose data to encode the name
-    name_is_utf8: bool,
     /// Name as utf8
     name: String,
     /// A string that can be turned back into form data; for serializing.
@@ -39,15 +35,12 @@ impl HudItem {
         count: u32,
         twohanded: bool,
     ) -> Self {
-        let (name_is_utf8, name) = name_from_bytes(&name_bytes);
-
-        // log::debug!("calling BaseType::classify() with keywords={keywords:?};");
+        let name = convert_to_string_doggedly(name_bytes);
+        // log::trace!("calling BaseType::classify() with keywords={keywords:?};");
         let kind: BaseType = BaseType::classify(name.as_str(), category, keywords, twohanded);
         let format_vars = HudItem::make_format_vars(name.clone(), count);
         Self {
-            name_bytes,
             name,
-            name_is_utf8,
             form_string,
             count,
             kind,
@@ -61,12 +54,10 @@ impl HudItem {
         count: u32,
         kind: BaseType,
     ) -> Self {
-        let (name_is_utf8, name) = name_from_bytes(&name_bytes);
+        let name = convert_to_string_doggedly(name_bytes);
         let format_vars = HudItem::make_format_vars(name.clone(), count);
         Self {
-            name_bytes,
             name,
-            name_is_utf8,
             form_string,
             count,
             kind,
@@ -77,9 +68,7 @@ impl HudItem {
     pub fn for_equip_set(name: String, id: u32, icon: Icon) -> Self {
         let format_vars = HudItem::make_format_vars(name.clone(), 1);
         Self {
-            name_bytes: name.as_bytes().to_vec(),
             name,
-            name_is_utf8: true,
             form_string: format!("equipset_{id}"),
             count: 1,
             kind: BaseType::Equipset(icon),
@@ -143,14 +132,6 @@ impl HudItem {
 
     pub fn name(&self) -> String {
         self.name.clone()
-    }
-
-    pub fn name_is_utf8(&self) -> bool {
-        self.name_is_utf8
-    }
-
-    pub fn name_bytes(&self) -> Vec<u8> {
-        self.name_bytes.clone()
     }
 
     pub fn count(&self) -> u32 {
@@ -251,34 +232,4 @@ impl Display for HudItem {
             self.form_string(),
         )
     }
-}
-
-fn name_from_bytes(name_bytes: &[u8]) -> (bool, String) {
-    // let's try to get a name string out of the bytes
-    let mut name_is_utf8 = false;
-    let cstring = match CString::from_vec_with_nul(name_bytes.to_owned()) {
-        Ok(cstring) => cstring,
-        Err(e) => {
-            if let Ok(cstring) = CString::new(name_bytes.to_owned()) {
-                cstring
-            } else {
-                log::info!("This is a bug with the mod this item comes from: item name bytes were an invalid C string; error: {e:#}");
-                CString::default()
-            }
-        }
-    };
-
-    let name = if let Ok(v) = cstring.clone().into_string() {
-        name_is_utf8 = true;
-        v
-    } else {
-        let lossy = cstring.to_string_lossy().to_string();
-        log::debug!(
-            "Item name is invalid utf-8; falling back to lossy string. name='{}';",
-            lossy
-        );
-        lossy
-    };
-
-    (name_is_utf8, name)
 }

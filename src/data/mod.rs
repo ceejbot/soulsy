@@ -232,7 +232,7 @@ mod tests {
 
     #[test]
     fn can_classify_huditem() {
-        let input = vec![
+        let kwds = vec![
             "OCF_InvColorBlood".to_string(),
             "WeapTypeHalberd".to_string(),
             "OCF_WeapTypeHalberd2H".to_string(),
@@ -241,9 +241,9 @@ mod tests {
         let name_bytes = "Placeholder".as_bytes().to_vec();
         let item = HudItem::from_keywords(
             ItemCategory::Weapon,
-            input,
+            kwds,
             name_bytes,
-            "placeholder".to_string(),
+            "placeholder|0xcafed00d".to_string(),
             2,
             true,
         );

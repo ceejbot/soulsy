@@ -250,6 +250,10 @@ pub mod plugin {
         /// Log at trace level. Use this level for debugging programming problems.
         fn log_trace(message: String);
 
+        /// Decode a vector of bytes from a ucs2 string to a utf-8 string.
+        /// Goes to some lengths to return a result even if it's lossy.
+        fn convert_to_string_doggedly(bytes: Vec<u8>) -> String;
+
         /// Trigger rust to read config, figure out what the player has equipped,
         /// and figure out what it should draw.
         fn initialize_hud();
@@ -306,10 +310,6 @@ pub mod plugin {
         fn color(self: &HudItem) -> Color;
         /// Get the item name as a possibly-lossy utf8 string.
         fn name(self: &HudItem) -> String;
-        /// Check if the item name is representable in utf8.
-        fn name_is_utf8(self: &HudItem) -> bool;
-        /// Get the underlying bytes of a possibly non-utf8 name for this item.
-        fn name_bytes(self: &HudItem) -> Vec<u8>;
         /// Get the form spec string for this item; format is `Plugin.esp|0xdeadbeef`
         fn form_string(self: &HudItem) -> String;
         /// Get how many of this item the player has. Updated on inventory changes.

@@ -4,7 +4,11 @@
 //! demand the controller. In particular, it implements some support for
 //! papyrus functions.
 
+use std::ffi::CString;
+
+use byte_slice_cast::AsSliceOf;
 use cxx::CxxVector;
+use eyre::{Report, Result};
 
 use super::cycles::*;
 use super::settings::{settings, UserSettings};
@@ -228,4 +232,64 @@ pub fn look_up_equipset_by_name(name: String) -> u32 {
 
 pub fn show_ui() -> bool {
     control::get().cycles.hud_visible()
+}
+
+// ----------- wide character shenanigans
+
+/// Get a valid Rust representation of this UCS2 string data by hook or by crook.
+pub fn convert_to_string_doggedly(bytes: Vec<u8>) -> String {
+    // Maybe it's the easy case and we're done!
+    if let Ok(utf8string) = String::from_utf8(bytes.clone()) {
+        eprintln!("hey the easy case! {utf8string}");
+        return utf8string;
+    }
+
+    let widebytes = match bytes.as_slice_of::<u16>() {
+        Ok(v) => v,
+        Err(_) => return String::new(),
+    };
+    let result = match ucs2_to_utf8(widebytes.to_vec()) {
+        Ok(v) => v,
+        Err(_e) => {
+            let cstring = match CString::from_vec_with_nul(bytes.to_owned()) {
+                Ok(cstring) => cstring,
+                Err(e) => {
+                    log::warn!("This is a bug with the mod this item comes from: item name bytes were an invalid C string; error: {e:#}");
+                    CString::default()
+                }
+            };
+            if let Ok(v) = cstring.clone().into_string() {
+                v
+            } else {
+                let lossy = cstring.to_string_lossy().to_string();
+                log::debug!(
+                    "ucs2 string can't be decoded; falling back to lossy string. lossy='{}';",
+                    lossy
+                );
+                lossy
+            }
+        }
+    };
+    result
+}
+
+/// If you start with a vec of wide bytes, use ucs2_to_utf8() directly
+pub fn u8_widebytes_to_utf8(input: Vec<u8>) -> Result<String, Report> {
+    let bytes = input.clone();
+    let widebytes = bytes.as_slice_of::<u16>()?;
+    ucs2_to_utf8(widebytes.to_vec())
+}
+
+/// Input is assumed to be a null-terminated wide string originating from Windows.
+pub fn ucs2_to_utf8(input: Vec<u16>) -> Result<String, Report> {
+    let mut utf8bytes: Vec<u8> = vec![0; input.len() * 2];
+    let _widecount = match ucs2::decode(input.as_slice(), &mut utf8bytes) {
+        Ok(v) => v,
+        Err(e) => {
+            log::error!("failed to decode ucs2 string as utf8: {e:?}");
+            return Err(eyre::eyre!("failed to decode ucs2 string as utf8."));
+        }
+    };
+    let result = String::from_utf8(utf8bytes)?;
+    Ok(result)
 }
