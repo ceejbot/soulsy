@@ -4,6 +4,24 @@
 
 namespace rlog
 {
+	static void leftTrim(std::string& s)
+	{
+		s.erase(s.begin(), std::ranges::find_if(s, [](const unsigned char ch) { return !std::isspace(ch); }));
+	}
+
+	static std::string leftTrimCopy(std::string s)
+	{
+		leftTrim(s);
+		return s;
+	}
+
+	template <typename T>
+	std::string formatAsHex(T xs)
+	{
+		std::stringstream stream;
+		stream << "0x" << std::hex << std::setw(8) << std::setfill('0') << xs;
+		return leftTrimCopy(stream.str());
+	}
 
 	template <typename... Args>
 	struct [[maybe_unused]] critical

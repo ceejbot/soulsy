@@ -2,7 +2,6 @@
 
 #include "offset.h"
 #include "player.h"
-#include "string_util.h"
 
 // For game implementation reasons, this also includes spells.
 // Lesser powers are spells that go into the shout slot, IIUC.
@@ -37,7 +36,7 @@ namespace game
 		{
 			auto* task = SKSE::GetTaskInterface();
 			if (!task) return;
-			rlog::trace("unequipping shout/power formID={};"sv, util::string_util::int_to_hex(selected_power->formID));
+			rlog::trace("unequipping shout/power formID={};"sv, rlog::formatAsHex(selected_power->formID));
 			if (selected_power->Is(RE::FormType::Shout))
 			{
 				task->AddTask(
@@ -58,16 +57,16 @@ namespace game
 
 	void equipShoutByForm(RE::TESForm* form, RE::PlayerCharacter*& player)
 	{
-		// rlog::trace("tring to equip shout; name='{}';"sv, form->GetName());
+		// rlog::trace("tring to equip shout; name='{}';"sv, helpers::nameAsUtf8(form));
 		if (const auto selected_power = player->GetActorRuntimeData().selectedPower; selected_power)
 		{
 			rlog::trace("current power:  name='{}'; is-shout={}; is-spell={};"sv,
-				selected_power->GetName(),
+				helpers::nameAsUtf8(selected_power),
 				selected_power->Is(RE::FormType::Shout),
 				selected_power->Is(RE::FormType::Spell));
 			if (selected_power->formID == form->formID)
 			{
-				rlog::trace("shout already equipped; moving on."sv, form->GetName());
+				rlog::trace("shout already equipped; moving on."sv, helpers::nameAsUtf8(form));
 				return;
 			}
 		}
@@ -77,11 +76,11 @@ namespace game
 
 		if (form->Is(RE::FormType::Spell))
 		{
-			rlog::debug("equipping lesser power name='{}';"sv, form->GetName());
+			rlog::debug("equipping lesser power name='{}';"sv, helpers::nameAsUtf8(form));
 			auto* spell = form->As<RE::SpellItem>();
 			if (!player->HasSpell(spell))
 			{
-				rlog::warn("player does not know lesser power; name='{}';"sv, spell->GetName());
+				rlog::warn("player does not know lesser power; name='{}';"sv, helpers::nameAsUtf8(spell));
 				return;
 			}
 
@@ -92,11 +91,11 @@ namespace game
 		auto* shout = form->As<RE::TESShout>();
 		if (!player::has_shout(player, shout))
 		{
-			rlog::warn("player does not know shout; name='{}';"sv, shout->GetName());
+			rlog::warn("player does not know shout; name='{}';"sv, helpers::nameAsUtf8(shout));
 			return;
 		}
 
 		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipShout(player, shout); });
-		rlog::debug("shout equipped! name='{}'"sv, form->GetName());
+		rlog::debug("shout equipped! name='{}'"sv, helpers::nameAsUtf8(form));
 	}
 }

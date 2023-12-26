@@ -139,7 +139,7 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
 
     let name = petname::petname(2, " ");
     let item = HudItem::preclassified(
-        name.as_bytes().to_vec(),
+        name,
         form_string.to_owned(),
         2,
         super::BaseType::Weapon(WeaponType::new(
@@ -159,7 +159,7 @@ mod tests {
     fn test_constructor_works() {
         let spec = "test-spec".to_string();
         let item = fetch_game_item(&spec);
-        assert!(item.name_is_utf8());
+        assert!(!item.name().is_empty());
         assert_eq!(item.form_string(), spec);
     }
 }

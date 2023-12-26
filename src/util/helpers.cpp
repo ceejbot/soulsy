@@ -4,7 +4,6 @@
 #include "equippable.h"
 #include "gear.h"
 #include "player.h"
-#include "string_util.h"
 #include "ui_renderer.h"
 #include "utility.h"
 
@@ -12,7 +11,8 @@
 
 namespace helpers
 {
-	using string_util = util::string_util;
+	using UEFLAG = RE::UserEvents::USER_EVENT_FLAG;
+
 
 	// play a denied/failure/no sound
 	void honk()
@@ -31,6 +31,25 @@ namespace helpers
 
 	// How you know I've been replaced by a pod person: if I ever declare that
 	// I love dealing with strings in systems programming languages.
+
+	std::string nameAsUtf8(const RE::TESForm* form)
+	{
+		// absolutely must never look for a bound object for this puppy.
+		// It is called by bound object finder functions.
+		auto name     = form->GetName();  // this use is required
+		auto chonker  = helpers::chars_to_vec(name);
+		auto safename = std::string(string_to_utf8(chonker));
+		return safename;
+	}
+
+	std::string displayNameAsUtf8(const RE::TESForm* form)
+	{
+		// Do not call this from bound object finder functions.
+		auto name     = game::displayName(form);
+		auto chonker  = helpers::chars_to_vec(name);
+		auto safename = std::string(string_to_utf8(chonker));
+		return safename;
+	}
 
 	std::vector<uint8_t> chars_to_vec(const char* input)
 	{
@@ -61,10 +80,20 @@ namespace helpers
 	// Handles photo mode and possibly others.
 	static constexpr auto requiredControlFlags = static_cast<RE::ControlMap::UEFlag>(1036);
 
+	// Returns true if the player can use movement and gameplay controls.
+	// Returns false during the intro, for examples.
+	bool playerInControl()
+	{
+		const auto* controlMap = RE::ControlMap::GetSingleton();
+		if (!controlMap) { return false; }
+		const auto canMove = controlMap->IsMovementControlsEnabled();
+		return canMove;
+	}
+
 	bool ignoreKeyEvents()
 	{
 		// We pay attention to keypress events when:
-		// - we are in normal gameplace mode
+		// - we are in normal gameplay mode
 		// - the item, magic, or favorites menus are visible
 		// We ignore them when other menus are up or when controls are disabled for quest reasons.
 
@@ -76,7 +105,10 @@ namespace helpers
 		if (ui->GameIsPaused() || ui->IsMenuOpen("LootMenu")) return true;
 		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>()) { return true; }
 
+
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
+		if (!playerInControl()) { return true; }
+		/*
 		const auto* control_map = RE::ControlMap::GetSingleton();
 		if (!control_map || !control_map->IsMovementControlsEnabled() ||
 			!control_map->AreControlsEnabled(requiredControlFlags) || !control_map->IsActivateControlsEnabled() ||
@@ -84,8 +116,9 @@ namespace helpers
 		{
 			return true;
 		}
+		*/
 
-		return false;
+		return false;  // FOR NOW
 	}
 
 	bool gamepadInUse()
@@ -110,11 +143,7 @@ namespace helpers
 		                        ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
 		if (hudInappropriate) { return false; }
 
-		const auto* control_map = RE::ControlMap::GetSingleton();
-		bool playerNotInControl =
-			!control_map || !control_map->IsMovementControlsEnabled() ||
-			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay;
-		if (playerNotInControl) { return false; }
+		if (!playerInControl()) { return false; }
 
 		return true;
 	}
@@ -154,14 +183,14 @@ namespace helpers
 		{
 			// rlog::trace("it is dynamic"sv);
 			form_string =
-				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, string_util::int_to_hex(form->GetFormID()));
+				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, rlog::formatAsHex(form->GetFormID()));
 		}
 		else
 		{
 			auto* source_file = form->sourceFiles.array->front()->fileName;
 			auto local_form   = form->GetLocalFormID();
 
-			const auto hexified = string_util::int_to_hex(local_form);
+			const auto hexified = rlog::formatAsHex(local_form);
 			// rlog::trace("source file='{}'; local id={}'; hex={};"sv, source_file, local_form, hexified);
 			form_string = fmt::format("{}{}{}", source_file, util::delimiter, hexified);
 		}
@@ -207,8 +236,8 @@ namespace helpers
 		// {
 		// 	rlog::trace("found form id for form spec='{}'; name='{}'; formID={}",
 		// 		a_str,
-		// 		form->GetName(),
-		// 		string_util::int_to_hex(form->GetFormID()));
+		// 		helpers::nameAsUtf8(form),
+		// 		rlog::formatAsHex(form->GetFormID()));
 		// }
 
 		return form;

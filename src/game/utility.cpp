@@ -1,41 +1,41 @@
 #include "utility.h"
 
+#include "RE/A/Actor.h"
 #include "constant.h"
 #include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
 #include "player.h"
-#include "string_util.h"
 
 #include "lib.rs.h"
 
+using namespace soulsy;
+
 namespace game
 {
-	using string_util = util::string_util;
-
 	// ---------- ammo
 
 	void equipAmmoByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer)
 	{
-		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(form, thePlayer, obj, extra);
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
+		auto remaining               = boundObjectForForm(form, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
-			rlog::warn("Ammo not found in inventory! name='{}';"sv, form->GetName());
+			rlog::warn("Ammo not found in inventory! name='{}';"sv, helpers::nameAsUtf8(form));
 			return;
 		}
 
 		if (const auto* current_ammo = thePlayer->GetCurrentAmmo(); current_ammo && current_ammo->formID == obj->formID)
 		{
-			// rlog::trace("ammo is already equipped; bound formID={}"sv, string_util::int_to_hex(obj->formID));
+			// rlog::trace("ammo is already equipped; bound formID={}"sv, rlog::formatAsHex(obj->formID));
 			return;
 		}
 
 		rlog::debug("queuing task to equip ammo; name='{}'; bound formID={}"sv,
-			obj->GetName(),
-			string_util::int_to_hex(obj->formID));
+			helpers::nameAsUtf8(obj),
+			rlog::formatAsHex(obj->formID));
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
@@ -59,9 +59,8 @@ namespace game
 			{
 				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->UnequipObject(thePlayer, ammo); });
 			}
-			rlog::debug("ammo unequipped; name='{}'; formID={}"sv,
-				ammo->GetName(),
-				util::string_util::int_to_hex(ammo->formID));
+			rlog::debug(
+				"ammo unequipped; name='{}'; formID={}"sv, helpers::nameAsUtf8(ammo), rlog::formatAsHex(ammo->formID));
 		}
 	}
 
@@ -77,63 +76,56 @@ namespace game
 			{
 				task->AddTask([=]() { equipManager->UnequipObject(thePlayer, item); });
 			}
-			// rlog::trace("unequipped armor; name='{}';"sv, item->GetName());
+			// rlog::trace("unequipped armor; name='{}';"sv, helpers::nameAsUtf8(item));
 		}
 		return isWorn;
 	}
 
-	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer)
+	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch)
 	{
 		// This is a toggle in reality. Also, use this as a model for other equip funcs.
-		// rlog::trace("attempting to toggle armor; name='{}';"sv, form->GetName());
-		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(form, thePlayer, obj, extra);
+		// rlog::trace("attempting to toggle armor; name='{}';"sv, helpers::nameAsUtf8(form));
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
+		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
-			rlog::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
+			rlog::warn("could not find armor in player inventory; name='{}';"sv, nameToMatch);
 			return;
 		}
 
-		auto* task = SKSE::GetTaskInterface();
-		if (!task)
+		auto* task         = SKSE::GetTaskInterface();
+		auto* equipManager = RE::ActorEquipManager::GetSingleton();
+		const auto isWorn  = isItemWorn(obj, thePlayer);
+		if (isWorn)
 		{
-			rlog::warn("could not find SKSE task interface! Cannot act."sv);
-			return;
-		}
-
-		const auto is_worn  = isItemWorn(obj, thePlayer);
-		auto* equip_manager = RE::ActorEquipManager::GetSingleton();
-		if (is_worn)
-		{
-			task->AddTask([=]() { equip_manager->UnequipObject(thePlayer, obj); });
+			task->AddTask([=]() { equipManager->UnequipObject(thePlayer, obj, extraData); });
 		}
 		else
 		{
-			task->AddTask([=]() { equip_manager->EquipObject(thePlayer, obj); });
+			task->AddTask([=]() { equipManager->EquipObject(thePlayer, obj, extraData); });
 		}
 	}
 
-	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer)
+	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch)
 	{
-		// rlog::trace("attempting to equip armor; name='{}';"sv, form->GetName());
-		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(form, thePlayer, obj, extra);
+		// rlog::trace("attempting to equip armor; name='{}';"sv, helpers::nameAsUtf8(form));
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
+		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
-			rlog::warn("could not find armor in player inventory; name='{}';"sv, form->GetName());
+			rlog::warn("could not find armor in player inventory; name='{}';"sv, nameToMatch);
 			return;
 		}
 
-		const auto is_worn = isItemWorn(obj, thePlayer);
-		if (!is_worn)
+		if (!isItemWorn(obj, thePlayer))
 		{
 			auto* task         = SKSE::GetTaskInterface();
 			auto* equipManager = RE::ActorEquipManager::GetSingleton();
-			task->AddTask([=]() { equipManager->EquipObject(thePlayer, obj); });
+			task->AddTask([=]() { equipManager->EquipObject(thePlayer, obj, extraData); });
 		}
 	}
 
@@ -142,12 +134,12 @@ namespace game
 	void consumePotion(const RE::TESForm* potionForm, RE::PlayerCharacter*& thePlayer)
 	{
 		rlog::trace("consumePotion called; form_id={}; potion='{}';"sv,
-			util::string_util::int_to_hex(potionForm->formID),
-			potionForm->GetName());
+			rlog::formatAsHex(potionForm->formID),
+			helpers::nameAsUtf8(potionForm));
 
-		RE::TESBoundObject* obj  = nullptr;
-		RE::ExtraDataList* extra = nullptr;
-		auto remaining           = boundObjectForForm(potionForm, thePlayer, obj, extra);
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
+		auto remaining               = boundObjectForForm(potionForm, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -160,26 +152,27 @@ namespace game
 		{
 			helpers::honk();
 			rlog::warn("bound object is not an alchemy item? name='{}'; formID={};"sv,
-				obj->GetName(),
-				string_util::int_to_hex(obj->formID));
+				helpers::nameAsUtf8(obj),
+				rlog::formatAsHex(obj->formID));
 			return;
 		}
 
 		auto* alchemyItem = obj->As<RE::AlchemyItem>();
 		if (alchemyItem->IsPoison())
 		{
-			poisonWeapon(thePlayer, alchemyItem, remaining);
+			poisonWeapon(thePlayer, alchemyItem, remaining, extraData);
 			return;
 		}
 
 		auto* task = SKSE::GetTaskInterface();
 		if (!task) { return; }
-		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, alchemyItem); });
+		task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, alchemyItem, extraData); });
 	}
 
 	void poisonWeapon(RE::PlayerCharacter*& thePlayer,
 		RE::AlchemyItem*& poison,
-		uint32_t remaining)
+		uint32_t remaining,
+		RE::ExtraDataList* extraData)
 	{
 		auto* task = SKSE::GetTaskInterface();
 		if (!task) { return; }
@@ -188,9 +181,10 @@ namespace game
 		if (right_eq && right_eq->IsWeapon())
 		{
 			task->AddTask(
-				[=]() {
+				[=]()
+				{
 					RE::ActorEquipManager::GetSingleton()->EquipObject(
-						thePlayer, poison, nullptr, 1, game::right_hand_equip_slot());
+						thePlayer, poison, extraData, 1, game::right_hand_equip_slot());
 				});
 			remaining--;
 		}
@@ -200,7 +194,7 @@ namespace game
 			task->AddTask(
 				[=]() {
 					RE::ActorEquipManager::GetSingleton()->EquipObject(
-						thePlayer, poison, nullptr, 1, game::left_hand_equip_slot());
+						thePlayer, poison, extraData, 1, game::left_hand_equip_slot());
 				});
 		}
 	}
@@ -307,7 +301,7 @@ namespace game
 			rlog::debug("after considering {} candidates, found a potion: rating={}; name='{}';"sv,
 				vitalStat,
 				prevRating,
-				obj->GetName());
+				helpers::nameAsUtf8(obj));
 			auto* task = SKSE::GetTaskInterface();
 			if (task)
 			{
@@ -324,14 +318,14 @@ namespace game
 	// ---------- perk visitor, used only by the actor value potion selection
 
 	using PerkFuncType     = RE::BGSEntryPointPerkEntry::EntryData::Function;
-	using PerkFuncDataType = RE::BGSEntryPointFunctionData::FunctionType;
+	using PerkFuncDataType = RE::BGSEntryPointFunctionData::ENTRY_POINT_FUNCTION_DATA;
 
 	RE::BSContainer::ForEachResult perk_visitor::Visit(RE::BGSPerkEntry* perk_entry)
 	{
 		const auto* entry_point = static_cast<RE::BGSEntryPointPerkEntry*>(perk_entry);
 		const auto* perk        = entry_point->perk;
 
-		rlog::trace("perk formID={}; name='{}';"sv, string_util::int_to_hex(perk->formID), perk->GetName());
+		rlog::trace("perk formID={}; name='{}';"sv, rlog::formatAsHex(perk->formID), helpers::nameAsUtf8(perk));
 
 		// This was originally intended to handle many variations of the poison
 		// dose perk-- it should calculate the correct value from vanilla,

@@ -2,7 +2,7 @@
 //!
 //! To add a new icon, you must add a variant name here AND add the variant to
 //! `fallback()`, so the HUD renders something if the file is missing (e.g., an
-//! icon pack dose not include it). If the icon is added to the core set in the
+//! icon pack does not include it). If the icon is added to the core set in the
 //! main mod, it is its own fallback and can be a fallback target. (A test
 //! validates that all fallbacks are valid.)
 //!
@@ -109,16 +109,69 @@ pub enum Icon {
     Scroll,
     Shout,
     ShoutAnimalAllegiance,
+    ShoutAuraWhisper,
+    ShoutBattleFury,
+    ShoutBecomeEthereal,
+    ShoutBendWill,
     ShoutBreathAttack,
     ShoutCallDragon,
+    ShoutCallOfValor,
     ShoutClearSkies,
     ShoutCyclone,
+    ShoutDisarm,
     ShoutDismay,
+    ShoutDragonAspect,
+    ShoutDragonrend,
+    ShoutDrainVitality,
     ShoutElementalFury,
+    ShoutFireBreath,
+    ShoutFrostBreath,
     ShoutIceForm,
+    ShoutKynesPeace,
     ShoutMarkedForDeath,
+    ShoutPhantomForm,
+    ShoutSlowtime,
+    ShoutSoulTear,
     ShoutStormcall,
+    ShoutSummonDurnehviir,
+    ShoutThrowVoice,
     ShoutUnrelentingForce,
+    ShoutWhirlwindSprint,
+    ShoutSoulCairnSummon,
+    // Stormcrown's modest additions.
+    ShoutLightningBreath,
+    ShoutPoisonBreath,
+    // These are Thunderchild shouts.
+    ShoutAlessiasLove,
+    ShoutAnnihilate,
+    ShoutArcaneHelix,
+    ShoutArmageddon,
+    ShoutCurse,
+    ShoutDanceOfTheDead,
+    ShoutEarthquake,
+    ShoutEssenceRip,
+    ShoutEvocation,
+    ShoutGeomagnetism,
+    ShoutIceborn,
+    ShoutJonesShadow,
+    ShoutKingsbane,
+    ShoutLifestream,
+    ShoutLightningShield,
+    ShoutOblivion,
+    ShoutPhantomDecoy,
+    ShoutRiftwalk,
+    ShoutShattersphere,
+    ShoutShorsWrath,
+    ShoutShroudOfSnowfall,
+    ShoutSpeakUntoTheStars,
+    ShoutSplinterTwins,
+    ShoutStormblast,
+    ShoutTheConqueror,
+    ShoutTrueshot,
+    ShoutWailOfTheBanshee,
+    ShoutWanderlust,
+    ShoutWarcry,
+
     // SpellArcane,
     SpellArclight,
     // SpellBlast, // not yet used
@@ -322,16 +375,68 @@ impl Icon {
             // Shout. Shout. Let it all out.
             Icon::Shout => Icon::Shout,
             Icon::ShoutAnimalAllegiance => Icon::Shout,
+            Icon::ShoutAuraWhisper => Icon::Shout,
+            Icon::ShoutBattleFury => Icon::Shout,
+            Icon::ShoutBecomeEthereal => Icon::Shout,
+            Icon::ShoutBendWill => Icon::Shout,
             Icon::ShoutBreathAttack => Icon::Shout,
+            Icon::ShoutCallDragon => Icon::Shout,
+            Icon::ShoutCallOfValor => Icon::Shout,
             Icon::ShoutClearSkies => Icon::Shout,
             Icon::ShoutCyclone => Icon::Shout,
-            Icon::ShoutCallDragon => Icon::Shout,
+            Icon::ShoutDisarm => Icon::Shout,
             Icon::ShoutDismay => Icon::Shout,
+            Icon::ShoutDragonAspect => Icon::Shout,
+            Icon::ShoutDragonrend => Icon::Shout,
+            Icon::ShoutDrainVitality => Icon::Shout,
             Icon::ShoutElementalFury => Icon::Shout,
-            Icon::ShoutIceForm => Icon::Destruction,
+            Icon::ShoutFireBreath => Icon::Shout,
+            Icon::ShoutFrostBreath => Icon::Shout,
+            Icon::ShoutIceForm => Icon::Shout,
+            Icon::ShoutKynesPeace => Icon::Shout,
             Icon::ShoutMarkedForDeath => Icon::Shout,
+            Icon::ShoutPhantomForm => Icon::Shout,
+            Icon::ShoutSlowtime => Icon::Shout,
+            Icon::ShoutSoulTear => Icon::Shout,
             Icon::ShoutStormcall => Icon::Shout,
+            Icon::ShoutSummonDurnehviir => Icon::Shout,
+            Icon::ShoutThrowVoice => Icon::Shout,
             Icon::ShoutUnrelentingForce => Icon::Shout,
+            Icon::ShoutWhirlwindSprint => Icon::Shout,
+            Icon::ShoutSoulCairnSummon => Icon::Shout,
+            // stormcrown
+            Icon::ShoutLightningBreath => Icon::Shout,
+            Icon::ShoutPoisonBreath => Icon::Shout,
+            // thunderchild's massive shout list
+            Icon::ShoutAlessiasLove => Icon::Shout,
+            Icon::ShoutAnnihilate => Icon::Shout,
+            Icon::ShoutArcaneHelix => Icon::Shout,
+            Icon::ShoutArmageddon => Icon::Shout,
+            Icon::ShoutCurse => Icon::Shout,
+            Icon::ShoutDanceOfTheDead => Icon::Shout,
+            Icon::ShoutEarthquake => Icon::Shout,
+            Icon::ShoutEssenceRip => Icon::Shout,
+            Icon::ShoutEvocation => Icon::Shout,
+            Icon::ShoutGeomagnetism => Icon::Shout,
+            Icon::ShoutIceborn => Icon::Shout,
+            Icon::ShoutJonesShadow => Icon::Shout,
+            Icon::ShoutKingsbane => Icon::Shout,
+            Icon::ShoutLifestream => Icon::Shout,
+            Icon::ShoutLightningShield => Icon::Shout,
+            Icon::ShoutOblivion => Icon::Shout,
+            Icon::ShoutPhantomDecoy => Icon::Shout,
+            Icon::ShoutRiftwalk => Icon::Shout,
+            Icon::ShoutShattersphere => Icon::Shout,
+            Icon::ShoutShorsWrath => Icon::Shout,
+            Icon::ShoutShroudOfSnowfall => Icon::Shout,
+            Icon::ShoutSpeakUntoTheStars => Icon::Shout,
+            Icon::ShoutSplinterTwins => Icon::Shout,
+            Icon::ShoutStormblast => Icon::Shout,
+            Icon::ShoutTheConqueror => Icon::Shout,
+            Icon::ShoutTrueshot => Icon::Shout,
+            Icon::ShoutWailOfTheBanshee => Icon::Shout,
+            Icon::ShoutWanderlust => Icon::Shout,
+            Icon::ShoutWarcry => Icon::Shout,
 
             // Most spells won't ever reach this because they'll fall back to their
             // schools, but just in case.
@@ -502,6 +607,7 @@ mod tests {
     use std::path::PathBuf;
     use std::str::FromStr;
 
+    use once_cell::sync::Lazy;
     use strum::VariantNames;
 
     use super::*;
@@ -599,6 +705,120 @@ mod tests {
             })
             .collect();
         assert!(missing.is_empty(), "{missing:#?}");
+    }
+
+    // sanity-checking the rune icon packs before I hand them over
+
+    static VANILLA_SHOUTS: Lazy<Vec<Icon>> = Lazy::new(|| {
+        vec![
+            Icon::ShoutAnimalAllegiance,
+            Icon::ShoutAuraWhisper,
+            Icon::ShoutBattleFury,
+            Icon::ShoutBecomeEthereal,
+            Icon::ShoutBendWill,
+            Icon::ShoutBreathAttack,
+            Icon::ShoutCallDragon,
+            Icon::ShoutCallOfValor,
+            Icon::ShoutClearSkies,
+            Icon::ShoutCyclone,
+            Icon::ShoutDisarm,
+            Icon::ShoutDismay,
+            Icon::ShoutDragonAspect,
+            Icon::ShoutDragonrend,
+            Icon::ShoutDrainVitality,
+            Icon::ShoutElementalFury,
+            Icon::ShoutFireBreath,
+            Icon::ShoutFrostBreath,
+            Icon::ShoutIceForm,
+            Icon::ShoutKynesPeace,
+            Icon::ShoutMarkedForDeath,
+            Icon::ShoutPhantomForm,
+            Icon::ShoutSlowtime,
+            Icon::ShoutSoulTear,
+            Icon::ShoutStormcall,
+            Icon::ShoutSummonDurnehviir,
+            Icon::ShoutThrowVoice,
+            Icon::ShoutUnrelentingForce,
+            Icon::ShoutWhirlwindSprint,
+        ]
+    });
+
+    #[test]
+    #[ignore]
+    fn validate_rune_icons() {
+        let missing: Vec<&Icon> = VANILLA_SHOUTS
+            .iter()
+            .filter(|icon| {
+                let fpath: PathBuf = ["layouts/unused/soulsy_vanilla", icon.icon_file().as_str()]
+                    .iter()
+                    .collect();
+
+                if !fpath.exists() {
+                    eprintln!("{icon:?} missing: vanilla rune shout");
+                    true
+                } else {
+                    false
+                }
+            })
+            .collect();
+        assert!(missing.is_empty());
+    }
+
+    #[test]
+    #[ignore]
+    fn validate_thunderchild_icons() {
+        let mut thunderchild_shouts: Vec<Icon> = vec![
+            Icon::ShoutAlessiasLove,
+            Icon::ShoutAnnihilate,
+            Icon::ShoutArcaneHelix,
+            Icon::ShoutArmageddon,
+            Icon::ShoutCurse,
+            Icon::ShoutDanceOfTheDead,
+            Icon::ShoutEarthquake,
+            Icon::ShoutEssenceRip,
+            Icon::ShoutEvocation,
+            Icon::ShoutGeomagnetism,
+            Icon::ShoutIceborn,
+            Icon::ShoutJonesShadow,
+            Icon::ShoutKingsbane,
+            Icon::ShoutLifestream,
+            Icon::ShoutLightningShield,
+            Icon::ShoutOblivion,
+            Icon::ShoutPhantomDecoy,
+            Icon::ShoutRiftwalk,
+            Icon::ShoutShattersphere,
+            Icon::ShoutShorsWrath,
+            Icon::ShoutShroudOfSnowfall,
+            Icon::ShoutSpeakUntoTheStars,
+            Icon::ShoutSplinterTwins,
+            Icon::ShoutStormblast,
+            Icon::ShoutTheConqueror,
+            Icon::ShoutTrueshot,
+            Icon::ShoutWailOfTheBanshee,
+            Icon::ShoutWanderlust,
+            Icon::ShoutWarcry,
+        ];
+        thunderchild_shouts.extend_from_slice(VANILLA_SHOUTS.as_slice());
+
+        let missing: Vec<&Icon> = thunderchild_shouts
+            .iter()
+            .filter(|icon| {
+                let fpath: PathBuf = [
+                    "layouts/unused/soulsy_thunderchild",
+                    icon.icon_file().as_str(),
+                ]
+                .iter()
+                .collect();
+
+                if !fpath.exists() {
+                    eprintln!("{icon:?} missing: thunderchild shout");
+                    true
+                } else {
+                    false
+                }
+            })
+            .collect();
+        assert!(missing.is_empty());
     }
 
     #[test]

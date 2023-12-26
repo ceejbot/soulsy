@@ -49,6 +49,11 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 		if (current_ammo && current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
 	}
 
+	const auto formtype = form->GetFormType();
+	const auto name     = helpers::displayNameAsUtf8(form);
+	if (event->equipped) { rlog::debug("equip event: {} '{}' equipped", RE::FormTypeToString(formtype), name); }
+	else { rlog::debug("equip event: {} '{}' removed", RE::FormTypeToString(formtype), name); }
+
 	std::string worn_right = helpers::makeFormSpecString(right_eq);
 	std::string worn_left  = helpers::makeFormSpecString(left_eq);
 	std::string form_spec  = helpers::makeFormSpecString(form);
@@ -82,8 +87,7 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 	{
 		if (event->eventType != RE::INPUT_EVENT_TYPE::kButton) { continue; }
 
-		auto* button =
-			static_cast<RE::ButtonEvent*>(event);  // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
+		auto* button = static_cast<RE::ButtonEvent*>(event);  // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 
 		// This offsets the button by an amount that varies based on what originated the
 		// event. This appears to be so that we can directly compare it to the hotkey numbers

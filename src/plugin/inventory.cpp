@@ -2,7 +2,6 @@
 
 #include "equippable.h"
 #include "gear.h"
-#include "string_util.h"
 
 #include "lib.rs.h"
 

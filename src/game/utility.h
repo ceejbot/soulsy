@@ -8,9 +8,9 @@ namespace game
 	void unequipCurrentAmmo();
 
 	// Equip this armor. Does nothing if it's already equipped.
-	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer);
+	void equipArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch);
 	// Equip if unequipped, un-equip if equipped already.
-	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer);
+	void toggleArmorByForm(const RE::TESForm* form, RE::PlayerCharacter*& thePlayer, const std::string& nameToMatch);
 	// reurns true if anything was unequipped.
 	bool unequipArmor(RE::TESBoundObject*& a_obj,
 		RE::PlayerCharacter*& thePlayer,
@@ -18,7 +18,10 @@ namespace game
 
 	void consumePotion(const RE::TESForm* a_form, RE::PlayerCharacter*& thePlayer);
 	void consumeBestOption(RE::ActorValue a_actor_value);
-	void poisonWeapon(RE::PlayerCharacter*& thePlayer, RE::AlchemyItem*& a_poison, uint32_t remaining);
+	void poisonWeapon(RE::PlayerCharacter*& thePlayer,
+		RE::AlchemyItem*& a_poison,
+		uint32_t remaining,
+		RE::ExtraDataList* extraData);
 
 	void playSound(RE::BGSSoundDescriptor* a_sound_descriptor_form, RE::PlayerCharacter*& thePlayer);
 

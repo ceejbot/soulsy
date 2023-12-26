@@ -772,7 +772,8 @@ impl Controller {
                 consumePotion(&form_spec);
             } else if item.is_armor() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
-                toggleArmor(&form_spec);
+                cxx::let_cxx_string!(name = item.name());
+                toggleArmor(&form_spec, &name);
             } else if item.is_ammo() {
                 cxx::let_cxx_string!(form_spec = item.form_string());
                 equipAmmo(&form_spec)
@@ -924,12 +925,13 @@ impl Controller {
 
         let kind = item.kind();
         cxx::let_cxx_string!(form_spec = item.form_string());
+        cxx::let_cxx_string!(name = item.name());
         log::info!("about to equip this item: slot={:?}; {}", which, item);
 
         if kind.is_magic() || kind.left_hand_ok() || kind.right_hand_ok() {
-            equipWeapon(&form_spec, which);
+            equipWeapon(&form_spec, which, &name);
         } else if kind.is_armor() {
-            toggleArmor(&form_spec);
+            toggleArmor(&form_spec, &name);
         } else if matches!(kind, BaseType::Ammo(_)) {
             equipAmmo(&form_spec);
         } else {
@@ -981,7 +983,7 @@ impl Controller {
         if !self.left_hand_cached.is_empty() {
             let unarmed = HudItem::make_unarmed_proxy();
             let prev_left = self.left_hand_cached.clone();
-            log::debug!(
+            log::trace!(
                 "re-requipping what we previously had in the LEFT hand; spec={};",
                 prev_left
             );
@@ -992,14 +994,16 @@ impl Controller {
                 let item = self.cache.get(&prev_left);
                 self.update_slot(HudElement::Left, &item);
                 cxx::let_cxx_string!(form_spec = prev_left.clone());
-                reequipHand(Action::Left, &form_spec);
+                cxx::let_cxx_string!(name = item.name());
+                reequipHand(Action::Left, &form_spec, &name);
             }
         } else if let Some(left_next) = self.cycles.get_top(&CycleSlot::Left) {
             let item = self.cache.get(&left_next);
             self.left_hand_cached = left_next.clone();
             self.update_slot(HudElement::Left, &item);
             cxx::let_cxx_string!(form_spec = left_next);
-            reequipHand(Action::Left, &form_spec);
+            cxx::let_cxx_string!(name = item.name());
+            reequipHand(Action::Left, &form_spec, &name);
         }
     }
 
@@ -1130,7 +1134,7 @@ impl Controller {
 
         let treat_as_two_hander = self.treat_as_two_handed(&item);
         let switching = item.two_handed() != self.two_hander_equipped;
-        log::debug!("weapon grip normally={}; alt-grip={}; we are treating it like: 2-hander={treat_as_two_hander}; switching={switching};",
+        log::trace!("weapon grip normally={}; alt-grip={}; we are treating it like: 2-hander={treat_as_two_hander}; switching={switching};",
             item.two_handed(), self.cgo_alt_grip);
         self.two_hander_equipped = item.two_handed();
 
@@ -1212,13 +1216,15 @@ impl Controller {
                     let item = self.cache.get(&prev_right);
                     self.update_slot(HudElement::Right, &item);
                     cxx::let_cxx_string!(form_spec = prev_right);
-                    reequipHand(Action::Right, &form_spec);
+                    cxx::let_cxx_string!(name = item.name());
+                    reequipHand(Action::Right, &form_spec, &name);
                 }
             } else if let Some(right_next) = self.cycles.get_top(&CycleSlot::Right) {
                 self.right_hand_cached = right_next.clone();
                 let item = self.cache.get(&right_next);
                 cxx::let_cxx_string!(form_spec = right_next);
-                reequipHand(Action::Right, &form_spec);
+                cxx::let_cxx_string!(name = item.name());
+                reequipHand(Action::Right, &form_spec, &name);
                 self.update_slot(HudElement::Right, &item);
             }
         }
@@ -1286,7 +1292,7 @@ impl Controller {
         }
 
         log::info!(
-            "HUD updated. Now showing: power='{}'; left='{}'; right='{}'; ammo='{}';",
+            "HUD initialized. Now showing: power='{}'; left='{}'; right='{}'; ammo='{}';",
             power.name(),
             left_entry.name(),
             right_entry.name(),
@@ -1645,8 +1651,10 @@ impl Controller {
             });
         }
         equipset.items().iter().for_each(|item| {
+            let cached = self.cache.get(item);
             let_cxx_string!(form_spec = item.identifier());
-            equipArmor(&form_spec);
+            let_cxx_string!(name = cached.name());
+            equipArmor(&form_spec, &name);
         });
 
         let set = HudItem::for_equip_set(equipset.name(), equipset.id(), equipset.icon.clone());

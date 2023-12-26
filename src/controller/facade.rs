@@ -229,3 +229,41 @@ pub fn look_up_equipset_by_name(name: String) -> u32 {
 pub fn show_ui() -> bool {
     control::get().cycles.hud_visible()
 }
+
+// ----------- windows character shenanigans
+
+use textcode::iso8859_15;
+
+/// C++ calls this version.
+pub fn string_to_utf8(bytes_ffi: &CxxVector<u8>) -> String {
+    let bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
+    convert_to_utf8_doggedly(bytes)
+}
+
+// To test in game: install daegon
+// player.additem 4c2b15f4 1
+// Sacrÿfev Tëliimi
+
+/// Get a valid Rust representation of this Windows codepage string data by hook or by crook.
+pub fn convert_to_utf8_doggedly(input: Vec<u8>) -> String {
+    let bytes = if input.ends_with(&[0]) {
+        let chopped = input.len() - 1;
+        let mut tmp = input.clone();
+        tmp.truncate(chopped);
+        tmp
+    } else {
+        input.clone()
+    };
+    if bytes.is_empty() {
+        return String::new();
+    }
+
+    // Maybe it's the easy case and we're done!
+    if let Ok(utf8string) = String::from_utf8(bytes.clone()) {
+        return utf8string;
+    }
+
+    let mut dst = String::new();
+    iso8859_15::decode(bytes.as_slice(), &mut dst);
+    return dst;
+}

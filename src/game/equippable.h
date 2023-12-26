@@ -1,12 +1,10 @@
 #pragma once
 
 #include "rust/cxx.h"
+#include "soulsy.h"
 
 // Builds the rust HudItem struct from game data, inspecting forms,
 // keywords, and inventory data as needed.
-
-struct HudItem;
-struct SpellData;
 
 namespace equippable
 {

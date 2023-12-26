@@ -3,7 +3,7 @@
 #include "equippable.h"
 #include "gear.h"
 #include "keycodes.h"
-#include "util/string_util.h"
+#include "log.h"
 
 #include "lib.rs.h"
 
@@ -22,7 +22,7 @@ inline const std::set<RE::FormType> RELEVANT_FORMTYPES_ALL{
 
 void MenuHook::install()
 {
-	rlog::info("Hooking menus to get keystrokes..."sv);
+	rlog::info("Hooking menus to get keystrokes...");
 
 	REL::Relocation<std::uintptr_t> menu_controls_vtbl{ RE::VTABLE_MenuControls[0] };
 	process_event_ = menu_controls_vtbl.write_vfunc(0x1, &MenuHook::process_event);
@@ -87,7 +87,7 @@ RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 					if (!menu_form) continue;
 
 					rlog::debug("Got toggled favorite: form_id={}; form_type={}; is-favorited={};"sv,
-						util::string_util::int_to_hex(selection->form_id),
+						rlog::formatAsHex(selection->form_id),
 						selection->formType,
 						selection->favorite);
 
@@ -136,10 +136,9 @@ MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid)
 
 	this->form = item_form;
 
-	auto* player                    = RE::PlayerCharacter::GetSingleton();
 	RE::TESBoundObject* boundObject = nullptr;
-	RE::ExtraDataList* extra        = nullptr;
-	game::boundObjectForForm(item_form, player, boundObject, extra);
+	RE::ExtraDataList* extraData    = nullptr;
+	game::boundObjectForForm(item_form, boundObject, extraData);
 
 	if (boundObject)
 	{
@@ -168,7 +167,7 @@ uint32_t MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelec
 	if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 	{
 		form_id = static_cast<std::uint32_t>(result.GetNumber());
-		// rlog::debug("favorites menu selection has formid {}"sv, util::string_util::int_to_hex(form_id));
+		// rlog::debug("favorites menu selection has formid {}"sv, rlog::formatAsHex(form_id));
 	}
 	if (form_id == 0) { return 0; }
 
@@ -230,21 +229,21 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 	if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 	{
 		RE::FormID form_id = static_cast<std::uint32_t>(result.GetNumber());
-		rlog::trace("formid {}"sv, util::string_util::int_to_hex(form_id));
+		rlog::trace("formid {}"sv, rlog::formatAsHex(form_id));
 		auto* item_form = RE::TESForm::LookupByID(form_id);
 		if (!item_form) return;
 
-		auto* player                  = RE::PlayerCharacter::GetSingleton();
 		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		game::boundObjectForForm(item_form, player, bound_obj, extra);
+		RE::ExtraDataList* extraData  = nullptr;
+		game::boundObjectForForm(item_form, bound_obj, extraData);
 
-		auto* selection     = new MenuSelection(form_id);
-		selection->count    = 0;
-		selection->poisoned = extra ? extra->HasType(RE::ExtraDataType::kPoison) : false;
-		selection->favorite = !(extra ? extra->HasType(RE::ExtraDataType::kHotkey) : false);
-		selection->equipped =
-			extra ? extra->HasType(RE::ExtraDataType::kWorn) || extra->HasType(RE::ExtraDataType::kWornLeft) : false;
+		auto* selection      = new MenuSelection(form_id);
+		selection->count     = 0;
+		selection->poisoned  = extraData ? extraData->HasType(RE::ExtraDataType::kPoison) : false;
+		selection->favorite  = extraData ? extraData->HasType(RE::ExtraDataType::kHotkey) : false;
+		selection->equipped  = extraData ? extraData->HasType(RE::ExtraDataType::kWorn) ||
+                                              extraData->HasType(RE::ExtraDataType::kWornLeft) :
+		                                   false;
 		selection->bound_obj = bound_obj;
 		selection->form      = item_form;
 		outSelection         = selection;
@@ -273,8 +272,7 @@ void MenuSelection::makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSe
 
 	for (auto* form : mfaves->spells)
 	{
-		rlog::debug(
-			"mfave form: id={}; name='{}'"sv, util::string_util::int_to_hex(form->GetFormID()), form->GetName());
+		rlog::debug("mfave form: id={}; name='{}'"sv, rlog::formatAsHex(form->GetFormID()), helpers::nameAsUtf8(form));
 		if (form->GetFormID() == form_id)
 		{
 			// match time

@@ -461,7 +461,7 @@ pub mod cosave_v2 {
 
         match bincode::decode_from_slice::<CycleSerialized, _>(&bytes[..], config) {
             Ok((value, _len)) => {
-                log::info!("Cycles successfully read from cosave data version {VERSION}.");
+                log::info!("Cycles successfully read from cosave data version {VERSION}. Save data was {} bytes.", bytes.len());
                 Some(value.into())
             }
             Err(e) => {

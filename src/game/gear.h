@@ -3,10 +3,39 @@
 // Equipping and unequipping armor and weapons, as well as answering questions
 // about equipped gear.
 
-enum class Action : ::std::uint8_t;
+#include "soulsy.h"
+#include <string>
 
 namespace game
 {
+	using namespace soulsy;
+
+	enum class WornWhere
+	{
+		kAnywhere,
+		kRightOnly,
+		kLeftOnly,
+	};
+
+	// This struct holds useful information gleaned from item extra data,
+	// for convenience when building hud items, equipping an item, or
+	// unequipping it. If you make one, you are responsible for deleting it.
+	struct EquippableItemData
+	{
+		int count       = 0;
+		bool isWorn     = false;
+		bool isWornLeft = false;
+		bool isFavorite = false;
+		bool isPoisoned = false;
+		// enchantment charge?
+
+		RE::ExtraDataList* itemExtraList     = nullptr;
+		RE::ExtraDataList* wornExtraList     = nullptr;
+		RE::ExtraDataList* wornLeftExtraList = nullptr;
+
+		EquippableItemData();
+	};
+
 	// Ask the game for the right hand slot.
 	RE::BGSEquipSlot* right_hand_equip_slot();
 	// Ask the game for the left hand slot.
@@ -14,13 +43,27 @@ namespace game
 	// Ask the game for the shouts/powers slot.
 	RE::BGSEquipSlot* power_equip_slot();
 
-	// Find a bound object matching this form in the player's inventory. Caller must provide
-	// pointers to bound object and extra data list references to receive found data. Returns
-	// the number of such items the player has in their inventory.
-	int boundObjectForForm(const RE::TESForm* form,
-		RE::PlayerCharacter*& the_player,
-		RE::TESBoundObject*& outval,
-		RE::ExtraDataList*& outextra);
+	// The next functions find a bound object matching this form in the player's
+	// inventory. Caller must provide pointers to bound object and extra data list
+	// references to receive found data.
+	// All return the number of such items the player has in their inventory.
+
+	// Finds only items worn in the specified hand. Pass anywhere for armor or if you
+	// don't care which hand.
+	int boundObjectForWornItem(const RE::TESForm* form,
+		WornWhere constraint,
+		RE::TESBoundObject*& outobj,
+		RE::ExtraDataList* outextra);
+
+	// Returns only exact name matches.
+	int boundObjectMatchName(const RE::TESForm* form,
+		const std::string& nameToMatch,
+		RE::TESBoundObject*& outobj,
+		RE::ExtraDataList* outextra);
+
+	// Returns first found.
+	int boundObjectForForm(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::ExtraDataList* outextra);
+
 	// Similar to boundObjectForForm(), but fills out an inventory entry instead of extra data lists.
 	bool inventoryEntryDataFor(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::InventoryEntryData*& outentry);
 
@@ -36,7 +79,10 @@ namespace game
 	const char* displayName(const RE::TESForm* form);
 
 	// Equip a form in either the left or right hand. Handles weapons/shields directly, but delegates spells.
-	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
+	void equipItemByFormAndSlot(RE::TESForm* form,
+		RE::BGSEquipSlot*& slot,
+		RE::PlayerCharacter*& the_player,
+		const std::string& nameToMatch);
 	// Equip a spell in either the left or right hand.
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& the_player);
 
@@ -46,4 +92,5 @@ namespace game
 	// then immediately unequips the dummy dagger item (if found) to make sure the item shown
 	// in the hand is updated properly.
 	void unequipLeftOrRightSlot(RE::PlayerCharacter*& the_player, RE::BGSEquipSlot*& slot);
+
 }

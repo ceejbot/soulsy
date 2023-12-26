@@ -1,14 +1,26 @@
 ﻿#include "gear.h"
 
+#include "RE/E/ExtraDataTypes.h"
 #include "constant.h"
+#include "helpers.h"
 #include "offset.h"
 #include "player.h"
-#include "string_util.h"
 
 #include "lib.rs.h"
 
 namespace game
 {
+	EquippableItemData::EquippableItemData()
+		: count(0)
+		, itemExtraList(nullptr)
+		, wornExtraList(nullptr)
+		, wornLeftExtraList(nullptr)
+		, isWorn(false)
+		, isWornLeft(false)
+		, isFavorite(false)
+	{
+	}
+
 	RE::BGSEquipSlot* right_hand_equip_slot()
 	{
 		using func_t = decltype(&right_hand_equip_slot);
@@ -32,9 +44,9 @@ namespace game
 
 	bool inventoryEntryDataFor(const RE::TESForm* form, RE::InventoryEntryData*& outentry)
 	{
-		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
-			player::getInventoryForType(the_player, form->GetFormType());
+			player::getInventoryForType(thePlayer, form->GetFormType());
 		RE::InventoryEntryData entryData;
 		bool found = false;
 
@@ -56,55 +68,177 @@ namespace game
 		return found;
 	}
 
-	int boundObjectForForm(const RE::TESForm* form,
-		RE::PlayerCharacter*& the_player,
+	// The next three functions have some refactoring opportunities, as they
+	// say. However, I am first getting them working properly before cleaning up.
+
+	// Returns only matches that are currently equipped, so 0, 1, or 2 are your
+	// only possible return values. Heh.
+	int boundObjectForWornItem(const RE::TESForm* form,
+		WornWhere constraint,
 		RE::TESBoundObject*& outobj,
-		RE::ExtraDataList*& outextra)
+		RE::ExtraDataList* outextra)
 	{
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		std::vector<RE::ExtraDataList*> extra_vector;
+		auto* thePlayer                 = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* foundObject = nullptr;
+		EquippableItemData equipData    = EquippableItemData();
+		std::vector<RE::ExtraDataList*> extraDataCopy;
 
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
-			player::getInventoryForType(the_player, form->GetFormType());
+			player::getInventoryForType(thePlayer, form->GetFormType());
 
-		auto item_count = 0;
-		for (const auto& [item, inv_data] : candidates)
+		bool matchFound = false;
+		for (const auto& [item, inventoryData] : candidates)
 		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
-			{
-				bound_obj                   = item;
-				item_count                  = num_items;
-				auto simple_extra_data_list = entry->extraLists;
+			const auto& [countHeld, entry] = inventoryData;
 
-				if (simple_extra_data_list)
+			if (entry->object->formID == form->formID)
+			{
+				EquippableItemData tmpData = EquippableItemData();
+				std::vector<RE::ExtraDataList*> tmpExtra;
+				// We walk extra data and wait until we have a worn item
+				// before we decide we have a match.
+				auto simpleList = entry->extraLists;
+				if (simpleList)
 				{
-					for (auto* extra_data : *simple_extra_data_list)
+					for (auto* extraData : *simpleList)
 					{
-						extra = extra_data;
-						extra_vector.push_back(extra_data);
+						tmpExtra.push_back(extraData);
+						bool isWorn     = extraData->HasType(RE::ExtraDataType::kWorn);
+						bool isWornLeft = extraData->HasType(RE::ExtraDataType::kWornLeft);
+
+						if (isWornLeft)
+						{
+							matchFound = constraint == WornWhere::kLeftOnly || constraint == WornWhere::kAnywhere;
+						}
+						else if (isWorn)
+						{
+							matchFound = constraint == WornWhere::kRightOnly || constraint == WornWhere::kAnywhere;
+						}
+
+						tmpData.isFavorite |= extraData->HasType(RE::ExtraDataType::kHotkey);
+						tmpData.isPoisoned |= extraData->HasType(RE::ExtraDataType::kPoison);
+
+						if (isWorn) { tmpData.isWorn = true; }
+						else if (isWornLeft) { tmpData.isWornLeft = true; }
 					}
+				}
+				if (matchFound)
+				{
+					extraDataCopy = tmpExtra;
+					equipData     = tmpData;
+					break;
+				}
+			}  // end of if block
+		}      // end of candidates loop
+
+		if (!foundObject) { return 0; }
+
+		rlog::debug("boundObjectForWornItem(constraint={}) found formid='{}';",
+			static_cast<std::underlying_type_t<WornWhere>>(constraint),
+			rlog::formatAsHex(foundObject->formID));
+
+		if (extraDataCopy.size() > 0) { outextra = extraDataCopy.back(); }
+		outobj = foundObject;
+		return equipData.count;
+	}
+
+	// Returns only exact name matches.
+	int boundObjectMatchName(const RE::TESForm* form,
+		const std::string& nameToMatch,
+		RE::TESBoundObject*& outobj,
+		RE::ExtraDataList* outextra)
+	{
+		const auto* baseName = form->GetName();  // this use of GetName() is okay
+		// If we don't need to match the name, we don't do that work.
+		if (std::string(baseName) == nameToMatch) { return boundObjectForForm(form, outobj, outextra); }
+
+		auto* thePlayer                 = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* foundObject = nullptr;
+		EquippableItemData equipData    = EquippableItemData();
+		std::vector<RE::ExtraDataList*> extraDataCopy;
+
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		for (const auto& [item, inventoryData] : candidates)
+		{
+			const auto& [countHeld, entry] = inventoryData;
+			if (entry->object->formID == form->formID)
+			{
+				// there are two cases where we know we have a match:
+				// first, when countHeld == 1
+				// second, when the name matches
+				if (countHeld > 1)
+				{
+					const auto candidateName = std::string(entry->GetDisplayName());
+					if (candidateName != nameToMatch) { continue; }
+				}
+				// we have a match. This next part is probably extractable into a function.
+				foundObject     = item;
+				equipData.count = 1;
+
+				auto simpleList = entry->extraLists;
+				if (simpleList)
+				{
+					for (auto* extraData : *simpleList) { extraDataCopy.push_back(extraData); }
+				}
+				break;
+			}  // end of if block
+		}      // end of candidates loop
+
+		if (!foundObject) { return 0; }
+
+		rlog::debug(
+			"boundObjectMatchName '{}'; found formID={};"sv, nameToMatch, rlog::formatAsHex(foundObject->formID));
+		if (extraDataCopy.size() > 0) { outextra = extraDataCopy.back(); }
+		outobj = foundObject;
+		return equipData.count;
+	}
+
+	// Returns first found.
+	int boundObjectForForm(const RE::TESForm* form, RE::TESBoundObject*& outobj, RE::ExtraDataList* outextra)
+	{
+		auto* thePlayer                 = RE::PlayerCharacter::GetSingleton();
+		RE::TESBoundObject* foundObject = nullptr;
+		std::vector<RE::ExtraDataList*> extraDataCopy;
+
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		auto count = 0;
+		for (const auto& [item, inventoryData] : candidates)
+		{
+			const auto& [num_items, entry] = inventoryData;
+			if (entry->object->formID == form->formID)
+			{
+				foundObject     = item;
+				count           = num_items;
+				auto simpleList = entry->extraLists;
+
+				if (simpleList)
+				{
+					for (auto* extraData : *simpleList) { extraDataCopy.push_back(extraData); }
 				}
 				break;
 			}
 		}
 
-		if (!bound_obj) { return 0; }
+		if (!foundObject) { return 0; }
 
-		rlog::trace("found {} instance for bound object; name='{}'; formID={};"sv,
-			item_count,
-			form->GetName(),
-			util::string_util::int_to_hex(form->formID));
+		rlog::trace("found {} instance(s) for bound object; name='{}'; formID={};"sv,
+			count,
+			helpers::nameAsUtf8(form),
+			rlog::formatAsHex(form->formID));
 
-		if (!extra_vector.empty()) { outextra = extra_vector.back(); }
-		outobj = bound_obj;
-		return item_count;
+		if (extraDataCopy.size() > 0) { outextra = extraDataCopy.back(); }
+		outobj = foundObject;
+		return count;
 	}
 
-	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& the_player)
+	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& thePlayer)
 	{
 		auto worn = false;
-		for (const auto& [item, inv_data] : player::getInventoryForType(the_player, RE::FormType::Armor))
+		for (const auto& [item, inv_data] : player::getInventoryForType(thePlayer, RE::FormType::Armor))
 		{
 			const auto& [count, entry] = inv_data;
 			if (entry && entry->object && (entry->object->formID == bound_obj->formID) && entry->IsWorn())
@@ -120,27 +254,24 @@ namespace game
 	{
 		// TODO I don't think this handles spells
 		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		auto* the_player              = RE::PlayerCharacter::GetSingleton();
-		game::boundObjectForForm(form, the_player, bound_obj, extra);
-		if (extra) { return extra->HasType(RE::ExtraDataType::kHotkey); }
+		RE::ExtraDataList* extraData  = nullptr;
+		game::boundObjectForForm(form, bound_obj, extraData);
+		if (extraData) { return extraData->HasType(RE::ExtraDataType::kHotkey); }
 		return false;
 	}
 
 	bool isItemPoisoned(const RE::TESForm* form)
 	{
-		auto* the_player            = RE::PlayerCharacter::GetSingleton();
-		RE::TESBoundObject* obj     = nullptr;
-		RE::ExtraDataList* extra    = nullptr;
-		[[maybe_unused]] auto count = boundObjectForForm(form, the_player, obj, extra);
-		if (extra) { return extra->HasType(RE::ExtraDataType::kPoison); }
+		RE::TESBoundObject* obj      = nullptr;
+		RE::ExtraDataList* extraData = nullptr;
+		[[maybe_unused]] auto count  = boundObjectForForm(form, obj, extraData);
+		if (extraData) { return extraData->HasType(RE::ExtraDataType::kPoison); }
 		return false;
 	}
 
 	float itemChargeLevel(const RE::TESForm* form)
 	{
 		RE::InventoryEntryData* inventoryEntry = nullptr;
-
 		if (!inventoryEntryDataFor(form, inventoryEntry)) { return 0.0f; }
 		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
 		return static_cast<float>(charge.value_or(0.0));
@@ -148,9 +279,9 @@ namespace game
 
 	const char* displayName(const RE::TESForm* form)
 	{
-		auto* the_player = RE::PlayerCharacter::GetSingleton();
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
-			player::getInventoryForType(the_player, form->GetFormType());
+			player::getInventoryForType(thePlayer, form->GetFormType());
 
 		for (const auto& [item, inv_data] : candidates)
 		{
@@ -175,92 +306,89 @@ namespace game
 		return form->GetName();
 	}
 
-	void equipItemByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void equipItemByFormAndSlot(RE::TESForm* form,
+		RE::BGSEquipSlot*& slot,
+		RE::PlayerCharacter*& thePlayer,
+		const std::string& nameToMatch)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
-		rlog::debug("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
-			form->GetName(),
+		rlog::trace("attempting to equip item in slot; name='{}'; is-left='{}'; type={};"sv,
+			helpers::nameAsUtf8(form),
 			slot_is_left,
 			form->GetFormType());
 
 		if (form->formID == util::unarmed)
 		{
 			rlog::debug("unequipping this slot by request!"sv);
-			unequipLeftOrRightSlot(player, slot);
+			unequipLeftOrRightSlot(thePlayer, slot);
 			return;
 		}
 		else if (form->Is(RE::FormType::Spell))
 		{
-			// We do not want to look for a bound object for spells.
-			equipSpellByFormAndSlot(form, slot, player);
+			// We do not want to look for a bound object for spells. Q: why not?
+			equipSpellByFormAndSlot(form, slot, thePlayer);
 			return;
 		}
 
-		RE::TESBoundObject* bound_obj = nullptr;
-		RE::ExtraDataList* extra      = nullptr;
-		auto item_count               = boundObjectForForm(form, player, bound_obj, extra);
-		if (!bound_obj)
+		RE::TESBoundObject* equipObject = nullptr;
+		RE::ExtraDataList* extraData    = nullptr;
+		auto foundCount                 = boundObjectMatchName(form, nameToMatch, equipObject, extraData);
+		if (foundCount == 0)
 		{
-			rlog::debug("unable to find bound object for name='{}'"sv, form->GetName());
+			rlog::debug("unable to find bound object for name='{}'"sv, nameToMatch);
 			return;
 		}
 
-		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto* obj_right = thePlayer->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = thePlayer->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 
-		const auto obj_equipped_left  = obj_left && obj_left->formID == bound_obj->formID;
-		const auto obj_equipped_right = obj_right && obj_right->formID == bound_obj->formID;
+		const auto obj_equipped_left  = obj_left && obj_left->formID == equipObject->formID;
+		const auto obj_equipped_right = obj_right && obj_right->formID == equipObject->formID;
 
 		if (slot_is_left && obj_equipped_left)
 		{
-			rlog::debug("item already equipped in left hand. name='{}'"sv, bound_obj->GetName());
+			rlog::debug("item already equipped in left hand. name='{}'"sv, helpers::nameAsUtf8(equipObject));
 			return;
 		}
 
 		if (!slot_is_left && obj_equipped_right)
 		{
-			rlog::debug("item already equipped in right hand. name='{}'"sv, bound_obj->GetName());
+			rlog::debug("item already equipped in right hand. name='{}'"sv, helpers::nameAsUtf8(equipObject));
 			return;
 		}
 
 		auto equipped_count = 0;
 		if (obj_equipped_left) { equipped_count++; }
 		if (obj_equipped_right) { equipped_count++; }
-		rlog::debug("checking how many '{}' we have available; count={}; equipped_count={}"sv,
-			bound_obj->GetName(),
-			item_count,
+		rlog::trace("checking how many '{}' we have available; count={}; equipped_count={}"sv,
+			helpers::nameAsUtf8(equipObject),
+			foundCount,
 			equipped_count);
 
-		if (item_count == equipped_count)
+		if (foundCount == equipped_count)
 		{
 			// The game might try to equip something else, according to mlthelama.
-			unequipLeftOrRightSlot(player, slot);
+			unequipLeftOrRightSlot(thePlayer, slot);
 			return;
 		}
 
 		rlog::debug("queuing task to equip '{}'; left={}; formID={};"sv,
-			form->GetName(),
+			helpers::nameAsUtf8(form),
 			slot_is_left,
-			util::string_util::int_to_hex(bound_obj->formID));
+			rlog::formatAsHex(equipObject->formID));
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
-			task->AddTask(
-				[=]() { RE::ActorEquipManager::GetSingleton()->EquipObject(player, bound_obj, nullptr, 1, slot); });
+			task->AddTask([=]()
+				{ RE::ActorEquipManager::GetSingleton()->EquipObject(thePlayer, equipObject, extraData, 1, slot); });
 		}
 	}
 
 	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
 	{
-		if (form->Is(RE::FormType::Scroll))
-		{
-			equipItemByFormAndSlot(form, slot, player);
-			return;
-		}
-
 		auto slot_is_left = slot == left_hand_equip_slot();
-		rlog::debug("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
-			form->GetName(),
+		rlog::trace("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
+			helpers::nameAsUtf8(form),
 			slot_is_left,
 			form->GetFormType());
 
@@ -272,13 +400,13 @@ namespace game
 
 		if (slot_is_left && obj_equipped_left)
 		{
-			rlog::debug("spell already equipped in left hand. name='{}'"sv, form->GetName());
+			rlog::debug("spell already equipped in left hand. name='{}'"sv, helpers::nameAsUtf8(form));
 			return;
 		}
 
 		if (!slot_is_left && obj_equipped_right)
 		{
-			rlog::debug("spell already equipped in right hand. name='{}'"sv, form->GetName());
+			rlog::debug("spell already equipped in right hand. name='{}'"sv, helpers::nameAsUtf8(form));
 			return;
 		}
 
@@ -297,9 +425,9 @@ namespace game
 		}
 
 		rlog::debug("queued task to equip '{}'; left={}; formID={};"sv,
-			form->GetName(),
+			helpers::nameAsUtf8(form),
 			slot_is_left,
-			util::string_util::int_to_hex(form->formID));
+			rlog::formatAsHex(form->formID));
 	}
 
 	void unequipHand(RE::PlayerCharacter*& player, Action which)

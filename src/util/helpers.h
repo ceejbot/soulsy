@@ -1,12 +1,11 @@
 ﻿#pragma once
 
 #include "rust/cxx.h"
+#include "soulsy.h"
 
 // This namespace is for rust/C++ bridge helpers as well as any
 // decision-making that needs a single source of truth. It's
 // badly-named.
-
-struct HudItem;
 
 namespace helpers
 {
@@ -37,6 +36,8 @@ namespace helpers
 	bool isPoisonedByFormSpec(const std::string& form_spec);
 	float chargeLevelByFormSpec(const std::string& form_spec);
 
+	std::string nameAsUtf8(const RE::TESForm* form);
+	std::string displayNameAsUtf8(const RE::TESForm* form);
 	std::string vec_to_stdstring(rust::Vec<uint8_t> input);
 	std::vector<uint8_t> chars_to_vec(const char* input);
 

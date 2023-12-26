@@ -14,8 +14,6 @@ SoulsyHUD provides decent defaults for all of these. However, all of these eleme
 
 You can use any Truetype font to render text in the HUD. If the font supports it, you can generate glyphs for character sets beyond the usual Western alphabet glyphs. The HUD should be able to render any valid [UTF-8 character](https://www.utf8.com) if the font includes glyphs for that character.
 
-⚠️ There are some characters the game menus can display that are invalid UTF-8 characters. Skyrim's Flash menus support an older text encoding called [UCS-2](https://en.wikipedia.org/wiki/Universal_Coded_Character_Set), and some characters in that encoding are not converted properly to UTF-8. I have encountered two mods that have item names that can't be represented properly. Fixing this bug is on my list for post-1.0. See [the ucs2-rs library](https://lib.rs/crates/ucs2). Even simple text is nothing but simple, it turns out.
-
 Put the `.ttf` file in `SKSE/plugins/resources/fonts` and name it in the layout. The `font_size` option specifies what size to generate Imgui font billboard data. Text will look best when rendered at this size, so make this match whatever size most of your HUD text is.
 
 Here's the full set of font options as they'd appear in a layout file:
