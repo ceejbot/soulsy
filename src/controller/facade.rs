@@ -237,7 +237,19 @@ pub fn show_ui() -> bool {
 // ----------- wide character shenanigans
 
 /// Get a valid Rust representation of this UCS2 string data by hook or by crook.
-pub fn convert_to_string_doggedly(bytes: Vec<u8>) -> String {
+pub fn convert_to_string_doggedly(input: Vec<u8>) -> String {
+    let bytes = if input.ends_with(&[0]) {
+        let chopped = input.len() - 1;
+        let mut tmp = input.clone();
+        tmp.truncate(chopped);
+        tmp
+    } else {
+        input.clone()
+    };
+    if bytes.is_empty() {
+        return String::new();
+    }
+
     // Maybe it's the easy case and we're done!
     if let Ok(utf8string) = String::from_utf8(bytes.clone()) {
         eprintln!("hey the easy case! {utf8string}");
@@ -251,7 +263,11 @@ pub fn convert_to_string_doggedly(bytes: Vec<u8>) -> String {
     let result = match ucs2_to_utf8(widebytes.to_vec()) {
         Ok(v) => v,
         Err(_e) => {
-            let cstring = match CString::from_vec_with_nul(bytes.to_owned()) {
+            // We know we do NOT have null termination because we trimmed any nulls
+            // earlier. So slap one on now.
+            let mut terminated = bytes.clone();
+            terminated.push(0);
+            let cstring = match CString::from_vec_with_nul(terminated.to_owned()) {
                 Ok(cstring) => cstring,
                 Err(e) => {
                     log::warn!("This is a bug with the mod this item comes from: item name bytes were an invalid C string; error: {e:#}");
