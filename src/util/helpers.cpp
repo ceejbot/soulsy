@@ -110,16 +110,8 @@ namespace helpers
 		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>()) { return true; }
 
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
-		if (!playerInControl()) { return true; }
-		/*
 		const auto* control_map = RE::ControlMap::GetSingleton();
-		if (!control_map || !control_map->IsMovementControlsEnabled() ||
-			!control_map->AreControlsEnabled(requiredControlFlags) || !control_map->IsActivateControlsEnabled() ||
-			control_map->contextPriorityStack.back() != RE::UserEvents::INPUT_CONTEXT_ID::kGameplay)
-		{
-			return true;
-		}
-		*/
+		if (!control_map || !control_map->AreControlsEnabled(requiredControlFlags)) { return true; }
 
 		return false;  // FOR NOW
 	}
