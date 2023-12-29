@@ -99,6 +99,7 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 		// get chording events, so all the logic is now in the controller.
 		const KeyEventResponse response = handle_key_event(key, *button);
 		if (!response.handled) { continue; }
+		//rlog::info("mod handled key: {}", key);
 
 		if (response.stop_timer != Action::None)
 		{
@@ -115,6 +116,7 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 		}
 
 		// Now wipe out the event data so nothing else acts on it.
+		// Is there a way to respond with                                                                                                                                                                                     `kStop` for just one event in the list?
 		button->idCode    = keycodes::kInvalid;
 		button->userEvent = "";
 	}  // end event handling for loop

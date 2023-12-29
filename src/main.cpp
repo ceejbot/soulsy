@@ -48,13 +48,14 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 				MenuHook::install();
 				PlayerHook::install();
 				papyrus::registerPapyrusFunctions();
+				registerAllListeners();
 			}
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
+			rlog::info("SKSE kPostLoadGame message received: type={};"sv, static_cast<uint32_t>(msg->type));
 		case SKSE::MessagingInterface::kNewGame:
 			// rlog::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
-			rlog::info("SKSE kNewGame post-hook done: type={};"sv, static_cast<uint32_t>(msg->type));
-			registerAllListeners();
+			rlog::info("SKSE kNewGame message received: type={};"sv, static_cast<uint32_t>(msg->type));
 			initialize_hud();
 			break;
 		default: break;

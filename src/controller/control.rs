@@ -296,6 +296,10 @@ impl Controller {
     pub fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
         let hotkey = Hotkey::from(key);
         let state = KeyState::from(button);
+        // log::info!(
+        //     "{key} {} {hotkey}  {state}",
+        //     char::from_u32(key).unwrap_or('X')
+        // );
         if matches!(hotkey, Hotkey::None) {
             return KeyEventResponse::default();
         }

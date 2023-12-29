@@ -85,8 +85,12 @@ namespace helpers
 	bool playerInControl()
 	{
 		const auto* controlMap = RE::ControlMap::GetSingleton();
-		if (!controlMap) { return false; }
-		const auto canMove = controlMap->IsMovementControlsEnabled();
+		if (!controlMap)
+		{
+			rlog::info("no control map");
+			return false;
+		}
+		const auto canMove = controlMap->IsMovementControlsEnabled() && controlMap->IsActivateControlsEnabled();
 		return canMove;
 	}
 
@@ -104,7 +108,6 @@ namespace helpers
 		// We only want to act on button presses when in gameplay, not menus of any kind.
 		if (ui->GameIsPaused() || ui->IsMenuOpen("LootMenu")) return true;
 		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>()) { return true; }
-
 
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
 		if (!playerInControl()) { return true; }
