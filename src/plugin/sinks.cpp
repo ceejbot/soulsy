@@ -53,7 +53,6 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 		if (current_ammo && current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
 	}
 
-	const auto formtype = form->GetFormType();
 	const auto name     = helpers::displayNameAsUtf8(form);
 	if (event->equipped) { rlog::debug("equip event: {} '{}' equipped", RE::FormTypeToString(formtype), name); }
 	else { rlog::debug("equip event: {} '{}' removed", RE::FormTypeToString(formtype), name); }

@@ -12,6 +12,8 @@ using namespace soulsy;
 
 namespace ui
 {
+	using Color = soulsy::Color;
+
 	static std::map<animation_type, std::vector<TextureData>> animation_frame_map = {};
 	static std::vector<std::pair<animation_type, std::unique_ptr<Animation>>> animation_list;
 
@@ -381,7 +383,7 @@ namespace ui
 	void drawText(const std::string text,
 		const ImVec2 center,
 		const float fontSize,
-		const Color color,
+		const soulsy::Color color,
 		const Align align,
 		const float wrapWidth)
 	{
@@ -451,7 +453,7 @@ namespace ui
 		const ImVec2 center,
 		const ImVec2 size,
 		const float angle,
-		const Color color)
+		const soulsy::Color color)
 	{
 		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
 		drawElementInner(texture, center, size, angle, im_color);

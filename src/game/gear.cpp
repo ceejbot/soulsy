@@ -238,7 +238,7 @@ namespace game
 	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& thePlayer)
 	{
 		auto worn = false;
-		for (const auto& [item, inv_data] : player::getInventoryForType(thePlayer, RE::FormType::Armor))
+		for (const auto& [item, invData] : player::getInventoryForType(thePlayer, RE::FormType::Armor))
 		{
 			const auto& [count, entry] = invData;
 			if (entry && entry->object && (entry->object->formID == bound_obj->formID) && entry->IsWorn())
@@ -341,7 +341,6 @@ namespace game
 			}
 		}  // end of candidates loop
 
-		RE::InventoryEntryData* inventoryEntry = nullptr;
 		return 100.0f;
 	}
 
