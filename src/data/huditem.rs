@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 
 use cxx::let_cxx_string;
+use enumset::{enum_set, EnumSet, EnumSetType};
 use strfmt::strfmt;
 
 use super::base::BaseType;
@@ -25,7 +26,32 @@ pub struct HudItem {
     count: u32,
     /// Hashmap used by variable substitution in the HUD renderer.
     format_vars: HashMap<String, String>,
+    /// An attempt to cache some extra data. (Not names however!)
+    extra: EnumSet<ItemExtraData>,
 }
+
+#[derive(Debug, Default, Hash, EnumSetType)]
+pub enum ItemExtraData {
+    #[default]
+    None,
+    IsPoisoned,
+    IsEnchanted,
+    HasCooldown, // maybe?
+}
+
+impl Display for ItemExtraData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ItemExtraData::None => write!(f, "none"),
+            ItemExtraData::IsPoisoned => write!(f, "poisoned"),
+            ItemExtraData::IsEnchanted => write!(f, "enchanted"),
+            ItemExtraData::HasCooldown => write!(f, "cooling down"),
+        }
+    }
+}
+
+const CHARGE_INDICATORS: EnumSet<ItemExtraData> =
+    enum_set!(ItemExtraData::HasCooldown | ItemExtraData::IsEnchanted);
 
 impl HudItem {
     pub fn from_keywords(
@@ -45,6 +71,7 @@ impl HudItem {
             count,
             kind,
             format_vars,
+            extra: enum_set!(ItemExtraData::None),
         }
     }
 
@@ -56,6 +83,7 @@ impl HudItem {
             count,
             kind,
             format_vars,
+            extra: enum_set!(ItemExtraData::None),
         }
     }
 
@@ -67,6 +95,7 @@ impl HudItem {
             count: 1,
             kind: BaseType::Equipset(icon),
             format_vars,
+            extra: enum_set!(ItemExtraData::None),
         }
     }
 
@@ -143,18 +172,48 @@ impl HudItem {
         self.format_vars = format_vars;
     }
 
+    // probably can get rid of this
+    pub fn has_extra(&self, kind: ItemExtraData) -> bool {
+        self.extra.contains(kind)
+    }
+
+    /// Return true if this item is poisoned.
+    /// Does not update local flags; okay to use in tight loops.
     pub fn is_poisoned(&self) -> bool {
+        self.extra.contains(ItemExtraData::IsPoisoned)
+    }
+
+    /// Checks game extra data to see if this item is poisoned and updates the item with the result.
+    pub fn is_poisoned_nocache(&mut self) -> bool {
         if !self.is_weapon() {
             false
         } else {
             let_cxx_string!(form_spec = self.form_string());
-            isPoisonedByFormSpec(&form_spec)
+            if isPoisonedByFormSpec(&form_spec) {
+                self.extra.insert(ItemExtraData::IsPoisoned);
+                true
+            } else {
+                self.extra.remove(ItemExtraData::IsPoisoned);
+                false
+            }
         }
     }
 
+    /// Return true if this item has something to display in a meter.
+    /// Does not update local flags; okay to use in tight loops.
     pub fn has_charge(&self) -> bool {
+        self.extra.is_superset(CHARGE_INDICATORS)
+    }
+
+    pub fn has_charge_nocache(&mut self) -> bool {
         let_cxx_string!(form_spec = self.form_string());
-        hasChargeByFormSpec(&form_spec)
+        if hasChargeByFormSpec(&form_spec) {
+            self.extra.insert(ItemExtraData::IsEnchanted);
+            true
+        } else {
+            self.extra.remove(ItemExtraData::IsEnchanted);
+            false
+        }
     }
 
     /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons

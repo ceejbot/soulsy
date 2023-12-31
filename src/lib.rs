@@ -4,6 +4,8 @@
 
 #![deny(future_incompatible, clippy::unwrap_used)]
 #![warn(rust_2018_idioms, trivial_casts)]
+// there are a lot of missing docs; uncomment when bored
+// #![warn(missing_docs)]
 
 pub mod controller;
 pub mod data;
@@ -26,20 +28,30 @@ pub mod plugin {
     /// Hud elements to draw.
     #[derive(Deserialize, Serialize, Debug, Clone, Hash)]
     enum HudElement {
+        /// The shout or minor power currently equipped.
         Power,
+        /// The utility items or consumable currently ready to be activated.
         Utility,
+        /// What is currently equipped in the left hand.
         Left,
+        /// What is currently equipped in the right hand.
         Right,
+        /// The currently-equipped ammunition, if any.
         Ammo,
+        /// The currently-worn equipment set, if any.
         EquipSet,
+        /// No hud slot.
         None, // not drawn
     }
 
     /// Text alignment options
     #[derive(Debug, Clone, Hash)]
     enum Align {
+        /// Justify left.
         Left,
+        /// Justify right.
         Right,
+        /// Centered.
         Center,
     }
 

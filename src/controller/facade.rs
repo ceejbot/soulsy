@@ -265,5 +265,5 @@ pub fn convert_to_utf8_doggedly(input: Vec<u8>) -> String {
 
     let mut dst = String::new();
     iso8859_15::decode(bytes.as_slice(), &mut dst);
-    return dst;
+    dst
 }
