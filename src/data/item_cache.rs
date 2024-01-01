@@ -13,8 +13,10 @@ use crate::data::{make_health_proxy, make_magicka_proxy, make_stamina_proxy};
 #[cfg(not(test))]
 use crate::plugin::formSpecToHudItem;
 
+/// A holder for an lru cache.
 #[derive(Debug)]
 pub struct ItemCache {
+    /// An lru cache instance.
     lru: LruCache<String, HudItem>,
 }
 
@@ -71,7 +73,10 @@ impl ItemCache {
         } else if form_string == "unarmed_proxy" {
             HudItem::make_unarmed_proxy()
         } else {
-            fetch_game_item(form_string)
+            let mut item = fetch_game_item(form_string);
+            item.has_charge_refresh();
+            item.is_poisoned_refresh();
+            item
         };
 
         self.record(item.clone());

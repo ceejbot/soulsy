@@ -18,6 +18,7 @@ void registerAllListeners()
 	EquipEventListener::registerListener();
 	KeyEventListener::registerListener();
 	AnimGraphListener::registerListener();
+	ControlStateListener::registerListener();
 }
 
 EquipEventListener* EquipEventListener::get_singleton()
@@ -53,7 +54,7 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 		if (current_ammo && current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
 	}
 
-	const auto name     = helpers::displayNameAsUtf8(form);
+	const auto name = helpers::displayNameAsUtf8(form);
 	if (event->equipped) { rlog::debug("equip event: {} '{}' equipped", RE::FormTypeToString(formtype), name); }
 	else { rlog::debug("equip event: {} '{}' removed", RE::FormTypeToString(formtype), name); }
 
@@ -154,6 +155,58 @@ RE::BSEventNotifyControl AnimGraphListener::ProcessEvent(const RE::BSAnimationGr
 		RE::PlayerCharacter::GetSingleton()->GetGraphVariableBool("bUseAltGrip", useAltGrip);
 		handle_grip_change(useAltGrip);
 	}
+
+	return event_result::kContinue;
+}
+
+// ----------- ControlStateListener
+// Watching for enabling/disabling of controls that matter to HUD visibility
+
+ControlStateListener* ControlStateListener::get_singleton()
+{
+	static ControlStateListener singleton;
+	return std::addressof(singleton);
+}
+
+void ControlStateListener::registerListener()
+{
+	auto* controlMap = RE::ControlMap::GetSingleton();
+	auto okay        = controlMap->AddEventSink(ControlStateListener::get_singleton());
+	if (okay) { rlog::info("Now listening for control map context enable/disable events."sv); }
+	else { rlog::warn("Surprising: failed to add an event listener for control map events."); }
+}
+
+RE::BSEventNotifyControl ControlStateListener::ProcessEvent(const RE::UserEventEnabled* event,
+	[[maybe_unused]] RE::BSTEventSource<RE::UserEventEnabled>* source)
+{
+	// TODO
+	rlog::info("boop.");
+
+	return event_result::kContinue;
+}
+
+// ----------- ControlStateListener
+// Watching for enabling/disabling of controls that matter to HUD visibility
+
+MagicEffectListener* MagicEffectListener::get_singleton()
+{
+	static MagicEffectListener singleton;
+	return std::addressof(singleton);
+}
+
+void MagicEffectListener::registerListener()
+{
+	auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
+	auto okay          = scriptEvents->AddEventSink(MagicEffectListener::get_singleton());
+	if (okay) { rlog::info("Now listening for magic effect events."sv); }
+	else { rlog::warn("Surprising: failed to add an event listener for magic effect events."); }
+}
+
+RE::BSEventNotifyControl MagicEffectListener::ProcessEvent(const RE::UserEventEnabled* event,
+	[[maybe_unused]] RE::BSTEventSource<RE::UserEventEnabled>* source)
+{
+	// TODO
+	rlog::info("boop: effect.");
 
 	return event_result::kContinue;
 }

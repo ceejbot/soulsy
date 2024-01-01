@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 
+#[cfg(not(test))]
 use cxx::let_cxx_string;
 use enumset::{enum_set, EnumSet, EnumSetType};
 use strfmt::strfmt;
@@ -8,13 +9,13 @@ use strfmt::strfmt;
 use super::base::BaseType;
 use super::HasIcon;
 use crate::images::icons::Icon;
-use crate::plugin::{
-    chargeLevelByFormSpec, hasChargeByFormSpec, isPoisonedByFormSpec, Color, ItemCategory,
-};
+#[cfg(not(test))]
+use crate::plugin::{chargeLevelByFormSpec, hasChargeByFormSpec, isPoisonedByFormSpec};
+use crate::plugin::{Color, ItemCategory};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct HudItem {
     /// Name as utf8
     name: String,
@@ -28,6 +29,8 @@ pub struct HudItem {
     format_vars: HashMap<String, String>,
     /// An attempt to cache some extra data. (Not names however!)
     extra: EnumSet<ItemExtraData>,
+    /// Charge level, if relevant. As a percentage.
+    charge_level: f32,
 }
 
 #[derive(Debug, Default, Hash, EnumSetType)]
@@ -71,7 +74,7 @@ impl HudItem {
             count,
             kind,
             format_vars,
-            extra: enum_set!(ItemExtraData::None),
+            ..Default::default()
         }
     }
 
@@ -83,7 +86,7 @@ impl HudItem {
             count,
             kind,
             format_vars,
-            extra: enum_set!(ItemExtraData::None),
+            ..Default::default()
         }
     }
 
@@ -95,7 +98,7 @@ impl HudItem {
             count: 1,
             kind: BaseType::Equipset(icon),
             format_vars,
-            extra: enum_set!(ItemExtraData::None),
+            ..Default::default()
         }
     }
 
@@ -184,18 +187,28 @@ impl HudItem {
     }
 
     /// Checks game extra data to see if this item is poisoned and updates the item with the result.
-    pub fn is_poisoned_nocache(&mut self) -> bool {
+    pub fn is_poisoned_refresh(&mut self) -> bool {
         if !self.is_weapon() {
             false
         } else {
-            let_cxx_string!(form_spec = self.form_string());
-            if isPoisonedByFormSpec(&form_spec) {
-                self.extra.insert(ItemExtraData::IsPoisoned);
-                true
-            } else {
-                self.extra.remove(ItemExtraData::IsPoisoned);
-                false
+            #[cfg(not(test))]
+            {
+                let_cxx_string!(form_spec = self.form_string());
+                if isPoisonedByFormSpec(&form_spec) {
+                    self.extra.insert(ItemExtraData::IsPoisoned);
+                } else {
+                    self.extra.remove(ItemExtraData::IsPoisoned);
+                }
             }
+            #[cfg(test)]
+            {
+                if rand::random::<f32>() > 0.5 {
+                    self.extra.insert(ItemExtraData::IsPoisoned);
+                } else {
+                    self.extra.remove(ItemExtraData::IsPoisoned);
+                }
+            }
+            self.extra.contains(ItemExtraData::IsPoisoned)
         }
     }
 
@@ -205,10 +218,18 @@ impl HudItem {
         self.extra.is_superset(CHARGE_INDICATORS)
     }
 
-    pub fn has_charge_nocache(&mut self) -> bool {
+    #[cfg(test)]
+    pub fn has_charge_refresh(&mut self) -> bool {
+        rand::random::<f32>() > 0.5
+    }
+
+    #[cfg(not(test))]
+    pub fn has_charge_refresh(&mut self) -> bool {
         let_cxx_string!(form_spec = self.form_string());
         if hasChargeByFormSpec(&form_spec) {
             self.extra.insert(ItemExtraData::IsEnchanted);
+            // get level and record it
+            self.charge_level = self.charge_level_refresh();
             true
         } else {
             self.extra.remove(ItemExtraData::IsEnchanted);
@@ -216,12 +237,26 @@ impl HudItem {
         }
     }
 
-    /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons
-    /// and torches or other fueled items.
+    /// Returns charge percentage level.
+    /// Does not update the object; okay to use in tight loops.
     pub fn charge_level(&self) -> f32 {
+        self.charge_level
+    }
+
+    /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons
+    /// and torches or other fueled items. Consults extra data.
+    pub fn charge_level_refresh(&mut self) -> f32 {
         if self.is_armor() || self.is_weapon() || matches!(self.kind, BaseType::Light(_)) {
-            let_cxx_string!(form_spec = self.form_string());
-            chargeLevelByFormSpec(&form_spec)
+            #[cfg(not(test))]
+            {
+                let_cxx_string!(form_spec = self.form_string());
+                self.charge_level = chargeLevelByFormSpec(&form_spec);
+            }
+            #[cfg(test)]
+            {
+                self.charge_level = rand::random::<f32>() * 100.0f32;
+            }
+            self.charge_level
         } else {
             0.0
         }
