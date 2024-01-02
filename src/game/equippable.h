@@ -6,6 +6,26 @@
 // Builds the rust HudItem struct from game data, inspecting forms,
 // keywords, and inventory data as needed.
 
+inline const std::set<RE::FormType> RELEVANT_FORMTYPES_ALL{
+	RE::FormType::AlchemyItem,
+	RE::FormType::Ammo,
+	RE::FormType::Armor,
+	RE::FormType::Light,
+	RE::FormType::Scroll,
+	RE::FormType::Shout,
+	RE::FormType::Spell,
+	RE::FormType::Weapon,
+};
+
+inline const std::set<RE::FormType> RELEVANT_FORMTYPES_INVENTORY{
+	RE::FormType::AlchemyItem,
+	RE::FormType::Ammo,
+	RE::FormType::Armor,
+	RE::FormType::Light,
+	RE::FormType::Scroll,
+	RE::FormType::Weapon,
+};
+
 namespace equippable
 {
 	rust::Box<HudItem> hudItemFromForm(RE::TESForm* form);

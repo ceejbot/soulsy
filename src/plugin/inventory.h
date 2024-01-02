@@ -1,14 +1,5 @@
 #pragma once
 
-inline const std::set<RE::FormType> RELEVANT_FORMTYPES_INVENTORY{
-	RE::FormType::AlchemyItem,
-	RE::FormType::Ammo,
-	RE::FormType::Armor,
-	RE::FormType::Light,
-	RE::FormType::Scroll,
-	RE::FormType::Weapon,
-};
-
 // Hooking the functions that let us listen for player inventory changes.
 class PlayerHook
 {

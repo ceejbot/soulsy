@@ -20,7 +20,7 @@ void registerAllListeners()
 	EquipEventListener::registerListener();
 	KeyEventListener::registerListener();
 	AnimGraphListener::registerListener();
-	MagicEffectListener::registerListener();
+	// MagicEffectListener::registerListener();
 }
 
 EquipEventListener* EquipEventListener::get_singleton()
@@ -44,7 +44,7 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 	if (!form) { return event_result::kContinue; }
 
 	const auto formtype = form->GetFormType();
-	if (!RELEVANT_FORMTYPES_INVENTORY.contains(formtype)) { return event_result::kContinue; }
+	if (!RELEVANT_FORMTYPES_ALL.contains(formtype)) { return event_result::kContinue; }
 
 	auto* player   = RE::PlayerCharacter::GetSingleton();
 	auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
@@ -193,9 +193,10 @@ RE::BSEventNotifyControl MagicEffectListener::ProcessEvent(const RE::TESMagicEff
 	auto target     = event->target->GetBaseObject();
 	auto targetName = helpers::displayNameAsUtf8(target);
 
-	rlog::info("Effect status change: '{}' put \"{}\" on '{}'",
+	rlog::info("Effect status change: '{}' put \"{}\" ({}) on '{}'",
 		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),
 		effectName,
+		rlog::formatAsHex(event->magicEffect),
 		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
 
 	return event_result::kContinue;
