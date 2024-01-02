@@ -80,8 +80,6 @@ namespace equippable
 		RE::ExtraDataList* extraData    = nullptr;
 		const auto count                = game::boundObjectForForm(form, boundObject, extraData);
 
-		rlog::info("entering hudItemFromForm() for {}", rlog::formatAsHex(form->GetFormID()));
-
 		auto safename = boundObject ? helpers::displayNameAsUtf8(boundObject) : helpers::displayNameAsUtf8(form);
 		std::string formSpec =
 			boundObject ? helpers::makeFormSpecString(boundObject) : helpers::makeFormSpecString(form);

@@ -259,7 +259,7 @@ namespace player
 			has_it           = has_shout(player, shout);
 		}
 
-		rlog::debug("player has: {}; name='{}'; formID={};"sv, has_it, helpers::nameAsUtf8(form), form_spec);
+		rlog::trace("player has: {}; name='{}'; formID={};"sv, has_it, helpers::nameAsUtf8(form), form_spec);
 
 		return has_it;
 	}

@@ -7,6 +7,7 @@
 
 void registerAllListeners();
 
+
 class EquipEventListener final : public RE::BSTEventSink<RE::TESEquipEvent>
 {
 	using event_result = RE::BSEventNotifyControl;
@@ -88,6 +89,8 @@ public:
 
 	ControlStateListener& operator=(const ControlStateListener&) = delete;
 	ControlStateListener& operator=(ControlStateListener&&)      = delete;
+
+	static std::string controlStateDisplay(const SKSE::stl::enumeration<RE::ControlMap::UEFlag, uint32_t> state);
 
 protected:
 	RE::BSEventNotifyControl ProcessEvent(const RE::UserEventEnabled* event,

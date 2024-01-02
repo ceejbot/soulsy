@@ -12,13 +12,16 @@
 
 using event_result = RE::BSEventNotifyControl;
 
+void log_it_dammit(const std::string msg) { rlog::info("{}", msg); }
+
 void registerAllListeners()
 {
-	rlog::info("Registering listeners for equipment changes, animation graph events, and button events.");
+	rlog::info("Registering listeners for game events.");
 	EquipEventListener::registerListener();
 	KeyEventListener::registerListener();
 	AnimGraphListener::registerListener();
 	ControlStateListener::registerListener();
+	MagicEffectListener::registerListener();
 }
 
 EquipEventListener* EquipEventListener::get_singleton()
@@ -30,6 +33,7 @@ EquipEventListener* EquipEventListener::get_singleton()
 void EquipEventListener::registerListener()
 {
 	RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(get_singleton());
+	rlog::info("    Listening for equipment change events.");
 }
 
 // Handle equipment change events. We need to update our UI when this happens.
@@ -75,7 +79,7 @@ KeyEventListener* KeyEventListener::get_singleton()
 void KeyEventListener::registerListener()
 {
 	RE::BSInputDeviceManager::GetSingleton()->AddEventSink(get_singleton());
-	rlog::info("Now listening for input events."sv);
+	rlog::info("    Listening for player input events."sv);
 }
 
 event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
@@ -142,7 +146,7 @@ void AnimGraphListener::registerListener()
 {
 	auto* player = RE::PlayerCharacter::GetSingleton();
 	auto okay    = player->AddAnimationGraphEventSink(AnimGraphListener::get_singleton());
-	if (okay) { rlog::info("Now listening for animation graph events."sv); }
+	if (okay) { rlog::info("    Listening for animation graph events to get grip changes."); }
 	// else { rlog::warn("Surprising: failed to add an event listener for animation graph events."); }
 }
 
@@ -171,16 +175,58 @@ ControlStateListener* ControlStateListener::get_singleton()
 void ControlStateListener::registerListener()
 {
 	auto* controlMap = RE::ControlMap::GetSingleton();
-	auto okay        = controlMap->AddEventSink(ControlStateListener::get_singleton());
-	if (okay) { rlog::info("Now listening for control map context enable/disable events."sv); }
-	else { rlog::warn("Surprising: failed to add an event listener for control map events."); }
+	controlMap->AddEventSink(ControlStateListener::get_singleton());
+	rlog::info("    Listening for control map context enable/disable events."sv);
 }
+
+static const struct
+{
+	const RE::ControlMap::UEFlag bits;
+	const char* name;
+} flagNameMap[] = {
+	{ RE::ControlMap::UEFlag::kMovement, "Movement" },
+	{ RE::ControlMap::UEFlag::kLooking, "Looking" },
+	{ RE::ControlMap::UEFlag::kActivate, "Activate" },
+	{ RE::ControlMap::UEFlag::kMenu, "Menu" },
+	{ RE::ControlMap::UEFlag::kConsole, "Console" },
+	{ RE::ControlMap::UEFlag::kPOVSwitch, "POVSwitch" },
+	{ RE::ControlMap::UEFlag::kFighting, "Fighting" },
+	{ RE::ControlMap::UEFlag::kSneaking, "Sneaking" },
+	{ RE::ControlMap::UEFlag::kMainFour, "MainFour" },
+	{ RE::ControlMap::UEFlag::kWheelZoom, "WheelZoom" },
+	{ RE::ControlMap::UEFlag::kJumping, "Jumping" },
+	{ RE::ControlMap::UEFlag::kVATS, "VATS" },
+	{ RE::ControlMap::UEFlag::kInvalid, "Invalid" },
+};
+
+
+std::string ControlStateListener::controlStateDisplay(
+	const SKSE::stl::enumeration<RE::ControlMap::UEFlag, uint32_t> state)
+{
+	std::vector<const char*> setFlags;
+	const uint32_t inner = static_cast<uint32_t>(state.get());
+	const auto hex       = rlog::formatAsHex(inner);
+	setFlags.push_back(hex.c_str());
+	for (auto pair : flagNameMap)
+	{
+		if (state.all(pair.bits)) { setFlags.push_back(pair.name); }
+	}
+	if (setFlags.empty()) { return std::string("<none>"); }
+	const char* const delim = " | ";
+
+	std::ostringstream joined;
+	std::copy(setFlags.begin(), setFlags.end(), std::ostream_iterator<std::string>(joined, delim));
+	return joined.str();
+}
+
 
 RE::BSEventNotifyControl ControlStateListener::ProcessEvent(const RE::UserEventEnabled* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::UserEventEnabled>* source)
 {
-	// TODO
-	rlog::info("boop.");
+	const auto left  = event->oldUserEventFlag;
+	const auto right = event->newUserEventFlag;
+
+	rlog::info("Control state change: old={}; new={}", controlStateDisplay(left), controlStateDisplay(right));
 
 	return event_result::kContinue;
 }
@@ -197,16 +243,29 @@ MagicEffectListener* MagicEffectListener::get_singleton()
 void MagicEffectListener::registerListener()
 {
 	auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
-	auto okay          = scriptEvents->AddEventSink(MagicEffectListener::get_singleton());
-	if (okay) { rlog::info("Now listening for magic effect events."sv); }
-	else { rlog::warn("Surprising: failed to add an event listener for magic effect events."); }
+	scriptEvents->AddEventSink(MagicEffectListener::get_singleton());
+	rlog::info("    Listening for magic effect events."sv);
 }
 
-RE::BSEventNotifyControl MagicEffectListener::ProcessEvent(const RE::UserEventEnabled* event,
-	[[maybe_unused]] RE::BSTEventSource<RE::UserEventEnabled>* source)
+// TODO I also need a listener for TESActiveEffectApplyRemoveEvent
+
+RE::BSEventNotifyControl MagicEffectListener::ProcessEvent(const RE::TESMagicEffectApplyEvent* event,
+	[[maybe_unused]] RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* source)
 {
 	// TODO
-	rlog::info("boop: effect.");
+	auto caster     = event->caster->GetBaseObject();
+	auto casterName = helpers::displayNameAsUtf8(caster);
+
+	auto* magicEffect = RE::TESForm::LookupByID(event->magicEffect);
+	auto effectName   = helpers::displayNameAsUtf8(magicEffect);
+
+	auto target     = event->target->GetBaseObject();
+	auto targetName = helpers::displayNameAsUtf8(target);
+
+	rlog::info("Effect status change: '{}' put \"{}\" on '{}'",
+		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),
+		effectName,
+		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
 
 	return event_result::kContinue;
 }

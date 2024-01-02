@@ -43,7 +43,7 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 		case SKSE::MessagingInterface::kDataLoaded:
 			if (ui::ui_renderer::d_3d_init_hook::initialized)
 			{
-				rlog::debug("SKSE data loaded callback; UI is initialized."sv);
+				rlog::info("SKSE data loaded message received; about to install hooks."sv);
 				ui::ui_renderer::preloadImages();
 				MenuHook::install();
 				PlayerHook::install();
@@ -52,10 +52,9 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 			}
 			break;
 		case SKSE::MessagingInterface::kPostLoadGame:
-			rlog::info("SKSE kPostLoadGame message received: type={};"sv, static_cast<uint32_t>(msg->type));
+			rlog::trace("SKSE kPostLoadGame message received: type={};"sv, static_cast<uint32_t>(msg->type));
 		case SKSE::MessagingInterface::kNewGame:
-			// rlog::debug("SKSE post load-game / new game callback; type={}"sv, static_cast<uint32_t>(msg->type));
-			rlog::info("SKSE kNewGame message received: type={};"sv, static_cast<uint32_t>(msg->type));
+			rlog::trace("SKSE kNewGame message received: type={};"sv, static_cast<uint32_t>(msg->type));
 			initialize_hud();
 			break;
 		default: break;
