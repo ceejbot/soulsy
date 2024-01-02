@@ -12,9 +12,9 @@ void PlayerHook::install()
 	rlog::info("Hooking player so we get inventory changes..."sv);
 
 	REL::Relocation<std::uintptr_t> player_character_vtbl{ RE::VTABLE_PlayerCharacter[0] };
-	add_object_to_container_ = player_character_vtbl.write_vfunc(0x5A, add_object_to_container);
-	pick_up_object_          = player_character_vtbl.write_vfunc(0xCC, pick_up_object);
-	remove_item_             = player_character_vtbl.write_vfunc(0x56, remove_item);
+	add_object_to_container_ = player_character_vtbl.write_vfunc(0x5A, itemAdded);
+	pick_up_object_          = player_character_vtbl.write_vfunc(0xCC, itemPickedUp);
+	remove_item_             = player_character_vtbl.write_vfunc(0x56, itemRemoved);
 
 	auto& trampoline = SKSE::GetTrampoline();
 	REL::Relocation<std::uintptr_t> add_item_functor_hook{ RELOCATION_ID(55946, 56490) };
@@ -22,7 +22,7 @@ void PlayerHook::install()
 	rlog::info("Player hooked.");
 }
 
-void PlayerHook::add_object_to_container(RE::Actor* a_this,
+void PlayerHook::itemAdded(RE::Actor* a_this,
 	RE::TESBoundObject* object,
 	RE::ExtraDataList* extraDataList,
 	int32_t delta,
@@ -36,7 +36,7 @@ void PlayerHook::add_object_to_container(RE::Actor* a_this,
 	}
 }
 
-void PlayerHook::pick_up_object(RE::Actor* actor,
+void PlayerHook::itemPickedUp(RE::Actor* actor,
 	RE::TESObjectREFR* object,
 	uint32_t delta,
 	bool a_arg3,
@@ -52,7 +52,7 @@ void PlayerHook::pick_up_object(RE::Actor* actor,
 	}
 }
 
-RE::ObjectRefHandle PlayerHook::remove_item(RE::Actor* actor,
+RE::ObjectRefHandle PlayerHook::itemRemoved(RE::Actor* actor,
 	RE::TESBoundObject* object,
 	std::int32_t delta,
 	RE::ITEM_REMOVE_REASON a_reason,
