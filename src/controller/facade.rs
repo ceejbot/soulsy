@@ -23,14 +23,14 @@ pub fn user_settings() -> Box<UserSettings> {
 
 /// Let's get this party started.
 pub fn initialize_hud() {
+    refresh_user_settings();
     let settings = settings();
     log::info!("Reading and applying settings. Your settings are:");
-    let mut ctrl = control::get();
     log::info!("{settings}");
 
     Layout::refresh();
     let hud = hud_layout();
-    ctrl.apply_settings();
+    let mut ctrl = control::get();
 
     if settings.autofade() {
         log::info!("The HUD is in autofade mode and ready to go.");
@@ -130,10 +130,10 @@ pub fn serialize_cycles() -> Vec<u8> {
 
 /// Cycle data loaded from cosave.
 pub fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32) {
+    refresh_user_settings();
     let mut ctrl = control::get();
     if let Some(cosave_cycle) = CycleData::deserialize(bytes, version) {
         ctrl.cycles = cosave_cycle;
-        ctrl.apply_settings();
         ctrl.refresh_after_load();
         log::info!("Cycles loaded and ready to rock.");
     } else {
