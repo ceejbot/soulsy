@@ -78,29 +78,6 @@ private:
 	~AnimGraphListener() override = default;
 };
 
-class ControlStateListener final : public RE::BSTEventSink<RE::UserEventEnabled>
-{
-public:
-	static ControlStateListener* get_singleton();
-	static void registerListener();
-
-	ControlStateListener(const ControlStateListener&) = delete;
-	ControlStateListener(ControlStateListener&&)      = delete;
-
-	ControlStateListener& operator=(const ControlStateListener&) = delete;
-	ControlStateListener& operator=(ControlStateListener&&)      = delete;
-
-	static std::string controlStateDisplay(const SKSE::stl::enumeration<RE::ControlMap::UEFlag, uint32_t> state);
-
-protected:
-	RE::BSEventNotifyControl ProcessEvent(const RE::UserEventEnabled* event,
-		RE::BSTEventSource<RE::UserEventEnabled>* source) override;
-
-private:
-	ControlStateListener()           = default;
-	~ControlStateListener() override = default;
-};
-
 class MagicEffectListener final : public RE::BSTEventSink<RE::TESMagicEffectApplyEvent>
 {
 public:

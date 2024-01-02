@@ -20,7 +20,6 @@ void registerAllListeners()
 	EquipEventListener::registerListener();
 	KeyEventListener::registerListener();
 	AnimGraphListener::registerListener();
-	ControlStateListener::registerListener();
 	MagicEffectListener::registerListener();
 }
 
@@ -163,76 +162,8 @@ RE::BSEventNotifyControl AnimGraphListener::ProcessEvent(const RE::BSAnimationGr
 	return event_result::kContinue;
 }
 
-// ----------- ControlStateListener
-// Watching for enabling/disabling of controls that matter to HUD visibility
-
-ControlStateListener* ControlStateListener::get_singleton()
-{
-	static ControlStateListener singleton;
-	return std::addressof(singleton);
-}
-
-void ControlStateListener::registerListener()
-{
-	auto* controlMap = RE::ControlMap::GetSingleton();
-	controlMap->AddEventSink(ControlStateListener::get_singleton());
-	rlog::info("    Listening for control map context enable/disable events."sv);
-}
-
-static const struct
-{
-	const RE::ControlMap::UEFlag bits;
-	const char* name;
-} flagNameMap[] = {
-	{ RE::ControlMap::UEFlag::kMovement, "Movement" },
-	{ RE::ControlMap::UEFlag::kLooking, "Looking" },
-	{ RE::ControlMap::UEFlag::kActivate, "Activate" },
-	{ RE::ControlMap::UEFlag::kMenu, "Menu" },
-	{ RE::ControlMap::UEFlag::kConsole, "Console" },
-	{ RE::ControlMap::UEFlag::kPOVSwitch, "POVSwitch" },
-	{ RE::ControlMap::UEFlag::kFighting, "Fighting" },
-	{ RE::ControlMap::UEFlag::kSneaking, "Sneaking" },
-	{ RE::ControlMap::UEFlag::kMainFour, "MainFour" },
-	{ RE::ControlMap::UEFlag::kWheelZoom, "WheelZoom" },
-	{ RE::ControlMap::UEFlag::kJumping, "Jumping" },
-	{ RE::ControlMap::UEFlag::kVATS, "VATS" },
-	{ RE::ControlMap::UEFlag::kInvalid, "Invalid" },
-};
-
-
-std::string ControlStateListener::controlStateDisplay(
-	const SKSE::stl::enumeration<RE::ControlMap::UEFlag, uint32_t> state)
-{
-	std::vector<const char*> setFlags;
-	const uint32_t inner = static_cast<uint32_t>(state.get());
-	const auto hex       = rlog::formatAsHex(inner);
-	setFlags.push_back(hex.c_str());
-	for (auto pair : flagNameMap)
-	{
-		if (state.all(pair.bits)) { setFlags.push_back(pair.name); }
-	}
-	if (setFlags.empty()) { return std::string("<none>"); }
-	const char* const delim = " | ";
-
-	std::ostringstream joined;
-	std::copy(setFlags.begin(), setFlags.end(), std::ostream_iterator<std::string>(joined, delim));
-	return joined.str();
-}
-
-
-RE::BSEventNotifyControl ControlStateListener::ProcessEvent(const RE::UserEventEnabled* event,
-	[[maybe_unused]] RE::BSTEventSource<RE::UserEventEnabled>* source)
-{
-	const auto left  = event->oldUserEventFlag;
-	const auto right = event->newUserEventFlag;
-
-	rlog::info("Control state change: old={}; new={}", controlStateDisplay(left), controlStateDisplay(right));
-
-	return event_result::kContinue;
-}
-
-// ----------- ControlStateListener
-// Watching for enabling/disabling of controls that matter to HUD visibility
+// ----------- MagicEffectListener
+// This only gets notifications of magic effects arriving.
 
 MagicEffectListener* MagicEffectListener::get_singleton()
 {
