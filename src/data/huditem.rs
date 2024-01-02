@@ -215,7 +215,7 @@ impl HudItem {
     /// Return true if this item has something to display in a meter.
     /// Does not update local flags; okay to use in tight loops.
     pub fn has_charge(&self) -> bool {
-        self.extra.is_superset(CHARGE_INDICATORS)
+        !self.extra.is_disjoint(CHARGE_INDICATORS)
     }
 
     #[cfg(test)]

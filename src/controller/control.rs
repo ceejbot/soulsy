@@ -1028,7 +1028,7 @@ impl Controller {
     ) -> bool {
         // Here we only care about updating the HUD. We let the rest fall where may.
         // We ONLY ever empty a visible slot here.
-        log::debug!("item UNequipped; right={equipped_right}; left={equipped_left}; unequipped_spec={unequipped_spec};");
+        log::trace!("item UNequipped; right={equipped_right}; left={equipped_left}; unequipped_spec={unequipped_spec};");
         let right_vis = self.visible.get(&HudElement::Right);
         let left_vis = self.visible.get(&HudElement::Left);
         let empty = HudItem::default();
@@ -1320,7 +1320,7 @@ impl Controller {
 
     /// Update the displayed slot for the specified HUD element.
     fn update_slot(&mut self, slot: HudElement, new_item: &HudItem) -> bool {
-        log::debug!("updating hud slot '{slot}'; visible: {new_item}");
+        log::trace!("updating hud slot '{slot}'; visible: {new_item}");
         if let Some(replaced) = self.visible.insert(slot, new_item.clone()) {
             replaced != *new_item
         } else {

@@ -312,8 +312,7 @@ namespace ui
 	}
 
 	void drawMeterRectangular(float level, SlotFlattened slotLayout)
-	{
-		// level is a percent-full level.
+	{  // level is a percent-full level.
 		auto missing          = 1.0f - level * 0.01f;
 		const auto center     = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
 		const auto bgSize     = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
@@ -336,13 +335,13 @@ namespace ui
 			const std::array<ImVec2, 4> bgRotated = rotateRect(center, bgSize, angle);
 			const std::array<ImVec2, 4> centerRot = rotateRect(center, fillSize, angle);
 			// now slide that fg rect down to nestle in the bottom left corner of the bg rect
-			const auto xdiff                = bgRotated[0].x - centerRot[0].x - std::fabs(bgSize.x - fillSize.x) * 0.5f;
-			const auto ydiff                = bgRotated[0].y - centerRot[0].y - std::fabs(bgSize.y - fillSize.y) * 0.5f;
+			const auto xdiff = std::fabs(bgRotated[0].x - centerRot[0].x) + std::fabs(bgSize.x - fillSize.x) * 0.5f;
+			const auto ydiff = std::fabs(bgRotated[0].y - centerRot[0].y) + std::fabs(bgSize.y - fillSize.y) * 0.5f;
 			std::array<ImVec2, 4> fgRotated = {
-				ImVec2(centerRot[0].x - xdiff, centerRot[0].y + ydiff),
-				ImVec2(centerRot[1].x - xdiff, centerRot[1].y + ydiff),
-				ImVec2(centerRot[2].x - xdiff, centerRot[2].y + ydiff),
-				ImVec2(centerRot[3].x - xdiff, centerRot[3].y + ydiff),
+				ImVec2(centerRot[0].x + xdiff, centerRot[0].y + ydiff),
+				ImVec2(centerRot[1].x + xdiff, centerRot[1].y + ydiff),
+				ImVec2(centerRot[2].x + xdiff, centerRot[2].y + ydiff),
+				ImVec2(centerRot[3].x + xdiff, centerRot[3].y + ydiff),
 			};
 
 			drawTextureQuad(bgtex, bgRotated, slotLayout.meter_empty_color);

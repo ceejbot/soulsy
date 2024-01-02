@@ -73,10 +73,7 @@ impl ItemCache {
         } else if form_string == "unarmed_proxy" {
             HudItem::make_unarmed_proxy()
         } else {
-            let mut item = fetch_game_item(form_string);
-            item.has_charge_refresh();
-            item.is_poisoned_refresh();
-            item
+            fetch_game_item(form_string)
         };
 
         self.record(item.clone());
@@ -131,7 +128,11 @@ impl ItemCache {
 #[cfg(not(test))]
 pub fn fetch_game_item(form_string: &str) -> HudItem {
     cxx::let_cxx_string!(form_spec = form_string);
-    *formSpecToHudItem(&form_spec)
+    let boxed = formSpecToHudItem(&form_spec);
+    let mut item = *boxed;
+    item.has_charge_refresh();
+    item.is_poisoned_refresh();
+    item
 }
 
 // This implementation is used by tests to generate random items without
@@ -143,7 +144,7 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
     use crate::images::random_icon;
 
     let name = petname::petname(2, " ");
-    let item = HudItem::preclassified(
+    let mut item = HudItem::preclassified(
         name,
         form_string.to_owned(),
         2,
@@ -153,6 +154,8 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
             WeaponEquipType::EitherHand,
         )),
     );
+    item.has_charge_refresh();
+    item.is_poisoned_refresh();
     item
 }
 
