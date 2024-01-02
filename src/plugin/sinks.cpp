@@ -43,9 +43,6 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 	auto* form = RE::TESForm::LookupByID(event->baseObject);
 	if (!form) { return event_result::kContinue; }
 
-	const auto formtype = form->GetFormType();
-	if (!RELEVANT_FORMTYPES_ALL.contains(formtype)) { return event_result::kContinue; }
-
 	auto* player   = RE::PlayerCharacter::GetSingleton();
 	auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 	auto* right_eq = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
@@ -57,7 +54,8 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 		if (current_ammo && current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
 	}
 
-	const auto name = helpers::displayNameAsUtf8(form);
+	const auto formtype = form->GetFormType();
+	const auto name     = helpers::displayNameAsUtf8(form);
 	if (event->equipped) { rlog::debug("equip event: {} '{}' equipped", RE::FormTypeToString(formtype), name); }
 	else { rlog::debug("equip event: {} '{}' removed", RE::FormTypeToString(formtype), name); }
 
