@@ -52,7 +52,9 @@ namespace ui
 		const Align alignment);
 	void drawMeterCircleArc(float level, SlotFlattened slotLayout);
 	void drawMeterRectangular(float level, SlotFlattened slotLayout);
-	std::array<ImVec2, 4> rotateRect(const ImVec2 center, const ImVec2 size, const float angle);
+	ImVec2 rotateVector(const ImVec2 vector, const float angle);
+	std::array<ImVec2, 4> rotateRectWithTranslation(const ImVec2 center, const ImVec2 size, const float angle);
+	std::array<ImVec2, 4> rotateRect(const ImVec2 size, const float angle);
 	void drawTextureQuad(ID3D11ShaderResourceView* texture,
 		const std::array<ImVec2, 4> bounds,
 		const soulsy::Color color);

@@ -120,8 +120,10 @@ svg   = "../icons/indicator_poison.svg"
 # Rotating 90° makes it fill from bottom to top.
 # Rotating 180° makes it fill from right to left. Etc.  <
 angle = 90
-# An offset for the center of the meter, from the center of the slot.
-offset = { x = 60.0, y = 0.0 }
+# An offset for the CENTER of the meter, from the center of the slot.
+# The meter is rotated around this point. You should play with the offset
+# until it looks correct for your chosen rotation.
+offset = { x = 65.0, y = 0.0 }
 # How to draw the empty part of the meter, or any decoration around the meter.
 [right.meter.background]
 # This size is the size of the image before rotation!
@@ -131,7 +133,7 @@ size = { x = 100.0, y = 20.0 }
 # `../icons/file_in_icons_dir.svg` if you need to.
 svg = "meter_bar_filled.svg"
 # The color for the background, or empty part, of the meter.
-color = { r = 0, g = 0, b = 0, a = 255 }
+color = { r = 255, g = 255, b = 255, a = 255 }
 [right.meter.filled]
 # You can leave the filled svg empty if you want. If you do this, the
 # filled portion of the meter will re-use the background image, but
@@ -139,9 +141,9 @@ color = { r = 0, g = 0, b = 0, a = 255 }
 # E.g., 50% full would be half the length.
 svg = "meter_bar_filled.svg"
 # The size of the filled meter when the charge/fuel/whatever is at max.
-size = { x = 96.0, y = 16.0 }
+size = { x = 100.0, y = 20.0 }
 # The color for the filled part of the meter.
-color = { r = 192, g = 128, b = 255, a = 255 }
+color = { r = 80, g = 0, b = 145, a = 255 }
 
 # ----- left hand slot
 

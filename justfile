@@ -83,6 +83,7 @@ install:
     outdir="{{TESTMOD}}"
     rsync -a installer/core/ "$outdir"
     cp -p build/Release/SoulsyHUD.{dll,pdb} "$outdir"/SKSE/plugins/
+    date
 
 # Copy English translation to other translation files.
 [unix]
