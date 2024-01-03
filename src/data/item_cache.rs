@@ -154,8 +154,7 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
             WeaponEquipType::EitherHand,
         )),
     );
-    item.has_charge_refresh();
-    item.is_poisoned_refresh();
+    item.refresh_extra_data();
     item
 }
 

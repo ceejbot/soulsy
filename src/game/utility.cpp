@@ -68,7 +68,7 @@ namespace utility
 
 	bool unequipArmor(RE::TESBoundObject*& item, RE::PlayerCharacter*& thePlayer, RE::ActorEquipManager*& equipManager)
 	{
-		const auto isWorn = isItemWorn(item, thePlayer);
+		const auto isWorn = gear::isItemWorn(item, thePlayer);
 		if (isWorn)
 		{
 			auto* task = SKSE::GetTaskInterface();
@@ -87,7 +87,7 @@ namespace utility
 		// rlog::trace("attempting to toggle armor; name='{}';"sv, helpers::nameAsUtf8(form));
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
+		auto remaining               = gear::boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -97,7 +97,7 @@ namespace utility
 
 		auto* task         = SKSE::GetTaskInterface();
 		auto* equipManager = RE::ActorEquipManager::GetSingleton();
-		const auto isWorn  = isItemWorn(obj, thePlayer);
+		const auto isWorn  = gear::isItemWorn(obj, thePlayer);
 		if (isWorn)
 		{
 			task->AddTask([=]() { equipManager->UnequipObject(thePlayer, obj, extraData); });
@@ -113,7 +113,7 @@ namespace utility
 		// rlog::trace("attempting to equip armor; name='{}';"sv, helpers::nameAsUtf8(form));
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
+		auto remaining               = gear::boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -121,7 +121,7 @@ namespace utility
 			return;
 		}
 
-		if (!isItemWorn(obj, thePlayer))
+		if (!gear::isItemWorn(obj, thePlayer))
 		{
 			auto* task         = SKSE::GetTaskInterface();
 			auto* equipManager = RE::ActorEquipManager::GetSingleton();

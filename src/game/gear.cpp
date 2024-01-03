@@ -391,7 +391,7 @@ namespace gear
 							auto* maybe_time_left = datalist->GetByType(RE::ExtraDataType::kTimeLeft);
 							if (maybe_time_left && timeLeft == 0.0f)
 							{
-								auto* extraLeft = static_cast<RE::ExtraTimeLeft*>(maybe_charge);
+								auto* extraLeft = static_cast<RE::ExtraTimeLeft*>(maybe_time_left);
 								timeLeft        = extraLeft->time;
 							}
 						}

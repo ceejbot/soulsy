@@ -96,7 +96,7 @@ namespace shouts
 		}
 
 		auto* shout = form->As<RE::TESShout>();
-		if (!player::has_shout(player, shout))
+		if (!has_shout(player, shout))
 		{
 			rlog::warn("player does not know shout; name='{}';"sv, helpers::nameAsUtf8(shout));
 			return;

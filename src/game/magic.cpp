@@ -150,7 +150,7 @@ namespace game
 
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto item_count              = boundObjectForForm(form, obj, extraData);
+		auto item_count              = gear::boundObjectForForm(form, obj, extraData);
 
 		if (!obj || item_count == 0)
 		{

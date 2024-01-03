@@ -306,8 +306,18 @@ impl HudItem {
 
     #[cfg(test)]
     pub fn refresh_extra_data(&mut self) {
-        // randomize it all
-        todo!()
+        // randomize it all for tests, for now
+        let has_charge = self.has_charge_refresh();
+        if has_charge {
+            self.charge_level_refresh();
+        }
+        self.is_poisoned_refresh();
+        if rand::random::<f32>() > 0.5 {
+            self.time_left = rand::random::<f32>() * 100.0f32;
+            self.extra.insert(ItemExtraData::HasTimeLeft);
+        } else {
+            self.extra.remove(ItemExtraData::HasTimeLeft);
+        }
     }
 
     #[cfg(not(test))]

@@ -176,7 +176,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		gear::toggleArmorByForm(form, player, nameToMatch);
+		utility::toggleArmorByForm(form, player, nameToMatch);
 	}
 
 	void equipArmor(const std::string& form_spec, const std::string& nameToMatch)
