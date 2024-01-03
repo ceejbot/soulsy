@@ -127,7 +127,7 @@ MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid)
 
 	RE::TESBoundObject* boundObject = nullptr;
 	RE::ExtraDataList* extraData    = nullptr;
-	game::boundObjectForForm(item_form, boundObject, extraData);
+	gear::boundObjectForForm(item_form, boundObject, extraData);
 
 	if (boundObject)
 	{
@@ -224,7 +224,7 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extraData  = nullptr;
-		game::boundObjectForForm(item_form, bound_obj, extraData);
+		gear::boundObjectForForm(item_form, bound_obj, extraData);
 
 		auto* selection      = new MenuSelection(form_id);
 		selection->count     = 0;

@@ -1,6 +1,7 @@
 #include "gear.h"
 
 #include "RE/E/ExtraDataTypes.h"
+#include "RE/F/FORM_ENUM_STRING.h"
 #include "constant.h"
 #include "helpers.h"
 #include "offset.h"
@@ -8,7 +9,7 @@
 
 #include "lib.rs.h"
 
-namespace game
+namespace gear
 {
 	EquippableItemData::EquippableItemData()
 		: count(0)
@@ -255,7 +256,7 @@ namespace game
 		// TODO I don't think this handles spells
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extraData  = nullptr;
-		game::boundObjectForForm(form, bound_obj, extraData);
+		boundObjectForForm(form, bound_obj, extraData);
 		if (extraData) { return extraData->HasType(RE::ExtraDataType::kHotkey); }
 		return false;
 	}
@@ -269,10 +270,17 @@ namespace game
 		return false;
 	}
 
+	bool itemHasTimer(const RE::TESForm* form)
+	{
+		if (form->Is(RE::FormType::Shout)) { return true; }
+		if (form->Is(RE::FormType::Light)) { return true; }
+
+		return false;
+	}
+
 	bool itemHasCharge(const RE::TESForm* form)
 	{
 		if (!form) { return false; }
-		if (form->Is(RE::FormType::Shout)) { return true; }
 		const auto enchantable = form->As<RE::TESEnchantableForm>();
 		if (enchantable && enchantable->formEnchanting) { return true; }
 
@@ -301,14 +309,7 @@ namespace game
 	// This returns a percentage.
 	float itemChargeLevel(const RE::TESForm* form)
 	{
-		if (!form) { return false; }
-
-		if (form->Is(RE::FormType::Shout))
-		{
-			auto* thePlayer   = RE::PlayerCharacter::GetSingleton();
-			auto* playerActor = thePlayer->As<RE::Actor>();
-			return static_cast<float>(playerActor->GetCurrentShoutLevel());
-		}
+		if (!form) { return 0.0f; }
 
 		float current = 0.0f;
 		float max     = 0.0f;
@@ -342,6 +343,66 @@ namespace game
 		}  // end of candidates loop
 
 		return 100.0f;
+	}
+
+	rust::Box<RelevantExtraData> relevantExtraData(const RE::TESForm* form)
+	{
+		if (!form) { return empty_extra_data(); }
+
+		bool isEnchanted    = false;
+		float chargePercent = 0.0f;
+		bool hasTimeLeft    = false;
+		float timeLeft      = 0.0f;
+		bool isPoisoned     = false;
+
+		// charge data
+		float current = 0.0f;
+		float max     = 0.0f;
+
+		const auto enchantable = form->As<RE::TESEnchantableForm>();
+		if (enchantable) { max = enchantable->amountofEnchantment; }
+
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		for (const auto& [item, invData] : candidates)
+		{
+			const auto& [num_items, entry] = invData;
+			if (entry->object->formID == form->formID)
+			{
+				if (item && entry->extraLists)
+				{
+					for (auto* datalist : *entry->extraLists)
+					{
+						if (datalist->HasType(RE::ExtraDataType::kEnchantment))
+						{
+							isEnchanted        = true;
+							auto* maybe_charge = datalist->GetByType(RE::ExtraDataType::kCharge);
+							if (maybe_charge && current == 0.0f)
+							{
+								auto* charge = static_cast<RE::ExtraCharge*>(maybe_charge);
+								current      = charge->charge;
+							}
+						}
+						if (datalist->HasType(RE::ExtraDataType::kTimeLeft))
+						{
+							hasTimeLeft           = true;
+							auto* maybe_time_left = datalist->GetByType(RE::ExtraDataType::kTimeLeft);
+							if (maybe_time_left && timeLeft == 0.0f)
+							{
+								auto* extraLeft = static_cast<RE::ExtraTimeLeft*>(maybe_charge);
+								timeLeft        = extraLeft->time;
+							}
+						}
+						isPoisoned |= datalist->HasType(RE::ExtraDataType::kPoison);
+					}  // end of extra data checking
+					if (max > 0.0f && current > 0.0f) { chargePercent = current * 100.0f / max; }
+				}
+			}
+		}  // end of candidates loop
+
+		return relevant_extra_data(isEnchanted, chargePercent, isPoisoned, hasTimeLeft, timeLeft);
 	}
 
 	const char* displayName(const RE::TESForm* form)

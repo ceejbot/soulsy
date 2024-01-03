@@ -6,8 +6,15 @@
 // For game implementation reasons, this also includes spells.
 // Lesser powers are spells that go into the shout slot, IIUC.
 
-namespace game
+namespace shouts
 {
+	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout)
+	{
+		using func_t = decltype(&has_shout);
+		REL::Relocation<func_t> func{ offset::has_shout };
+		return func(a_actor, a_shout);
+	}
+
 	void unequip_spell(RE::BSScript::IVirtualMachine* a_vm,
 		RE::VMStackID a_stack_id,
 		RE::Actor* a_actor,

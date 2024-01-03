@@ -35,7 +35,7 @@ namespace player
 
 		RE::TESBoundObject* bound    = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		game::boundObjectForWornItem(form, game::WornWhere::kLeftOnly, bound, extraData);
+		gear::boundObjectForWornItem(form, gear::WornWhere::kLeftOnly, bound, extraData);
 
 		if (bound) { return helpers::makeFormSpecString(bound); }
 		else { return helpers::makeFormSpecString(form); }
@@ -52,7 +52,7 @@ namespace player
 
 		RE::TESBoundObject* bound    = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		game::boundObjectForWornItem(form, game::WornWhere::kRightOnly, bound, extraData);
+		gear::boundObjectForWornItem(form, gear::WornWhere::kRightOnly, bound, extraData);
 
 		if (bound) { return helpers::makeFormSpecString(bound); }
 		else { return helpers::makeFormSpecString(form); }
@@ -134,15 +134,15 @@ namespace player
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
 
-		if (which == Action::Power) { game::unequipShoutSlot(player); }
-		else if (which == Action::Right || which == Action::Left) { game::unequipHand(player, which); }
+		if (which == Action::Power) { shouts::unequipShoutSlot(player); }
+		else if (which == Action::Right || which == Action::Left) { gear::unequipHand(player, which); }
 		else { rlog::debug("somebody called unequipSlot() with slot={};"sv, static_cast<uint8_t>(which)); }
 	}
 
 	void unequipShout()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		game::unequipShoutSlot(player);
+		shouts::unequipShoutSlot(player);
 	}
 
 	void equipShout(const std::string& form_spec)
@@ -150,7 +150,7 @@ namespace player
 		auto* shout_form = helpers::formSpecToFormItem(form_spec);
 		if (!shout_form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		game::equipShoutByForm(shout_form, player);
+		shouts::equipShoutByForm(shout_form, player);
 	}
 
 	void equipMagic(const std::string& form_spec, Action slot)
@@ -158,8 +158,8 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player     = RE::PlayerCharacter::GetSingleton();
-		auto* equip_slot = (slot == Action::Right ? game::right_hand_equip_slot() : game::left_hand_equip_slot());
-		game::equipSpellByFormAndSlot(form, equip_slot, player);
+		auto* equip_slot = (slot == Action::Right ? gear::right_hand_equip_slot() : gear::left_hand_equip_slot());
+		gear::equipSpellByFormAndSlot(form, equip_slot, player);
 	}
 
 	void equipWeapon(const std::string& form_spec, Action slot, const std::string& nameToMatch)
@@ -167,8 +167,8 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player     = RE::PlayerCharacter::GetSingleton();
-		auto* equip_slot = (slot == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot());
-		game::equipItemByFormAndSlot(form, equip_slot, player, nameToMatch);
+		auto* equip_slot = (slot == Action::Left ? gear::left_hand_equip_slot() : gear::right_hand_equip_slot());
+		gear::equipItemByFormAndSlot(form, equip_slot, player, nameToMatch);
 	}
 
 	void toggleArmor(const std::string& form_spec, const std::string& nameToMatch)
@@ -176,7 +176,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		game::toggleArmorByForm(form, player, nameToMatch);
+		gear::toggleArmorByForm(form, player, nameToMatch);
 	}
 
 	void equipArmor(const std::string& form_spec, const std::string& nameToMatch)
@@ -184,7 +184,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		game::equipArmorByForm(form, player, nameToMatch);
+		utility::equipArmorByForm(form, player, nameToMatch);
 	}
 
 	void equipAmmo(const std::string& form_spec)
@@ -192,7 +192,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		game::equipAmmoByForm(form, player);
+		utility::equipAmmoByForm(form, player);
 	}
 
 	void consumePotion(const std::string& form_spec)
@@ -200,7 +200,7 @@ namespace player
 		auto* form = helpers::formSpecToFormItem(form_spec);
 		if (!form) { return; }
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		game::consumePotion(form, player);
+		utility::consumePotion(form, player);
 	}
 
 	std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>>
@@ -256,7 +256,7 @@ namespace player
 		else if (form->Is(RE::FormType::Shout))
 		{
 			const auto shout = form->As<RE::TESShout>();
-			has_it           = has_shout(player, shout);
+			has_it           = shouts::has_shout(player, shout);
 		}
 
 		rlog::trace("player has: {}; name='{}'; formID={};"sv, has_it, helpers::nameAsUtf8(form), form_spec);
@@ -270,8 +270,8 @@ namespace player
 		if (!form) { return; }
 
 		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
-		auto* slot      = which == Action::Left ? game::left_hand_equip_slot() : game::right_hand_equip_slot();
-		game::equipItemByFormAndSlot(form, slot, thePlayer, nameToMatch);
+		auto* slot      = which == Action::Left ? gear::left_hand_equip_slot() : gear::right_hand_equip_slot();
+		gear::equipItemByFormAndSlot(form, slot, thePlayer, nameToMatch);
 	}
 
 	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
@@ -288,13 +288,6 @@ namespace player
 		}
 
 		return count;
-	}
-
-	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout)
-	{
-		using func_t = decltype(&has_shout);
-		REL::Relocation<func_t> func{ offset::has_shout };
-		return func(a_actor, a_shout);
 	}
 
 	// ---------- counting potions for display in the HUD
@@ -324,9 +317,9 @@ namespace player
 	uint32_t healthPotionCount() { return potionCountByActorValue(RE::ActorValue::kHealth); }
 	uint32_t magickaPotionCount() { return potionCountByActorValue(RE::ActorValue::kMagicka); }
 
-	void chooseStaminaPotion() { game::consumeBestOption(RE::ActorValue::kStamina); }
-	void chooseHealthPotion() { game::consumeBestOption(RE::ActorValue::kHealth); }
-	void chooseMagickaPotion() { game::consumeBestOption(RE::ActorValue::kMagicka); }
+	void chooseStaminaPotion() { utility::consumeBestOption(RE::ActorValue::kStamina); }
+	void chooseHealthPotion() { utility::consumeBestOption(RE::ActorValue::kHealth); }
+	void chooseMagickaPotion() { utility::consumeBestOption(RE::ActorValue::kMagicka); }
 
 	rust::Box<EquippedData> getEquippedItems()
 	{

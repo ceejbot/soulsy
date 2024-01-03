@@ -9,6 +9,7 @@ use cxx::CxxVector;
 use super::cycles::*;
 use super::settings::{settings, UserSettings};
 use crate::control;
+use crate::data::huditem::RelevantExtraData;
 use crate::data::*;
 use crate::layouts::{hud_layout, Layout};
 use crate::plugin::*;
@@ -65,6 +66,23 @@ pub fn handle_menu_event(key: u32, button: &ButtonEvent) -> bool {
 /// Get information about the item equipped in a specific slot.
 pub fn entry_to_show_in_slot(element: HudElement) -> Box<HudItem> {
     control::get().entry_to_show_in_slot(element)
+}
+
+/// Fill out some extra data info.
+pub fn relevant_extra_data(
+    has_charge: bool,
+    charge: f32,
+    is_poisoned: bool,
+    has_time_left: bool,
+    time_left: f32,
+) -> Box<RelevantExtraData> {
+    Box::new(RelevantExtraData::new(
+        has_charge,
+        charge,
+        is_poisoned,
+        has_time_left,
+        time_left,
+    ))
 }
 
 // Handle an equip delay timer expiring.

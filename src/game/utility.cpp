@@ -11,7 +11,7 @@
 
 using namespace soulsy;
 
-namespace game
+namespace utility
 {
 	// ---------- ammo
 
@@ -19,7 +19,7 @@ namespace game
 	{
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto remaining               = boundObjectForForm(form, obj, extraData);
+		auto remaining               = gear::boundObjectForForm(form, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -139,7 +139,7 @@ namespace game
 
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto remaining               = boundObjectForForm(potionForm, obj, extraData);
+		auto remaining               = gear::boundObjectForForm(potionForm, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -184,7 +184,7 @@ namespace game
 				[=]()
 				{
 					RE::ActorEquipManager::GetSingleton()->EquipObject(
-						thePlayer, poison, extraData, 1, game::right_hand_equip_slot());
+						thePlayer, poison, extraData, 1, gear::right_hand_equip_slot());
 				});
 			remaining--;
 		}
@@ -194,7 +194,7 @@ namespace game
 			task->AddTask(
 				[=]() {
 					RE::ActorEquipManager::GetSingleton()->EquipObject(
-						thePlayer, poison, extraData, 1, game::left_hand_equip_slot());
+						thePlayer, poison, extraData, 1, gear::left_hand_equip_slot());
 				});
 		}
 	}

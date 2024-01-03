@@ -12,6 +12,7 @@ namespace soulsy
 	struct HudLayout;
 	struct LoadedImage;
 	struct Point;
+	struct RelevantExtraData;
 	struct SlotFlattened;
 	struct SlotLayout;
 	struct SpellData;

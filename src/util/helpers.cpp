@@ -25,7 +25,7 @@ namespace helpers
 		if (form)
 		{
 			auto* sound = form->As<RE::BGSSoundDescriptorForm>();
-			if (sound) { game::playSound(sound->soundDescriptor, the_player); }
+			if (sound) { utility::playSound(sound->soundDescriptor, the_player); }
 		}
 	}
 
@@ -45,7 +45,7 @@ namespace helpers
 	std::string displayNameAsUtf8(const RE::TESForm* form)
 	{
 		// Do not call this from bound object finder functions.
-		auto name     = game::displayName(form);
+		auto name     = gear::displayName(form);
 		auto chonker  = helpers::chars_to_vec(name);
 		auto safename = std::string(string_to_utf8(chonker));
 		return safename;
@@ -330,24 +330,30 @@ namespace helpers
 	bool isPoisonedByFormSpec(const std::string& form_spec)
 	{
 		auto* const form = formSpecToFormItem(form_spec);
-		return game::isItemPoisoned(form);
+		return gear::isItemPoisoned(form);
 	}
 
 	bool isFavoritedByFormSpec(const std::string& form_spec)
 	{
 		auto* const form = formSpecToFormItem(form_spec);
-		return game::isItemFavorited(form);
+		return gear::isItemFavorited(form);
 	}
 
 	bool hasChargeByFormSpec(const std::string& form_spec)
 	{
 		auto* const form = formSpecToFormItem(form_spec);
-		return game::itemHasCharge(form);
+		return gear::itemHasCharge(form);
 	}
 
 	float chargeLevelByFormSpec(const std::string& form_spec)
 	{
 		auto* const form = formSpecToFormItem(form_spec);
-		return game::itemChargeLevel(form);
+		return gear::itemChargeLevel(form);
+	}
+
+	rust::Box<RelevantExtraData> relevantExtraData(const std::string& form_spec)
+	{
+		auto* const form = formSpecToFormItem(form_spec);
+		return gear::relevantExtraData(form);
 	}
 }

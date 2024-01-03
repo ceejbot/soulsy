@@ -13,7 +13,8 @@ pub mod images;
 pub mod layouts;
 
 use controller::*;
-use data::{HudItem, SpellData, *};
+use data::huditem::{empty_extra_data, HudItem, RelevantExtraData};
+use data::{SpellData, *};
 use images::{get_icon_key, rasterize_by_path, rasterize_icon};
 use layouts::hud_layout;
 
@@ -406,6 +407,17 @@ pub mod plugin {
         /// Build an empty HUD item.
         fn empty_huditem() -> Box<HudItem>;
 
+        type RelevantExtraData;
+        /// Build an empty extra data struct.
+        fn empty_extra_data() -> Box<RelevantExtraData>;
+        fn relevant_extra_data(
+            has_charge: bool,
+            charge: f32,
+            is_poisoned: bool,
+            has_time_left: bool,
+            time_left: f32,
+        ) -> Box<RelevantExtraData>;
+
         /// Call this to get the fallback-aware key for an icon.
         fn get_icon_key(name: String) -> String;
         /// Load a rasterized image for an icon given its key.
@@ -513,6 +525,8 @@ pub mod plugin {
         fn hasChargeByFormSpec(form_spec: &CxxString) -> bool;
         /// Get an item's enchant level. Will be 0 for all unenchanted items.
         fn chargeLevelByFormSpec(form_spec: &CxxString) -> f32;
+        /// Get all of an item's relevant extra data in pass.
+        fn relevantExtraData(form_spec: &CxxString) -> Box<RelevantExtraData>;
     }
 
     #[namespace = "ui"]

@@ -8,10 +8,10 @@ use strfmt::strfmt;
 
 use super::base::BaseType;
 use super::HasIcon;
-use crate::images::icons::Icon;
 #[cfg(not(test))]
 use crate::plugin::{chargeLevelByFormSpec, hasChargeByFormSpec, isPoisonedByFormSpec};
 use crate::plugin::{Color, ItemCategory};
+use crate::{images::icons::Icon, plugin};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.
@@ -31,6 +31,8 @@ pub struct HudItem {
     extra: EnumSet<ItemExtraData>,
     /// Charge level, if relevant. As a percentage.
     charge_level: f32,
+    /// Time remaining, if relevant.
+    time_left: f32,
 }
 
 #[derive(Debug, Default, Hash, EnumSetType)]
@@ -39,6 +41,7 @@ pub enum ItemExtraData {
     None,
     IsPoisoned,
     IsEnchanted,
+    HasTimeLeft,
     HasCooldown, // maybe?
 }
 
@@ -48,13 +51,47 @@ impl Display for ItemExtraData {
             ItemExtraData::None => write!(f, "none"),
             ItemExtraData::IsPoisoned => write!(f, "poisoned"),
             ItemExtraData::IsEnchanted => write!(f, "enchanted"),
+            ItemExtraData::HasTimeLeft => write!(f, "time left"),
             ItemExtraData::HasCooldown => write!(f, "cooling down"),
         }
     }
 }
 
 const CHARGE_INDICATORS: EnumSet<ItemExtraData> =
-    enum_set!(ItemExtraData::HasCooldown | ItemExtraData::IsEnchanted);
+    enum_set!(ItemExtraData::HasCooldown | ItemExtraData::IsEnchanted | ItemExtraData::HasTimeLeft);
+
+/// This is the item extra data the hud cares about and displays (full name
+/// not included).
+#[derive(Debug, Default, Clone)]
+pub struct RelevantExtraData {
+    has_charge: bool,
+    charge: f32, // percentage
+    is_poisoned: bool,
+    has_time_left: bool,
+    time_left: f32, // units unknown atm
+}
+
+pub fn empty_extra_data() -> Box<RelevantExtraData> {
+    Box::new(RelevantExtraData::default())
+}
+
+impl RelevantExtraData {
+    pub fn new(
+        has_charge: bool,
+        charge: f32,
+        is_poisoned: bool,
+        has_time_left: bool,
+        time_left: f32,
+    ) -> Self {
+        Self {
+            has_charge,
+            charge,
+            is_poisoned,
+            has_time_left,
+            time_left,
+        }
+    }
+}
 
 impl HudItem {
     pub fn from_keywords(
@@ -262,58 +299,109 @@ impl HudItem {
         }
     }
 
+    /// Cooldown remaining; okay to use in tight loops.
+    pub fn time_left(&self) -> f32 {
+        self.time_left
+    }
+
+    #[cfg(test)]
+    pub fn refresh_extra_data(&mut self) {
+        // randomize it all
+        todo!()
+    }
+
+    #[cfg(not(test))]
+    pub fn refresh_extra_data(&mut self) {
+        cxx::let_cxx_string!(form_spec = self.form_string());
+        let extra = *plugin::relevantExtraData(&form_spec);
+
+        if extra.has_charge {
+            self.extra.insert(ItemExtraData::IsEnchanted);
+        } else {
+            self.extra.remove(ItemExtraData::IsEnchanted);
+        }
+        self.charge_level = extra.charge;
+
+        if extra.has_time_left {
+            self.extra.insert(ItemExtraData::HasTimeLeft);
+        } else {
+            self.extra.remove(ItemExtraData::HasTimeLeft);
+        }
+        self.time_left = extra.time_left;
+
+        if extra.is_poisoned {
+            self.extra.insert(ItemExtraData::IsPoisoned);
+        } else {
+            self.extra.remove(ItemExtraData::IsPoisoned);
+        }
+    }
+
     // We delegate everything to our object-kind. The goal is for most things
     // not to need to know about the item kind mess. Note that these functions
     // are all from the trait IsHudItem, which we can't implement here because
     // we offer these functions to the C++ side.
+
+    /// Delegated to item kind.
     pub fn count_matters(&self) -> bool {
         self.kind.count_matters()
     }
 
+    /// Delegated to item kind.
     pub fn is_ammo(&self) -> bool {
         self.kind.is_ammo()
     }
 
+    /// Delegated to item kind.
     pub fn is_armor(&self) -> bool {
         self.kind.is_armor()
     }
 
+    /// Delegated to item kind.
     pub fn is_magic(&self) -> bool {
         self.kind.is_magic()
     }
 
+    /// Delegated to item kind.
     pub fn is_potion(&self) -> bool {
         self.kind.is_potion()
     }
 
+    /// Delegated to item kind.
     pub fn is_power(&self) -> bool {
         self.kind.is_power()
     }
 
+    /// Delegated to item kind.
     pub fn is_spell(&self) -> bool {
         self.kind.is_spell()
     }
 
+    /// Delegated to item kind.
     pub fn is_utility(&self) -> bool {
         self.kind.is_utility()
     }
 
+    /// Delegated to item kind.
     pub fn is_weapon(&self) -> bool {
         self.kind.is_weapon()
     }
 
+    /// Delegated to item kind.
     pub fn is_one_handed(&self) -> bool {
         self.kind.is_one_handed()
     }
 
+    /// Delegated to item kind.
     pub fn left_hand_ok(&self) -> bool {
         self.kind.left_hand_ok()
     }
 
+    /// Delegated to item kind.
     pub fn right_hand_ok(&self) -> bool {
         self.kind.right_hand_ok()
     }
 
+    /// Delegated to item kind.
     pub fn two_handed(&self) -> bool {
         self.kind.is_two_handed()
     }
