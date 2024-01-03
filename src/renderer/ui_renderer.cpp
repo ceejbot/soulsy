@@ -339,31 +339,16 @@ namespace ui
 		}
 		else if (haveBgImage && !haveFgImage)
 		{
-			// Here we draw the bg image twice: once at full size for the empty background,
-			// and a second time with the fill color, clipped to indicate charge level.
-			auto adjust_x = slotLayout.meter_size.x * missing;
-			auto adjust_y = 0.0f;
+			const auto [bgtex, width, height] = HUD_IMAGES_MAP[bg_img_str];
+			const auto fillLen                = slotLayout.meter_fill_size.x * level * 0.01f;
+			const auto fillSize               = ImVec2(fillLen, slotLayout.meter_fill_size.y);
 
-			// clip_min is left, top
-			const auto clip_min = ImVec2(meterOffset.x - bgSize.x / 2.0f, meterOffset.y - bgSize.y / 2.0f + adjust_y);
-			// clip_max is right, bottom
-			const auto clip_max = ImVec2(meterOffset.x + bgSize.x / 2.0f - adjust_x, meterOffset.y + bgSize.y / 2.0f);
-			// rotate the clip rect wheeeeee high school trig
-			const auto rotMin = ImVec2(clip_min.x * std::cosf(angle) - std::sinf(angle) * clip_min.y,
-				std::sinf(angle) * clip_min.x + std::cosf(angle) * clip_min.y);
-			const auto rotMax = ImVec2(clip_max.x * std::cosf(angle) - std::sinf(angle) * clip_max.y,
-				std::sinf(angle) * clip_max.x + std::cosf(angle) * clip_max.y);
+			const std::array<ImVec2, 4> bgRotated = rotateRectWithTranslation(meterOffset, bgSize, angle);
+			const ImVec2 fillOffset               = rotateVector((fillSize - bgSize) * 0.5f, angle) + meterOffset;
+			const std::array<ImVec2, 4> fgRotated = rotateRectWithTranslation(fillOffset, fillSize, angle);
 
-			const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
-			drawElement(texture, meterOffset, bgSize, angle, slotLayout.meter_empty_color);
-			// IMGUI_API void          PushClipRect(const ImVec2& clip_rect_min, const ImVec2& clip_rect_max, bool intersect_with_current_clip_rect);
-			ImGui::GetWindowDrawList()->PushClipRect(rotMin, rotMax, true);
-			drawElement(texture, meterOffset, bgSize, angle, slotLayout.meter_fill_color);
-			ImGui::GetWindowDrawList()->PopClipRect();
-		}
-		else
-		{
-			// TODO if no svg, do rectangular flood fills? idk
+			drawTextureQuad(bgtex, bgRotated, slotLayout.meter_empty_color);
+			drawTextureQuad(bgtex, fgRotated, slotLayout.meter_fill_color);
 		}
 	}
 
