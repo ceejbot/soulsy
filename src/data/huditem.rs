@@ -71,6 +71,15 @@ pub struct RelevantExtraData {
     time_left: f32, // units unknown atm
 }
 
+/*
+
+ExtraEditorID - maybe some use?
+ExtraHotkey - is favorite
+ExtraMagicLight - magic light timer? investigate
+ExtraSoul - investigate
+
+*/
+
 pub fn empty_extra_data() -> Box<RelevantExtraData> {
     Box::new(RelevantExtraData::default())
 }

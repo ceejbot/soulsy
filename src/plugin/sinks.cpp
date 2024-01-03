@@ -3,7 +3,6 @@
 #include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
-#include "inventory.h"
 #include "keycodes.h"
 #include "player.h"
 #include "ui_renderer.h"
@@ -14,27 +13,32 @@ using event_result = RE::BSEventNotifyControl;
 
 void registerAllListeners()
 {
-	rlog::info("Registering listeners for game events.");
-	EquipEventListener::registerListener();
-	KeyEventListener::registerListener();
-	AnimGraphListener::registerListener();
-	// MagicEffectListener::registerListener();
+	rlog::info("Registering listeners for game events:");
+	auto listener                = TheListener::singleton();
+	auto scriptEventSourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
+
+	scriptEventSourceHolder->GetEventSource<RE::TESEquipEvent>()->AddEventSink(listener);
+	rlog::info("    equipment change events: {}", typeid(RE::TESEquipEvent).name());
+
+	scriptEventSourceHolder->GetEventSource<RE::TESHitEvent>()->AddEventSink(listener);
+	rlog::info("    hit events: {}"sv, typeid(RE::TESHitEvent).name());
+
+	RE::UI::GetSingleton()->AddEventSink<RE::MenuOpenCloseEvent>(listener);
+	rlog::info("    menu open/close events: {}"sv, typeid(RE::MenuOpenCloseEvent).name());
+
+	RE::BSInputDeviceManager::GetSingleton()->AddEventSink<RE::InputEvent>(get_singleton());
+	rlog::info("    player input events."sv);
+
+	auto* player = RE::PlayerCharacter::GetSingleton();
+	auto okay    = player->AddAnimationGraphEventSink(AnimGraphListener::get_singleton());
+	if (okay) { rlog::info("    animation graph events to get grip changes."); }
+
+	// scriptEventSourceHolder->GetEventSource<RE::TESMagicEffectApplyEvent>()->AddEventSink(listener);
+	// scriptEventSourceHolder->GetEventSource<RE::TESActiveEffectApplyRemoveEvent>()->AddEventSink(listener);
+	// rlog::info("    magic effects come and go, talking of Michelangelo."sv);
 }
 
-EquipEventListener* EquipEventListener::get_singleton()
-{
-	static EquipEventListener singleton;
-	return std::addressof(singleton);
-}
-
-void EquipEventListener::registerListener()
-{
-	RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink(get_singleton());
-	rlog::info("    Listening for equipment change events.");
-}
-
-// Handle equipment change events. We need to update our UI when this happens.
-EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESEquipEvent* event,
+TheListener::event_result TheListener::ProcessEvent(const RE::TESEquipEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::TESEquipEvent>* source)
 {
 	if (!event || !event->actor || !event->actor->IsPlayerRef()) { return event_result::kContinue; }
@@ -65,19 +69,32 @@ EquipEventListener::event_result EquipEventListener::ProcessEvent(const RE::TESE
 	return event_result::kContinue;
 }
 
-KeyEventListener* KeyEventListener::get_singleton()
+TheListener::event_result TheListener::ProcessEvent(const RE::TESHitEvent* event,
+	[[maybe_unused]] RE::BSTEventSource<RE::TESHitEvent>* source)
 {
-	static KeyEventListener singleton;
-	return std::addressof(singleton);
+	// TODO; just logging for now
+	auto source     = event->source->GetBaseObject();
+	auto sourceName = helpers::displayNameAsUtf8(source);
+
+	auto target     = event->target->GetBaseObject();
+	auto targetName = helpers::displayNameAsUtf8(target);
+
+	rlog::info("hit event: {} 🗡️ {}",
+		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),
+		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
+
+	return event_result::kContinue;
 }
 
-void KeyEventListener::registerListener()
+TheListener::event_result TheListener::ProcessEvent(const RE::MenuOpenCloseEvent* event,
+	[[maybe_unused]] RE::BSTEventSource<RE::MenuOpenCloseEvent>* source)
 {
-	RE::BSInputDeviceManager::GetSingleton()->AddEventSink(get_singleton());
-	rlog::info("    Listening for player input events."sv);
+	// TODO; just logging for now
+	rlog::info("menu event: '{}' {}", event->menuName, event->opening ? "opened" : "closed");
+	return event_result::kContinue;
 }
 
-event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
+event_result TheListener::ProcessEvent(RE::InputEvent* const* event_list,
 	[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* source)
 {
 	// We start by figuring out if we need to do anything at all.
@@ -119,7 +136,7 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 		}
 
 		// Now wipe out the event data so nothing else acts on it.
-		// Is there a way to respond with                                                                                                                                                                                     `kStop` for just one event in the list?
+		// Is there a way to respond with `kStop` for just one event in the list?
 		button->idCode    = keycodes::kInvalid;
 		button->userEvent = "";
 	}  // end event handling for loop
@@ -128,24 +145,8 @@ event_result KeyEventListener::ProcessEvent(RE::InputEvent* const* event_list,
 }
 
 
-// ---------- animation graph events
 // Here we watch for anim graph events ONLY to catch CGO's grip switch variable change.
-
-AnimGraphListener* AnimGraphListener::get_singleton()
-{
-	static AnimGraphListener singleton;
-	return std::addressof(singleton);
-}
-
-void AnimGraphListener::registerListener()
-{
-	auto* player = RE::PlayerCharacter::GetSingleton();
-	auto okay    = player->AddAnimationGraphEventSink(AnimGraphListener::get_singleton());
-	if (okay) { rlog::info("    Listening for animation graph events to get grip changes."); }
-	// else { rlog::warn("Surprising: failed to add an event listener for animation graph events."); }
-}
-
-RE::BSEventNotifyControl AnimGraphListener::ProcessEvent(const RE::BSAnimationGraphEvent* event,
+RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::BSAnimationGraphEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::BSAnimationGraphEvent>* source)
 {
 	if (event->tag == "GripChangeEvent")
@@ -159,27 +160,11 @@ RE::BSEventNotifyControl AnimGraphListener::ProcessEvent(const RE::BSAnimationGr
 }
 
 // ----------- MagicEffectListener
-// This only gets notifications of magic effects arriving.
-
-MagicEffectListener* MagicEffectListener::get_singleton()
-{
-	static MagicEffectListener singleton;
-	return std::addressof(singleton);
-}
-
-void MagicEffectListener::registerListener()
-{
-	auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
-	scriptEvents->AddEventSink(MagicEffectListener::get_singleton());
-	rlog::info("    Listening for magic effect events."sv);
-}
-
-// TODO I also need a listener for TESActiveEffectApplyRemoveEvent
-
-RE::BSEventNotifyControl MagicEffectListener::ProcessEvent(const RE::TESMagicEffectApplyEvent* event,
+// This only gets notifications of magic effects arriving. ?
+RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApplyEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* source)
 {
-	// TODO
+	// TODO; just logging for now
 	auto caster     = event->caster->GetBaseObject();
 	auto casterName = helpers::displayNameAsUtf8(caster);
 
@@ -193,6 +178,25 @@ RE::BSEventNotifyControl MagicEffectListener::ProcessEvent(const RE::TESMagicEff
 		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),
 		effectName,
 		rlog::formatAsHex(event->magicEffect),
+		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
+
+	return event_result::kContinue;
+}
+
+RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESActiveEffectApplyRemoveEvent* event,
+	[[maybe_unused]] RE::BSTEventSource<RE::TESActiveEffectApplyRemoveEvent>* source)
+{
+	// TODO; just logging for now
+	auto caster     = event->caster->GetBaseObject();
+	auto casterName = helpers::displayNameAsUtf8(caster);
+
+	auto target     = event->target->GetBaseObject();
+	auto targetName = helpers::displayNameAsUtf8(target);
+
+	rlog::info("Effect status change: '{}' -> {} effect id {} -> '{}'",
+		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),
+		event->isApplied ? "applied" : "removed",
+		rlog::formatAsHex(event->activeEffectUniqueID),
 		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
 
 	return event_result::kContinue;
