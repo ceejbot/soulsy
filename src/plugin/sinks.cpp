@@ -12,8 +12,6 @@
 
 using event_result = RE::BSEventNotifyControl;
 
-void log_it_dammit(const std::string msg) { rlog::info("{}", msg); }
-
 void registerAllListeners()
 {
 	rlog::info("Registering listeners for game events.");
