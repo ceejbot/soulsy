@@ -318,7 +318,16 @@ namespace ui
 		const auto bg_img_str  = std::string(slotLayout.meter_empty_image);
 		const auto fg_img_str  = std::string(slotLayout.meter_fill_image);
 
-		auto angle       = -slotLayout.meter_start_angle;
+		auto angle = -slotLayout.meter_start_angle;
+
+		const auto fillLen          = slotLayout.meter_fill_size.x * level * 0.01f;
+		const auto fillSize         = ImVec2(fillLen, slotLayout.meter_fill_size.y);
+		const auto fillCenterOffset = ImVec2((fillLen - slotLayout.meter_fill_size.x) * 0.5f, 0.0);
+
+		const std::array<ImVec2, 4> bgRotated = rotateRectWithTranslation(meterOffset, bgSize, angle);
+		const ImVec2 fillOffset               = rotateVector(fillCenterOffset, angle) + meterOffset;
+		const std::array<ImVec2, 4> fgRotated = rotateRectWithTranslation(fillOffset, fillSize, angle);
+
 		bool haveBgImage = bg_img_str.empty() ? false : ui_renderer::lazyLoadHudImage(bg_img_str);
 		bool haveFgImage = fg_img_str.empty() ? false : ui_renderer::lazyLoadHudImage(fg_img_str);
 
@@ -326,13 +335,6 @@ namespace ui
 		{
 			const auto [bgtex, width, height]   = HUD_IMAGES_MAP[bg_img_str];
 			const auto [fgtex, fwidth, fheight] = HUD_IMAGES_MAP[fg_img_str];
-			const auto fillLen                  = slotLayout.meter_fill_size.x * level * 0.01f;
-			const auto fillSize                 = ImVec2(fillLen, slotLayout.meter_fill_size.y);
-			const auto fillCenterOffset         = ImVec2((fillLen - slotLayout.meter_fill_size.x) * 0.5f, 0.0);
-
-			const std::array<ImVec2, 4> bgRotated = rotateRectWithTranslation(meterOffset, bgSize, angle);
-			const ImVec2 fillOffset               = rotateVector(fillCenterOffset, angle) + meterOffset;
-			const std::array<ImVec2, 4> fgRotated = rotateRectWithTranslation(fillOffset, fillSize, angle);
 
 			drawTextureQuad(bgtex, bgRotated, slotLayout.meter_empty_color);
 			drawTextureQuad(fgtex, fgRotated, slotLayout.meter_fill_color);
@@ -342,16 +344,14 @@ namespace ui
 			// In this case, we use the background image twice, the second time with length scaled
 			// drawn with the fill color.
 			const auto [bgtex, width, height] = HUD_IMAGES_MAP[bg_img_str];
-			const auto fillLen                = slotLayout.meter_fill_size.x * level * 0.01f;
-			const auto fillSize               = ImVec2(fillLen, slotLayout.meter_fill_size.y);
-			const auto fillCenterOffset       = ImVec2((fillLen - slotLayout.meter_fill_size.x) * 0.5f, 0.0);
-
-			const std::array<ImVec2, 4> bgRotated = rotateRectWithTranslation(meterOffset, bgSize, angle);
-			const ImVec2 fillOffset               = rotateVector(fillCenterOffset, angle) + meterOffset;
-			const std::array<ImVec2, 4> fgRotated = rotateRectWithTranslation(fillOffset, fillSize, angle);
-
 			drawTextureQuad(bgtex, bgRotated, slotLayout.meter_empty_color);
 			drawTextureQuad(bgtex, fgRotated, slotLayout.meter_fill_color);
+		}
+		else if (haveFgImage)
+		{
+			const auto [fgtex, fwidth, fheight] = HUD_IMAGES_MAP[fg_img_str];
+			drawTextureQuad(fgtex, bgRotated, slotLayout.meter_empty_color);
+			drawTextureQuad(fgtex, fgRotated, slotLayout.meter_fill_color);
 		}
 	}
 
