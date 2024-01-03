@@ -61,7 +61,7 @@ color = { r = 0, g = 0, b = 0, a = 64 }
 # The slot showing what's in the right hand.
 [right]
 # Where the center of this element is relative to the HUD anchor.
-offset = { x = 375.0, y = 0.0 }
+offset = { x = 475.0, y = 0.0 }
 
 # Optional slot background image: if not present, not drawn. You can have
 # different background images for different slots if you like.
@@ -148,7 +148,7 @@ color = { r = 80, g = 0, b = 145, a = 255 }
 # ----- left hand slot
 
 [left]
-offset = { x = 250.0, y = 0.0 }
+offset = { x = 300.0, y = 0.0 }
 
 [left.background]
 color = { r = 255, g = 255, b = 255, a = 128 }
@@ -186,7 +186,7 @@ offset     = { x = -50.0, y = 55.0 }
 wrap_width = 100.0
 
 [left.meter]
-angle  = 0                      # horizontal
+angle  = 90
 offset = { x = 0.0, y = -60.0 }
 [left.meter.background]
 color = { r = 255, g = 255, b = 255, a = 255 }
@@ -200,7 +200,7 @@ svg   = ""
 # ----- utility slot
 
 [utility]
-offset = { x = 125.0, y = 0.0 }
+offset = { x = 175.0, y = 0.0 }
 [utility.background]
 color = { r = 255, g = 255, b = 255, a = 128 }
 size  = { x = 100.0, y = 100.0 }
@@ -260,10 +260,22 @@ font_size  = 18.0
 offset     = { x = -50.0, y = 55.0 }
 wrap_width = 100.0
 
+[power.meter]
+angle  = 90
+offset = { x = 0.0, y = -60.0 }
+[power.meter.background]
+color = { r = 255, g = 255, b = 255, a = 255 }
+size  = { x = 100.0, y = 20.0 }
+svg   = "meter_bar_empty.svg"
+[power.meter.filled]
+color = { r = 192, g = 128, b = 255, a = 255 }
+size  = { x = 98.0, y = 16.0 }
+svg   = ""
+
 # ----- ammo slot
 
 [ammo]
-offset = { x = 250.0, y = 0.0 }
+offset = { x = 300.0, y = 0.0 }
 [ammo.background]
 color = { r = 255, g = 255, b = 255, a = 128 }
 size  = { x = 100.0, y = 100.0 }
