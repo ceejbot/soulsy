@@ -9,8 +9,6 @@
 
 #include "lib.rs.h"
 
-using event_result = RE::BSEventNotifyControl;
-
 void registerAllListeners()
 {
 	rlog::info("Registering listeners for game events:");
@@ -26,11 +24,11 @@ void registerAllListeners()
 	RE::UI::GetSingleton()->AddEventSink<RE::MenuOpenCloseEvent>(listener);
 	rlog::info("    menu open/close events: {}"sv, typeid(RE::MenuOpenCloseEvent).name());
 
-	RE::BSInputDeviceManager::GetSingleton()->AddEventSink<RE::InputEvent>(get_singleton());
+	RE::BSInputDeviceManager::GetSingleton()->AddEventSink(listener);
 	rlog::info("    player input events."sv);
 
 	auto* player = RE::PlayerCharacter::GetSingleton();
-	auto okay    = player->AddAnimationGraphEventSink(AnimGraphListener::get_singleton());
+	auto okay    = player->AddAnimationGraphEventSink(listener);
 	if (okay) { rlog::info("    animation graph events to get grip changes."); }
 
 	// scriptEventSourceHolder->GetEventSource<RE::TESMagicEffectApplyEvent>()->AddEventSink(listener);
@@ -38,12 +36,18 @@ void registerAllListeners()
 	// rlog::info("    magic effects come and go, talking of Michelangelo."sv);
 }
 
-TheListener::event_result TheListener::ProcessEvent(const RE::TESEquipEvent* event,
+TheListener* TheListener::singleton()
+{
+	static TheListener singleton;
+	return std::addressof(singleton);
+}
+
+RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESEquipEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::TESEquipEvent>* source)
 {
-	if (!event || !event->actor || !event->actor->IsPlayerRef()) { return event_result::kContinue; }
+	if (!event || !event->actor || !event->actor->IsPlayerRef()) { return RE::BSEventNotifyControl::kContinue; }
 	auto* form = RE::TESForm::LookupByID(event->baseObject);
-	if (!form) { return event_result::kContinue; }
+	if (!form) { return RE::BSEventNotifyControl::kContinue; }
 
 	auto* player   = RE::PlayerCharacter::GetSingleton();
 	auto* left_eq  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
@@ -53,7 +57,10 @@ TheListener::event_result TheListener::ProcessEvent(const RE::TESEquipEvent* eve
 	{
 		// double-check that we really unequipped it and it's not just a count change.
 		auto* current_ammo = player->GetCurrentAmmo();
-		if (current_ammo && current_ammo->GetFormID() == form->GetFormID()) { return event_result::kContinue; }
+		if (current_ammo && current_ammo->GetFormID() == form->GetFormID())
+		{
+			return RE::BSEventNotifyControl::kContinue;
+		}
 	}
 
 	const auto formtype = form->GetFormType();
@@ -66,41 +73,41 @@ TheListener::event_result TheListener::ProcessEvent(const RE::TESEquipEvent* eve
 	std::string form_spec  = helpers::makeFormSpecString(form);
 	handle_item_equipped(event->equipped, form_spec, worn_right, worn_left);
 
-	return event_result::kContinue;
+	return RE::BSEventNotifyControl::kContinue;
 }
 
-TheListener::event_result TheListener::ProcessEvent(const RE::TESHitEvent* event,
+RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESHitEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::TESHitEvent>* source)
 {
 	// TODO; just logging for now
-	auto source     = event->source->GetBaseObject();
-	auto sourceName = helpers::displayNameAsUtf8(source);
+	auto* sourceForm = RE::TESForm::LookupByID(event->source);
+	auto sourceName  = helpers::displayNameAsUtf8(sourceForm);
 
 	auto target     = event->target->GetBaseObject();
 	auto targetName = helpers::displayNameAsUtf8(target);
 
 	rlog::info("hit event: {} 🗡️ {}",
-		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),
+		sourceName.length() > 0 ? sourceName : rlog::formatAsHex(event->source),
 		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
 
-	return event_result::kContinue;
+	return RE::BSEventNotifyControl::kContinue;
 }
 
-TheListener::event_result TheListener::ProcessEvent(const RE::MenuOpenCloseEvent* event,
+RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::MenuOpenCloseEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::MenuOpenCloseEvent>* source)
 {
 	// TODO; just logging for now
 	rlog::info("menu event: '{}' {}", event->menuName, event->opening ? "opened" : "closed");
-	return event_result::kContinue;
+	return RE::BSEventNotifyControl::kContinue;
 }
 
-event_result TheListener::ProcessEvent(RE::InputEvent* const* event_list,
+RE::BSEventNotifyControl TheListener::ProcessEvent(RE::InputEvent* const* event_list,
 	[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* source)
 {
 	// We start by figuring out if we need to do anything at all.
-	if (!event_list) { return event_result::kContinue; }
+	if (!event_list) { return RE::BSEventNotifyControl::kContinue; }
 
-	if (helpers::ignoreKeyEvents()) { return event_result::kContinue; }
+	if (helpers::ignoreKeyEvents()) { return RE::BSEventNotifyControl::kContinue; }
 
 	// We might get a list of events to handle.
 	for (auto* event = *event_list; event; event = event->next)
@@ -141,7 +148,7 @@ event_result TheListener::ProcessEvent(RE::InputEvent* const* event_list,
 		button->userEvent = "";
 	}  // end event handling for loop
 
-	return event_result::kContinue;
+	return RE::BSEventNotifyControl::kContinue;
 }
 
 
@@ -156,7 +163,7 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::BSAnimationGraphEve
 		handle_grip_change(useAltGrip);
 	}
 
-	return event_result::kContinue;
+	return RE::BSEventNotifyControl::kContinue;
 }
 
 // ----------- MagicEffectListener
@@ -180,7 +187,7 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApply
 		rlog::formatAsHex(event->magicEffect),
 		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
 
-	return event_result::kContinue;
+	return RE::BSEventNotifyControl::kContinue;
 }
 
 RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESActiveEffectApplyRemoveEvent* event,
@@ -199,5 +206,5 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESActiveEffectAppl
 		rlog::formatAsHex(event->activeEffectUniqueID),
 		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
 
-	return event_result::kContinue;
+	return RE::BSEventNotifyControl::kContinue;
 }
