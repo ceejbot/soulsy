@@ -26,6 +26,7 @@ namespace ui
 	static std::map<std::string, TextureData> ICON_MAP;
 	static std::map<std::string, TextureData> HUD_IMAGES_MAP;
 
+	static const auto REFRESH_DRAW_COUNT  = 50;
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 	static const uint32_t MAX_ICON_DIM    = 300;   // rasterized at 96 dpi
 	static constexpr ImVec2 FLAT_UVS[4]   = { ImVec2(0.0f, 0.0f),
@@ -43,6 +44,7 @@ namespace ui
 	auto gIsFading          = false;
 	auto delayBeforeFadeout = 0.33f;  // seconds
 	bool gDoingBriefPeek    = false;
+	auto drawCounter        = 0;
 
 	// ID3D11BlendState* gBlendState = nullptr;
 
@@ -614,9 +616,9 @@ namespace ui
 			}
 
 			// Charge/fuel meter.
-			if (slotLayout.meter_kind != MeterKind::None && entry->has_charge())
+			if (slotLayout.meter_kind != MeterKind::None && entry->show_meter())
 			{
-				auto level = entry->charge_level();
+				auto level = entry->meter_level();
 				if (slotLayout.meter_kind == MeterKind::CircleArc) { drawMeterCircleArc(level, slotLayout); }
 				else if (slotLayout.meter_kind == MeterKind::Rectangular) { drawMeterRectangular(level, slotLayout); }
 			}
@@ -659,9 +661,16 @@ namespace ui
 
 		ImGui::Begin(HUD_NAME, nullptr, window_flags);
 
+		if (drawCounter >= REFRESH_DRAW_COUNT)
+		{
+			refresh_hud_items();
+			drawCounter = 0;
+		}
+
 		drawAllSlots();
 
 		ImGui::End();
+		drawCounter++;
 	}
 
 	template <typename T>

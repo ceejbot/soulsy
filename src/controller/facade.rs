@@ -68,6 +68,10 @@ pub fn entry_to_show_in_slot(element: HudElement) -> Box<HudItem> {
     control::get().entry_to_show_in_slot(element)
 }
 
+pub fn refresh_hud_items() {
+    control::get().refresh_hud_items();
+}
+
 /// Fill out some extra data info.
 pub fn relevant_extra_data(
     has_charge: bool,

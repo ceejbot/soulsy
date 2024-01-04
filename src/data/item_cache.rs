@@ -130,8 +130,7 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
     cxx::let_cxx_string!(form_spec = form_string);
     let boxed = formSpecToHudItem(&form_spec);
     let mut item = *boxed;
-    item.has_charge_refresh();
-    item.is_poisoned_refresh();
+    item.refresh_extra_data();
     item
 }
 

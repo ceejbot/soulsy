@@ -349,21 +349,31 @@ namespace gear
 	{
 		if (!form) { return empty_extra_data(); }
 
-		bool isEnchanted    = false;
-		float chargePercent = 0.0f;
-		bool hasTimeLeft    = false;
-		float timeLeft      = 0.0f;
-		bool isPoisoned     = false;
+		bool isEnchanted      = false;
+		float chargePercent   = 0.0f;
+		bool hasTimeLeft      = false;
+		float timeLeftPercent = 0.0f;
+		bool isPoisoned       = false;
 
 		// charge data
 		float current = 0.0f;
 		float max     = 0.0f;
+
+		// remaining time data
+		float currTime   = 0.0f;
+		uint32_t maxTime = 0;  // in seconds
 
 		const auto enchantable = form->As<RE::TESEnchantableForm>();
 		if (enchantable)
 		{
 			isEnchanted = true;
 			max         = enchantable->amountofEnchantment;
+		}
+
+		if (form->GetFormType() == RE::FormType::Light)
+		{
+			const auto* light = form->As<RE::TESObjectLIGH>();
+			maxTime           = light->data.time;
 		}
 
 		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
@@ -393,20 +403,21 @@ namespace gear
 						{
 							hasTimeLeft           = true;
 							auto* maybe_time_left = datalist->GetByType(RE::ExtraDataType::kTimeLeft);
-							if (maybe_time_left && timeLeft == 0.0f)
+							if (maybe_time_left && currTime == 0.0f)
 							{
 								auto* extraLeft = static_cast<RE::ExtraTimeLeft*>(maybe_time_left);
-								timeLeft        = extraLeft->time;
+								currTime        = extraLeft->time;
 							}
 						}
 						isPoisoned |= datalist->HasType(RE::ExtraDataType::kPoison);
 					}  // end of extra data checking
 					if (max > 0.0f && current > 0.0f) { chargePercent = current * 100.0f / max; }
+					if (maxTime > 0 && currTime > 0.0f) { timeLeftPercent = currTime * 100.0f / maxTime; }
 				}
 			}
 		}  // end of candidates loop
 
-		return relevant_extra_data(isEnchanted, chargePercent, isPoisoned, hasTimeLeft, timeLeft);
+		return relevant_extra_data(isEnchanted, chargePercent, isPoisoned, hasTimeLeft, timeLeftPercent);
 	}
 
 	const char* displayName(const RE::TESForm* form)

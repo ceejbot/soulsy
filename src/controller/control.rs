@@ -178,6 +178,22 @@ impl Controller {
         self.cache.introspect();
     }
 
+    /// For all visible items, refresh data used by the renderer that might
+    /// have changed in the last N draw cycles, where N is a count controlled
+    /// by the renderer itself.
+    pub fn refresh_hud_items(&mut self) {
+        // The only relevant items are shouts, left, and right hand.
+        if let Some(power) = self.visible.get_mut(&HudElement::Power) {
+            power.refresh_extra_data();
+        }
+        if let Some(left) = self.visible.get_mut(&HudElement::Left) {
+            left.refresh_extra_data();
+        }
+        if let Some(right) = self.visible.get_mut(&HudElement::Right) {
+            right.refresh_extra_data();
+        }
+    }
+
     /// The player's inventory changed! Act on it if we need to.
     pub fn handle_inventory_changed(&mut self, form_spec: &String, new_count: u32) {
         let Some(item) = self.cache.update_count(form_spec.as_str(), new_count) else {

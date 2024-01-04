@@ -298,6 +298,8 @@ pub mod plugin {
         fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32);
         /// On save load or death restore, wipe the hud item cache.
         fn clear_cache();
+        /// Refresh the enchant charge / time remaining / poisoned status of all visible items.
+        fn refresh_hud_items();
 
         /// Give access to the settings to the C++ side.
         type UserSettings;
@@ -351,10 +353,10 @@ pub mod plugin {
         fn fmtstr(self: &HudItem, format: String) -> String;
         /// Check if this item is poisoned.
         fn is_poisoned(self: &HudItem) -> bool;
-        /// Check if this item has a charge level: enchantment or fuel.
-        fn has_charge(self: &HudItem) -> bool;
-        /// Get the charge level if it's relevant.
-        fn charge_level(self: &HudItem) -> f32;
+        /// Check if this item needs a meter drawn.
+        fn show_meter(self: &HudItem) -> bool;
+        /// Get the meter level as a percentage of full/complete.
+        fn meter_level(self: &HudItem) -> f32;
 
         /// See src/data/magic.rs for this struct. It's used to classify spells.
         type SpellData;

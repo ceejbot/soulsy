@@ -1,12 +1,12 @@
 //! Version 2 of the layout schema. This version is the only one that gets
 //! new features-- v1 is to be retired gently over time.
 
+use core::f32;
+use std::fmt::Display;
+
 use eyre::{Context, Result};
 use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
-
-use core::f32;
-use std::fmt::Display;
 
 use super::shared::*;
 use crate::plugin::{

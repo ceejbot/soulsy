@@ -69,6 +69,8 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESEquipEvent* even
 	if (event->equipped) { rlog::debug("equip event: {} '{}' equipped", RE::FormTypeToString(formtype), name); }
 	else { rlog::debug("equip event: {} '{}' removed", RE::FormTypeToString(formtype), name); }
 
+	if (formtype == RE::FormType::Enchantment) { return RE::BSEventNotifyControl::kContinue; }
+
 	std::string worn_right = helpers::makeFormSpecString(right_eq);
 	std::string worn_left  = helpers::makeFormSpecString(left_eq);
 	std::string form_spec  = helpers::makeFormSpecString(form);
@@ -87,7 +89,7 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESHitEvent* event,
 	auto target     = event->target->GetBaseObject();
 	auto targetName = helpers::displayNameAsUtf8(target);
 
-	rlog::info("hit event: {} 🗡️ {}",
+	rlog::info("hit event: '{}' 🗡️ {}",
 		sourceName.length() > 0 ? sourceName : rlog::formatAsHex(event->source),
 		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
 
@@ -187,11 +189,13 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApply
 		return RE::BSEventNotifyControl::kContinue;
 	}
 
-	rlog::info("Effect status change: '{}' put \"{}\" ({}) on '{}'",
-		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),
+	rlog::info("Effect status change: '{}' {} put \"{}\" ({}) on '{}' {}",
+		casterName.length() > 0 ? casterName : "<unknown>",
+		rlog::formatAsHex(event->caster->GetFormID()),
 		effectName,
 		rlog::formatAsHex(event->magicEffect),
-		targetName.length() > 0 ? targetName : rlog::formatAsHex(event->target->GetFormID()));
+		targetName.length() > 0 ? targetName : "<unknown>",
+		rlog::formatAsHex(event->target->GetFormID()));
 
 	return RE::BSEventNotifyControl::kContinue;
 }

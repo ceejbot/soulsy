@@ -8,10 +8,10 @@ use strfmt::strfmt;
 
 use super::base::BaseType;
 use super::HasIcon;
+use crate::images::icons::Icon;
 #[cfg(not(test))]
-use crate::plugin::{chargeLevelByFormSpec, hasChargeByFormSpec, isPoisonedByFormSpec};
+use crate::plugin::{isPoisonedByFormSpec, relevantExtraData};
 use crate::plugin::{Color, ItemCategory};
-use crate::{images::icons::Icon, plugin};
 
 /// A TESForm item that the player can use or equip, with the data
 /// that drives the HUD cached for fast access.
@@ -42,7 +42,6 @@ pub enum ItemExtraData {
     IsPoisoned,
     IsEnchanted,
     HasTimeLeft,
-    HasCooldown, // maybe?
 }
 
 impl Display for ItemExtraData {
@@ -52,13 +51,12 @@ impl Display for ItemExtraData {
             ItemExtraData::IsPoisoned => write!(f, "poisoned"),
             ItemExtraData::IsEnchanted => write!(f, "enchanted"),
             ItemExtraData::HasTimeLeft => write!(f, "time left"),
-            ItemExtraData::HasCooldown => write!(f, "cooling down"),
         }
     }
 }
 
 const CHARGE_INDICATORS: EnumSet<ItemExtraData> =
-    enum_set!(ItemExtraData::HasCooldown | ItemExtraData::IsEnchanted | ItemExtraData::HasTimeLeft);
+    enum_set!(ItemExtraData::IsEnchanted | ItemExtraData::HasTimeLeft);
 
 /// This is the item extra data the hud cares about and displays (full name
 /// not included).
@@ -171,7 +169,7 @@ impl HudItem {
     pub fn fmtstr(&self, fmt: String) -> String {
         // This implementation caches nothing. It might be fast enough?
         // needs measurement
-        let charge = self.charge_level();
+        let charge = self.charge_level;
         let mut vars = self.format_vars.clone();
         vars.insert("charge".to_string(), format!("{:.0}", charge));
         match strfmt(&fmt, &vars) {
@@ -229,7 +227,7 @@ impl HudItem {
     /// Return true if this item is poisoned.
     /// Does not update local flags; okay to use in tight loops.
     pub fn is_poisoned(&self) -> bool {
-        self.extra.contains(ItemExtraData::IsPoisoned)
+        self.is_weapon() && self.extra.contains(ItemExtraData::IsPoisoned)
     }
 
     /// Checks game extra data to see if this item is poisoned and updates the item with the result.
@@ -260,52 +258,36 @@ impl HudItem {
 
     /// Return true if this item has something to display in a meter.
     /// Does not update local flags; okay to use in tight loops.
-    pub fn has_charge(&self) -> bool {
+    pub fn show_meter(&self) -> bool {
         !self.extra.is_disjoint(CHARGE_INDICATORS)
     }
 
-    #[cfg(test)]
-    pub fn has_charge_refresh(&mut self) -> bool {
-        rand::random::<f32>() > 0.5
-    }
-
-    #[cfg(not(test))]
-    pub fn has_charge_refresh(&mut self) -> bool {
-        let_cxx_string!(form_spec = self.form_string());
-        if hasChargeByFormSpec(&form_spec) {
-            self.extra.insert(ItemExtraData::IsEnchanted);
-            // get level and record it
-            self.charge_level = self.charge_level_refresh();
-            true
+    /// Returns meter/time left percentage level.
+    /// Does not update the object; okay to use in tight loops.
+    pub fn meter_level(&self) -> f32 {
+        if self.is_enchanted() {
+            self.charge_level
+        } else if self.has_time_left() {
+            self.time_left
         } else {
-            self.extra.remove(ItemExtraData::IsEnchanted);
-            false
+            0.0
         }
     }
 
-    /// Returns charge percentage level.
-    /// Does not update the object; okay to use in tight loops.
+    /// Return true if this item is enchanted.
+    pub fn is_enchanted(&self) -> bool {
+        self.extra.contains(ItemExtraData::IsEnchanted)
+    }
+
+    /// Get the charge level of this item's enchantment.
+    /// Only meaningful for items like weapons.
     pub fn charge_level(&self) -> f32 {
         self.charge_level
     }
 
-    /// Charge as a float from 0.0 to 1.0 inclusive. For enchanted weapons
-    /// and torches or other fueled items. Consults extra data.
-    pub fn charge_level_refresh(&mut self) -> f32 {
-        if self.is_armor() || self.is_weapon() || matches!(self.kind, BaseType::Light(_)) {
-            #[cfg(not(test))]
-            {
-                let_cxx_string!(form_spec = self.form_string());
-                self.charge_level = chargeLevelByFormSpec(&form_spec);
-            }
-            #[cfg(test)]
-            {
-                self.charge_level = rand::random::<f32>() * 100.0f32;
-            }
-            self.charge_level
-        } else {
-            0.0
-        }
+    /// CHeck if this item has a cooldown or a duration.
+    pub fn has_time_left(&self) -> bool {
+        self.extra.contains(ItemExtraData::HasTimeLeft)
     }
 
     /// Cooldown remaining; okay to use in tight loops.
@@ -316,13 +298,15 @@ impl HudItem {
     #[cfg(test)]
     pub fn refresh_extra_data(&mut self) {
         // randomize it all for tests, for now
-        let has_charge = self.has_charge_refresh();
-        if has_charge {
-            self.charge_level_refresh();
+        if rand::random::<f32>() > 0.5 {
+            self.charge_level = rand::random::<f32>() * 100.0;
+            self.extra.insert(ItemExtraData::IsEnchanted);
+        } else {
+            self.extra.remove(ItemExtraData::IsEnchanted);
         }
         self.is_poisoned_refresh();
         if rand::random::<f32>() > 0.5 {
-            self.time_left = rand::random::<f32>() * 100.0f32;
+            self.time_left = rand::random::<f32>() * 100.0;
             self.extra.insert(ItemExtraData::HasTimeLeft);
         } else {
             self.extra.remove(ItemExtraData::HasTimeLeft);
@@ -332,7 +316,7 @@ impl HudItem {
     #[cfg(not(test))]
     pub fn refresh_extra_data(&mut self) {
         cxx::let_cxx_string!(form_spec = self.form_string());
-        let extra = *plugin::relevantExtraData(&form_spec);
+        let extra = *relevantExtraData(&form_spec);
 
         if extra.has_charge {
             self.extra.insert(ItemExtraData::IsEnchanted);
@@ -354,13 +338,13 @@ impl HudItem {
             self.extra.remove(ItemExtraData::IsPoisoned);
         }
 
-        log::info!(
-            "After extra data refresh, '{}': poisoned={}; enchanted={}; charge={}; time_left={}",
+        log::trace!(
+            "After extra data refresh, '{}': poisoned={}; meter={}; enchant-charge={}; time_left={}",
             self.name,
             self.is_poisoned(),
-            self.has_charge(),
-            self.charge_level(),
-            self.time_left()
+            self.show_meter(),
+            self.charge_level,
+            self.time_left
         );
     }
 
