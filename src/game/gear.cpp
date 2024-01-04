@@ -354,9 +354,8 @@ namespace gear
 		if (form->Is(RE::FormType::Shout))
 		{
 			const auto* data = thePlayer->GetHighProcess();
-			if (!data || data.voiceRecoveryTime == 0.0f) { return empty_extra_data(); }
-			const auto recoveryPercent = data.voidTimeElapsed * 100.0f / data.voiceRecoveryTime;
-			return relevant_extra_data(false, 0.0f, false, true, recoveryPercent);
+			if (!data || data->voiceRecoveryTime == 0.0f) { return empty_extra_data(); }
+			return relevant_extra_data(false, 0.0f, false, true, data->voiceRecoveryTime);
 		}
 
 		bool isEnchanted      = false;

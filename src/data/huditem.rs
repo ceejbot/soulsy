@@ -33,6 +33,8 @@ pub struct HudItem {
     charge_level: f32,
     /// Time remaining, if relevant.
     time_left: f32,
+    /// Full duration of whatever is cooling down. Used by shouts.
+    cooldown_time: f32,
 }
 
 #[derive(Debug, Default, Hash, EnumSetType)]
@@ -327,10 +329,26 @@ impl HudItem {
 
         if extra.has_time_left {
             self.extra.insert(ItemExtraData::HasTimeLeft);
+            if self.is_power() {
+                // For shouts, we have to remember what the very first cooldown time we
+                // see is, and then use that as the full duration. This won't be quite exact
+                // because there is some latency in this check, but it'll be close enough.
+                // We have to use that to calculate the remaining percentage.
+                if self.cooldown_time == 0.0 {
+                    self.cooldown_time = extra.time_left;
+                    self.time_left = 100.0;
+                } else {
+                    self.time_left = extra.time_left * 100.0 / self.cooldown_time;
+                }
+            } else {
+                // For non-shouts, we get this back as a percentage.
+                self.time_left = extra.time_left;
+            }
         } else {
             self.extra.remove(ItemExtraData::HasTimeLeft);
+            self.cooldown_time = 0.0;
+            self.time_left = extra.time_left;
         }
-        self.time_left = extra.time_left;
 
         if extra.is_poisoned {
             self.extra.insert(ItemExtraData::IsPoisoned);
