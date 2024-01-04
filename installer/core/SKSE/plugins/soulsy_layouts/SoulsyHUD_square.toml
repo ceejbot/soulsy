@@ -102,7 +102,7 @@ color      = { r = 255, g = 255, b = 255, a = 255 }
 contents   = "{name}"
 font_size  = 18.0
 offset     = { x = -50.0, y = 55.0 }
-wrap_width = 105.0
+wrap_width = 130.0
 
 # An optional indicator for showing if this item is poisoned.
 [right.poison]
@@ -141,7 +141,7 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 # E.g., 50% full would be half the length.
 svg = "meter_bar_filled.svg"
 # The size of the filled meter when the charge/fuel/whatever is at max.
-size = { x = 100.0, y = 20.0 }
+size = { x = 96.0, y = 18.0 }
 # The color for the filled part of the meter.
 color = { r = 80, g = 0, b = 145, a = 255 }
 
@@ -183,7 +183,7 @@ color      = { r = 255, g = 255, b = 255, a = 255 }
 contents   = "{name}"
 font_size  = 18.0
 offset     = { x = -50.0, y = 55.0 }
-wrap_width = 100.0
+wrap_width = 125.0
 
 [left.meter]
 angle  = 90
@@ -194,7 +194,7 @@ size  = { x = 100.0, y = 20.0 }
 svg   = "meter_bar_empty.svg"
 [left.meter.filled]
 color = { r = 80, g = 0, b = 145, a = 255 }
-size  = { x = 98.0, y = 16.0 }
+size  = { x = 96.0, y = 18.0 }
 svg   = "meter_bar_filled.svg"
 
 # ----- utility slot
@@ -258,7 +258,7 @@ color      = { r = 255, g = 255, b = 255, a = 255 }
 contents   = "{name}"
 font_size  = 18.0
 offset     = { x = -50.0, y = 55.0 }
-wrap_width = 100.0
+wrap_width = 125.0
 
 [power.meter]
 angle  = 90
@@ -268,7 +268,7 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 size  = { x = 100.0, y = 20.0 }
 svg   = "meter_bar_empty.svg"
 [power.meter.filled]
-color = { r = 80, g = 0, b = 145, a = 255 }
+color = { r = 150, g = 200, b = 244, a = 255 }
 size  = { x = 100.0, y = 20.0 }
 svg   = "meter_bar_filled.svg"
 
@@ -302,7 +302,7 @@ color      = { r = 255, g = 255, b = 255, a = 255 }
 contents   = "{name}"
 font_size  = 18.0
 offset     = { x = -50.0, y = 55.0 }
-wrap_width = 105.0
+wrap_width = 125.0
 
 # ----- equipset slot
 
@@ -326,4 +326,4 @@ color      = { r = 255, g = 255, b = 255, a = 255 }
 contents   = "{name}"
 font_size  = 18.0
 offset     = { x = -50.0, y = 55.0 }
-wrap_width = 105.0
+wrap_width = 140.0
