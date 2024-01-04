@@ -360,7 +360,11 @@ namespace gear
 		float max     = 0.0f;
 
 		const auto enchantable = form->As<RE::TESEnchantableForm>();
-		if (enchantable) { max = enchantable->amountofEnchantment; }
+		if (enchantable)
+		{
+			isEnchanted = true;
+			max         = enchantable->amountofEnchantment;
+		}
 
 		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
@@ -375,9 +379,9 @@ namespace gear
 				{
 					for (auto* datalist : *entry->extraLists)
 					{
-						if (datalist->HasType(RE::ExtraDataType::kEnchantment))
+						if (datalist->HasType(RE::ExtraDataType::kEnchantment)) { isEnchanted = true; }
+						if (datalist->HasType(RE::ExtraDataType::kCharge))
 						{
-							isEnchanted        = true;
 							auto* maybe_charge = datalist->GetByType(RE::ExtraDataType::kCharge);
 							if (maybe_charge && current == 0.0f)
 							{
