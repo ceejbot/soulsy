@@ -663,6 +663,7 @@ mod tests {
         let icon_paths = [
             "installer/core/SKSE/plugins/resources/icons/",
             "installer/icon-pack-soulsy",
+            "layouts/unused/mega-shouts-pack",
         ];
         let missing: Vec<&&str> = Icon::VARIANTS
             .iter()
@@ -749,9 +750,12 @@ mod tests {
         let missing: Vec<&Icon> = VANILLA_SHOUTS
             .iter()
             .filter(|icon| {
-                let fpath: PathBuf = ["layouts/unused/soulsy_vanilla", icon.icon_file().as_str()]
-                    .iter()
-                    .collect();
+                let fpath: PathBuf = [
+                    "layouts/unused/soulsy_vanilla_shouts/SKSE/plugins/resources/icons",
+                    icon.icon_file().as_str(),
+                ]
+                .iter()
+                .collect();
 
                 if !fpath.exists() {
                     eprintln!("{icon:?} missing: vanilla rune shout");

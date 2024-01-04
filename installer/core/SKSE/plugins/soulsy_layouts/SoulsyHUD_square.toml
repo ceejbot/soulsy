@@ -1,4 +1,4 @@
-# A square layout that can show equip sets.
+# A square layout that shows equip sets and enchantment meters.
 # This layout uses the new layout design.
 #
 # All SoulsyHUD layouts are written in TOML. To learn more about TOML,
@@ -106,10 +106,10 @@ wrap_width = 130.0
 
 # An optional indicator for showing if this item is poisoned.
 [right.poison]
-offset = { x = 25.0, y = 20.0 }
+offset = { x = 0.0, y = -60.0 }
 [right.poison.indicator]
 color = { r = 160, g = 240, b = 2, a = 255 }
-size  = { x = 25.0, y = 25.0 }
+size  = { x = 20.0, y = 20.0 }
 svg   = "../icons/indicator_poison.svg"
 
 [right.meter]
@@ -171,10 +171,10 @@ svg   = "key_bg.svg"
 
 # An optional indicator for showing if this item is poisoned.
 [left.poison]
-offset = { x = 25.0, y = 20.0 }
+offset = { x = 0.0, y = -60.0 }
 [left.poison.indicator]
 color = { r = 160, g = 240, b = 2, a = 255 }
-size  = { x = 25.0, y = 25.0 }
+size  = { x = 20.0, y = 20.0 }
 svg   = "../icons/indicator_poison.svg"
 
 [[left.text]]

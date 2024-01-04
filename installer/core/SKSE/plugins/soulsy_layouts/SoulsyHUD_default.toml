@@ -193,6 +193,19 @@ font_size = 20.0
 alignment = "left"
 contents = "{name}"
 
+[left.meter]
+angle  = 90
+offset = { x = 65.0, y = 0.0 }
+[left.meter.background]
+color = { r = 255, g = 255, b = 255, a = 255 }
+size  = { x = 100.0, y = 20.0 }
+svg   = "meter_bar_empty.svg"
+[left.meter.filled]
+color = { r = 80, g = 0, b = 145, a = 255 }
+size  = { x = 98.0, y = 16.0 }
+svg   = "meter_bar_filled.svg"
+
+
 # ---------- RIGHT HAND
 [right]
 offset = { x = 83.0, y = 0.0 }
@@ -225,6 +238,39 @@ offset = { x = 10.0, y = 52.0 }
 font_size = 20.0
 alignment = "left"
 contents = "{name}"
+
+[right.meter]
+# What angle to draw the image at, an integer from 0 to 360.
+# 0 is horizontal. >
+# 90 is rotated counter-clockwise 90° to vertical.  ^
+# The meter is presumed to fill from LEFT to RIGHT before rotation.
+# Rotating 90° makes it fill from bottom to top.
+# Rotating 180° makes it fill from right to left. Etc.  <
+angle = 90
+# An offset for the CENTER of the meter, from the center of the slot.
+# The meter is rotated around this point. You should play with the offset
+# until it looks correct for your chosen rotation.
+offset = { x = 65.0, y = 0.0 }
+# How to draw the empty part of the meter, or any decoration around the meter.
+[right.meter.background]
+# This size is the size of the image before rotation!
+size = { x = 100.0, y = 20.0 }
+# The SVG file to use for the progress bar. This should like in the
+# `resources/backgrounds` folder. You can reference another folder with
+# `../icons/file_in_icons_dir.svg` if you need to.
+svg = "meter_bar_empty.svg"
+# The color for the background, or empty part, of the meter.
+color = { r = 255, g = 255, b = 255, a = 255 }
+[right.meter.filled]
+# You can leave the filled svg empty if you want. If you do this, the
+# filled portion of the meter will re-use the background image, but
+# shortened to indicate the percentage of the meter that's filled.
+# E.g., 50% full would be half the length.
+svg = "meter_bar_filled.svg"
+# The size of the filled meter when the charge/fuel/whatever is at max.
+size = { x = 100.0, y = 20.0 }
+# The color for the filled part of the meter.
+color = { r = 80, g = 0, b = 145, a = 255 }
 
 # ---------- AMMO
 # This layout swaps ammo in for the left hand when a ranged
