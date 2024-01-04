@@ -270,7 +270,7 @@ namespace ui
 		if (!text.length() || color.a == 0) { return; }
 
 		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
-		const ImVec2 text_bounds = ImGui::CalcTextSize(text.c_str());
+		const ImVec2 text_bounds = ImGui::CalcTextSize(text.c_str(), NULL, false, wrapWidth);
 		auto* font               = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
 
@@ -287,8 +287,8 @@ namespace ui
 		// Center alignment: offset to the left by half.
 		// Right alignment: offset to the left by the entire length of the box.
 		float adjustment = 0;
-		if (align == Align::Center) { adjustment = -0.5f * text_bounds.x; }
-		else if (align == Align::Right) { adjustment = -1.0f * text_bounds.x; }
+		if (align == Align::Center) { adjustment = 0.5f * text_bounds.x; }
+		else if (align == Align::Right) { adjustment = text_bounds.x; }
 
 		ImVec2 aligned_loc = ImVec2(center.x + adjustment, center.y);
 
