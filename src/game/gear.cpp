@@ -349,6 +349,16 @@ namespace gear
 	{
 		if (!form) { return empty_extra_data(); }
 
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+
+		if (form->Is(RE::FormType::Shout))
+		{
+			const auto* data = thePlayer->GetHighProcess();
+			if (!data || data.voiceRecoveryTime == 0.0f) { return empty_extra_data(); }
+			const auto recoveryPercent = data.voidTimeElapsed * 100.0f / data.voiceRecoveryTime;
+			return relevant_extra_data(false, 0.0f, false, true, recoveryPercent);
+		}
+
 		bool isEnchanted      = false;
 		float chargePercent   = 0.0f;
 		bool hasTimeLeft      = false;
@@ -376,7 +386,6 @@ namespace gear
 			maxTime           = light->data.time;
 		}
 
-		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(thePlayer, form->GetFormType());
 
