@@ -32,27 +32,27 @@ hide_left_when_irrelevant = true
 
 # Enable any of these you need text rendering for. The Inter typeface
 # should support all of them.
-chinese_full_glyphs = false
+chinese_full_glyphs       = false
+cyrillic_glyphs           = false
+japanese_glyphs           = false
+korean_glyphs             = false
 simplified_chinese_glyphs = false
-cyrillic_glyphs = false
-japanese_glyphs = false
-korean_glyphs = false
-thai_glyphs = false
-vietnamese_glyphs = false
+thai_glyphs               = false
+vietnamese_glyphs         = false
 
 [background]
-size = { x = 100.0, y = 100.0 }
 color = { r = 0, g = 0, b = 0, a = 0 }
-svg = ""
+size  = { x = 100.0, y = 100.0 }
+svg   = ""
 
 [power]
 # The offset of the center of this slot relative to the center of the HUD.
 # This gets scaled when the global scaling factor is applied.
 offset = { x = 325.0, y = 0.0 }
 [power.background]
-size = { x = 100.0, y = 100.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
-svg = "slot_bg.svg"
+size  = { x = 100.0, y = 100.0 }
+svg   = "slot_bg.svg"
 [power.icon]
 color = { r = 200, g = 200, b = 200, a = 255 }
 # Size of the icon for this slot, before scaling.
@@ -68,85 +68,137 @@ offset = { x = -41.0, y = 41.0 }
 size = { x = 30.0, y = 30.0 }
 [[power.text]]
 alignment = "left"
-offset = { x = 60.0, y = -13.0 }
-color = { r = 255, g = 255, b = 255, a = 255 }
+color     = { r = 255, g = 255, b = 255, a = 255 }
+contents  = "{name}"
 font_size = 20.0
-contents = "{name}"
+offset    = { x = 60.0, y = -13.0 }
+
+[power.meter]
+angle  = 45
+offset = { x = 35.0, y = 37.0 }
+[power.meter.background]
+color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 70.0, y = 12.0 }
+svg   = "meter_bar_empty.svg"
+[power.meter.filled]
+color = { r = 150, g = 200, b = 244, a = 128 }
+size  = { x = 68.0, y = 10.0 }
+svg   = "meter_bar_filled.svg"
 
 [utility]
 offset = { x = -325.0, y = 0.0 }
 [utility.background]
-svg = "slot_bg.svg"
-size = { x = 100.0, y = 100.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "slot_bg.svg"
 [utility.icon]
-color = { r = 200, g = 200, b = 200, a = 255 }
-size = { x = 40.0, y = 40.0 }
+color  = { r = 200, g = 200, b = 200, a = 255 }
 offset = { x = 0.0, y = 0.0 }
+size   = { x = 40.0, y = 40.0 }
 [[utility.text]]
 alignment = "right"
-contents = "{name}"
-color = { r = 255, g = 255, b = 255, a = 255 }
-offset = { x = -60.0, y = -13.0 }
+color     = { r = 255, g = 255, b = 255, a = 255 }
+contents  = "{name}"
 font_size = 20.0
+offset    = { x = -60.0, y = -13.0 }
 
 [left]
 offset = { x = -325.0, y = 200.0 }
 [left.background]
-svg = "slot_bg.svg"
-size = { x = 100.0, y = 100.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "slot_bg.svg"
 [left.icon]
-color = { r = 200, g = 200, b = 200, a = 255 }
-size = { x = 40.0, y = 40.0 }
+color  = { r = 200, g = 200, b = 200, a = 255 }
 offset = { x = 0.0, y = 0.0 }
+size   = { x = 40.0, y = 40.0 }
 [[left.text]]
 alignment = "right"
-color = { r = 255, g = 255, b = 255, a = 255 }
-offset = { x = -60.0, y = -13.0 }
+color     = { r = 255, g = 255, b = 255, a = 255 }
+contents  = "{name}"
 font_size = 20.0
-contents = "{name}"
+offset    = { x = -60.0, y = -13.0 }
+
+# An optional indicator for showing if this item is poisoned.
+[left.poison]
+offset = { x = 0.0, y = -30.0 }
+[left.poison.indicator]
+color = { r = 160, g = 240, b = 2, a = 255 }
+size  = { x = 15.0, y = 15.0 }
+svg   = "../icons/indicator_poison.svg"
+
+[left.meter]
+angle  = 135
+offset = { x = -35.0, y = 37.0 }
+[left.meter.background]
+color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 70.0, y = 12.0 }
+svg   = "meter_bar_empty.svg"
+[left.meter.filled]
+color = { r = 80, g = 0, b = 145, a = 128 }
+size  = { x = 68.0, y = 10.0 }
+svg   = "meter_bar_filled.svg"
 
 [right]
 offset = { x = 325.0, y = 200.0 }
 [right.background]
-svg = "slot_bg.svg"
-size = { x = 100.0, y = 100.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "slot_bg.svg"
 [right.icon]
-color = { r = 200, g = 200, b = 200, a = 255 }
-size = { x = 40.0, y = 40.0 }
+color  = { r = 200, g = 200, b = 200, a = 255 }
 offset = { x = 0.0, y = 0.0 }
+size   = { x = 40.0, y = 40.0 }
 [[right.text]]
-contents = "{name}"
 alignment = "left"
-color = { r = 255, g = 255, b = 255, a = 255 }
-offset = { x = 60.0, y = -13.0 }
+color     = { r = 255, g = 255, b = 255, a = 255 }
+contents  = "{name}"
 font_size = 20.0
+offset    = { x = 60.0, y = -13.0 }
+
+# An optional indicator for showing if this item is poisoned.
+[right.poison]
+offset = { x = 0.0, y = -30.0 }
+[right.poison.indicator]
+color = { r = 160, g = 240, b = 2, a = 255 }
+size  = { x = 15.0, y = 15.0 }
+svg   = "../icons/indicator_poison.svg"
+
+[right.meter]
+angle  = 45
+offset = { x = 35.0, y = 37.0 }
+[right.meter.background]
+color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 70.0, y = 12.0 }
+svg   = "meter_bar_empty.svg"
+[right.meter.filled]
+color = { r = 80, g = 0, b = 145, a = 128 }
+size  = { x = 68.0, y = 10.0 }
+svg   = "meter_bar_filled.svg"
 
 [ammo]
 offset = { x = -325.0, y = 200.0 }
 [ammo.background]
-svg = "slot_bg.svg"
-size = { x = 100.0, y = 100.0 }
-color = { r = 255, g = 255, b = 255, a = 128 }
 alignment = "right"
+color     = { r = 255, g = 255, b = 255, a = 128 }
+size      = { x = 100.0, y = 100.0 }
+svg       = "slot_bg.svg"
 [ammo.icon]
-color = { r = 200, g = 200, b = 200, a = 255 }
-size = { x = 40.0, y = 40.0 }
+color  = { r = 200, g = 200, b = 200, a = 255 }
 offset = { x = 0.0, y = 0.0 }
+size   = { x = 40.0, y = 40.0 }
 [[ammo.text]]
-offset = { x = 0.0, y = 0.0 }
-color = { r = 255, g = 255, b = 255, a = 0 }
-font_size = 20.0
 alignment = "right"
-contents = "{count}"
+color     = { r = 255, g = 255, b = 255, a = 0 }
+contents  = "{count}"
+font_size = 20.0
+offset    = { x = 0.0, y = 0.0 }
 [[ammo.text]]
-color = { r = 255, g = 255, b = 255, a = 255 }
-offset = { x = -60.0, y = -13.0 }
-font_size = 20.0
 alignment = "right"
-contents = "{name}"
+color     = { r = 255, g = 255, b = 255, a = 255 }
+contents  = "{name}"
+font_size = 20.0
+offset    = { x = -60.0, y = -13.0 }
 
 # This layout doesn't include an equipset slot.
 # [equipset]
