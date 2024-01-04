@@ -1,5 +1,6 @@
 #include "sinks.h"
 
+#include "RE/P/PlayerCharacter.h"
 #include "equippable.h"
 #include "gear.h"
 #include "helpers.h"
@@ -151,7 +152,6 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(RE::InputEvent* const* event_
 	return RE::BSEventNotifyControl::kContinue;
 }
 
-
 // Here we watch for anim graph events ONLY to catch CGO's grip switch variable change.
 RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::BSAnimationGraphEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::BSAnimationGraphEvent>* source)
@@ -181,6 +181,12 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApply
 	auto target     = event->target->GetBaseObject();
 	auto targetName = helpers::displayNameAsUtf8(target);
 
+	const auto playerID = RE::PlayerCharacter::GetSingleton()->GetFormID();
+	if (caster->GetFormID() != playerID && target->GetFormID() != playerID)
+	{
+		return RE::BSEventNotifyControl::kContinue;
+	}
+
 	rlog::info("Effect status change: '{}' put \"{}\" ({}) on '{}'",
 		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),
 		effectName,
@@ -199,6 +205,12 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESActiveEffectAppl
 
 	auto target     = event->target->GetBaseObject();
 	auto targetName = helpers::displayNameAsUtf8(target);
+
+	const auto playerID = RE::PlayerCharacter::GetSingleton()->GetFormID();
+	if (caster->GetFormID() != playerID && target->GetFormID() != playerID)
+	{
+		return RE::BSEventNotifyControl::kContinue;
+	}
 
 	rlog::info("Effect status change: '{}' -> {} effect id {} -> '{}'",
 		casterName.length() > 0 ? casterName : rlog::formatAsHex(event->caster->GetFormID()),

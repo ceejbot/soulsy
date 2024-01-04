@@ -353,6 +353,15 @@ impl HudItem {
         } else {
             self.extra.remove(ItemExtraData::IsPoisoned);
         }
+
+        log::info!(
+            "After extra data refresh, '{}': poisoned={}; enchanted={}; charge={}; time_left={}",
+            self.name,
+            self.is_poisoned(),
+            self.has_charge(),
+            self.charge_level(),
+            self.time_left()
+        );
     }
 
     // We delegate everything to our object-kind. The goal is for most things
