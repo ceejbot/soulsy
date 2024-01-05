@@ -366,31 +366,17 @@ namespace ui
 	{
 		if (!text.length() || color.a == 0) { return; }
 
-		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
-		const ImVec2 text_bounds = ImGui::CalcTextSize(text.c_str(), NULL, false, wrapWidth);
-		auto* font               = imFont;
+		auto* font = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
+		const ImU32 text_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
+		const ImVec2 bounds    = font->CalcTextSizeA(fontSize, wrapWidth, wrapWidth, text.c_str());
+		ImVec2 alignedCenter   = ImVec2(center.x, center.y);
 
-		// Listen up, future maintainer aka ceej of the future!
-		// Text alignment is, for cognitive ease reasons, also a statement about
-		// where the stated anchor point is.
-		//
-		// Center alignment: the offset refers to the center of the text box. (easy case!)
-		// Left alignment: the offset refers to the center of the left edge.
-		// Right alignment: the offset refers to the center of the right edge.
-		//
-		// Since imgui takes a *LEFT* edge point, we have to offset the other two cases
-		// by an amount that depends on the size of the text box.
-		// Center alignment: offset to the left by half.
-		// Right alignment: offset to the left by the entire length of the box.
-		float adjustment = 0;
-		if (align == Align::Center) { adjustment = 0.5f * text_bounds.x; }
-		else if (align == Align::Right) { adjustment = text_bounds.x; }
-
-		ImVec2 aligned_loc = ImVec2(center.x + adjustment, center.y);
+		if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
+		else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
 
 		ImGui::GetWindowDrawList()->AddText(
-			font, fontSize, aligned_loc, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
+			font, fontSize, alignedCenter, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
 	}
 
 	void ui_renderer::initializeAnimation(const animation_type animation_type,
