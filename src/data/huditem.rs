@@ -31,10 +31,12 @@ pub struct HudItem {
     extra: EnumSet<ItemExtraData>,
     /// Charge level, if relevant. As a percentage.
     charge_level: f32,
-    /// Time remaining, if relevant.
+    /// Time remaining, if relevant. In seconds.
     time_left: f32,
-    /// Full duration of whatever is cooling down. Used by shouts.
+    /// Full duration of whatever is cooling down or has a duration. Used by shouts & torches.
     cooldown_time: f32,
+    /// Recharge percent
+    cooldown_percent: f32,
 }
 
 #[derive(Debug, Default, Hash, EnumSetType)]
@@ -113,39 +115,39 @@ impl HudItem {
     ) -> Self {
         // log::trace!("calling BaseType::classify() with keywords={keywords:?};");
         let kind: BaseType = BaseType::classify(name.as_str(), category, keywords, twohanded);
-        let format_vars = HudItem::make_format_vars(name.clone(), count);
-        Self {
+        let mut result = Self {
             name,
             form_string,
             count,
             kind,
-            format_vars,
             ..Default::default()
-        }
+        };
+        result.make_format_vars();
+        result
     }
 
     pub fn preclassified(name: String, form_string: String, count: u32, kind: BaseType) -> Self {
-        let format_vars = HudItem::make_format_vars(name.clone(), count);
-        Self {
+        let mut result = Self {
             name,
             form_string,
             count,
             kind,
-            format_vars,
             ..Default::default()
-        }
+        };
+        result.make_format_vars();
+        result
     }
 
     pub fn for_equip_set(name: String, id: u32, icon: Icon) -> Self {
-        let format_vars = HudItem::make_format_vars(name.clone(), 1);
-        Self {
+        let mut result = Self {
             name,
             form_string: format!("equipset_{id}"),
             count: 1,
             kind: BaseType::Equipset(icon),
-            format_vars,
             ..Default::default()
-        }
+        };
+        result.make_format_vars();
+        result
     }
 
     pub fn make_unarmed_proxy() -> Self {
@@ -157,27 +159,36 @@ impl HudItem {
         )
     }
 
-    fn make_format_vars(name: String, count: u32) -> HashMap<String, String> {
+    fn make_format_vars(&mut self) {
         let mut vars = HashMap::new();
-        if name.is_empty() {
-            vars.insert("(no name)".to_string(), name);
+        if self.name.is_empty() {
+            vars.insert("(no name)".to_string(), self.name.clone());
         } else {
-            vars.insert("name".to_string(), name);
+            vars.insert("name".to_string(), self.name.clone());
         }
-        vars.insert("count".to_string(), count.to_string());
-        vars
+        vars.insert("count".to_string(), self.count.to_string());
+        vars.insert("charge".to_string(), format!("{:.0}", self.charge_level));
+        vars.insert("time_left".to_string(), self.time_left.to_string());
+        vars.insert("cooldown_time".to_string(), self.cooldown_time.to_string());
+        vars.insert(
+            "cooldown_percent".to_string(),
+            format!("{:.0}", self.cooldown_percent),
+        );
+        if self.is_poisoned() {
+            vars.insert("poison".to_string(), "poison".to_string());
+        } else {
+            vars.insert("poison".to_string(), "".to_string());
+        }
+        self.format_vars = vars;
     }
 
     pub fn fmtstr(&self, fmt: String) -> String {
         // This implementation caches nothing. It might be fast enough?
         // needs measurement
-        let charge = self.charge_level;
-        let mut vars = self.format_vars.clone();
-        vars.insert("charge".to_string(), format!("{:.0}", charge));
-        match strfmt(&fmt, &vars) {
+        match strfmt(&fmt, &self.format_vars) {
             Ok(v) => v,
             Err(e) => {
-                log::trace!("Failed to render format string for HUD item; error: {e:#}");
+                log::debug!("Failed to render format string for HUD item; error: {e:#}");
                 "".to_string()
             }
         }
@@ -217,8 +228,7 @@ impl HudItem {
 
     pub fn set_count(&mut self, v: u32) {
         self.count = v;
-        let format_vars = HudItem::make_format_vars(self.name.clone(), self.count);
-        self.format_vars = format_vars;
+        self.make_format_vars();
     }
 
     // probably can get rid of this
@@ -313,6 +323,7 @@ impl HudItem {
         } else {
             self.extra.remove(ItemExtraData::HasTimeLeft);
         }
+        self.make_format_vars();
     }
 
     #[cfg(not(test))]
@@ -336,9 +347,12 @@ impl HudItem {
                 // We have to use that to calculate the remaining percentage.
                 if self.cooldown_time == 0.0 {
                     self.cooldown_time = extra.time_left;
-                    self.time_left = 100.0;
+                    self.time_left = extra.time_left;
+                    self.cooldown_percent = 0.0;
                 } else {
-                    self.time_left = extra.time_left * 100.0 / self.cooldown_time;
+                    self.time_left = extra.time_left;
+                    self.cooldown_percent =
+                        (self.cooldown_time - extra.time_left) * 100.0 / self.cooldown_time;
                 }
             } else {
                 // For non-shouts, we get this back as a percentage.
@@ -356,6 +370,7 @@ impl HudItem {
             self.extra.remove(ItemExtraData::IsPoisoned);
         }
 
+        self.make_format_vars();
         log::trace!(
             "After extra data refresh, '{}': poisoned={}; meter={}; enchant-charge={}; time_left={}",
             self.name,
