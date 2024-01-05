@@ -280,7 +280,7 @@ impl HudItem {
         if self.is_enchanted() {
             self.charge_level
         } else if self.has_time_left() {
-            self.time_left
+            self.cooldown_percent
         } else {
             0.0
         }
@@ -345,18 +345,18 @@ impl HudItem {
                 // see is, and then use that as the full duration. This won't be quite exact
                 // because there is some latency in this check, but it'll be close enough.
                 // We have to use that to calculate the remaining percentage.
-                if self.cooldown_time == 0.0 {
+                if self.cooldown_time <= extra.time_left {
                     self.cooldown_time = extra.time_left;
                     self.time_left = extra.time_left;
                     self.cooldown_percent = 0.0;
                 } else {
                     self.time_left = extra.time_left;
-                    self.cooldown_percent =
-                        (self.cooldown_time - extra.time_left) * 100.0 / self.cooldown_time;
+                    self.cooldown_percent = 100.0 - (self.time_left * 100.0 / self.cooldown_time);
                 }
             } else {
                 // For non-shouts, we get this back as a percentage.
-                self.time_left = extra.time_left;
+                // Torches use this case.
+                self.cooldown_percent = extra.time_left;
             }
         } else {
             self.extra.remove(ItemExtraData::HasTimeLeft);
