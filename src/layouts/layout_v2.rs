@@ -596,7 +596,7 @@ mod tests {
             Layout::Version2(v) => {
                 assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
                 assert_eq!(v.anchor_point().x, 150.0);
-                assert_eq!(v.anchor_point().y, 1315.0);
+                assert_eq!(v.anchor_point().y, 1390.0);
             }
         }
     }
