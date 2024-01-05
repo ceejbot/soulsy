@@ -83,11 +83,20 @@ impl RelevantExtraData {
     pub fn randomize() -> Self {
         let has_charge = rand::random::<f32>() > 0.5;
         let max_charge = if has_charge {
+            rand::random::<f32>() * 3000.0
         } else {
             0.0
         };
+        let charge = rand::random::<f32>() * max_charge;
 
         let has_time_left = rand::random::<f32>() > 0.5;
+        let max_time = if has_charge {
+            rand::random::<f32>() * 120.0
+        } else {
+            0.0
+        };
+        let time_left = rand::random::<f32>() * max_time;
+
         let is_poisoned = rand::random::<f32>() > 0.5;
 
         Self {
@@ -304,10 +313,18 @@ impl HudItem {
                     self.shout_cooldown = extra.time_left;
                     self.meter_level = 0.0;
                 } else {
-                    self.meter_level = extra.time_left * 100.0 / self.shout_cooldown;
+                    if self.shout_cooldown == 0.0 {
+                        self.meter_level = 0.0;
+                    } else {
+                        self.meter_level = extra.time_left * 100.0 / self.shout_cooldown;
+                    }
                 }
             } else {
-                self.meter_level = extra.time_left * 100.0 / extra.max_time;
+                if extra.max_time == 0.0 {
+                    self.meter_level = 0.0;
+                } else {
+                    self.meter_level = extra.time_left * 100.0 / extra.max_time;
+                }
             }
         }
 

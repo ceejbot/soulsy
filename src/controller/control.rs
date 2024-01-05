@@ -946,7 +946,7 @@ impl Controller {
         let kind = item.kind();
         cxx::let_cxx_string!(form_spec = item.form_string());
         cxx::let_cxx_string!(name = item.name());
-        log::info!("about to equip this item: slot={:?}; {}", which, item);
+        log::debug!("about to equip this item: slot={:?}; {}", which, item);
 
         if kind.is_magic() || kind.left_hand_ok() || kind.right_hand_ok() {
             equipWeapon(&form_spec, which, &name);
@@ -1167,7 +1167,7 @@ impl Controller {
             self.update_slot(HudElement::Left, &HudItem::default());
             return changed;
         } else if treat_as_two_hander && left {
-            log::info!("treat_as_two_hander + left detected; item={item}");
+            log::debug!("treat_as_two_hander + left detected; item={item}");
             // TODO The left hud slot should be cleared and the left hand unequipped.
             // but I'm also not sure we ever get here.
             return false;

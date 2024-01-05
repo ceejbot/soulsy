@@ -164,6 +164,8 @@ color = {r = 160, g = 240, b = 2, a = 255 }
 size = { x = 10.0, y = 10.0 }
 ```
 
+Soulsy ships with the indicator used above. It looks like a water droplet.
+
 ### Meter elements
 
 Slot layouts can optionally include a *meter* display, for graphically showing enchantment charge or torch burn time. The meaning of the meter depends on the item being shown, and SoulsyHUD does its best to guess what should be shown for an item. For example, a meter on the shouts and powers HUD slot would show shout cooldown time if that's relevant.
@@ -172,7 +174,6 @@ Right now SoulsyHUD supports three flavors of meters:
 
 1. A rectangular meter built from two SVGs, one for the background and one to show fill level.
 2. A rectangular meter built from one background SVG and a fill color.
-3. __NOT YET FINISHED:__ Circular meters, with a background SVG, a fill color, and angles for 0% and 100%. You can draw a full circle around a slot or a partial arc. Elliptical curves aren't supported yet. (Sending cookies or coffee to the mod author might help with this feature request.)
 
 Rectangular meters are drawn as _horizontal_ bars filling from left to right, then rotated by the angle you specify. All angles are given in degrees. 0° means no rotation. 90° is a vertical meter, with full being at the top. You can specify any degree of rotation you want: if your layout uses equilateral triangles, you can rotate a meter 60° to make it align with an edge.
 
@@ -191,12 +192,13 @@ size = { x = 100.0, y = 20.0 }
 color = { r = 255, g = 255, b = 255, a = 255 }
 [left.meter.fill]
 # the svg drawn to show the fill
+# set this to empty string to re-use the empty svg
 svg = "meter_bar_filled.svg"
 size = { x = 98.0, y = 16.0 }
 color = { r = 59, g = 106, b = 249, a = 200 }
 ```
 
-Meter elements are rotated around their centers. You will likely need to play with the offset until a rotated meter is positioned exactly where you want. Remember to specify sizes as if the meter were *horizontal*, filling from left to right. Then rotate it to match your other layout elements.
+Meter elements are rotated around their centers. You will likely need to play with the offset until a rotated meter is positioned exactly where you want. Remember to specify sizes as if the meter were *horizontal*, filling from left to right. Then rotate it to match your other layout elements. Look at the layouts that come with Soulsy to  see examples of meters with different rotations and fills.
 
 ## Slot elements
 
