@@ -19,8 +19,8 @@ void registerAllListeners()
 	scriptEventSourceHolder->GetEventSource<RE::TESEquipEvent>()->AddEventSink(listener);
 	rlog::info("    equipment change events: {}", typeid(RE::TESEquipEvent).name());
 
-	scriptEventSourceHolder->GetEventSource<RE::TESHitEvent>()->AddEventSink(listener);
-	rlog::info("    hit events: {}"sv, typeid(RE::TESHitEvent).name());
+	// scriptEventSourceHolder->GetEventSource<RE::TESHitEvent>()->AddEventSink(listener);
+	// rlog::info("    hit events: {}"sv, typeid(RE::TESHitEvent).name());
 
 	RE::UI::GetSingleton()->AddEventSink<RE::MenuOpenCloseEvent>(listener);
 	rlog::info("    menu open/close events: {}"sv, typeid(RE::MenuOpenCloseEvent).name());
@@ -32,9 +32,9 @@ void registerAllListeners()
 	auto okay    = player->AddAnimationGraphEventSink(listener);
 	if (okay) { rlog::info("    animation graph events to get grip changes."); }
 
-	scriptEventSourceHolder->GetEventSource<RE::TESMagicEffectApplyEvent>()->AddEventSink(listener);
-	scriptEventSourceHolder->GetEventSource<RE::TESActiveEffectApplyRemoveEvent>()->AddEventSink(listener);
-	rlog::info("    magic effects come and go, talking of Michelangelo."sv);
+	// scriptEventSourceHolder->GetEventSource<RE::TESMagicEffectApplyEvent>()->AddEventSink(listener);
+	// scriptEventSourceHolder->GetEventSource<RE::TESActiveEffectApplyRemoveEvent>()->AddEventSink(listener);
+	// rlog::info("    magic effects come and go, talking of Michelangelo."sv);
 }
 
 TheListener* TheListener::singleton()
@@ -183,6 +183,7 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApply
 
 	auto* magicEffect = RE::TESForm::LookupByID(event->magicEffect);
 	auto effectName   = helpers::displayNameAsUtf8(magicEffect);
+	if (effectName == "XPMSE Weapon Apply Effect") { return RE::BSEventNotifyControl::kContinue; }
 
 	std::string targetName = std::string("<none>");
 	if (event->caster)
@@ -191,9 +192,8 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApply
 		targetName  = helpers::displayNameAsUtf8(target);
 	}
 
-	const auto playerID = RE::PlayerCharacter::GetSingleton()->GetFormID();
-	if (event->caster && event->caster->GetFormID() != playerID && event->target &&
-		event->target->GetFormID() != playerID)
+	if (event->caster && event->caster->GetFormID() != 0x00000014 && event->target &&
+		event->target->GetFormID() != 0x00000014)
 	{
 		return RE::BSEventNotifyControl::kContinue;
 	}
