@@ -1,12 +1,16 @@
 //! Version 2 of the layout schema. This version is the only one that gets
 //! new features-- v1 is to be retired gently over time.
 
+use core::f32;
+use std::fmt::Display;
+
 use eyre::{Context, Result};
+use serde::de::{Deserializer, Error};
 use serde::{Deserialize, Serialize};
 
 use super::shared::*;
 use crate::plugin::{
-    Align, Color, HudElement, LayoutFlattened, Point, SlotFlattened, TextFlattened,
+    Align, Color, HudElement, LayoutFlattened, MeterKind, Point, SlotFlattened, TextFlattened,
 };
 
 /// Where to arrange the HUD elements and what color to draw them in.
@@ -70,7 +74,7 @@ pub struct SlotElement {
     text: Vec<TextElement>,
     background: Option<ImageElement>,
     hotkey: Option<HotkeyElement>,
-    progress_bar: Option<ProgressElement>,
+    meter: Option<MeterElement>,
     poison: Option<PoisonElement>,
 }
 
@@ -131,6 +135,21 @@ impl HudLayout2 {
         let poison_color = poison.indicator.color;
         let poison_center = center.translate(&poison.offset.scale(self.global_scale));
 
+        let meter = slot.meter.clone().unwrap_or_default();
+        let (
+            meter_kind,
+            meter_center,
+            meter_size,
+            meter_empty_image,
+            meter_empty_color,
+            meter_fill_image,
+            meter_fill_size,
+            meter_fill_color,
+            meter_start_angle,
+            meter_end_angle,
+            meter_arc_width,
+        ) = meter.tuple_for_flattening(&center, self.global_scale);
+
         SlotFlattened {
             element,
             center: center.clone(),
@@ -150,6 +169,17 @@ impl HudLayout2 {
             poison_image,
             poison_color,
             poison_center,
+            meter_kind,
+            meter_center,
+            meter_size,
+            meter_empty_image,
+            meter_empty_color,
+            meter_fill_image,
+            meter_fill_size,
+            meter_fill_color,
+            meter_start_angle,
+            meter_end_angle,
+            meter_arc_width,
             text,
         }
     }
@@ -177,13 +207,8 @@ impl Default for ImageElement {
     fn default() -> Self {
         ImageElement {
             svg: "".to_string(),
-            size: Point { x: 0.0, y: 0.0 },
-            color: Color {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0,
-            },
+            size: Point::origin(),
+            color: Color::invisible(),
         }
     }
 }
@@ -206,14 +231,9 @@ pub struct HotkeyElement {
 impl Default for HotkeyElement {
     fn default() -> Self {
         HotkeyElement {
-            offset: Point { x: 0.0, y: 0.0 },
-            size: Point { x: 0.0, y: 0.0 },
-            color: Color {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0,
-            },
+            offset: Point::origin(),
+            size: Point::origin(),
+            color: Color::invisible(),
             background: None,
         }
     }
@@ -232,11 +252,199 @@ pub struct TextElement {
     wrap_width: f32,
 }
 
-// TODO TODO TODO
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
-pub struct ProgressElement {
-    offset: Point,
-    color: Color,
+#[derive(Debug, Clone, PartialEq, Default)]
+pub enum MeterOrientation {
+    #[default]
+    None,
+    Horizontal,
+    Vertical,
+}
+
+impl Display for MeterOrientation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            MeterOrientation::Horizontal => write!(f, "horizontal"),
+            MeterOrientation::Vertical => write!(f, "vertical"),
+            _ => write!(f, "none"),
+        }
+    }
+}
+
+impl Serialize for MeterOrientation {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+pub fn deserialize_orientation<'de, D>(deserializer: D) -> Result<MeterOrientation, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+
+    match s.to_lowercase().as_str() {
+        "horizontal" => Ok(MeterOrientation::Horizontal),
+        "vertical" => Ok(MeterOrientation::Vertical),
+        "none" => Ok(MeterOrientation::None),
+        _ => Err(Error::unknown_variant(
+            &s,
+            &["horizontal", "vertical", "none"],
+        )),
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+#[serde(untagged)]
+pub enum MeterElement {
+    #[default]
+    None,
+    Rectangular {
+        /// How to rotate the entire meter.
+        angle: i32,
+        /// Location of the meter offset from the slot center.
+        offset: Point,
+        /// The background of the meter, aka the empty part.
+        background: ImageElement,
+        /// The filled part of the meter
+        filled: ImageElement,
+    },
+    CircleArc {
+        /// Location of the meter offset from the slot center.
+        offset: Point,
+        /// The size to draw the meter's svg.
+        size: Point,
+        /// The image to draw.
+        svg: String,
+        /// The color to use for the image.
+        empty_color: Color,
+        /// The color to use for the filled arc.
+        fill_color: Color,
+        /// The angle at which the fill starts. 0 is >, 90 is ^, 180 is <, 270 is v
+        start_angle: i32, // in degrees, 0-360
+        /// The end angle.
+        end_angle: i32, // in degrees, 0-360, must be > end_angle; e.g. go 0-360 for full circle
+        /// Width of the fill arc.
+        fill_width: f32,
+    },
+}
+
+impl MeterElement {
+    pub fn offset(&self) -> Point {
+        match self {
+            MeterElement::None => Point::origin(),
+            MeterElement::Rectangular { offset, .. } => offset.clone(),
+            MeterElement::CircleArc { offset, .. } => offset.clone(),
+        }
+    }
+    pub fn size(&self) -> Point {
+        match self {
+            MeterElement::None => Point::origin(),
+            MeterElement::Rectangular { background, .. } => background.size.clone(),
+            MeterElement::CircleArc { size, .. } => size.clone(),
+        }
+    }
+    pub fn bg_img_path(&self) -> &str {
+        match self {
+            MeterElement::None => "",
+            MeterElement::Rectangular { background, .. } => background.svg.as_str(),
+            MeterElement::CircleArc { svg, .. } => svg.as_str(),
+        }
+    }
+    pub fn angle(&self) -> i32 {
+        match *self {
+            MeterElement::None => 0,
+            MeterElement::Rectangular { angle, .. } => angle,
+            MeterElement::CircleArc { start_angle, .. } => start_angle,
+        }
+    }
+
+    pub fn tuple_for_flattening(
+        &self,
+        slot_center: &Point,
+        scale: f32,
+    ) -> (
+        MeterKind,
+        Point,
+        Point,
+        String,
+        Color,
+        String,
+        Point,
+        Color,
+        f32,
+        f32,
+        f32,
+    ) {
+        match self {
+            MeterElement::None => (
+                MeterKind::None,
+                Point::origin(),
+                Point::origin(),
+                String::new(),
+                Color::invisible(),
+                String::new(),
+                Point::origin(),
+                Color::invisible(),
+                0.0f32,
+                0.0f32,
+                0.0f32,
+            ),
+            MeterElement::Rectangular {
+                angle,
+                offset,
+                background,
+                filled,
+            } => {
+                let kind = MeterKind::Rectangular;
+                let meter_center = slot_center.translate(&offset.scale(scale));
+                let filled_svg = filled.svg.clone();
+                let filled_size = filled.size.clone();
+
+                (
+                    kind,
+                    meter_center,
+                    background.size.scale(scale),
+                    background.svg.clone(),
+                    background.color.clone(),
+                    filled_svg,
+                    filled_size,
+                    filled.color.clone(),
+                    *angle as f32 * std::f32::consts::PI / 180.0f32,
+                    0.0f32,
+                    0.0f32,
+                )
+            }
+            MeterElement::CircleArc {
+                offset,
+                size,
+                svg,
+                empty_color,
+                fill_color,
+                start_angle,
+                end_angle,
+                fill_width,
+            } => {
+                let meter_center = slot_center.translate(&offset.scale(scale));
+
+                (
+                    MeterKind::CircleArc,
+                    meter_center,
+                    size.scale(scale),
+                    svg.clone(),
+                    empty_color.clone(),
+                    String::new(),
+                    Point::origin(),
+                    fill_color.clone(),
+                    *start_angle as f32 * std::f32::consts::PI / 180.0f32,
+                    *end_angle as f32 * std::f32::consts::PI / 180.0f32,
+                    *fill_width,
+                )
+            }
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
@@ -248,7 +456,7 @@ pub struct PoisonElement {
 impl Default for PoisonElement {
     fn default() -> Self {
         PoisonElement {
-            offset: Point { x: 0.0, y: 0.0 },
+            offset: Point::origin(),
             indicator: ImageElement::default(),
         }
     }
@@ -388,7 +596,7 @@ mod tests {
             Layout::Version2(v) => {
                 assert_eq!(v.anchor_name, NamedAnchor::BottomLeft);
                 assert_eq!(v.anchor_point().x, 150.0);
-                assert_eq!(v.anchor_point().y, 1315.0);
+                assert_eq!(v.anchor_point().y, 1390.0);
             }
         }
     }
@@ -449,10 +657,81 @@ mod tests {
     }
 
     #[test]
+    fn can_deserialize_vert_meter() {
+        let data = r#"angle = 90
+        offset = { x = 20.0, y = 20.0 }
+        [background]
+        size = { x = 100.0, y = 20.0 }
+        svg = "meter_bar_empty.svg"
+        color = { r = 255, g = 255, b = 255, a = 255 }
+        [filled]
+        svg = "meter_bar_filled.svg"
+        size = { x = 98.0, y = 18.0 }
+        color = { r = 59, g = 106, b = 249, a = 200 }"#;
+        let meter: MeterElement = match toml::from_str(data) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{e:#}");
+                panic!("vertical test fixture should be valid meter");
+            }
+        };
+        assert_eq!(meter.offset(), Point { x: 20.0, y: 20.0 });
+        assert_eq!(meter.bg_img_path(), "meter_bar_empty.svg");
+    }
+
+    #[test]
+    fn can_deserialize_horiz_meter() {
+        let data = r#"angle = 0 # horizontal
+        offset = { x = 20.0, y = 20.0 }
+        [background]
+        size = { x = 100.0, y = 10.0 }
+        svg = "meter_bar_empty.svg"
+        color = { r = 255, g = 255, b = 255, a = 255 }
+        [filled]
+        svg = "meter_bar_filled.svg"
+        size = { x = 98.0, y = 10.0 }
+        color = { r = 59, g = 106, b = 249, a = 200 }"#;
+        let meter: MeterElement = match toml::from_str(data) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{e:#}");
+                panic!("horizontal test fixture should be valid meter");
+            }
+        };
+        assert_eq!(meter.size(), Point { x: 100.0, y: 10.0 });
+    }
+
+    #[test]
+    fn can_deserialize_arc_meter() {
+        let data = r#"offset = { x = 0.0, y = 0.0 }
+        size = { x = 70.0, y = 10.0 }
+        svg = "meter_bar_vertical.svg"
+        empty_color = { r = 0, g = 0, b = 0, a = 255 }
+        fill_color =  { r = 255, g = 255, b = 255, a = 255 }
+        start_angle = 0
+        end_angle = 180
+        fill_width = 10.0"#;
+        let meter: MeterElement = match toml::from_str(data) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{e:#}");
+                panic!("circle arc test fixture should be valid meter");
+            }
+        };
+        assert_eq!(meter.offset(), Point { x: 0.0, y: 0.0 });
+    }
+
+    #[test]
     fn flattening_applies_scale() {
         let data = include_str!("../../tests/fixtures/layout-v2.toml");
-        let layout: HudLayout2 =
-            toml::from_str(data).expect("square text fixture should be valid toml");
+        let layout: HudLayout2 = match toml::from_str(data) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{e:#}");
+                panic!("layout-v2.toml test fixture should be valid layout");
+            }
+        };
+
         assert_eq!(layout.global_scale, 2.0);
         assert_eq!(layout.size, Point { x: 190.0, y: 250.0 });
         assert_eq!(layout.font_size, 18.0);
@@ -487,6 +766,71 @@ mod tests {
         assert_eq!(
             layout.right.text[0].font_size * layout.global_scale,
             right_slot.text[0].font_size
+        );
+    }
+
+    #[test]
+    fn charge_meters() {
+        let data = include_str!("../../tests/fixtures/layout-v2.toml");
+        let layout = match toml::from_str::<HudLayout2>(data) {
+            Ok(l) => l,
+            Err(e) => {
+                eprintln!("layout-v2.toml fixture is invalid!");
+                eprintln!("{e:#}");
+                unreachable!();
+            }
+        };
+
+        assert!(layout.power.meter.is_some());
+        assert!(layout.utility.meter.is_none());
+        assert!(layout.right.meter.is_some());
+        assert!(layout.left.meter.is_some());
+
+        let rmeter = layout
+            .right
+            .meter
+            .clone()
+            .expect("we just asserted this exists");
+        assert!(matches!(
+            rmeter,
+            MeterElement::Rectangular { angle: 90, .. }
+        ));
+
+        let lmeter = layout
+            .left
+            .meter
+            .clone()
+            .expect("we just asserted this exists");
+        assert!(matches!(lmeter, MeterElement::Rectangular { angle: 0, .. }));
+
+        let flattened = Layout::Version2(Box::new(layout.clone())).flatten();
+        let rflat = flattened
+            .slots
+            .iter()
+            .find(|slot| slot.element == HudElement::Right)
+            .expect("the right slot must be present");
+        let lflat = flattened
+            .slots
+            .iter()
+            .find(|slot| slot.element == HudElement::Left)
+            .expect("the right slot must be present");
+
+        assert_eq!(rflat.meter_kind, MeterKind::Rectangular);
+        assert_eq!(rflat.meter_start_angle, std::f32::consts::PI * 0.5);
+        assert_eq!(lflat.meter_kind, MeterKind::Rectangular);
+        assert_eq!(lflat.meter_start_angle, 0.0);
+
+        assert_eq!(
+            rflat.meter_center,
+            rflat
+                .center
+                .translate(&rmeter.offset().scale(layout.global_scale))
+        );
+        assert_eq!(
+            lflat.meter_center,
+            lflat
+                .center
+                .translate(&lmeter.offset().scale(layout.global_scale))
         );
     }
 }

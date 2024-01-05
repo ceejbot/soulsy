@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::layouts::shared::NamedAnchor;
 use crate::plugin::{
-    Align, Color, HudElement, LayoutFlattened, Point, SlotFlattened, TextFlattened,
+    Align, Color, HudElement, LayoutFlattened, MeterKind, Point, SlotFlattened, TextFlattened,
 };
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -195,14 +195,21 @@ impl HudLayout1 {
             hotkey_bg_image: "key_bg.svg".to_string(),
 
             poison_image: "".to_string(),
-            poison_color: Color {
-                r: 0,
-                g: 0,
-                b: 0,
-                a: 0,
-            },
-            poison_center: Point { x: 0.0, y: 0.0 },
-            poison_size: Point { x: 0.0, y: 0.0 },
+            poison_color: Color::invisible(),
+            poison_center: Point::origin(),
+            poison_size: Point::origin(),
+
+            meter_kind: MeterKind::None,
+            meter_center: Point::origin(),
+            meter_size: Point::origin(),
+            meter_empty_image: String::new(),
+            meter_empty_color: Color::invisible(),
+            meter_fill_image: String::new(),
+            meter_fill_size: Point::origin(),
+            meter_fill_color: Color::invisible(),
+            meter_start_angle: 0.0f32,
+            meter_end_angle: 0.0f32,
+            meter_arc_width: 0.0f32,
 
             text,
         }

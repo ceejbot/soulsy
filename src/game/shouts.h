@@ -1,7 +1,8 @@
 #pragma once
 
-namespace game
+namespace shouts
 {
+	bool has_shout(RE::Actor* a_actor, RE::TESShout* a_shout);
 	void equipShoutByForm(RE::TESForm* a_form, RE::PlayerCharacter*& a_player);
 	void unequipShoutSlot(RE::PlayerCharacter*& a_player);
 

@@ -1,4 +1,4 @@
-# A square layout that can show equip sets.
+# A square layout that shows equip sets and enchantment meters.
 # This layout uses the new layout design.
 #
 # All SoulsyHUD layouts are written in TOML. To learn more about TOML,
@@ -38,13 +38,13 @@ font_size = 18.0
 # Enable any of these you need text rendering for.
 # You will need to supply a true-type font with the glyphs; futura doesn't have them.
 # The "Inter" font packaged with the i18 layout does have them.
-chinese_full_glyphs = false
+chinese_full_glyphs       = false
+cyrillic_glyphs           = false
+japanese_glyphs           = false
+korean_glyphs             = false
 simplified_chinese_glyphs = false
-cyrillic_glyphs = false
-japanese_glyphs = false
-korean_glyphs = false
-thai_glyphs = false
-vietnamese_glyphs = false
+thai_glyphs               = false
+vietnamese_glyphs         = false
 
 # An optional background image. If your layout doesn't have an overall background, you
 # can safely leave this out. All image elements look like this.
@@ -52,7 +52,7 @@ vietnamese_glyphs = false
 # This is the file name of an SVG, relative to  `./resources/backgrounds`.
 svg = "square_hud.svg"
 # The size to draw the image.
-size = { x = 190.0 , y = 250.0}
+size = { x = 190.0, y = 250.0 }
 # The color to draw the image with. If alpha is zero, the background is not drawn.
 color = { r = 0, g = 0, b = 0, a = 64 }
 
@@ -61,33 +61,33 @@ color = { r = 0, g = 0, b = 0, a = 64 }
 # The slot showing what's in the right hand.
 [right]
 # Where the center of this element is relative to the HUD anchor.
-offset = { x = 375.0, y = 0.0 }
+offset = { x = 425.0, y = 0.0 }
 
 # Optional slot background image: if not present, not drawn. You can have
 # different background images for different slots if you like.
 [right.background]
-svg = "square_slot.svg"
-size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "square_slot.svg"
 
 # the icon element of this slot. Color might be overridden if
 # the user has "colorize icons" enabled.
 [right.icon]
-size = { x = 60.0, y = 60.0 }
+color  = { r = 200, g = 200, b = 200, a = 255 }
 offset = { x = 0.0, y = 0.0 }
-color = { r = 200, g = 200, b = 200, a = 255 }
+size   = { x = 60.0, y = 60.0 }
 
 # Optional display for the slot's hotkey. All hotkey elements look like this.
 [right.hotkey]
-size = { x = 30.0, y = 30.0 }
+color  = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -50.0, y = 0.0 }
-color = { r = 255, g = 255, b = 255, a = 255 }
+size   = { x = 30.0, y = 30.0 }
 # An optional background image for the hotkey. You can leave this out to not
 # draw a background for the hotkey display.
 [right.hotkey.background]
-svg = "key_bg.svg"
-size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 30.0, y = 30.0 }
+svg   = "key_bg.svg"
 
 # An array of text elements for this slot. You can have as many
 # as you want, but each one costs time to draw so keep the count low.
@@ -97,176 +97,233 @@ color = { r = 255, g = 255, b = 255, a = 128 }
 # Possible values: count, name, kind,
 
 [[right.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
-wrap_width = 105.0
-color = { r = 255, g = 255, b = 255, a = 255 }
-font_size = 18.0
-contents = "{name}"
+alignment  = "left"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 18.0
+offset     = { x = -50.0, y = 55.0 }
+wrap_width = 130.0
 
 # An optional indicator for showing if this item is poisoned.
 [right.poison]
-offset = { x = 25.0, y = 20.0 }
+offset = { x = 0.0, y = -60.0 }
 [right.poison.indicator]
-svg = "../icons/indicator_poison.svg"
-color = {r = 160, g = 240, b = 2, a = 255 }
-size = { x = 25.0, y = 25.0 }
+color = { r = 160, g = 240, b = 2, a = 255 }
+size  = { x = 20.0, y = 20.0 }
+svg   = "../icons/indicator_poison.svg"
+
+[right.meter]
+# What angle to draw the image at, an integer from 0 to 360.
+# 0 is horizontal. >
+# 90 is rotated counter-clockwise 90° to vertical.  ^
+# The meter is presumed to fill from LEFT to RIGHT before rotation.
+# Rotating 90° makes it fill from bottom to top.
+# Rotating 180° makes it fill from right to left. Etc.  <
+angle = 90
+# An offset for the CENTER of the meter, from the center of the slot.
+# The meter is rotated around this point. You should play with the offset
+# until it looks correct for your chosen rotation.
+offset = { x = 65.0, y = 0.0 }
+# How to draw the empty part of the meter, or any decoration around the meter.
+[right.meter.background]
+# This size is the size of the image before rotation!
+size = { x = 100.0, y = 20.0 }
+# The SVG file to use for the progress bar. This should like in the
+# `resources/backgrounds` folder. You can reference another folder with
+# `../icons/file_in_icons_dir.svg` if you need to.
+svg = "meter_bar_empty.svg"
+# The color for the background, or empty part, of the meter.
+color = { r = 255, g = 255, b = 255, a = 255 }
+[right.meter.filled]
+# You can leave the filled svg empty if you want. If you do this, the
+# filled portion of the meter will re-use the background image, but
+# shortened to indicate the percentage of the meter that's filled.
+# E.g., 50% full would be half the length.
+svg = "meter_bar_filled.svg"
+# The size of the filled meter when the charge/fuel/whatever is at max.
+size = { x = 96.0, y = 18.0 }
+# The color for the filled part of the meter.
+color = { r = 80, g = 0, b = 145, a = 255 }
 
 # ----- left hand slot
 
 [left]
-offset = { x = 250.0, y = 0.0 }
+offset = { x = 275.0, y = 0.0 }
 
 [left.background]
-svg = "square_slot.svg"
-size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "square_slot.svg"
 
 [left.icon]
-size = { x = 60.0, y = 60.0 }
-offset = { x = 0.0, y=0.0 }
-color = {r = 200, g = 200, b = 200, a = 255}
+color  = { r = 200, g = 200, b = 200, a = 255 }
+offset = { x = 0.0, y = 0.0 }
+size   = { x = 60.0, y = 60.0 }
 
 [left.hotkey]
-size = { x = 30.0, y = 30.0 }
+color  = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -50.0, y = 0.0 }
-color = { r = 255, g = 255, b = 255, a = 255 }
+size   = { x = 30.0, y = 30.0 }
 [left.hotkey.background]
-svg = "key_bg.svg"
-size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 30.0, y = 30.0 }
+svg   = "key_bg.svg"
 
 # An optional indicator for showing if this item is poisoned.
 [left.poison]
-offset = { x = 25.0, y = 20.0 }
+offset = { x = 0.0, y = -60.0 }
 [left.poison.indicator]
-svg = "../icons/indicator_poison.svg"
-color = {r = 160, g = 240, b = 2, a = 255 }
-size = { x = 25.0, y = 25.0 }
+color = { r = 160, g = 240, b = 2, a = 255 }
+size  = { x = 20.0, y = 20.0 }
+svg   = "../icons/indicator_poison.svg"
 
 [[left.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
-wrap_width = 100.0
+alignment  = "left"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 18.0
+offset     = { x = -50.0, y = 55.0 }
+wrap_width = 125.0
+
+[left.meter]
+angle  = 90
+offset = { x = 65.0, y = 0.0 }
+[left.meter.background]
 color = { r = 255, g = 255, b = 255, a = 255 }
-font_size = 18.0
-contents = "{name}"
+size  = { x = 100.0, y = 20.0 }
+svg   = "meter_bar_empty.svg"
+[left.meter.filled]
+color = { r = 80, g = 0, b = 145, a = 255 }
+size  = { x = 96.0, y = 18.0 }
+svg   = "meter_bar_filled.svg"
 
 # ----- utility slot
 
 [utility]
-offset = { x = 125.0, y = 0.0 }
+offset = { x = 150.0, y = 0.0 }
 [utility.background]
-svg = "square_slot.svg"
-size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "square_slot.svg"
 [utility.icon]
-size = { x = 60.0, y = 60.0 }
-offset = { x = 0.0, y=0.0 }
-color = {r = 200, g = 200, b = 200, a = 255}
+color  = { r = 200, g = 200, b = 200, a = 255 }
+offset = { x = 0.0, y = 0.0 }
+size   = { x = 60.0, y = 60.0 }
 [utility.hotkey]
-size = { x = 30.0, y = 30.0 }
+color  = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -50.0, y = 0.0 }
-color = { r = 255, g = 255, b = 255, a = 255 }
+size   = { x = 30.0, y = 30.0 }
 [utility.hotkey.background]
-svg = "key_bg.svg"
-size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 30.0, y = 30.0 }
+svg   = "key_bg.svg"
 [[utility.text]]
 alignment = "left"
-offset = { x = 15.0, y = 15.0 }
-color = { r = 255, g = 255, b = 255, a = 255 }
+color     = { r = 255, g = 255, b = 255, a = 255 }
+contents  = "{count}"
 font_size = 24.0
-contents = "{count}"
+offset    = { x = 15.0, y = 15.0 }
 [[utility.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
+alignment  = "left"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 18.0
+offset     = { x = -50.0, y = 55.0 }
 wrap_width = 105.0
-color = { r = 255, g = 255, b = 255, a = 255 }
-font_size = 18.0
-contents = "{name}"
 
 # ----- power slot
 
 [power]
 offset = { x = 0.0, y = 0.0 }
 [power.background]
-svg = "square_slot.svg"
-size = { x = 100.0 , y = 100.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "square_slot.svg"
 [power.icon]
-size = { x = 60.0, y = 60.0 }
-offset = { x = 0.0, y=0.0 }
-color = {r = 200, g = 200, b = 200, a = 255}
+color  = { r = 200, g = 200, b = 200, a = 255 }
+offset = { x = 0.0, y = 0.0 }
+size   = { x = 60.0, y = 60.0 }
 [power.hotkey]
-size = { x = 30.0, y = 30.0 }
+color  = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -50.0, y = 0.0 }
-color = { r = 255, g = 255, b = 255, a = 255 }
+size   = { x = 30.0, y = 30.0 }
 [power.hotkey.background]
-svg = "key_bg.svg"
-size = { x = 30.0 , y = 30.0}
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 30.0, y = 30.0 }
+svg   = "key_bg.svg"
 
 [[power.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
-wrap_width = 100.0
+alignment  = "left"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 18.0
+offset     = { x = -50.0, y = 55.0 }
+wrap_width = 125.0
+
+[power.meter]
+angle  = 90
+offset = { x = 70.0, y = 0.0 }
+[power.meter.background]
 color = { r = 255, g = 255, b = 255, a = 255 }
-font_size = 18.0
-contents = "{name}"
+size  = { x = 100.0, y = 20.0 }
+svg   = "meter_bar_empty.svg"
+[power.meter.filled]
+color = { r = 150, g = 200, b = 244, a = 255 }
+size  = { x = 100.0, y = 20.0 }
+svg   = "meter_bar_filled.svg"
 
 # ----- ammo slot
 
 [ammo]
-offset = { x = 250.0, y = 0.0 }
+offset = { x = 300.0, y = 0.0 }
 [ammo.background]
-svg = "square_slot.svg"
-size = { x = 100.0 , y = 100.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "square_slot.svg"
 [ammo.icon]
-color = { r = 200, g = 200, b = 200, a = 255 }
-size = { x = 60.0, y = 60.0 }
-offset = { x = 0.0, y=0.0 }
+color  = { r = 200, g = 200, b = 200, a = 255 }
+offset = { x = 0.0, y = 0.0 }
+size   = { x = 60.0, y = 60.0 }
 [ammo.hotkey]
-size = { x = 30.0, y = 30.0 }
+color  = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -50.0, y = 0.0 }
-color = { r = 255, g = 255, b = 255, a = 255 }
+size   = { x = 30.0, y = 30.0 }
 # Note that this slot separates count and name, and uses
 # a text element for each.
 [[ammo.text]]
 alignment = "left"
-contents = "{count}"
-color = { r = 200, g = 200, b = 200, a = 255 }
+color     = { r = 200, g = 200, b = 200, a = 255 }
+contents  = "{count}"
 font_size = 24.0
-offset = { x = 15.0, y = 15.0 }
+offset    = { x = 15.0, y = 15.0 }
 [[ammo.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
-wrap_width = 105.0
-color = { r = 255, g = 255, b = 255, a = 255 }
-font_size = 18.0
-contents = "{name}"
+alignment  = "left"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 18.0
+offset     = { x = -50.0, y = 55.0 }
+wrap_width = 125.0
 
 # ----- equipset slot
 
 [equipset]
 offset = { x = 0.0, y = -125.0 }
 [equipset.background]
-svg = "square_slot.svg"
-size = { x = 100.0 , y = 100.0 }
 color = { r = 255, g = 255, b = 255, a = 128 }
+size  = { x = 100.0, y = 100.0 }
+svg   = "square_slot.svg"
 [equipset.icon]
-color = { r = 200, g = 200, b = 200, a = 255 }
-size = { x = 60.0, y = 60.0 }
-offset = { x = 0.0, y=0.0 }
+color  = { r = 200, g = 200, b = 200, a = 255 }
+offset = { x = 0.0, y = 0.0 }
+size   = { x = 60.0, y = 60.0 }
 [equipset.hotkey]
-color = { r = 255, g = 255, b = 255, a = 255 }
+color  = { r = 255, g = 255, b = 255, a = 255 }
 offset = { x = -50.0, y = 0.0 }
-size = { x = 30.0, y = 30.0 }
+size   = { x = 30.0, y = 30.0 }
 [[equipset.text]]
-alignment = "left"
-offset = { x = -50.0, y = 55.0 }
-wrap_width = 105.0
-color = { r = 255, g = 255, b = 255, a = 255 }
-font_size = 18.0
-contents = "{name}"
+alignment  = "left"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 18.0
+offset     = { x = -50.0, y = 55.0 }
+wrap_width = 140.0

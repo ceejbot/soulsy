@@ -2,7 +2,6 @@
 
 #include "gear.h"
 #include "helpers.h"
-#include "player.h"
 
 #include "lib.rs.h"
 
@@ -78,9 +77,7 @@ namespace equippable
 
 		RE::TESBoundObject* boundObject = nullptr;
 		RE::ExtraDataList* extraData    = nullptr;
-		const auto count                = game::boundObjectForForm(form, boundObject, extraData);
-
-		rlog::info("entering hudItemFromForm() for {}", rlog::formatAsHex(form->GetFormID()));
+		const auto count                = gear::boundObjectForForm(form, boundObject, extraData);
 
 		auto safename = boundObject ? helpers::displayNameAsUtf8(boundObject) : helpers::displayNameAsUtf8(form);
 		std::string formSpec =

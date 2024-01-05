@@ -1,6 +1,7 @@
-﻿#include "gear.h"
+#include "gear.h"
 
 #include "RE/E/ExtraDataTypes.h"
+#include "RE/F/FORM_ENUM_STRING.h"
 #include "constant.h"
 #include "helpers.h"
 #include "offset.h"
@@ -8,7 +9,7 @@
 
 #include "lib.rs.h"
 
-namespace game
+namespace gear
 {
 	EquippableItemData::EquippableItemData()
 		: count(0)
@@ -50,9 +51,9 @@ namespace game
 		RE::InventoryEntryData entryData;
 		bool found = false;
 
-		for (const auto& [item, inv_data] : candidates)
+		for (const auto& [item, invData] : candidates)
 		{
-			const auto& [num_items, entry] = inv_data;
+			const auto& [num_items, entry] = invData;
 			if (entry->object->formID == form->formID)
 			{
 				if (item)
@@ -238,9 +239,9 @@ namespace game
 	bool isItemWorn(RE::TESBoundObject*& bound_obj, RE::PlayerCharacter*& thePlayer)
 	{
 		auto worn = false;
-		for (const auto& [item, inv_data] : player::getInventoryForType(thePlayer, RE::FormType::Armor))
+		for (const auto& [item, invData] : player::getInventoryForType(thePlayer, RE::FormType::Armor))
 		{
-			const auto& [count, entry] = inv_data;
+			const auto& [count, entry] = invData;
 			if (entry && entry->object && (entry->object->formID == bound_obj->formID) && entry->IsWorn())
 			{
 				worn = true;
@@ -255,7 +256,7 @@ namespace game
 		// TODO I don't think this handles spells
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extraData  = nullptr;
-		game::boundObjectForForm(form, bound_obj, extraData);
+		boundObjectForForm(form, bound_obj, extraData);
 		if (extraData) { return extraData->HasType(RE::ExtraDataType::kHotkey); }
 		return false;
 	}
@@ -269,23 +270,175 @@ namespace game
 		return false;
 	}
 
-	float itemChargeLevel(const RE::TESForm* form)
+	bool itemHasTimer(const RE::TESForm* form)
 	{
-		RE::InventoryEntryData* inventoryEntry = nullptr;
-		if (!inventoryEntryDataFor(form, inventoryEntry)) { return 0.0f; }
-		std::optional<double> charge = inventoryEntry->GetEnchantmentCharge();
-		return static_cast<float>(charge.value_or(0.0));
+		if (form->Is(RE::FormType::Shout)) { return true; }
+		if (form->Is(RE::FormType::Light)) { return true; }
+
+		return false;
 	}
 
-	const char* displayName(const RE::TESForm* form)
+	bool itemHasCharge(const RE::TESForm* form)
 	{
+		if (!form) { return false; }
+		const auto enchantable = form->As<RE::TESEnchantableForm>();
+		if (enchantable && enchantable->formEnchanting) { return true; }
+
 		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
 		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
 			player::getInventoryForType(thePlayer, form->GetFormType());
 
-		for (const auto& [item, inv_data] : candidates)
+		for (const auto& [item, invData] : candidates)
 		{
-			const auto& [num_items, entry] = inv_data;
+			const auto& [num_items, entry] = invData;
+			if (entry->object->formID == form->formID)
+			{
+				if (item && entry->extraLists)
+				{
+					for (auto* datalist : *entry->extraLists)
+					{
+						auto* extrafox = datalist->GetByType(RE::ExtraDataType::kEnchantment);
+						if (extrafox) { return true; }
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	// This returns a percentage.
+	float itemChargeLevel(const RE::TESForm* form)
+	{
+		if (!form) { return 0.0f; }
+
+		float current = 0.0f;
+		float max     = 0.0f;
+
+		const auto enchantable = form->As<RE::TESEnchantableForm>();
+		if (enchantable) { max = enchantable->amountofEnchantment; }
+
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		for (const auto& [item, invData] : candidates)
+		{
+			const auto& [num_items, entry] = invData;
+			if (entry->object->formID == form->formID)
+			{
+				if (item && entry->extraLists)
+				{
+					for (auto* datalist : *entry->extraLists)
+					{
+						auto* maybe_charge = datalist->GetByType(RE::ExtraDataType::kCharge);
+						if (maybe_charge && current == 0.0f)
+						{
+							auto* charge = static_cast<RE::ExtraCharge*>(maybe_charge);
+							current      = charge->charge;
+						}
+					}  // end of extra data checking
+					if (max > 0.0f && current > 0.0f) { return current * 100.0f / max; }
+				}
+			}
+		}  // end of candidates loop
+
+		return 100.0f;
+	}
+
+	rust::Box<RelevantExtraData> relevantExtraData(const RE::TESForm* form)
+	{
+		if (!form) { return empty_extra_data(); }
+
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+
+		if (form->Is(RE::FormType::Shout))
+		{
+			const auto* data = thePlayer->GetHighProcess();
+			if (!data || data->voiceRecoveryTime == 0.0f) { return empty_extra_data(); }
+			return relevant_extra_data(false, 0.0f, false, true, data->voiceRecoveryTime);
+		}
+
+		bool isEnchanted      = false;
+		float chargePercent   = 0.0f;
+		bool hasTimeLeft      = false;
+		float timeLeftPercent = 0.0f;
+		bool isPoisoned       = false;
+
+		// charge data
+		float current = 0.0f;
+		float max     = 0.0f;
+
+		// remaining time data
+		float currTime   = 0.0f;
+		uint32_t maxTime = 0;  // in seconds
+
+		const auto enchantable = form->As<RE::TESEnchantableForm>();
+		if (enchantable)
+		{
+			isEnchanted = true;
+			max         = enchantable->amountofEnchantment;
+		}
+
+		if (form->GetFormType() == RE::FormType::Light)
+		{
+			const auto* light = form->As<RE::TESObjectLIGH>();
+			maxTime           = light->data.time;
+		}
+
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		for (const auto& [item, invData] : candidates)
+		{
+			const auto& [num_items, entry] = invData;
+			if (entry->object->formID == form->formID)
+			{
+				if (item && entry->extraLists)
+				{
+					for (auto* datalist : *entry->extraLists)
+					{
+						if (datalist->HasType(RE::ExtraDataType::kEnchantment)) { isEnchanted = true; }
+						if (datalist->HasType(RE::ExtraDataType::kCharge))
+						{
+							auto* maybe_charge = datalist->GetByType(RE::ExtraDataType::kCharge);
+							if (maybe_charge && current == 0.0f)
+							{
+								auto* charge = static_cast<RE::ExtraCharge*>(maybe_charge);
+								current      = charge->charge;
+							}
+						}
+						if (datalist->HasType(RE::ExtraDataType::kTimeLeft))
+						{
+							hasTimeLeft           = true;
+							auto* maybe_time_left = datalist->GetByType(RE::ExtraDataType::kTimeLeft);
+							if (maybe_time_left && currTime == 0.0f)
+							{
+								auto* extraLeft = static_cast<RE::ExtraTimeLeft*>(maybe_time_left);
+								currTime        = extraLeft->time;
+							}
+						}
+						isPoisoned |= datalist->HasType(RE::ExtraDataType::kPoison);
+					}  // end of extra data checking
+					if (max > 0.0f && current > 0.0f) { chargePercent = current * 100.0f / max; }
+					if (maxTime > 0 && currTime > 0.0f) { timeLeftPercent = currTime * 100.0f / maxTime; }
+				}
+			}
+		}  // end of candidates loop
+
+		return relevant_extra_data(isEnchanted, chargePercent, isPoisoned, hasTimeLeft, timeLeftPercent);
+	}
+
+	const char* displayName(const RE::TESForm* form)
+	{
+		if (!form) { return "null"; }
+
+		auto* thePlayer = RE::PlayerCharacter::GetSingleton();
+		std::map<RE::TESBoundObject*, std::pair<int, std::unique_ptr<RE::InventoryEntryData>>> candidates =
+			player::getInventoryForType(thePlayer, form->GetFormType());
+
+		for (const auto& [item, invData] : candidates)
+		{
+			const auto& [num_items, entry] = invData;
 			if (entry->object->formID == form->formID)
 			{
 				if (item && entry->extraLists)
@@ -384,7 +537,7 @@ namespace game
 		}
 	}
 
-	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& player)
+	void equipSpellByFormAndSlot(RE::TESForm* form, RE::BGSEquipSlot*& slot, RE::PlayerCharacter*& thePlayer)
 	{
 		auto slot_is_left = slot == left_hand_equip_slot();
 		rlog::trace("attempting to equip spell in slot; name='{}'; is-left='{}'; type={};"sv,
@@ -392,8 +545,8 @@ namespace game
 			slot_is_left,
 			form->GetFormType());
 
-		const auto* obj_right = player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-		const auto* obj_left  = player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+		const auto* obj_right = thePlayer->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+		const auto* obj_left  = thePlayer->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
 
 		const auto obj_equipped_left  = obj_left && obj_left->formID == form->formID;
 		const auto obj_equipped_right = obj_right && obj_right->formID == form->formID;
@@ -414,9 +567,9 @@ namespace game
 		if (!task) return;
 
 		auto* spell = form->As<RE::SpellItem>();
-		if (player->HasSpell(spell))
+		if (thePlayer->HasSpell(spell))
 		{
-			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(player, spell, slot); });
+			task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->EquipSpell(thePlayer, spell, slot); });
 		}
 		else
 		{

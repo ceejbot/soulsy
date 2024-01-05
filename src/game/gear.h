@@ -6,7 +6,7 @@
 #include "soulsy.h"
 #include <string>
 
-namespace game
+namespace gear
 {
 	using namespace soulsy;
 
@@ -73,8 +73,12 @@ namespace game
 	bool isItemFavorited(const RE::TESForm* form);
 	// Is this weapon poisoned?
 	bool isItemPoisoned(const RE::TESForm* form);
+	// Does this item have a charge or fuel level?
+	bool itemHasCharge(const RE::TESForm* form);
 	// If this item is enchanted, what is its charge level? Or if a torch, what is its burn time?
 	float itemChargeLevel(const RE::TESForm* form);
+	// Get all relevant extra data for an item in one pass.
+	rust::Box<RelevantExtraData> relevantExtraData(const RE::TESForm* form);
 	// Get the display name for this item, looking up a player-set custom name if the item has one.
 	const char* displayName(const RE::TESForm* form);
 

@@ -1,11 +1,13 @@
-﻿#pragma once
+#pragma once
 
 #include "animation_handler.h"
 #include "image_path.h"
 #include "soulsy.h"
 
+
 namespace ui
 {
+	using namespace soulsy;
 	struct TextureData
 	{
 		ID3D11ShaderResourceView* texture = nullptr;
@@ -17,6 +19,8 @@ namespace ui
 	float resolutionHeight();
 	float resolutionScaleWidth();
 	float resolutionScaleHeight();
+
+	void drawHud();
 
 	void makeFadeDecision();
 	void showBriefly();
@@ -30,6 +34,30 @@ namespace ui
 	float easeInCubic(float progress);
 	float easeOutCubic(float progress);
 
+	void drawAllSlots();
+	void drawElement(ID3D11ShaderResourceView* texture,
+		const ImVec2 center,
+		const ImVec2 size,
+		const float angle,
+		const soulsy::Color color);
+	void drawElementInner(ID3D11ShaderResourceView* texture,
+		const ImVec2 center,
+		const ImVec2 size,
+		const float angle,
+		const ImU32 im_color);  // retaining support for animations...
+	void drawText(const std::string text,
+		const ImVec2 center,
+		const float font_size,
+		const soulsy::Color color,
+		const Align alignment);
+	void drawMeterCircleArc(float level, SlotFlattened slotLayout);
+	void drawMeterRectangular(float level, SlotFlattened slotLayout);
+	ImVec2 rotateVector(const ImVec2 vector, const float angle);
+	std::array<ImVec2, 4> rotateRectWithTranslation(const ImVec2 center, const ImVec2 size, const float angle);
+	std::array<ImVec2, 4> rotateRect(const ImVec2 size, const float angle);
+	void drawTextureQuad(ID3D11ShaderResourceView* texture,
+		const std::array<ImVec2, 4> bounds,
+		const soulsy::Color color);
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer
@@ -45,25 +73,8 @@ namespace ui
 		ui_renderer();
 
 		// Oxidation section.
-		static void drawAllSlots();
-		static void drawElement(ID3D11ShaderResourceView* texture,
-			const ImVec2 center,
-			const ImVec2 size,
-			const float angle,
-			const Color color);
-		static void drawElementInner(ID3D11ShaderResourceView* texture,
-			const ImVec2 center,
-			const ImVec2 size,
-			const float angle,
-			const ImU32 im_color);  // retaining support for animations...
-		static void drawText(const std::string text,
-			const ImVec2 center,
-			const float fontSize,
-			const Color color,
-			const Align alignment,
-			const float wrapWidth);
 		// older...
-		static void init_animation(animation_type animation_type,
+		static void initializeAnimation(animation_type animation_type,
 			float a_screen_x,
 			float a_screen_y,
 			float a_offset_x,
@@ -73,10 +84,7 @@ namespace ui
 			uint32_t a_modify,
 			uint32_t a_alpha,
 			float a_duration);
-		static void drawHud();
 
-		static bool lazyLoadIcon(std::string name);
-		static bool lazyLoadHudImage(std::string fname);
 		static bool loadTextureFromFile(const char* filename,
 			ID3D11ShaderResourceView** out_srv,
 			std::int32_t& out_width,
@@ -95,14 +103,15 @@ namespace ui
 			std::string& file_path);
 
 		static void loadAnimationFrames(std::string& file_path, std::vector<TextureData>& frame_list);
-		static void draw_animations_frame();
-
-		static TextureData iconForHotkey(uint32_t a_key);
-		static void loadFont();
-
+		static void drawAnimationFrame();
 
 	public:
+		// This only loads key/controller hotkey images.
 		static void preloadImages();
+		static void loadFont();
+		static bool lazyLoadIcon(std::string name);
+		static bool lazyLoadHudImage(std::string fname);
+		static TextureData iconForHotkey(uint32_t a_key);
 
 		struct d_3d_init_hook
 		{

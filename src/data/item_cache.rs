@@ -13,8 +13,10 @@ use crate::data::{make_health_proxy, make_magicka_proxy, make_stamina_proxy};
 #[cfg(not(test))]
 use crate::plugin::formSpecToHudItem;
 
+/// A holder for an lru cache.
 #[derive(Debug)]
 pub struct ItemCache {
+    /// An lru cache instance.
     lru: LruCache<String, HudItem>,
 }
 
@@ -126,7 +128,10 @@ impl ItemCache {
 #[cfg(not(test))]
 pub fn fetch_game_item(form_string: &str) -> HudItem {
     cxx::let_cxx_string!(form_spec = form_string);
-    *formSpecToHudItem(&form_spec)
+    let boxed = formSpecToHudItem(&form_spec);
+    let mut item = *boxed;
+    item.refresh_extra_data();
+    item
 }
 
 // This implementation is used by tests to generate random items without
@@ -138,7 +143,7 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
     use crate::images::random_icon;
 
     let name = petname::petname(2, " ");
-    let item = HudItem::preclassified(
+    let mut item = HudItem::preclassified(
         name,
         form_string.to_owned(),
         2,
@@ -148,6 +153,7 @@ pub fn fetch_game_item(form_string: &str) -> HudItem {
             WeaponEquipType::EitherHand,
         )),
     );
+    item.refresh_extra_data();
     item
 }
 

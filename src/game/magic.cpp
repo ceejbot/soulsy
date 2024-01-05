@@ -12,7 +12,7 @@ namespace game
 		const RE::BGSEquipSlot* a_slot,
 		RE::PlayerCharacter*& player)
 	{
-		auto left = a_slot == game::left_hand_equip_slot();
+		auto left = a_slot == gear::left_hand_equip_slot();
 		rlog::trace("try to work spell {}, action {}, left {}"sv,
 			helpers::nameAsUtf8(a_form),
 			static_cast<uint32_t>(a_action),
@@ -150,7 +150,7 @@ namespace game
 
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto item_count              = boundObjectForForm(form, obj, extraData);
+		auto item_count              = gear::boundObjectForForm(form, obj, extraData);
 
 		if (!obj || item_count == 0)
 		{
@@ -222,8 +222,8 @@ namespace game
 
 	RE::MagicSystem::CastingSource get_casting_source(const RE::BGSEquipSlot* a_slot)
 	{
-		if (a_slot == game::right_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kRightHand; }
-		if (a_slot == game::left_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kLeftHand; }
+		if (a_slot == gear::right_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kRightHand; }
+		if (a_slot == gear::left_hand_equip_slot()) { return RE::MagicSystem::CastingSource::kLeftHand; }
 		return RE::MagicSystem::CastingSource::kOther;
 	}
 

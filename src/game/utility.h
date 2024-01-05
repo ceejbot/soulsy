@@ -2,7 +2,7 @@
 
 // Food, potions, ammo, armor. Things that go in the utility slot.
 
-namespace game
+namespace utility
 {
 	void equipAmmoByForm(const RE::TESForm* a_form, RE::PlayerCharacter*& thePlayer);
 	void unequipCurrentAmmo();

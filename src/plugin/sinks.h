@@ -7,72 +7,51 @@
 
 void registerAllListeners();
 
-class EquipEventListener final : public RE::BSTEventSink<RE::TESEquipEvent>
+
+class TheListener final
+	: public RE::BSTEventSink<RE::BSAnimationGraphEvent>
+	, public RE::BSTEventSink<RE::InputEvent*>
+	, public RE::BSTEventSink<RE::MenuOpenCloseEvent>
+	, public RE::BSTEventSink<RE::TESEquipEvent>
+	, public RE::BSTEventSink<RE::TESHitEvent>
+	, public RE::BSTEventSink<RE::TESMagicEffectApplyEvent>
+	, public RE::BSTEventSink<RE::TESActiveEffectApplyRemoveEvent>
 {
 	using event_result = RE::BSEventNotifyControl;
 
 public:
-	static EquipEventListener* get_singleton(void);
-	static void registerListener(void);
+	static TheListener* singleton(void);
 
 	// It's a programmer error to have more than one.
-	EquipEventListener(const EquipEventListener&) = delete;
-	EquipEventListener(EquipEventListener&&)      = delete;
+	TheListener(const TheListener&) = delete;
+	TheListener(TheListener&&)      = delete;
 
-	EquipEventListener& operator=(const EquipEventListener&) = delete;
-	EquipEventListener& operator=(EquipEventListener&&)      = delete;
+	TheListener& operator=(const TheListener&) = delete;
+	TheListener& operator=(TheListener&&)      = delete;
 
 protected:
 	RE::BSEventNotifyControl ProcessEvent(const RE::TESEquipEvent* event,
 		[[maybe_unused]] RE::BSTEventSource<RE::TESEquipEvent>* source) override;
 
-private:
-	EquipEventListener()           = default;
-	~EquipEventListener() override = default;
-};
+	RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* eventList,
+		[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* source) override;
 
-class KeyEventListener final : public RE::BSTEventSink<RE::InputEvent*>
-{
-	using event_result = RE::BSEventNotifyControl;
+	RE::BSEventNotifyControl ProcessEvent(const RE::MenuOpenCloseEvent* a_event,
+		RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_eventSource) override;
 
-public:
-	static KeyEventListener* get_singleton();
-	static void registerListener();
+	RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event,
+		RE::BSTEventSource<RE::TESHitEvent>* source) override;
 
-	KeyEventListener(const KeyEventListener&) = delete;
-	KeyEventListener(KeyEventListener&&)      = delete;
-
-	KeyEventListener& operator=(const KeyEventListener&) = delete;
-	KeyEventListener& operator=(KeyEventListener&&)      = delete;
-
-protected:
-	RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event,
-		[[maybe_unused]] RE::BSTEventSource<RE::InputEvent*>* a_event_source) override;
-
-private:
-	KeyEventListener()           = default;
-	~KeyEventListener() override = default;
-};
-
-class AnimGraphListener final : public RE::BSTEventSink<RE::BSAnimationGraphEvent>
-{
-	using event_result = RE::BSEventNotifyControl;
-
-public:
-	static AnimGraphListener* get_singleton();
-	static void registerListener();
-
-	AnimGraphListener(const AnimGraphListener&) = delete;
-	AnimGraphListener(AnimGraphListener&&)      = delete;
-
-	AnimGraphListener& operator=(const AnimGraphListener&) = delete;
-	AnimGraphListener& operator=(AnimGraphListener&&)      = delete;
-
-protected:
 	RE::BSEventNotifyControl ProcessEvent(const RE::BSAnimationGraphEvent* event,
 		RE::BSTEventSource<RE::BSAnimationGraphEvent>* source) override;
 
+	RE::BSEventNotifyControl ProcessEvent(const RE::TESMagicEffectApplyEvent* event,
+		RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* source) override;
+
+	RE::BSEventNotifyControl ProcessEvent(const RE::TESActiveEffectApplyRemoveEvent* event,
+		RE::BSTEventSource<RE::TESActiveEffectApplyRemoveEvent>* source) override;
+
 private:
-	AnimGraphListener()           = default;
-	~AnimGraphListener() override = default;
+	TheListener()           = default;
+	~TheListener() override = default;
 };

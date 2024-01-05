@@ -34,7 +34,9 @@ namespace helpers
 
 	bool isFavoritedByFormSpec(const std::string& form_spec);
 	bool isPoisonedByFormSpec(const std::string& form_spec);
+	bool hasChargeByFormSpec(const std::string& form_spec);
 	float chargeLevelByFormSpec(const std::string& form_spec);
+	rust::Box<RelevantExtraData> relevantExtraData(const std::string& form_spec);
 
 	std::string nameAsUtf8(const RE::TESForm* form);
 	std::string displayNameAsUtf8(const RE::TESForm* form);

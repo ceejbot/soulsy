@@ -11,7 +11,7 @@
 
 using namespace soulsy;
 
-namespace game
+namespace utility
 {
 	// ---------- ammo
 
@@ -19,7 +19,7 @@ namespace game
 	{
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto remaining               = boundObjectForForm(form, obj, extraData);
+		auto remaining               = gear::boundObjectForForm(form, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -68,7 +68,7 @@ namespace game
 
 	bool unequipArmor(RE::TESBoundObject*& item, RE::PlayerCharacter*& thePlayer, RE::ActorEquipManager*& equipManager)
 	{
-		const auto isWorn = isItemWorn(item, thePlayer);
+		const auto isWorn = gear::isItemWorn(item, thePlayer);
 		if (isWorn)
 		{
 			auto* task = SKSE::GetTaskInterface();
@@ -87,7 +87,7 @@ namespace game
 		// rlog::trace("attempting to toggle armor; name='{}';"sv, helpers::nameAsUtf8(form));
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
+		auto remaining               = gear::boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -97,7 +97,7 @@ namespace game
 
 		auto* task         = SKSE::GetTaskInterface();
 		auto* equipManager = RE::ActorEquipManager::GetSingleton();
-		const auto isWorn  = isItemWorn(obj, thePlayer);
+		const auto isWorn  = gear::isItemWorn(obj, thePlayer);
 		if (isWorn)
 		{
 			task->AddTask([=]() { equipManager->UnequipObject(thePlayer, obj, extraData); });
@@ -113,7 +113,7 @@ namespace game
 		// rlog::trace("attempting to equip armor; name='{}';"sv, helpers::nameAsUtf8(form));
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto remaining               = boundObjectMatchName(form, nameToMatch, obj, extraData);
+		auto remaining               = gear::boundObjectMatchName(form, nameToMatch, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -121,7 +121,7 @@ namespace game
 			return;
 		}
 
-		if (!isItemWorn(obj, thePlayer))
+		if (!gear::isItemWorn(obj, thePlayer))
 		{
 			auto* task         = SKSE::GetTaskInterface();
 			auto* equipManager = RE::ActorEquipManager::GetSingleton();
@@ -139,7 +139,7 @@ namespace game
 
 		RE::TESBoundObject* obj      = nullptr;
 		RE::ExtraDataList* extraData = nullptr;
-		auto remaining               = boundObjectForForm(potionForm, obj, extraData);
+		auto remaining               = gear::boundObjectForForm(potionForm, obj, extraData);
 
 		if (!obj || remaining == 0)
 		{
@@ -184,7 +184,7 @@ namespace game
 				[=]()
 				{
 					RE::ActorEquipManager::GetSingleton()->EquipObject(
-						thePlayer, poison, extraData, 1, game::right_hand_equip_slot());
+						thePlayer, poison, extraData, 1, gear::right_hand_equip_slot());
 				});
 			remaining--;
 		}
@@ -194,7 +194,7 @@ namespace game
 			task->AddTask(
 				[=]() {
 					RE::ActorEquipManager::GetSingleton()->EquipObject(
-						thePlayer, poison, extraData, 1, game::left_hand_equip_slot());
+						thePlayer, poison, extraData, 1, gear::left_hand_equip_slot());
 				});
 		}
 	}

@@ -7,17 +7,6 @@
 
 #include "lib.rs.h"
 
-inline const std::set<RE::FormType> RELEVANT_FORMTYPES_ALL{
-	RE::FormType::AlchemyItem,
-	RE::FormType::Ammo,
-	RE::FormType::Armor,
-	RE::FormType::Light,
-	RE::FormType::Scroll,
-	RE::FormType::Shout,
-	RE::FormType::Spell,
-	RE::FormType::Weapon,
-};
-
 // ---------- MenuHook
 
 void MenuHook::install()
@@ -138,7 +127,7 @@ MenuSelection::MenuSelection(RE::FormID formid) : form_id(formid)
 
 	RE::TESBoundObject* boundObject = nullptr;
 	RE::ExtraDataList* extraData    = nullptr;
-	game::boundObjectForForm(item_form, boundObject, extraData);
+	gear::boundObjectForForm(item_form, boundObject, extraData);
 
 	if (boundObject)
 	{
@@ -235,7 +224,7 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 
 		RE::TESBoundObject* bound_obj = nullptr;
 		RE::ExtraDataList* extraData  = nullptr;
-		game::boundObjectForForm(item_form, bound_obj, extraData);
+		gear::boundObjectForForm(item_form, bound_obj, extraData);
 
 		auto* selection      = new MenuSelection(form_id);
 		selection->count     = 0;

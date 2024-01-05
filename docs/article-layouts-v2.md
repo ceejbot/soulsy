@@ -6,9 +6,11 @@
    3. [Building blocks](#building-blocks)
       1. [Points](#points)
       2. [Colors](#colors)
-      3. [Background image elements](#background-image-elements)
+      3. [Image elements](#image-elements)
       4. [Icon elements](#icon-elements)
       5. [Text elements](#text-elements)
+      6. [Poison indicators](#poison-indicators)
+      7. [Meter elements](#meter-elements)
    4. [Slot elements](#slot-elements)
    5. [Top-level fields](#top-level-fields)
       1. [`global_scale`: number](#global_scale-number)
@@ -80,9 +82,9 @@ color = { r = 223, g = 188, b = 32, a = 128 }
 
 Colors are conventionally given in rgba order, but the order doesn't matter.
 
-### Background image elements
+### Image elements
 
-Background images use a point to describe how large to draw the image, and a color to specify what color to draw it. The `svg` field names the image file to draw. The svg file must be in the directory `resources/backgrounds`. Here's an example:
+Image elements appear as parts of slot layouts, the overall hud layout, and elements like the poison indicator. Images use a point to describe how large to draw the image, and a color to specify what color to draw it. The `svg` field names the image file to draw. The svg file is assumed to be in the directory `resources/backgrounds`, but you may point to an image in a different sub-folder of `resources` like this: `../icons/icon.svg`. Here's an example:
 
 ```toml
 [background]
@@ -106,7 +108,7 @@ offset = { x = 0.0, y = 0.0 }
 
 ### Text elements
 
-Each layout has a list of *text* elements. These describe text that should be drawn in the slot. You can have as many text elements as you need. For instance, you might display the item count in one location and name in another, or you might combine them into a single display. Each text element you add costs a little bit of time for each HUD draw (an addition measured in nanoseconds) so you won't want to add dozens of them.
+Each slot layout has a list of *text* elements. These describe text that should be drawn in the slot. You can have as many text elements as you need. For instance, you might display the item count in one location and name in another, or you might combine them into a single display. Each text element you add costs a little bit of time for each HUD draw (an addition measured in nanoseconds) so you won't want to add dozens of them.
 
 Here are the fields a text element has:
 
@@ -118,15 +120,20 @@ Here are the fields a text element has:
 
 The data that can be filled into a format string is:
 
-- `{name}`: the item's name
+- `{name}`: the item's full display name
 - `{count}`: how many of the item the player has
-- `{kind}`: the item's category
+- `{charge}`: the remaining enchantment charge for a weapon, expressed as a percentage of the full charge
+- `{time_left}`: the percentage time left for an item with a lifespan, such as torches or fueled lanterns
+- `{cooldown_time}`: the number of seconds left for a shout cooldown, counting down to zero
+- `{cooldown_percent}`: the percentage of the full time left for a shout cooldown
+- `{poison}`: the string "poison" if poisoned; empty otherwise (this should be translated, I know)
 - any regular text you'd like
 
 Some examples of valid format strings:
 
 - `ITEM: {name}`
 - `{name}: {count}`
+- `{name}: {charge}%`
 - `outfit`
 
 Here's a full text element, which draws the name of the equipped shout or power for that slot:
@@ -140,7 +147,54 @@ contents = "{name}"
 font_size = 20.0
 ```
 
-Any additional text elements for the power slot would also be named `[[power.text]]`. The double square brackets tells TOML that this is an array of items.
+Any additional text elements for the power slot would also be named `[[power.text]]`. The double square brackets tells TOML that this is an [list of items](https://toml.io/en/v1.0.0#array-of-tables). Each new element named that is added to the end of the list.
+
+### Poison indicator
+
+Each layout slot can optionally include an indicator to show if an item is poisoned. This is only meaningful for left and right hands. Poison indicators are built from an offset plus an image element.
+
+```toml
+[left.poison]
+offset = { x = 25.0, y = 20.0 }
+[left.poison.indicator]
+svg = "../icons/indicator_poison.svg"
+color = {r = 160, g = 240, b = 2, a = 255 }
+size = { x = 10.0, y = 10.0 }
+```
+
+### Meter elements
+
+Slot layouts can optionally include a *meter* display, for graphically showing enchantment charge or torch burn time. The meaning of the meter depends on the item being shown, and SoulsyHUD does its best to guess what should be shown for an item. For example, a meter on the shouts and powers HUD slot would show shout cooldown time if that's relevant.
+
+Right now SoulsyHUD supports three flavors of meters:
+
+1. A rectangular meter built from two SVGs, one for the background and one to show fill level.
+2. A rectangular meter built from one background SVG and a fill color.
+3. __NOT YET FINISHED:__ Circular meters, with a background SVG, a fill color, and angles for 0% and 100%. You can draw a full circle around a slot or a partial arc. Elliptical curves aren't supported yet. (Sending cookies or coffee to the mod author might help with this feature request.)
+
+Rectangular meters are drawn as _horizontal_ bars filling from left to right, then rotated by the angle you specify. All angles are given in degrees. 0° means no rotation. 90° is a vertical meter, with full being at the top. You can specify any degree of rotation you want: if your layout uses equilateral triangles, you can rotate a meter 60° to make it align with an edge.
+
+Here's an example of a horizontal meter built from two svgs. The image for the fill uses a different color from the background:
+
+```toml
+[left.meter]
+angle = 0 # horizontal
+offset = { x = 0.0, y = -60.0 }
+[left.meter.background]
+# the svg for the background
+svg = "meter_bar_empty.svg"
+# the size for the background
+size = { x = 100.0, y = 20.0 }
+# the color for the background
+color = { r = 255, g = 255, b = 255, a = 255 }
+[left.meter.fill]
+# the svg drawn to show the fill
+svg = "meter_bar_filled.svg"
+size = { x = 98.0, y = 16.0 }
+color = { r = 59, g = 106, b = 249, a = 200 }
+```
+
+Meter elements are rotated around their centers. You will likely need to play with the offset until a rotated meter is positioned exactly where you want. Remember to specify sizes as if the meter were *horizontal*, filling from left to right. Then rotate it to match your other layout elements.
 
 ## Slot elements
 
@@ -155,11 +209,13 @@ There are six slots you can describe in a layout. All of them except the `equips
 
 Each slot has the following sub-elements:
 
-- an `offset` field, describing where to draw this slot relative to the center of the HUD
+- a required `offset` field, describing where to draw this slot relative to the center of the HUD
 - a required `icon` element, named `[slotname.icon]`
 - an optional `background` element, named `[slotname.background]`
 - an optional `hotkey` element, named `[slotname.hotkey]`
-- a list of text elements, in the array `[[slotname.text]]`
+- an optional list of text elements, in the array `[[slotname.text]]`
+- an optional poison indicator element, named `[slotname.poison]`
+- an optional charge/fuel meter display, named `[slotname.meter]`
 
 Because each slot specifies its own background element independent of the others, you can use a different background file for each slot. You might do this if your layout is asymmetrical or spread out on the screen. It's up to you!
 
@@ -195,6 +251,23 @@ offset = { x = 10.0, y = 52.0 }
 font_size = 20.0
 alignment = "left"
 contents = "{name}"
+
+[right.poison]
+offset = { x = 0.0, y = -40.0 }
+[left.poison.indicator]
+svg = "../icons/indicator_poison.svg"
+size = { x = 10.0, y = 10.0 }
+color = {r = 160, g = 240, b = 2, a = 255 }
+
+[right.meter]
+angle = 0
+offset = { x = 0.0, y = -60.0 }
+size = { x = 100.0, y = 20.0 }
+svg = "meter_bar_empty.svg"
+empty_color = { r = 255, g = 255, b = 255, a = 255 }
+fill_svg = "meter_bar_filled.svg"
+fill_size = { x = 98.0, y = 16.0 }
+fill_color = { r = 59, g = 106, b = 249, a = 200 }
 ```
 
 ## Top-level fields

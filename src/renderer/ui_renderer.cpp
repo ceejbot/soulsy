@@ -1,4 +1,4 @@
-﻿#include "ui_renderer.h"
+#include "ui_renderer.h"
 #include "animation_handler.h"
 #include "constant.h"
 #include "gear.h"
@@ -12,6 +12,8 @@ using namespace soulsy;
 
 namespace ui
 {
+	using Color = soulsy::Color;
+
 	static std::map<animation_type, std::vector<TextureData>> animation_frame_map = {};
 	static std::vector<std::pair<animation_type, std::unique_ptr<Animation>>> animation_list;
 
@@ -24,8 +26,14 @@ namespace ui
 	static std::map<std::string, TextureData> ICON_MAP;
 	static std::map<std::string, TextureData> HUD_IMAGES_MAP;
 
+	static const auto REFRESH_DRAW_COUNT  = 50;
 	static const float FADEOUT_HYSTERESIS = 0.5f;  // seconds
 	static const uint32_t MAX_ICON_DIM    = 300;   // rasterized at 96 dpi
+	static constexpr ImVec2 FLAT_UVS[4]   = { ImVec2(0.0f, 0.0f),
+		  ImVec2(1.0f, 0.0f),
+		  ImVec2(1.0f, 1.0f),
+		  ImVec2(0.0f, 1.0f) };
+
 
 	auto gHudAlpha          = 0.0f;  // this is the current alpha
 	auto gGoalAlpha         = 1.0f;  // our goal if we're fading
@@ -36,6 +44,7 @@ namespace ui
 	auto gIsFading          = false;
 	auto delayBeforeFadeout = 0.33f;  // seconds
 	bool gDoingBriefPeek    = false;
+	auto drawCounter        = 0;
 
 	// ID3D11BlendState* gBlendState = nullptr;
 
@@ -239,7 +248,7 @@ namespace ui
 
 	ui_renderer::ui_renderer() = default;
 
-	void ui_renderer::draw_animations_frame()
+	void ui_renderer::drawAnimationFrame()
 	{
 		auto it = animation_list.begin();
 		while (it != animation_list.end())
@@ -260,43 +269,117 @@ namespace ui
 		}
 	}
 
-	void ui_renderer::drawText(const std::string text,
+	void drawMeterCircleArc(float level, SlotFlattened slotLayout)
+	{
+		// The flat structure has the same fields to support arc and
+		// rectangular meters, so some names might be surprising here.
+		const auto meter_center = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
+		const auto meter_size   = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
+		const auto bg_img_str   = std::string(slotLayout.meter_empty_image);
+		if (!bg_img_str.empty() && ui_renderer::lazyLoadHudImage(bg_img_str))
+		{
+			const auto [texture, width, height] = HUD_IMAGES_MAP[bg_img_str];
+			drawElement(texture, meter_center, meter_size, 0.0f, slotLayout.meter_empty_color);
+		}
+
+		if (meter_size.x != meter_size.y)
+		{
+			rlog::warn("Circular meter is not actually circular. {} != {}", meter_size.x, meter_size.y);
+		}
+		const auto radius = meter_size.x / 2.0f;
+		const auto width  = slotLayout.meter_arc_width;
+
+		ImVec2 start           = ImVec2(meter_center.x + radius * cosf(slotLayout.meter_start_angle),
+            meter_center.y + radius * sinf(slotLayout.meter_start_angle));
+		const float startAngle = slotLayout.meter_end_angle;
+		// level is a percentage
+		const float endAngle = (slotLayout.meter_end_angle - slotLayout.meter_start_angle) * level / 100.0f;
+		ImVec2 end = ImVec2(meter_center.x + radius * cosf(endAngle), meter_center.y + radius * sinf(endAngle));
+
+		const ImU32 fill_color = IM_COL32(slotLayout.meter_fill_color.r,
+			slotLayout.meter_fill_color.g,
+			slotLayout.meter_fill_color.b,
+			slotLayout.meter_fill_color.a * gHudAlpha);
+
+		// ImGui::GetWindowDrawList()->PathLineTo(meter_center);
+		ImGui::GetWindowDrawList()->PathClear();
+		ImGui::GetWindowDrawList()->PathLineTo(start);
+		// IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 0);
+		ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius, startAngle, endAngle, 20);
+		ImGui::GetWindowDrawList()->PathLineTo(ImVec2(end.x - width, end.y - width));
+		ImGui::GetWindowDrawList()->PathArcTo(meter_center, radius - width, endAngle, startAngle, 20);
+		ImGui::GetWindowDrawList()->PathLineToMergeDuplicate(start);
+		ImGui::GetWindowDrawList()->PathFillConvex(fill_color);
+		ImGui::GetWindowDrawList()->PathClear();
+	}
+
+	void drawMeterRectangular(float level, SlotFlattened slotLayout)
+	{
+		const auto meterOffset = ImVec2(slotLayout.meter_center.x, slotLayout.meter_center.y);
+		const auto bgSize      = ImVec2(slotLayout.meter_size.x, slotLayout.meter_size.y);
+		const auto bg_img_str  = std::string(slotLayout.meter_empty_image);
+		const auto fg_img_str  = std::string(slotLayout.meter_fill_image);
+
+		auto angle = -slotLayout.meter_start_angle;
+
+		const auto fillLen          = slotLayout.meter_fill_size.x * level * 0.01f;
+		const auto fillSize         = ImVec2(fillLen, slotLayout.meter_fill_size.y);
+		const auto fillCenterOffset = ImVec2((fillLen - slotLayout.meter_fill_size.x) * 0.5f, 0.0);
+
+		const std::array<ImVec2, 4> bgRotated = rotateRectWithTranslation(meterOffset, bgSize, angle);
+		const ImVec2 fillOffset               = rotateVector(fillCenterOffset, angle) + meterOffset;
+		const std::array<ImVec2, 4> fgRotated = rotateRectWithTranslation(fillOffset, fillSize, angle);
+
+		bool haveBgImage = bg_img_str.empty() ? false : ui_renderer::lazyLoadHudImage(bg_img_str);
+		bool haveFgImage = fg_img_str.empty() ? false : ui_renderer::lazyLoadHudImage(fg_img_str);
+
+		if (haveBgImage && haveFgImage)
+		{
+			const auto [bgtex, width, height]   = HUD_IMAGES_MAP[bg_img_str];
+			const auto [fgtex, fwidth, fheight] = HUD_IMAGES_MAP[fg_img_str];
+
+			drawTextureQuad(bgtex, bgRotated, slotLayout.meter_empty_color);
+			drawTextureQuad(fgtex, fgRotated, slotLayout.meter_fill_color);
+		}
+		else if (haveBgImage && !haveFgImage)
+		{
+			// In this case, we use the background image twice, the second time with length scaled
+			// drawn with the fill color.
+			const auto [bgtex, width, height] = HUD_IMAGES_MAP[bg_img_str];
+			drawTextureQuad(bgtex, bgRotated, slotLayout.meter_empty_color);
+			drawTextureQuad(bgtex, fgRotated, slotLayout.meter_fill_color);
+		}
+		else if (haveFgImage)
+		{
+			const auto [fgtex, fwidth, fheight] = HUD_IMAGES_MAP[fg_img_str];
+			drawTextureQuad(fgtex, bgRotated, slotLayout.meter_empty_color);
+			drawTextureQuad(fgtex, fgRotated, slotLayout.meter_fill_color);
+		}
+	}
+
+	void drawText(const std::string text,
 		const ImVec2 center,
 		const float fontSize,
-		const Color color,
+		const soulsy::Color color,
 		const Align align,
 		const float wrapWidth)
 	{
 		if (!text.length() || color.a == 0) { return; }
 
-		const ImU32 text_color   = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
-		const ImVec2 text_bounds = ImGui::CalcTextSize(text.c_str(), NULL, false, wrapWidth);
-		auto* font               = imFont;
+		auto* font = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
+		const ImU32 text_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
+		const ImVec2 bounds    = font->CalcTextSizeA(fontSize, wrapWidth, wrapWidth, text.c_str());
+		ImVec2 alignedCenter   = ImVec2(center.x, center.y);
 
-		// Listen up, future maintainer aka ceej of the future!
-		// Text alignment is, for cognitive ease reasons, also a statement about
-		// where the stated anchor point is.
-		//
-		// Center alignment: the offset refers to the center of the text box. (easy case!)
-		// Left alignment: the offset refers to the center of the left edge.
-		// Right alignment: the offset refers to the center of the right edge.
-		//
-		// Since imgui takes a *LEFT* edge point, we have to offset the other two cases
-		// by an amount that depends on the size of the text box.
-		// Center alignment: offset to the left by half.
-		// Right alignment: offset to the left by the entire length of the box.
-		float adjustment = 0;
-		if (align == Align::Center) { adjustment = 0.5f * text_bounds.x; }
-		else if (align == Align::Right) { adjustment = text_bounds.x; }
-
-		ImVec2 aligned_loc = ImVec2(center.x + adjustment, center.y);
+		if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
+		else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
 
 		ImGui::GetWindowDrawList()->AddText(
-			font, fontSize, aligned_loc, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
+			font, fontSize, alignedCenter, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
 	}
 
-	void ui_renderer::init_animation(const animation_type animation_type,
+	void ui_renderer::initializeAnimation(const animation_type animation_type,
 		const float a_screen_x,
 		const float a_screen_y,
 		const float a_offset_x,
@@ -327,40 +410,88 @@ namespace ui
 				a_duration,
 				size);
 		animation_list.emplace_back(static_cast<ui::animation_type>(animation_type), std::move(anim));
-		// rlog::trace("done initializing animation. return.");
 	}
 
-	void ui_renderer::drawElement(ID3D11ShaderResourceView* texture,
+	void drawElement(ID3D11ShaderResourceView* texture,
 		const ImVec2 center,
 		const ImVec2 size,
 		const float angle,
-		const Color color)
+		const soulsy::Color color)
 	{
 		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
 		drawElementInner(texture, center, size, angle, im_color);
 	}
 
-	void ui_renderer::drawElementInner(ID3D11ShaderResourceView* texture,
+	ImVec2 rotateVector(const ImVec2 vector, const float angle)
+	{
+		const float cos_a = cosf(angle);
+		const float sin_a = sinf(angle);
+		const float sin_x = sin_a * vector.x;
+		const float cos_x = cos_a * vector.x;
+		const float sin_y = sin_a * vector.y;
+		const float cos_y = cos_a * vector.y;
+
+		return ImVec2(cos_x - sin_y, sin_x + cos_y);
+	}
+
+	std::array<ImVec2, 4> rotateRectWithTranslation(const ImVec2 center, const ImVec2 size, const float angle)
+	{
+		std::array<ImVec2, 4> rotated = rotateRect(size, angle);
+		return { center + rotated[0], center + rotated[1], center + rotated[2], center + rotated[3] };
+	}
+
+	// return ImVec2(v.x * cos_a - v.y * sin_a, v.x * sin_a + v.y * cos_a);
+
+	std::array<ImVec2, 4> rotateRect(const ImVec2 size, const float angle)
+	{
+		const float cos_a = cosf(angle);
+		const float sin_a = sinf(angle);
+		const float sin_x = sin_a * size.x * 0.5f;
+		const float cos_x = cos_a * size.x * 0.5f;
+		const float sin_y = sin_a * size.y * 0.5f;
+		const float cos_y = cos_a * size.y * 0.5f;
+		return {
+			ImVec2(-cos_x + sin_y, -sin_x - cos_y),
+			ImVec2(cos_x + sin_y, sin_x - cos_y),
+			ImVec2(cos_x - sin_y, sin_x + cos_y),
+			ImVec2(-cos_x - sin_y, -sin_x + cos_y),
+		};
+	}
+
+	void drawElementInner(ID3D11ShaderResourceView* texture,
 		const ImVec2 center,
 		const ImVec2 size,
 		const float angle,
 		const ImU32 im_color)
 	{
-		const float cos_a   = cosf(angle);
-		const float sin_a   = sinf(angle);
-		const ImVec2 pos[4] = { center + ImRotate(ImVec2(-size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
-			center + ImRotate(ImVec2(+size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
-			center + ImRotate(ImVec2(+size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a),
-			center + ImRotate(ImVec2(-size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a)
+		// const float cos_a   = cosf(angle);
+		// const float sin_a   = sinf(angle);
+		// const ImVec2 pos[4] = { center + ImRotate(ImVec2(-size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+		// 	center + ImRotate(ImVec2(+size.x * 0.5f, -size.y * 0.5f), cos_a, sin_a),
+		// 	center + ImRotate(ImVec2(+size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a),
+		// 	center + ImRotate(ImVec2(-size.x * 0.5f, +size.y * 0.5f), cos_a, sin_a)
 
-		};
-		constexpr ImVec2 uvs[4] = { ImVec2(0.0f, 0.0f), ImVec2(1.0f, 0.0f), ImVec2(1.0f, 1.0f), ImVec2(0.0f, 1.0f) };
-
+		std::array<ImVec2, 4> pos = rotateRectWithTranslation(center, size, angle);
 		ImGui::GetWindowDrawList()->AddImageQuad(
-			texture, pos[0], pos[1], pos[2], pos[3], uvs[0], uvs[1], uvs[2], uvs[3], im_color);
+			texture, pos[0], pos[1], pos[2], pos[3], FLAT_UVS[0], FLAT_UVS[1], FLAT_UVS[2], FLAT_UVS[3], im_color);
 	}
 
-	void ui_renderer::drawAllSlots()
+	void drawTextureQuad(ID3D11ShaderResourceView* texture, const std::array<ImVec2, 4> bounds, const Color color)
+	{
+		const ImU32 im_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
+		ImGui::GetWindowDrawList()->AddImageQuad(texture,
+			bounds[0],
+			bounds[1],
+			bounds[2],
+			bounds[3],
+			FLAT_UVS[0],
+			FLAT_UVS[1],
+			FLAT_UVS[2],
+			FLAT_UVS[3],
+			im_color);
+	}
+
+	void drawAllSlots()
 	{
 		auto topLayout          = hud_layout();
 		auto anchor             = topLayout.anchor;
@@ -381,7 +512,7 @@ namespace ui
 
 		// Draw the HUD background if requested.
 		const auto bgimg = std::string(topLayout.bg_image);
-		if (topLayout.bg_color.a > 0 && lazyLoadHudImage(bgimg))
+		if (topLayout.bg_color.a > 0 && ui_renderer::lazyLoadHudImage(bgimg))
 		{
 			constexpr auto angle                = 0.f;
 			const auto center                   = ImVec2(anchor.x, anchor.y);
@@ -413,7 +544,7 @@ namespace ui
 			const auto slot_center = ImVec2(slotLayout.center.x, slotLayout.center.y);
 
 			const auto slotbg = std::string(slotLayout.bg_image);
-			if (slotLayout.bg_color.a > 0 && lazyLoadHudImage(slotbg))
+			if (slotLayout.bg_color.a > 0 && ui_renderer::lazyLoadHudImage(slotbg))
 			{
 				const auto [texture, width, height] = HUD_IMAGES_MAP[slotbg];
 				const auto size                     = ImVec2(slotLayout.bg_size.x, slotLayout.bg_size.y);
@@ -425,7 +556,7 @@ namespace ui
 			{
 				const auto iconColor = colorizeIcons ? entry->color() : slotLayout.icon_color;
 				auto iconkey         = std::string(entry->icon_key());
-				if (lazyLoadIcon(iconkey))
+				if (ui_renderer::lazyLoadIcon(iconkey))
 				{
 					const auto [texture, width, height] = ICON_MAP[iconkey];
 					const auto scale =
@@ -457,24 +588,32 @@ namespace ui
 				const auto hk_im_center = ImVec2(slotLayout.hotkey_center.x, slotLayout.hotkey_center.y);
 
 				const auto hotkeybg = std::string(slotLayout.hotkey_bg_image);
-				if (slotLayout.hotkey_bg_color.a > 0 && lazyLoadHudImage(hotkeybg))
+				if (slotLayout.hotkey_bg_color.a > 0 && ui_renderer::lazyLoadHudImage(hotkeybg))
 				{
 					const auto [texture, width, height] = HUD_IMAGES_MAP[hotkeybg];
 					const auto size                     = ImVec2(slotLayout.hotkey_size.x, slotLayout.hotkey_size.y);
 					drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_bg_color);
 				}
 
-				const auto [texture, width, height] = iconForHotkey(hotkey);
+				const auto [texture, width, height] = ui_renderer::iconForHotkey(hotkey);
 				const auto size                     = ImVec2(static_cast<float>(slotLayout.hotkey_size.x - 2.0f),
                     static_cast<float>(slotLayout.hotkey_size.y - 2.0f));
 				drawElement(texture, hk_im_center, size, 0.f, slotLayout.hotkey_color);
+			}
+
+			// Charge/fuel meter.
+			if (slotLayout.meter_kind != MeterKind::None && entry->show_meter())
+			{
+				auto level = entry->meter_level();
+				if (slotLayout.meter_kind == MeterKind::CircleArc) { drawMeterCircleArc(level, slotLayout); }
+				else if (slotLayout.meter_kind == MeterKind::Rectangular) { drawMeterRectangular(level, slotLayout); }
 			}
 
 			// Finally, the poisoned indicator.
 			if (slotLayout.poison_color.a > 0 && entry->is_poisoned())
 			{
 				const auto poison_img = std::string(slotLayout.poison_image);
-				if (lazyLoadHudImage(poison_img))
+				if (ui_renderer::lazyLoadHudImage(poison_img))
 				{
 					const auto poison_center = ImVec2(slotLayout.poison_center.x, slotLayout.poison_center.y);
 					const auto [texture, width, height] = HUD_IMAGES_MAP[poison_img];
@@ -484,10 +623,10 @@ namespace ui
 			}
 		}
 
-		// draw_animations_frame();
+		// drawAnimationFrame();
 	}
 
-	void ui_renderer::drawHud()
+	void drawHud()
 	{
 		const auto timeDelta = ImGui::GetIO().DeltaTime;
 		advanceTimers(timeDelta);
@@ -508,9 +647,16 @@ namespace ui
 
 		ImGui::Begin(HUD_NAME, nullptr, window_flags);
 
+		if (drawCounter >= REFRESH_DRAW_COUNT)
+		{
+			refresh_hud_items();
+			drawCounter = 0;
+		}
+
 		drawAllSlots();
 
 		ImGui::End();
+		drawCounter++;
 	}
 
 	template <typename T>

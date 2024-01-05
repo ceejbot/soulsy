@@ -4,6 +4,8 @@
 
 #![deny(future_incompatible, clippy::unwrap_used)]
 #![warn(rust_2018_idioms, trivial_casts)]
+// there are a lot of missing docs; uncomment when bored
+// #![warn(missing_docs)]
 
 pub mod controller;
 pub mod data;
@@ -11,7 +13,8 @@ pub mod images;
 pub mod layouts;
 
 use controller::*;
-use data::{HudItem, SpellData, *};
+use data::huditem::{empty_extra_data, HudItem, RelevantExtraData};
+use data::{SpellData, *};
 use images::{get_icon_key, rasterize_by_path, rasterize_icon};
 use layouts::hud_layout;
 
@@ -26,20 +29,30 @@ pub mod plugin {
     /// Hud elements to draw.
     #[derive(Deserialize, Serialize, Debug, Clone, Hash)]
     enum HudElement {
+        /// The shout or minor power currently equipped.
         Power,
+        /// The utility items or consumable currently ready to be activated.
         Utility,
+        /// What is currently equipped in the left hand.
         Left,
+        /// What is currently equipped in the right hand.
         Right,
+        /// The currently-equipped ammunition, if any.
         Ammo,
+        /// The currently-worn equipment set, if any.
         EquipSet,
+        /// No hud slot.
         None, // not drawn
     }
 
     /// Text alignment options
     #[derive(Debug, Clone, Hash)]
     enum Align {
+        /// Justify left.
         Left,
+        /// Justify right.
         Right,
+        /// Centered.
         Center,
     }
 
@@ -132,7 +145,26 @@ pub mod plugin {
         poison_color: Color,
         poison_image: String,
 
+        meter_kind: MeterKind,
+        meter_center: Point,
+        meter_size: Point,
+        meter_empty_image: String,
+        meter_empty_color: Color,
+        meter_fill_image: String,
+        meter_fill_size: Point,
+        meter_fill_color: Color,
+        meter_start_angle: f32,
+        meter_end_angle: f32,
+        meter_arc_width: f32,
+
         text: Vec<TextFlattened>,
+    }
+
+    #[derive(Clone, Debug, Deserialize)]
+    pub enum MeterKind {
+        None,
+        Rectangular,
+        CircleArc,
     }
 
     #[derive(Clone, Debug)]
@@ -266,6 +298,8 @@ pub mod plugin {
         fn cycle_loaded_from_cosave(bytes: &CxxVector<u8>, version: u32);
         /// On save load or death restore, wipe the hud item cache.
         fn clear_cache();
+        /// Refresh the enchant charge / time remaining / poisoned status of all visible items.
+        fn refresh_hud_items();
 
         /// Give access to the settings to the C++ side.
         type UserSettings;
@@ -319,6 +353,10 @@ pub mod plugin {
         fn fmtstr(self: &HudItem, format: String) -> String;
         /// Check if this item is poisoned.
         fn is_poisoned(self: &HudItem) -> bool;
+        /// Check if this item needs a meter drawn.
+        fn show_meter(self: &HudItem) -> bool;
+        /// Get the meter level as a percentage of full/complete.
+        fn meter_level(self: &HudItem) -> f32;
 
         /// See src/data/magic.rs for this struct. It's used to classify spells.
         type SpellData;
@@ -370,6 +408,17 @@ pub mod plugin {
         ) -> Box<HudItem>;
         /// Build an empty HUD item.
         fn empty_huditem() -> Box<HudItem>;
+
+        type RelevantExtraData;
+        /// Build an empty extra data struct.
+        fn empty_extra_data() -> Box<RelevantExtraData>;
+        fn relevant_extra_data(
+            has_charge: bool,
+            charge: f32,
+            is_poisoned: bool,
+            has_time_left: bool,
+            time_left: f32,
+        ) -> Box<RelevantExtraData>;
 
         /// Call this to get the fallback-aware key for an icon.
         fn get_icon_key(name: String) -> String;
@@ -474,8 +523,12 @@ pub mod plugin {
         fn formSpecToHudItem(form_spec: &CxxString) -> Box<HudItem>;
         /// Is this item poisoned?
         fn isPoisonedByFormSpec(form_spec: &CxxString) -> bool;
+        /// Does this item have fuel or an enchantment charge level?
+        fn hasChargeByFormSpec(form_spec: &CxxString) -> bool;
         /// Get an item's enchant level. Will be 0 for all unenchanted items.
         fn chargeLevelByFormSpec(form_spec: &CxxString) -> f32;
+        /// Get all of an item's relevant extra data in pass.
+        fn relevantExtraData(form_spec: &CxxString) -> Box<RelevantExtraData>;
     }
 
     #[namespace = "ui"]
