@@ -174,28 +174,37 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApply
 	[[maybe_unused]] RE::BSTEventSource<RE::TESMagicEffectApplyEvent>* source)
 {
 	// TODO; just logging for now
-	auto caster     = event->caster->GetBaseObject();
-	auto casterName = helpers::displayNameAsUtf8(caster);
+	std::string casterName = std::string("<none>");
+	if (event->caster)
+	{
+		auto caster = event->caster->GetBaseObject();
+		casterName  = helpers::displayNameAsUtf8(caster);
+	}
 
 	auto* magicEffect = RE::TESForm::LookupByID(event->magicEffect);
 	auto effectName   = helpers::displayNameAsUtf8(magicEffect);
 
-	auto target     = event->target->GetBaseObject();
-	auto targetName = helpers::displayNameAsUtf8(target);
+	std::string targetName = std::string("<none>");
+	if (event->caster)
+	{
+		auto target = event->target->GetBaseObject();
+		targetName  = helpers::displayNameAsUtf8(target);
+	}
 
 	const auto playerID = RE::PlayerCharacter::GetSingleton()->GetFormID();
-	if (caster->GetFormID() != playerID && target->GetFormID() != playerID)
+	if (event->caster && event->caster->GetFormID() != playerID && event->target &&
+		event->target->GetFormID() != playerID)
 	{
 		return RE::BSEventNotifyControl::kContinue;
 	}
 
 	rlog::info("Effect status change: '{}' {} put \"{}\" ({}) on '{}' {}",
-		casterName.length() > 0 ? casterName : "<unknown>",
-		rlog::formatAsHex(event->caster->GetFormID()),
+		casterName,
+		event->caster ? rlog::formatAsHex(event->caster->GetFormID()) : "<none>",
 		effectName,
 		rlog::formatAsHex(event->magicEffect),
-		targetName.length() > 0 ? targetName : "<unknown>",
-		rlog::formatAsHex(event->target->GetFormID()));
+		targetName,
+		event->target ? rlog::formatAsHex(event->target->GetFormID()) : "<none>");
 
 	return RE::BSEventNotifyControl::kContinue;
 }
