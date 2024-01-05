@@ -67,11 +67,12 @@ offset = { x = -41.0, y = 41.0 }
 # Size of the hotkey. Also scaled.
 size = { x = 30.0, y = 30.0 }
 [[power.text]]
-alignment = "left"
-color     = { r = 255, g = 255, b = 255, a = 255 }
-contents  = "{name}"
-font_size = 20.0
-offset    = { x = 60.0, y = -13.0 }
+alignment  = "left"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 20.0
+offset     = { x = 65.0, y = -13.0 }
+wrap_width = 200
 
 [power.meter]
 angle  = 45
@@ -96,11 +97,12 @@ color  = { r = 200, g = 200, b = 200, a = 255 }
 offset = { x = 0.0, y = 0.0 }
 size   = { x = 40.0, y = 40.0 }
 [[utility.text]]
-alignment = "right"
-color     = { r = 255, g = 255, b = 255, a = 255 }
-contents  = "{name}"
-font_size = 20.0
-offset    = { x = -60.0, y = -13.0 }
+alignment  = "right"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 20.0
+offset     = { x = -60.0, y = -13.0 }
+wrap_width = 200
 
 [left]
 offset = { x = -325.0, y = 200.0 }
@@ -113,11 +115,12 @@ color  = { r = 200, g = 200, b = 200, a = 255 }
 offset = { x = 0.0, y = 0.0 }
 size   = { x = 40.0, y = 40.0 }
 [[left.text]]
-alignment = "right"
-color     = { r = 255, g = 255, b = 255, a = 255 }
-contents  = "{name}"
-font_size = 20.0
-offset    = { x = -60.0, y = -13.0 }
+alignment  = "right"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 20.0
+offset     = { x = -60.0, y = -13.0 }
+wrap_width = 200
 
 # An optional indicator for showing if this item is poisoned.
 [left.poison]
@@ -150,11 +153,12 @@ color  = { r = 200, g = 200, b = 200, a = 255 }
 offset = { x = 0.0, y = 0.0 }
 size   = { x = 40.0, y = 40.0 }
 [[right.text]]
-alignment = "left"
-color     = { r = 255, g = 255, b = 255, a = 255 }
-contents  = "{name}"
-font_size = 20.0
-offset    = { x = 60.0, y = -13.0 }
+alignment  = "left"
+color      = { r = 255, g = 255, b = 255, a = 255 }
+contents   = "{name}"
+font_size  = 20.0
+offset     = { x = 65.0, y = -13.0 }
+wrap_width = 200
 
 # An optional indicator for showing if this item is poisoned.
 [right.poison]
