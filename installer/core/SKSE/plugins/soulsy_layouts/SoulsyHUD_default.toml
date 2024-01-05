@@ -221,7 +221,7 @@ size   = { x = 30.0, y = 30.0 }
 offset = { x = 0.0, y = -40.0 }
 [left.poison.indicator]
 color = { r = 160, g = 240, b = 2, a = 255 }
-size  = { x = 17.0, y = 17.0 }
+size  = { x = 8.0, y = 17.0 }
 svg   = "../icons/indicator_poison.svg"
 
 [[left.text]]
@@ -266,7 +266,7 @@ size   = { x = 30.0, y = 30.0 }
 offset = { x = 0.0, y = -40.0 }
 [right.poison.indicator]
 color = { r = 160, g = 240, b = 2, a = 255 }
-size  = { x = 17.0, y = 17.0 }
+size  = { x = 8.0, y = 17.0 }
 svg   = "../icons/indicator_poison.svg"
 
 [[right.text]]
