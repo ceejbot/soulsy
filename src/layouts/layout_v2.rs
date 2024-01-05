@@ -303,7 +303,7 @@ pub enum MeterElement {
     None,
     Rectangular {
         /// How to rotate the entire meter.
-        angle: u32,
+        angle: i32,
         /// Location of the meter offset from the slot center.
         offset: Point,
         /// The background of the meter, aka the empty part.
@@ -323,9 +323,9 @@ pub enum MeterElement {
         /// The color to use for the filled arc.
         fill_color: Color,
         /// The angle at which the fill starts. 0 is >, 90 is ^, 180 is <, 270 is v
-        start_angle: u32, // in degrees, 0-360
+        start_angle: i32, // in degrees, 0-360
         /// The end angle.
-        end_angle: u32, // in degrees, 0-360, must be > end_angle
+        end_angle: i32, // in degrees, 0-360, must be > end_angle; e.g. go 0-360 for full circle
         /// Width of the fill arc.
         fill_width: f32,
     },
@@ -353,7 +353,7 @@ impl MeterElement {
             MeterElement::CircleArc { svg, .. } => svg.as_str(),
         }
     }
-    pub fn angle(&self) -> u32 {
+    pub fn angle(&self) -> i32 {
         match *self {
             MeterElement::None => 0,
             MeterElement::Rectangular { angle, .. } => angle,

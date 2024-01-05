@@ -120,9 +120,13 @@ Here are the fields a text element has:
 
 The data that can be filled into a format string is:
 
-- `{name}`: the item's name
+- `{name}`: the item's full display name
 - `{count}`: how many of the item the player has
-- `{charge}`: the charge or fuel level of the item, expressed as a percentage of the full charge
+- `{charge}`: the remaining enchantment charge for a weapon, expressed as a percentage of the full charge
+- `{time_left}`: the percentage time left for an item with a lifespan, such as torches or fueled lanterns
+- `{cooldown_time}`: the number of seconds left for a shout cooldown, counting down to zero
+- `{cooldown_percent}`: the percentage of the full time left for a shout cooldown
+- `{poison}`: the string "poison" if poisoned; empty otherwise (this should be translated, I know)
 - any regular text you'd like
 
 Some examples of valid format strings:
@@ -166,15 +170,9 @@ Right now SoulsyHUD supports three flavors of meters:
 
 1. A rectangular meter built from two SVGs, one for the background and one to show fill level.
 2. A rectangular meter built from one background SVG and a fill color.
-3. Circular meters, with a background SVG, a fill color, and angles for 0% and 100%. You can draw a full circle around a slot or a partial arc. Elliptical curves aren't supported yet. (Sending cookies or coffee to the mod author might help with this feature request.)
+3. __NOT YET FINISHED:__ Circular meters, with a background SVG, a fill color, and angles for 0% and 100%. You can draw a full circle around a slot or a partial arc. Elliptical curves aren't supported yet. (Sending cookies or coffee to the mod author might help with this feature request.)
 
 Rectangular meters are drawn as _horizontal_ bars filling from left to right, then rotated by the angle you specify. All angles are given in degrees. 0° means no rotation. 90° is a vertical meter, with full being at the top. You can specify any degree of rotation you want: if your layout uses equilateral triangles, you can rotate a meter 60° to make it align with an edge.
-
-- rectangular meters
-- arc meters
-- examples
-- probably screenshots
-
 
 Here's an example of a horizontal meter built from two svgs. The image for the fill uses a different color from the background:
 
@@ -188,7 +186,7 @@ svg = "meter_bar_empty.svg"
 # the size for the background
 size = { x = 100.0, y = 20.0 }
 # the color for the background
-empty_color = { r = 255, g = 255, b = 255, a = 255 }
+color = { r = 255, g = 255, b = 255, a = 255 }
 [left.meter.fill]
 # the svg drawn to show the fill
 svg = "meter_bar_filled.svg"
@@ -196,7 +194,7 @@ size = { x = 98.0, y = 16.0 }
 color = { r = 59, g = 106, b = 249, a = 200 }
 ```
 
-Meters have performance costs that the mod author hasn't measured yet. Every additional thing you draw in a layout adds a little bit to the performance load.
+Meter elements are rotated around their centers. You will likely need to play with the offset until a rotated meter is positioned exactly where you want. Remember to specify sizes as if the meter were *horizontal*, filling from left to right. Then rotate it to match your other layout elements.
 
 ## Slot elements
 

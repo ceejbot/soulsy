@@ -168,7 +168,7 @@ impl HudItem {
         }
         vars.insert("count".to_string(), self.count.to_string());
         vars.insert("charge".to_string(), format!("{:.0}", self.charge_level));
-        vars.insert("time_left".to_string(), self.time_left.to_string());
+        vars.insert("time_left".to_string(), format!("{:.0}", self.time_left));
         vars.insert("cooldown_time".to_string(), self.cooldown_time.to_string());
         vars.insert(
             "cooldown_percent".to_string(),
