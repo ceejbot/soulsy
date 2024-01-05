@@ -22,8 +22,8 @@ void registerAllListeners()
 	// scriptEventSourceHolder->GetEventSource<RE::TESHitEvent>()->AddEventSink(listener);
 	// rlog::info("    hit events: {}"sv, typeid(RE::TESHitEvent).name());
 
-	RE::UI::GetSingleton()->AddEventSink<RE::MenuOpenCloseEvent>(listener);
-	rlog::info("    menu open/close events: {}"sv, typeid(RE::MenuOpenCloseEvent).name());
+	// RE::UI::GetSingleton()->AddEventSink<RE::MenuOpenCloseEvent>(listener);
+	//rlog::info("    menu open/close events: {}"sv, typeid(RE::MenuOpenCloseEvent).name());
 
 	RE::BSInputDeviceManager::GetSingleton()->AddEventSink(listener);
 	rlog::info("    player input events."sv);
