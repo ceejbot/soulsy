@@ -75,16 +75,20 @@ pub fn refresh_hud_items() {
 /// Fill out some extra data info.
 pub fn relevant_extra_data(
     has_charge: bool,
+    max_charge: f32,
     charge: f32,
     is_poisoned: bool,
     has_time_left: bool,
+    max_time: f32,
     time_left: f32,
 ) -> Box<RelevantExtraData> {
     Box::new(RelevantExtraData::new(
         has_charge,
+        max_charge,
         charge,
         is_poisoned,
         has_time_left,
+        max_time,
         time_left,
     ))
 }

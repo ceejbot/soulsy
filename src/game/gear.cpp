@@ -355,14 +355,12 @@ namespace gear
 		{
 			const auto* data = thePlayer->GetHighProcess();
 			if (!data || data->voiceRecoveryTime == 0.0f) { return empty_extra_data(); }
-			return relevant_extra_data(false, 0.0f, false, true, data->voiceRecoveryTime);
+			return relevant_extra_data(false, 0.0f, 0.0f, false, true, 0.0f, data->voiceRecoveryTime);
 		}
 
-		bool isEnchanted      = false;
-		float chargePercent   = 0.0f;
-		bool hasTimeLeft      = false;
-		float timeLeftPercent = 0.0f;
-		bool isPoisoned       = false;
+		bool isEnchanted = false;
+		bool hasTimeLeft = false;
+		bool isPoisoned  = false;
 
 		// charge data
 		float current = 0.0f;
@@ -419,13 +417,11 @@ namespace gear
 						}
 						isPoisoned |= datalist->HasType(RE::ExtraDataType::kPoison);
 					}  // end of extra data checking
-					if (max > 0.0f && current > 0.0f) { chargePercent = current * 100.0f / max; }
-					if (maxTime > 0 && currTime > 0.0f) { timeLeftPercent = currTime * 100.0f / maxTime; }
 				}
 			}
 		}  // end of candidates loop
 
-		return relevant_extra_data(isEnchanted, chargePercent, isPoisoned, hasTimeLeft, timeLeftPercent);
+		return relevant_extra_data(isEnchanted, max, current, isPoisoned, hasTimeLeft, maxTime * 1.0f, currTime);
 	}
 
 	const char* displayName(const RE::TESForm* form)

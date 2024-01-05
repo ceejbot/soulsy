@@ -414,11 +414,13 @@ pub mod plugin {
         fn empty_extra_data() -> Box<RelevantExtraData>;
         fn relevant_extra_data(
             has_charge: bool,
+            max_charge: f32,
             charge: f32,
             is_poisoned: bool,
             has_time_left: bool,
+            max_time: f32,
             time_left: f32,
-        ) -> Box<RelevantExtraData>;
+    ) -> Box<RelevantExtraData>;
 
         /// Call this to get the fallback-aware key for an icon.
         fn get_icon_key(name: String) -> String;

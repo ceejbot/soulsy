@@ -120,20 +120,22 @@ Here are the fields a text element has:
 
 The data that can be filled into a format string is:
 
+- any regular text you'd like
 - `{name}`: the item's full display name
 - `{count}`: how many of the item the player has
-- `{charge}`: the remaining enchantment charge for a weapon, expressed as a percentage of the full charge
-- `{time_left}`: the percentage time left for an item with a lifespan, such as torches or fueled lanterns
-- `{cooldown_time}`: the number of seconds left for a shout cooldown, counting down to zero
-- `{cooldown_percent}`: the percentage of the full time left for a shout cooldown
+- `{charge_max}`: the maximum charge this enchanted weapon or usable item has
+- `{charge}`: the remaining enchantment charge for this item
+- `{time_max}`: the longest lifespan or recharge time an item or shout has
+- `{time_left}`: the number of seconds left for an item, or time left to recharge
+- `{meter_level}`: the percentage that would be shown in a graphical meter: what percentage of enchantment charge is left, the percentage of remaining burn time for a torch, or the percentage of remaining recharge time for a shout
 - `{poison}`: the string "poison" if poisoned; empty otherwise (this should be translated, I know)
-- any regular text you'd like
 
 Some examples of valid format strings:
 
 - `ITEM: {name}`
 - `{name}: {count}`
-- `{name}: {charge}%`
+- `{name}: {meter_level}%`
+- `{name}: {time_left}s`
 - `outfit`
 
 Here's a full text element, which draws the name of the equipped shout or power for that slot:
