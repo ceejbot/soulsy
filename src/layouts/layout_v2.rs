@@ -346,6 +346,13 @@ impl MeterElement {
             MeterElement::CircleArc { size, .. } => size.clone(),
         }
     }
+    pub fn filled_size(&self) -> Point {
+        match self {
+            MeterElement::None => Point::origin(),
+            MeterElement::Rectangular { filled, .. } => filled.size.clone(),
+            MeterElement::CircleArc { size, .. } => size.clone(),
+        }
+    }
     pub fn bg_img_path(&self) -> &str {
         match self {
             MeterElement::None => "",
@@ -400,8 +407,6 @@ impl MeterElement {
             } => {
                 let kind = MeterKind::Rectangular;
                 let meter_center = slot_center.translate(&offset.scale(scale));
-                let filled_svg = filled.svg.clone();
-                let filled_size = filled.size.clone();
 
                 (
                     kind,
@@ -409,8 +414,8 @@ impl MeterElement {
                     background.size.scale(scale),
                     background.svg.clone(),
                     background.color.clone(),
-                    filled_svg,
-                    filled_size,
+                    filled.svg.clone(),
+                    filled.size.scale(scale),
                     filled.color.clone(),
                     *angle as f32 * std::f32::consts::PI / 180.0f32,
                     0.0f32,
@@ -770,7 +775,7 @@ mod tests {
     }
 
     #[test]
-    fn charge_meters() {
+    fn meter_elements() {
         let data = include_str!("../../tests/fixtures/layout-v2.toml");
         let layout = match toml::from_str::<HudLayout2>(data) {
             Ok(l) => l,
@@ -831,6 +836,14 @@ mod tests {
             lflat
                 .center
                 .translate(&lmeter.offset().scale(layout.global_scale))
+        );
+
+        eprintln!("{rmeter:?}");
+        eprintln!("{rflat:?}");
+        assert_eq!(rmeter.size().scale(layout.global_scale), rflat.meter_size);
+        assert_eq!(
+            rmeter.filled_size().scale(layout.global_scale),
+            rflat.meter_fill_size
         );
     }
 }
