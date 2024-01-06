@@ -373,8 +373,8 @@ namespace gear
 		const auto enchantable = form->As<RE::TESEnchantableForm>();
 		if (enchantable)
 		{
-			isEnchanted = true;
-			max         = enchantable->amountofEnchantment;
+			max = enchantable->amountofEnchantment;
+			if (max > 0.0f) { isEnchanted = true; }
 		}
 
 		if (form->GetFormType() == RE::FormType::Light)
@@ -395,7 +395,6 @@ namespace gear
 				{
 					for (auto* datalist : *entry->extraLists)
 					{
-						if (datalist->HasType(RE::ExtraDataType::kEnchantment)) { isEnchanted = true; }
 						if (datalist->HasType(RE::ExtraDataType::kCharge))
 						{
 							auto* maybe_charge = datalist->GetByType(RE::ExtraDataType::kCharge);
@@ -407,10 +406,10 @@ namespace gear
 						}
 						if (datalist->HasType(RE::ExtraDataType::kTimeLeft))
 						{
-							hasTimeLeft           = true;
 							auto* maybe_time_left = datalist->GetByType(RE::ExtraDataType::kTimeLeft);
 							if (maybe_time_left && currTime == 0.0f)
 							{
+								hasTimeLeft     = true;
 								auto* extraLeft = static_cast<RE::ExtraTimeLeft*>(maybe_time_left);
 								currTime        = extraLeft->time;
 							}

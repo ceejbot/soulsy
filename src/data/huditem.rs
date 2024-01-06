@@ -34,7 +34,7 @@ pub struct HudItem {
 
 /// This is the item extra data the hud cares about and displays (full name
 /// not included).
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RelevantExtraData {
     has_charge: bool,
     max_charge: f32,
@@ -55,7 +55,21 @@ ExtraSoul - investigate
 */
 
 pub fn empty_extra_data() -> Box<RelevantExtraData> {
-    Box::new(RelevantExtraData::default())
+    Box::<RelevantExtraData>::default()
+}
+
+impl Default for RelevantExtraData {
+    fn default() -> Self {
+        Self {
+            has_charge: false,
+            max_charge: 0.0,
+            charge: 0.0,
+            is_poisoned: false,
+            has_time_left: false,
+            max_time: 0.0,
+            time_left: 0.0,
+        }
+    }
 }
 
 impl RelevantExtraData {
@@ -265,7 +279,11 @@ impl HudItem {
     /// Return true if this item has something to display in a meter.
     /// Does not update local flags; okay to use in tight loops.
     pub fn show_meter(&self) -> bool {
-        self.extra.has_charge || self.extra.has_time_left
+        if self.is_weapon() {
+            self.extra.has_charge
+        } else {
+            self.extra.has_time_left
+        }
     }
 
     /// Returns meter/time left percentage level.
@@ -312,19 +330,15 @@ impl HudItem {
                 if self.shout_cooldown <= extra.time_left {
                     self.shout_cooldown = extra.time_left;
                     self.meter_level = 0.0;
-                } else {
-                    if self.shout_cooldown == 0.0 {
-                        self.meter_level = 0.0;
-                    } else {
-                        self.meter_level = extra.time_left * 100.0 / self.shout_cooldown;
-                    }
-                }
-            } else {
-                if extra.max_time == 0.0 {
+                } else if self.shout_cooldown == 0.0 {
                     self.meter_level = 0.0;
                 } else {
-                    self.meter_level = extra.time_left * 100.0 / extra.max_time;
+                    self.meter_level = extra.time_left * 100.0 / self.shout_cooldown;
                 }
+            } else if extra.max_time == 0.0 {
+                self.meter_level = 0.0;
+            } else {
+                self.meter_level = extra.time_left * 100.0 / extra.max_time;
             }
         }
 
