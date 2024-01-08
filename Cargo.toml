@@ -14,6 +14,8 @@ crate-type = ["staticlib"]
 
 [dependencies]
 bincode   = "2.0.0-rc.3"
+byte-slice-cast = "1.2.2"
+chardet = "0.2.4"
 cxx       = { version = "1.0.111", features = ["c++20"] }
 enumset   = "1.1.3"
 eyre      = "0.6.9"
@@ -28,6 +30,7 @@ strfmt    = "0.2.4"
 strum     = { version = "0.25.0", features = ["derive"] }
 textcode  = "0.2.2"
 toml      = "0.8.6"
+ucs2 = "0.3.2"
 
 [build-dependencies]
 cxx-build = "1.0.111"

@@ -282,14 +282,16 @@ pub mod plugin {
         /// Log at trace level. Use this level for debugging programming problems.
         fn log_trace(message: String);
 
-        /// Decode a vector of bytes from a windows codepage string to a utf-8 string.
+        // So... ucs2 is a fixed-width format, and it might well end with a 0 if the
+        // data is ascii, so we cannot guess if something is null-terminated or not.
+        /// Decode a vector of bytes from a std::string (no null termination) to a utf-8 string.
         fn string_to_utf8(bytes: &CxxVector<u8>) -> String;
+        /// Decode a null-terminated C string from whatever it is to utf-8.
+        fn cstr_to_utf8(bytes_ffi: &CxxVector<u8>) -> String;
 
         /// Trigger rust to read config, figure out what the player has equipped,
         /// and figure out what it should draw.
         fn initialize_hud();
-        /// Check if the user wants the HUD visible right now or not.
-        fn show_ui() -> bool;
         /// Get cycle data for cosave.
         fn serialize_cycles() -> Vec<u8>;
         /// Serialization format version.
@@ -420,7 +422,7 @@ pub mod plugin {
             has_time_left: bool,
             max_time: f32,
             time_left: f32,
-    ) -> Box<RelevantExtraData>;
+        ) -> Box<RelevantExtraData>;
 
         /// Call this to get the fallback-aware key for an icon.
         fn get_icon_key(name: String) -> String;

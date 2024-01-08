@@ -14,7 +14,9 @@ pub mod facade;
 pub mod keys;
 pub mod logs;
 pub mod settings;
+pub mod strings;
 
 pub use facade::*;
 pub use logs::*;
 pub use settings::UserSettings;
+pub use strings::*;

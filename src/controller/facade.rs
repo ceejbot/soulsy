@@ -59,6 +59,7 @@ pub fn toggle_item(key: u32, #[allow(clippy::boxed_local)] menu_item: Box<HudIte
     control::get().handle_toggle_item(action, *menu_item)
 }
 
+/// Pass along menu events to the controller.
 pub fn handle_menu_event(key: u32, button: &ButtonEvent) -> bool {
     control::get().handle_menu_event(key, button)
 }
@@ -68,6 +69,7 @@ pub fn entry_to_show_in_slot(element: HudElement) -> Box<HudItem> {
     control::get().entry_to_show_in_slot(element)
 }
 
+/// Refresh our view of what's needs to be in the HUD right now.
 pub fn refresh_hud_items() {
     control::get().refresh_hud_items();
 }
@@ -108,6 +110,7 @@ pub fn handle_item_equipped(
     control::get().handle_item_equipped(equipped, form_spec, right, left)
 }
 
+/// Pass along a CGO grip-change event to the controller.
 pub fn handle_grip_change(use_alt_grip: bool) {
     control::get().handle_grip_change(use_alt_grip);
 }
@@ -117,6 +120,7 @@ pub fn handle_inventory_changed(form_spec: &String, count: u32) {
     control::get().handle_inventory_changed(form_spec, count);
 }
 
+/// Handle an item being favorited.
 pub fn handle_favorite_event(
     button: &ButtonEvent,
     is_favorite: bool,
@@ -125,6 +129,7 @@ pub fn handle_favorite_event(
     control::get().handle_favorite_event(button, is_favorite, *item);
 }
 
+/// Ask the control to refresh settings.
 pub fn refresh_user_settings() {
     if let Some(e) = UserSettings::refresh().err() {
         log::warn!("Failed to read user settings! using defaults; {e:#}");
@@ -133,6 +138,7 @@ pub fn refresh_user_settings() {
     control::get().apply_settings();
 }
 
+/// Clear all cycles. MCM -> this function -> controller.
 pub fn clear_cycles() {
     control::get().clear_cycles();
 }
@@ -250,46 +256,4 @@ pub fn set_equipset_icon(id: u32, itemname: String) -> bool {
 /// really enforced for names, this returns the first one found.
 pub fn look_up_equipset_by_name(name: String) -> u32 {
     control::get().cycles.equipset_by_name(name)
-}
-
-pub fn show_ui() -> bool {
-    control::get().cycles.hud_visible()
-}
-
-// ----------- windows character shenanigans
-
-use textcode::iso8859_15;
-
-/// C++ calls this version.
-pub fn string_to_utf8(bytes_ffi: &CxxVector<u8>) -> String {
-    let bytes: Vec<u8> = bytes_ffi.iter().copied().collect();
-    convert_to_utf8_doggedly(bytes)
-}
-
-// To test in game: install daegon
-// player.additem 4c2b15f4 1
-// Sacrÿfev Tëliimi
-
-/// Get a valid Rust representation of this Windows codepage string data by hook or by crook.
-pub fn convert_to_utf8_doggedly(input: Vec<u8>) -> String {
-    let bytes = if input.ends_with(&[0]) {
-        let chopped = input.len() - 1;
-        let mut tmp = input.clone();
-        tmp.truncate(chopped);
-        tmp
-    } else {
-        input.clone()
-    };
-    if bytes.is_empty() {
-        return String::new();
-    }
-
-    // Maybe it's the easy case and we're done!
-    if let Ok(utf8string) = String::from_utf8(bytes.clone()) {
-        return utf8string;
-    }
-
-    let mut dst = String::new();
-    iso8859_15::decode(bytes.as_slice(), &mut dst);
-    dst
 }
