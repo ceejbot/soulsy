@@ -38,7 +38,7 @@ namespace helpers
 		// It is called by bound object finder functions.
 		auto name     = form->GetName();  // this use is required
 		auto chonker  = helpers::chars_to_vec(name);
-		auto safename = std::string(string_to_utf8(chonker));
+		auto safename = std::string(cstr_to_utf8(chonker));
 		return safename;
 	}
 
@@ -47,7 +47,7 @@ namespace helpers
 		// Do not call this from bound object finder functions.
 		auto name     = gear::displayName(form);
 		auto chonker  = helpers::chars_to_vec(name);
-		auto safename = std::string(string_to_utf8(chonker));
+		auto safename = std::string(cstr_to_utf8(chonker));
 		return safename;
 	}
 

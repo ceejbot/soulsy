@@ -222,12 +222,13 @@ impl HudItem {
     }
 
     pub fn fmtstr(&self, fmt: String) -> String {
-        // This implementation caches nothing. It might be fast enough?
-        // needs measurement
         match strfmt(&fmt, &self.format_vars) {
             Ok(v) => v,
             Err(e) => {
-                log::debug!("Failed to render format string for HUD item; error: {e:#}");
+                log::debug!(
+                    "Failed to render format string for HUD item; formspec='{}'; error: {e:#}",
+                    self.form_string
+                );
                 "".to_string()
             }
         }

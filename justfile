@@ -97,20 +97,8 @@ translations:
 # check that all $ strings in config have matching translation strings
 [unix]
 check-translations:
-    #!/usr/bin/env bash
-    converted=$(iconv -f utf-16 -t utf-8 data/Interface/Translations/SoulsyHUD_english.txt > tmp.txt)
+	mcm-meta-helper --moddir installer/core check all
 
-    # I am too lazy to figure out how to get jq to do all of it.
-    keys=$(cat data/mcm/config/SoulsyHUD/config.json | jq '.pages[] | .content[] | .[]' -r | grep "\\$" | tr -d '," $' | sort | uniq)
-    for k in $keys; do
-        cmd="grep $k tmp.txt"
-        suppressed=$(sh -c "$cmd")
-        exit=$?
-        if [ $exit != '0' ]; then
-            echo "missing translation: $k"
-        fi
-    done
-    rm tmp.txt
 
 # Create a mod archive and 7zip it. Requires bash.
 [unix]
