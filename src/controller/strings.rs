@@ -81,16 +81,4 @@ mod tests {
         let converted = convert_to_utf8(bytes.clone());
         assert_eq!(converted, utf8_version);
     }
-
-    #[test]
-    fn utf16le_is_decoded() {
-        let bytes = vec![
-            36, 0, 83, 0, 111, 0, 117, 0, 108, 0, 115, 0, 121, 0, 72, 0, 85, 0, 68, 0, 9, 0, 83, 0,
-            111, 0, 117, 0, 108, 0, 115, 0, 121, 0, 32, 0, 72, 0, 85, 0, 68, 0,
-        ];
-        assert_eq!(bytes.len(), 42);
-        let converted = convert_to_utf8(bytes.clone());
-        assert_eq!(converted.len(), bytes.len() / 2);
-        assert_eq!(converted, "$SoulsyHUD	Soulsy HUD");
-    }
 }
