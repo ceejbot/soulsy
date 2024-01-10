@@ -542,6 +542,7 @@ namespace ui
 			auto entry_name        = std::string(entry->name());
 			const auto hotkey      = settings->hotkey_for(slotLayout.element);
 			const auto slot_center = ImVec2(slotLayout.center.x, slotLayout.center.y);
+			const bool skipItem    = entry_name.empty() && entry->icon_key().empty();
 
 			const auto slotbg = std::string(slotLayout.bg_image);
 			if (slotLayout.bg_color.a > 0 && ui_renderer::lazyLoadHudImage(slotbg))
@@ -552,7 +553,7 @@ namespace ui
 			}
 
 			// now draw the icon over the background...
-			if (slotLayout.icon_color.a > 0)
+			if (slotLayout.icon_color.a > 0 && !skipItem)
 			{
 				const auto iconColor = colorizeIcons ? entry->color() : slotLayout.icon_color;
 				auto iconkey         = std::string(entry->icon_key());
@@ -570,15 +571,18 @@ namespace ui
 			}
 
 			// Loop through the text elements of this slot.
-			for (auto label : slotLayout.text)
+			if (!skipItem)
 			{
-				if (label.color.a == 0) { continue; }
-				const auto textPos = ImVec2(label.anchor.x, label.anchor.y);
-				auto entrytxt      = std::string(entry->fmtstr(label.contents));
-				// Let's try a wrap width here. This is going to be wrong, but we'll experiment.
-				if (!entrytxt.empty())
+				for (auto label : slotLayout.text)
 				{
-					drawText(entrytxt, textPos, label.font_size, label.color, label.alignment, label.wrap_width);
+					if (label.color.a == 0) { continue; }
+					const auto textPos = ImVec2(label.anchor.x, label.anchor.y);
+					auto entrytxt      = std::string(entry->fmtstr(label.contents));
+					// Let's try a wrap width here. This is going to be wrong, but we'll experiment.
+					if (!entrytxt.empty())
+					{
+						drawText(entrytxt, textPos, label.font_size, label.color, label.alignment, label.wrap_width);
+					}
 				}
 			}
 

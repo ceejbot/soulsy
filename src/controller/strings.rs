@@ -1,6 +1,4 @@
 //! Character encoding shenanigans. Bethesda is very bad at utf-8, I am told.
-
-use byte_slice_cast::AsSliceOf;
 use cxx::CxxVector;
 use textcode::{iso8859_15, iso8859_9};
 
@@ -48,17 +46,7 @@ pub fn convert_to_utf8(bytes: Vec<u8>) -> String {
             iso8859_15::decode(bytes.as_slice(), &mut dst);
             dst
         }
-        _ => {
-            let Ok(widebytes) = bytes.as_slice_of::<u16>() else {
-                return String::from_utf8_lossy(bytes.as_slice()).to_string();
-            };
-            let mut utf8bytes: Vec<u8> = vec![0; widebytes.len()];
-            let Ok(_c) = ucs2::decode(widebytes, &mut utf8bytes) else {
-                return String::from_utf8_lossy(bytes.as_slice()).to_string();
-            };
-            String::from_utf8(utf8bytes.clone())
-                .unwrap_or_else(|_| String::from_utf8_lossy(utf8bytes.as_slice()).to_string())
-        }
+        _ => String::from_utf8_lossy(&bytes).to_string(),
     }
 }
 
