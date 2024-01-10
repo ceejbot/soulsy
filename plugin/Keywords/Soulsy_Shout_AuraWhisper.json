@@ -1,4 +1,5 @@
 {
   "FormKey": "000820:SoulsyHUD.esl",
-  "EditorID": "Soulsy_Shout_AuraWhisper"
+  "EditorID": "Soulsy_Shout_AuraWhisper",
+  "Color": "#00000000"
 }

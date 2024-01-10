@@ -535,6 +535,11 @@ pub mod plugin {
         fn chargeLevelByFormSpec(form_spec: &CxxString) -> f32;
         /// Get all of an item's relevant extra data in pass.
         fn relevantExtraData(form_spec: &CxxString) -> Box<RelevantExtraData>;
+
+        // Send an event to papyrus notifying it that an item has been added to a cycle.
+        fn notifyItemAddedToCycle(form_spec: &CxxString, decorator: &CxxString);
+        // Notify papyrus that an item has been removed from cycles.
+        fn notifyItemRemovedFromCycle(form_spec: &CxxString);
     }
 
     #[namespace = "ui"]

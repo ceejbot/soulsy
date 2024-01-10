@@ -1,4 +1,6 @@
 ScriptName SoulsyHUD_MCM Extends MCM_ConfigBase
+{ This is the script that sets up the config menu for Soulsy. }
+
 import SKI_ConfigBase
 
 bool property pEnableActivateModifier = false auto
@@ -36,7 +38,6 @@ int function FindSelectedSetID(string name) native
 string[] function GetEquipSetItemNames(int id) native
 bool function SetItemAsEquipSetIcon(int id, string name) native
 
-; equip sets
 function CreateEquipSet()
     string newname = GetModSettingString("sLastUsedSetName:Equipsets")
     if HandleCreateEquipSet(newname)

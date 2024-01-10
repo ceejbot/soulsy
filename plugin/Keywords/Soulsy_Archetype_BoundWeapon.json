@@ -1,4 +1,5 @@
 {
   "FormKey": "00084E:SoulsyHUD.esl",
-  "EditorID": "Soulsy_Archetype_BoundWeapon"
+  "EditorID": "Soulsy_Archetype_BoundWeapon",
+  "Color": "#00000000"
 }

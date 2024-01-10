@@ -1,8 +1,9 @@
 //! Logging functions exposed to C++. There's an initialization function
 //! that must be called to tell the plugin where to log. The other functions
 //! are for C++ to use to share a log file with Rust. For now, C++ must pass
-//! a preformatted-string to these functions. This is wasteful, but I don't
-//! C strings prove a bit of a pain.
+//! a preformatted-string to these functions. This is wasteful, but exposing
+//! Rust macros to C++ is not possible.
+//! See the strings.rs file for related shenanigans.
 
 use std::ffi::OsString;
 use std::fs::File;

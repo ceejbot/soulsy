@@ -1,4 +1,5 @@
 {
-    "FormKey": "000834:SoulsyHUD.esl",
-    "EditorID": "Soulsy_Shout_UnrelentingForce"
+  "FormKey": "000834:SoulsyHUD.esl",
+  "EditorID": "Soulsy_Shout_UnrelentingForce",
+  "Color": "#00000000"
 }

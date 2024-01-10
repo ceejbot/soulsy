@@ -9,6 +9,8 @@
     Final="false">
     <Imports>
         <Import>.\installer\core\scripts\source</Import>
+        <Import>G:\MO2Skyrim\moreHUD Inventory Edition Loose Version - AE\Source\Scripts</Import>
+        <Import>G:\MO2Skyrim\SKSE 1.6.640\Scripts\Source</Import>
         <Import>G:\MO2Skyrim\ScriptSource\Source\Scripts</Import>
         <Import>G:\MO2Skyrim\MCM SDK\Source\Scripts</Import>
         <Import>G:\MO2Skyrim\SkyUI_5.1_SDK\Scripts\Source</Import>

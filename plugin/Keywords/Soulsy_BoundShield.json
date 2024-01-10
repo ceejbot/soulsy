@@ -1,4 +1,5 @@
 {
   "FormKey": "000810:SoulsyHUD.esl",
-  "EditorID": "Soulsy_BoundShield"
+  "EditorID": "Soulsy_BoundShield",
+  "Color": "#00000000"
 }

@@ -1,4 +1,5 @@
 {
   "FormKey": "000814:SoulsyHUD.esl",
-  "EditorID": "Soulsy_Shout_DrainVitality"
+  "EditorID": "Soulsy_Shout_DrainVitality",
+  "Color": "#00000000"
 }

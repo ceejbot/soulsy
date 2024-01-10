@@ -43,6 +43,9 @@ namespace helpers
 	std::string vec_to_stdstring(rust::Vec<uint8_t> input);
 	std::vector<uint8_t> chars_to_vec(const char* input);
 
+	void notifyItemAddedToCycle(const std::string& form_spec, const std::string& decorator);
+	void notifyItemRemovedFromCycle(const std::string& form_spec);
+
 	//void addCycleKeyword(const std::string& form_spec);
 	//void removeCycleKeyword(const std::string& form_spec);
 }

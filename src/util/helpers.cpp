@@ -76,6 +76,8 @@ namespace helpers
 		return std::move(result);
 	}
 
+	// deciding if the player is in control
+
 	// See UserEvents.h -- this is kMovement | kActivate | kMenu
 	// Handles photo mode and possibly others.
 	static constexpr auto requiredControlFlags = static_cast<RE::ControlMap::UEFlag>(1036);
@@ -358,5 +360,21 @@ namespace helpers
 	{
 		auto* const form = formSpecToFormItem(form_spec);
 		return gear::relevantExtraData(form);
+	}
+
+	void notifyItemAddedToCycle(const std::string& form_spec, const std::string& decorator)
+	{
+		auto* const item = formSpecToFormItem(form_spec);
+		if (!item) { return; }
+		SKSE::ModCallbackEvent modEvent{ "Soulsy_ItemAddedToCycle", RE::BSFixedString(decorator), 0.0f, item };
+		SKSE::GetModCallbackEventSource()->SendEvent(&modEvent);
+	}
+
+	void notifyItemRemovedFromCycle(const std::string& form_spec)
+	{
+		auto* const item = formSpecToFormItem(form_spec);
+		if (!item) { return; }
+		SKSE::ModCallbackEvent modEvent{ "Soulsy_ItemRemovedFromCycle", "", 0.0f, item };
+		SKSE::GetModCallbackEventSource()->SendEvent(&modEvent);
 	}
 }

@@ -1,4 +1,5 @@
 {
   "FormKey": "000831:SoulsyHUD.esl",
-  "EditorID": "Soulsy_Shout_SlowTime"
+  "EditorID": "Soulsy_Shout_SlowTime",
+  "Color": "#00000000"
 }

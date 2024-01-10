@@ -4,7 +4,7 @@ use encoding::label::encoding_from_whatwg_label;
 use encoding::DecoderTrap;
 
 // To test in game: install daegon
-// player.additem 4c2b15f4 1
+// player.additem xxxb15f4 1
 // Sacrÿfev Tëliimi
 
 /// C++ should use this for std::string conversions.

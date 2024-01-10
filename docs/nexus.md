@@ -30,6 +30,7 @@ SoulsyHUD has an MCM menu that allows you to edit its options and, most importan
 - cycling through items for your left hand
 - cycling through items for your right hand
 - cycling through consumables
+- cycling through equipment sets
 - using a consumable
 
 You can use a hotkey, a modifier + a hotkey, or a long-press to do most actions.

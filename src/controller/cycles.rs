@@ -8,6 +8,7 @@ use super::control::MenuEventResponse;
 use super::cycleentries::*;
 use super::keys::CycleSlot;
 use super::user_settings;
+use crate::controller::control::set_decorator;
 use crate::data::item_cache::ItemCache;
 use crate::data::{BaseType, HudItem};
 use crate::images::icons::Icon;
@@ -270,6 +271,11 @@ impl CycleData {
                     cxx::let_cxx_string!(form_spec = spec.clone());
                     if hasItemOrSpell(&form_spec) {
                         log::info!("    {item}");
+                        match &xs.0 {
+                            CycleSlot::Power => set_decorator(&item, "CyclePowers"),
+                            CycleSlot::Utility => set_decorator(&item, "CycleUtilities"),
+                            _ => {}
+                        }
                         return Some(spec);
                     }
 
@@ -319,6 +325,23 @@ impl CycleData {
             log::info!("    {} empty slots", xs.empty_slots().len());
         });
         //log::info!("hud_visible: {}", self.hud_visible);
+
+        // Now that the dust has settled, we add indicators to left & right cycle items.
+        self.left.iter().for_each(|xs| {
+            let item = cache.get(xs);
+            if !self.right.includes(xs) {
+                set_decorator(&item, "CycleLeft");
+            }
+        });
+        self.right.iter().for_each(|xs| {
+            let item = cache.get(xs);
+            if self.left.includes(xs) {
+                set_decorator(&item, "CycleBothHands");
+            } else {
+                set_decorator(&item, "CycleRight");
+            }
+        });
+
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
     }
 

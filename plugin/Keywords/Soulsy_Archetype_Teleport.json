@@ -1,4 +1,5 @@
 {
   "FormKey": "000844:SoulsyHUD.esl",
-  "EditorID": "Soulsy_Archetype_Teleport"
+  "EditorID": "Soulsy_Archetype_Teleport",
+  "Color": "#00000000"
 }

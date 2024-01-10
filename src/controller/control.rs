@@ -1475,11 +1475,15 @@ impl Controller {
         if let Some(msg) = maybe_message {
             log::info!("{msg}");
             notify(&msg);
+            self.decorate_item(&item);
         } else {
             log::info!("Favoriting or unfavoriting didn't change cycles.");
         }
     }
 
+    /// Tell the menu input event listener if it should take further action because
+    /// of this event. If we return true, it figures out which item is selected
+    /// and toggles it.
     pub fn handle_menu_event(&mut self, key: u32, button: &ButtonEvent) -> bool {
         // Much simpler than the cycle loop. We care if the cycle modifier key
         // is down (if one is set), and we care if the cycle button itself has
@@ -1542,6 +1546,8 @@ impl Controller {
             }
         }
 
+        self.decorate_item(&item);
+
         // notify the player what happened...
         let verb = match result {
             MenuEventResponse::ItemAdded => translated_key(FMT_ITEM_ADDED),
@@ -1562,15 +1568,15 @@ impl Controller {
         vars.insert("item".to_string(), item.name());
         vars.insert("cycle".to_string(), cyclename);
         if let Ok(message) = strfmt(&verb, &vars) {
-            log::info!("{}; kind={:?};", message, item.kind());
+            log::info!("{} icon={};", message, item.icon());
             notify(&message);
         } else {
             log::debug!("No notification sent to player because message couldn't be formatted");
         }
     }
 
-    // Update the state of a tracked key so we can handle modifier keys and long-presses.
-    // Returns whether the calling level should continue handling this key.
+    /// Update the state of a tracked key so we can handle modifier keys and long-presses.
+    /// Returns whether the calling level should continue handling this key.
     fn update_tracked_key(&mut self, hotkey: &Hotkey, button: &ButtonEvent, in_menu: bool) -> bool {
         let mut retval = true;
         let tracking_long_presses = !in_menu && settings().start_long_press_timer(hotkey);
@@ -1636,7 +1642,7 @@ impl Controller {
 
     // ----------- equipment set functions
 
-    /// Handle the power/shouts key being pressed.
+    /// Handle the equipset key being pressed.
     fn handle_cycle_equipset(&mut self, _hotkey: &Hotkey) -> KeyEventResponse {
         let le_options = settings();
         let cycle_method = le_options.cycle_advance_method();
@@ -1731,6 +1737,36 @@ impl Controller {
         let icon = source.icon().clone();
         self.cycles.set_icon_by_id(id, icon)
     }
+
+    /// Call this after any add/remove actions are fully complete to
+    /// assign the appropriate decorator for an item.
+    fn decorate_item(&self, item: &HudItem) {
+        if item.is_power() {
+            if self.cycles.includes(&CycleSlot::Power, item) {
+                set_decorator(item, "CyclePowers");
+            } else {
+                remove_decorator(item);
+            }
+        } else if item.is_utility() {
+            if self.cycles.includes(&CycleSlot::Utility, item) {
+                set_decorator(item, "CycleUtilities");
+            } else {
+                remove_decorator(item);
+            }
+        } else {
+            let in_left = self.cycles.includes(&CycleSlot::Left, item);
+            let in_right = self.cycles.includes(&CycleSlot::Right, item);
+            if in_left && in_right {
+                set_decorator(item, "CycleBothHands");
+            } else if in_right {
+                set_decorator(item, "CycleRight");
+            } else if in_left {
+                set_decorator(item, "CycleLeft");
+            } else {
+                remove_decorator(item);
+            }
+        }
+    }
 }
 
 impl Default for KeyEventResponse {
@@ -1822,6 +1858,31 @@ pub fn translated_key(key: &str) -> String {
 #[cfg(test)]
 pub fn translated_key(key: &str) -> String {
     format!("translation of {key}")
+}
+
+#[cfg(not(test))]
+pub fn set_decorator(item: &HudItem, decorator: &str) {
+    log::trace!("setting decorator on '{}': {decorator}", item.name());
+    cxx::let_cxx_string!(form_spec = item.form_string());
+    cxx::let_cxx_string!(decor = decorator);
+    notifyItemAddedToCycle(&form_spec, &decor);
+}
+
+#[cfg(test)]
+pub fn set_decorator(item: &HudItem, decorator: &str) {
+    log::debug!("would be adding decorator {decorator} to {item}");
+}
+
+#[cfg(not(test))]
+pub fn remove_decorator(item: &HudItem) {
+    log::trace!("removing decorator from '{}';", item.name());
+    cxx::let_cxx_string!(form_spec = item.form_string());
+    notifyItemRemovedFromCycle(&form_spec);
+}
+
+#[cfg(test)]
+pub fn remove_decorator(item: &HudItem) {
+    log::debug!("would be removing all decorators from {item}");
 }
 
 const FMT_ITEM_REMOVED: &str = "$SoulsyHUD_fmt_ItemRemoved";
