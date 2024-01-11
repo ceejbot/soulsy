@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 use self::shared::NamedAnchor;
 use crate::control::notify;
 use crate::controller::control::translated_key;
+use crate::controller::user_settings;
 use crate::plugin::{LayoutFlattened, Point};
 
 static LAYOUT_PATH: &str = "./data/SKSE/Plugins/SoulsyHUD_Layout.toml";
@@ -35,7 +36,7 @@ pub fn hud_layout() -> LayoutFlattened {
     layout.clone()
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(untagged)]
 pub enum Layout {
     Version1(Box<HudLayout1>),
@@ -121,6 +122,13 @@ impl Layout {
             Layout::Version2(v) => LayoutFlattened::from(&**v),
         }
     }
+
+    pub fn anchor_point(&self) -> Point {
+        match self {
+            Layout::Version1(v) => v.anchor_point(),
+            Layout::Version2(v) => v.anchor_point(),
+        }
+    }
 }
 
 pub fn anchor_point(
@@ -137,7 +145,16 @@ pub fn anchor_point(
     let width = size.x * global_scale;
     let height = size.y * global_scale;
 
-    match anchor_name {
+    let config = *user_settings();
+    let user_pref_anchor = config.anchor_loc();
+    eprintln!("{user_pref_anchor}");
+    let anchor_to_use = if !matches!(user_pref_anchor, &NamedAnchor::None) {
+        user_pref_anchor
+    } else {
+        anchor_name
+    };
+
+    match anchor_to_use {
         NamedAnchor::TopLeft => Point {
             x: width / 2.0,
             y: height / 2.0,
@@ -321,5 +338,27 @@ mod tests {
             }
         );
         assert_eq!(pointed.anchor_point(), named.anchor_point());
+    }
+
+    #[test]
+    fn anchor_points_respect_settings() {
+        // override the defaults with what we need for this test
+        let _ = crate::controller::UserSettings::refresh_with("tests/fixtures/test-settings.ini");
+
+        let named = Layout::read_from_file("tests/fixtures/named-anchor.toml")
+            .expect("this test fixture exists and is valid");
+        // this layout has bottom left as an anchor point
+        // the test settings override with "center"
+        let relocated = named.anchor_point();
+        assert_eq!(
+            relocated,
+            Point {
+                x: 1720.0,
+                y: 720.0
+            }
+        );
+
+        let flattened = named.flatten();
+        assert_eq!(flattened.anchor, relocated);
     }
 }

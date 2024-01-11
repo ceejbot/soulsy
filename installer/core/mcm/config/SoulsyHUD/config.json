@@ -347,6 +347,28 @@
                     "type": "header"
                 },
                 {
+                    "id": "uAnchorLocation:Options",
+                    "text": "$SoulsyHUD_Options_AnchorLoc_Text",
+                    "type": "enum",
+                    "help": "$SoulsyHUD_Options_AnchorLoc_Help",
+                    "valueOptions": {
+                        "options": [
+                            "$SoulsyHUD_AnchorLoc_TopLeft",
+                            "$SoulsyHUD_AnchorLoc_TopRight",
+                            "$SoulsyHUD_AnchorLoc_BottomLeft",
+                            "$SoulsyHUD_AnchorLoc_BottomRight",
+                            "$SoulsyHUD_AnchorLoc_Center",
+                            "$SoulsyHUD_AnchorLoc_CenterTop",
+                            "$SoulsyHUD_AnchorLoc_CenterBottom",
+                            "$SoulsyHUD_AnchorLoc_LeftCenter",
+                            "$SoulsyHUD_AnchorLoc_RightCenter",
+                            "$SoulsyHUD_AnchorLoc_None"
+                        ],
+                        "sourceType": "ModSettingInt",
+                        "defaultValue": 0
+                    }
+                },
+                {
                     "id": "bAutoFade:Options",
                     "text": "$SoulsyHUD_Options_Fade_Text",
                     "help": "$SoulsyHUD_Options_Fade_Help",
