@@ -12,7 +12,7 @@ use once_cell::sync::Lazy;
 use strum::Display;
 
 use super::keys::Hotkey;
-use crate::plugin::HudElement;
+use crate::{layouts::shared::NamedAnchor, plugin::HudElement};
 
 /// This is the path to players's modified settings.
 static SETTINGS_PATH: &str = "./data/MCM/Settings/SoulsyHUD.ini";
@@ -100,6 +100,8 @@ pub struct UserSettings {
     showhide: u32,
     /// A hotkey for re-reading the layout from toml and redrawing. uRefreshKey
     refresh_layout: u32,
+    /// Layout anchor override. uAnchorLocation
+    anchor_loc: NamedAnchor,
 
     /// The number of milliseconds to delay before equipping a selection. Max 2500, min 0.
     equip_delay_ms: u32,
@@ -141,6 +143,7 @@ impl Default for UserSettings {
             right: 7,
             equipset: 9,
             refresh_layout: 8,
+            anchor_loc: NamedAnchor::None,
             how_to_activate: ActivationMethod::Hotkey,
             activate: 4,
             activate_modifier: -1,
@@ -182,6 +185,13 @@ impl UserSettings {
             .lock()
             .expect("Unrecoverable runtime problem: cannot acquire settings lock.");
         settings.read_from_file(SETTINGS_PATH)
+    }
+
+    pub fn refresh_with(fpath: &str) -> Result<()> {
+        let mut settings = SETTINGS
+            .lock()
+            .expect("Unrecoverable runtime problem: cannot acquire settings lock.");
+        settings.read_from_file(fpath)
     }
 
     /// Refresh ourselves from the MCM-controlled file.
@@ -231,6 +241,7 @@ impl UserSettings {
 
         self.showhide = read_from_ini(self.showhide, "uShowHideKey", controls);
         self.refresh_layout = read_from_ini(self.refresh_layout, "uRefreshKey", controls);
+        self.anchor_loc = read_from_ini(self.anchor_loc.clone(), "uAnchorLocation", options);
 
         self.unarmed_handling = read_from_ini(self.unarmed_handling, "uHowToUnequip", controls);
         self.unequip_modifier =
@@ -403,6 +414,9 @@ impl UserSettings {
     }
     pub fn refresh_layout(&self) -> u32 {
         self.refresh_layout
+    }
+    pub fn anchor_loc(&self) -> &NamedAnchor {
+        &self.anchor_loc
     }
     pub fn maxlen(&self) -> u32 {
         20
@@ -591,6 +605,31 @@ impl FromIniStr for String {
     }
 }
 
+impl FromIniStr for NamedAnchor {
+    fn from_ini(value: &str) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if let Ok(v) = value.parse::<i32>() {
+            match v {
+                0 => Some(NamedAnchor::None),
+                1 => Some(NamedAnchor::TopLeft),
+                2 => Some(NamedAnchor::TopRight),
+                3 => Some(NamedAnchor::BottomLeft),
+                4 => Some(NamedAnchor::BottomRight),
+                5 => Some(NamedAnchor::Center),
+                6 => Some(NamedAnchor::CenterTop),
+                7 => Some(NamedAnchor::CenterBottom),
+                8 => Some(NamedAnchor::LeftCenter),
+                9 => Some(NamedAnchor::LeftCenter),
+                _ => Some(NamedAnchor::None),
+            }
+        } else {
+            None
+        }
+    }
+}
+
 // qualified so we don't collide with the macro strum::Display
 // We implement this so the logs contain a human-readable dump of the settings
 // at save game load, so people can debug.
@@ -606,6 +645,7 @@ impl std::fmt::Display for UserSettings {
              right cycle key: {}
           equipset cycle key: {}
           refresh layout key: {}
+      layout anchor override: {}
              how_to_activate: {}
         activate consumables: {}
            activate_modifier: {}
@@ -638,6 +678,7 @@ impl std::fmt::Display for UserSettings {
             self.right,
             self.equipset,
             self.refresh_layout,
+            self.anchor_loc,
             self.how_to_activate,
             self.activate,
             self.activate_modifier,

@@ -175,6 +175,9 @@ impl Controller {
             }
         }
 
+        // Apply any new anchor relocations to the current layout.
+        Layout::refresh();
+
         self.cache.introspect();
     }
 

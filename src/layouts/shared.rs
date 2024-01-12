@@ -132,6 +132,28 @@ where
     }
 }
 
+impl From<&str> for NamedAnchor {
+    fn from(s: &str) -> Self {
+        match s.to_lowercase().as_str() {
+            "top_left" => NamedAnchor::TopLeft,
+            "top_right" => NamedAnchor::TopRight,
+            "bottom_left" => NamedAnchor::BottomLeft,
+            "bottom_right" => NamedAnchor::BottomRight,
+            "center" => NamedAnchor::Center,
+            "center_top" => NamedAnchor::CenterTop,
+            "top_center" => NamedAnchor::CenterTop,
+            "center_bottom" => NamedAnchor::CenterBottom,
+            "bottom_center" => NamedAnchor::CenterBottom,
+            "left_center" => NamedAnchor::LeftCenter,
+            "center_left" => NamedAnchor::LeftCenter,
+            "right_center" => NamedAnchor::RightCenter,
+            "center_right" => NamedAnchor::RightCenter,
+            "none" => NamedAnchor::None,
+            _ => NamedAnchor::None,
+        }
+    }
+}
+
 // ---------- MeterType
 
 // We can't derive this because it is exposed to C++.
