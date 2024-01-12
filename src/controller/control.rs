@@ -1104,7 +1104,7 @@ impl Controller {
             "Item equipped"
         };
         log::info!(
-            "{prefix}: name='{}'; icon={}; form_spec='{form_spec}'",
+            "{prefix}: name='{}'; icon='{}'; form_spec='{form_spec}'",
             item.name(),
             item.icon()
         );

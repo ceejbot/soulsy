@@ -23,7 +23,7 @@ namespace player
 		if (!race) { return false; }
 		if (race->GetFormID() == 0x0200283a) { return true; }
 		const auto* editorID = race->GetFormEditorID();
-		if (editorID && std::strcmp(editorID, "DLC1VampireBeastRace")) { return true; }
+		if (editorID && std::strcmp(editorID, "DLC1VampireBeastRace") == 0) { return true; }
 		return false;
 	}
 
@@ -34,7 +34,7 @@ namespace player
 		if (!race) { return false; }
 		if (race->GetFormID() == 0x000cdd84) { return true; }
 		const auto* editorID = race->GetFormEditorID();
-		if (editorID && std::strcmp(editorID, "WerewolfBeastRace")) { return true; }
+		if (editorID && std::strcmp(editorID, "WerewolfBeastRace") == 0) { return true; }
 		return false;
 	}
 
