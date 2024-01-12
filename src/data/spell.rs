@@ -82,7 +82,7 @@ impl SpellType {
         } else if !tagset.is_disjoint(ICON_STORM) {
             Icon::SpellLightningBlast
         } else if !tagset.is_disjoint(ICON_VAMPIRE) {
-            Icon::SpellVampire
+            Icon::PowerVampire
         } else if !tagset.is_disjoint(ICON_DRUID) {
             Icon::SpellLeaves
         } else if !tagset.is_disjoint(ICON_ROOT) {
@@ -130,6 +130,10 @@ impl SpellType {
             Icon::SpellSummon
         } else if tagset.contains(SpellKeywords::MagicSummonUndead) {
             Icon::SpellReanimate
+        } else if tagset.contains(SpellKeywords::Power_Bats) {
+            Icon::PowerBats
+        } else if tagset.contains(SpellKeywords::Spell_Blood) {
+            Icon::SpellBlood
         } else if tagset.contains(SpellKeywords::SpellShapechange_Werebeast)
             || tagset.contains(SpellKeywords::SpellShapechange)
         {
@@ -170,42 +174,8 @@ impl SpellType {
         let color_kwds = strings_to_keywords::<InvColor>(&tags);
         let color = if let Some(assigned) = color_kwds.first() {
             assigned.clone()
-        } else if !tagset.is_disjoint(DARENII_ARCLIGHT) {
-            InvColor::ShockArc
-        } else if !tagset.is_disjoint(COLOR_ASH) {
-            InvColor::Ash
-        } else if !tagset.is_disjoint(COLOR_BLOOD) {
-            InvColor::Blood
-        } else if !tagset.is_disjoint(COLOR_BOUND_ITEMS) {
-            InvColor::Bound
-        } else if !tagset.is_disjoint(COLOR_EARTH) {
-            InvColor::Brown
-        } else if !tagset.is_disjoint(COLOR_ELDRITCH) {
-            InvColor::Eldritch
-        } else if !tagset.is_disjoint(COLOR_HOLY) {
-            InvColor::Holy
-        } else if !tagset.is_disjoint(DARENII_LUNARIS) {
-            InvColor::Lunar
-        } else if !tagset.is_disjoint(COLOR_NECROTIC) {
-            InvColor::Necrotic
-        } else if !tagset.is_disjoint(COLOR_POISON) {
-            InvColor::Poison
-        } else if !tagset.is_disjoint(COLOR_SHADOW) {
-            InvColor::Shadow
-        } else if !tagset.is_disjoint(COLOR_SUN) {
-            InvColor::Sun
-        } else if !tagset.is_disjoint(COLOR_WATER) {
-            InvColor::Water
-        } else if !tagset.is_disjoint(COLOR_WIND) {
-            InvColor::Gray
-        } else if !tagset.is_disjoint(ICON_HEALING) {
-            InvColor::Green
-        } else if !tagset.is_disjoint(COLOR_FIRE) {
-            InvColor::Fire
-        } else if !tagset.is_disjoint(COLOR_FROST) {
-            InvColor::Frost
-        } else if !tagset.is_disjoint(COLOR_SHOCK) {
-            InvColor::Shock
+        } else if let Some(color) = color_for_tagset(&tagset) {
+            color
         } else {
             match data.school {
                 // TODO identify common colors for magical schools

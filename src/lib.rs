@@ -624,5 +624,10 @@ pub mod plugin {
         fn itemCount(form_spec: &CxxString) -> u32;
         /// Is the player using CGO's alt-grip mode? (Always false if not using CGO or compatible mod.)
         fn useCGOAltGrip() -> bool;
+        /// Is the player a vampire lord?
+        fn isVampireLord() -> bool;
+        /// Is the player a werewolf?
+        fn isWerewolf() -> bool;
+
     }
 }

@@ -88,7 +88,7 @@ namespace equippable
 
 		if (form->Is(RE::FormType::Shout))
 		{
-			rlog::trace("making HudItem for shout: '{}'"sv, safename);
+			rlog::debug("making HudItem for shout: '{}'"sv, safename);
 			auto* shout = form->As<RE::TESShout>();
 
 			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(safename), formSpec);
@@ -108,7 +108,7 @@ namespace equippable
 			if (spell_type == RE::MagicSystem::SpellType::kLesserPower ||
 				spell_type == RE::MagicSystem::SpellType::kPower)
 			{
-				rlog::trace("making HudItem for power: '{}'"sv, safename);
+				rlog::debug("making HudItem for power: '{}'"sv, safename);
 				const auto* costliest = spell->GetCostliestEffectItem();
 				if (costliest)
 				{
@@ -125,7 +125,7 @@ namespace equippable
 			}
 
 			// Regular spells.
-			rlog::trace("making HudItem for spell: '{}'"sv, safename);
+			rlog::debug("making HudItem for spell: '{}'"sv, safename);
 			const auto* costliest = spell->GetCostliestEffectItem();
 			if (costliest)
 			{
@@ -145,7 +145,7 @@ namespace equippable
 
 		if (form->Is(RE::FormType::Ammo))
 		{
-			rlog::trace("making HudItem for ammo: '{}'"sv, safename);
+			rlog::debug("making HudItem for ammo: '{}'"sv, safename);
 			const auto* ammo = form->As<RE::TESAmmo>()->AsKeywordForm();
 			ammo->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
@@ -160,7 +160,7 @@ namespace equippable
 			const auto* weapon = form->As<RE::TESObjectWEAP>();
 			if (weapon)
 			{
-				rlog::trace("making HudItem for weapon: '{}'"sv, safename);
+				rlog::debug("making HudItem for weapon: '{}'"sv, safename);
 				weapon->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords = KeywordAccumulator::mKeywords;
 				if (weapon->IsBound()) { keywords->push_back(std::string("OCF_InvColorBound")); }
@@ -173,7 +173,7 @@ namespace equippable
 
 		if (form->IsArmor())
 		{
-			rlog::trace("making HudItem for armor: '{}'"sv, safename);
+			rlog::debug("making HudItem for armor: '{}'"sv, safename);
 			const auto* armor = form->As<RE::TESObjectARMO>();
 			armor->ForEachKeyword(KeywordAccumulator::collect);
 			auto& keywords = KeywordAccumulator::mKeywords;
@@ -190,7 +190,7 @@ namespace equippable
 		if (form->Is(RE::FormType::Light))
 		{
 			// This form type does not have keywords. This presents a problem. Cough.
-			rlog::trace("making HudItem for light: '{}';"sv, safename);
+			rlog::debug("making HudItem for light: '{}';"sv, safename);
 			const auto name = std::string(form->GetName());  // this use of GetName() is okay
 			if (name.find("Lantern") != std::string::npos)   // yes, very limited in effectiveness; TODO
 			{
@@ -204,7 +204,7 @@ namespace equippable
 
 		if (form->Is(RE::FormType::Scroll))
 		{
-			rlog::trace("making HudItem for scroll: '{}'"sv, safename);
+			rlog::debug("making HudItem for scroll: '{}'"sv, safename);
 			auto* scroll = form->As<RE::ScrollItem>();
 			if (scroll->GetCostliestEffectItem() && scroll->GetCostliestEffectItem()->baseEffect)
 			{
@@ -226,7 +226,7 @@ namespace equippable
 
 			if (alchemy_potion->IsFood())
 			{
-				rlog::trace("making HudItem for food: '{}'"sv, safename);
+				rlog::debug("making HudItem for food: '{}'"sv, safename);
 				alchemy_potion->ForEachKeyword(KeywordAccumulator::collect);
 				auto& keywords = KeywordAccumulator::mKeywords;
 				rust::Box<HudItem> item =
@@ -235,7 +235,7 @@ namespace equippable
 			}
 			else
 			{
-				rlog::trace("making HudItem for potion: '{}'"sv, safename);
+				rlog::debug("making HudItem for potion: '{}'"sv, safename);
 				const auto* effect      = alchemy_potion->GetCostliestEffectItem()->baseEffect;
 				auto actor_value        = effect->data.primaryAV;
 				rust::Box<HudItem> item = potion_from_formdata(alchemy_potion->IsPoison(),

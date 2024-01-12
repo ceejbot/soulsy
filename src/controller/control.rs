@@ -1103,7 +1103,11 @@ impl Controller {
         } else {
             "Item equipped"
         };
-        log::info!("{prefix}: name='{}'; form_spec='{form_spec}';", item.name());
+        log::info!(
+            "{prefix}: name='{}'; icon={}; form_spec='{form_spec}'",
+            item.name(),
+            item.icon()
+        );
 
         if item.is_ammo() {
             if let Some(visible) = self.visible.get(&HudElement::Ammo) {
@@ -1207,6 +1211,12 @@ impl Controller {
         } else if left && left_unexpected {
             self.left_hand_cached = item.form_string().clone();
             self.update_slot(HudElement::Left, &item);
+        }
+
+        // If the player is now a werewolf or a vampire, we do not
+        // attempt to equip anything ourselves.
+        if isVampireLord() || isWerewolf() {
+            return false; // I forget what this means. do we even use it?
         }
 
         if !switching {

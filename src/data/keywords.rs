@@ -7,6 +7,8 @@
 use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::{Display, EnumIter, IntoEnumIterator};
 
+use super::color::InvColor;
+
 impl TryFrom<&str> for SpellKeywords {
     type Error = eyre::Error;
 
@@ -93,6 +95,7 @@ pub enum SpellKeywords {
     MagicSummonUndead,
     MagicTelekinesis,
     MagicTurnUndead,
+    MagicVampireDrain,
     MagicWard,
     MagicWeaponSpeed,
 
@@ -103,6 +106,12 @@ pub enum SpellKeywords {
     IconWater,
     IconMagicWater,
     DAR_SummonAstralWyrm,
+
+    // Vampire and werewolf icons.
+    Power_Bats,
+    Power_RevertForm,
+    Power_Vampire,
+    Spell_Blood,
 
     // vanilla shouts
     Shout_AnimalAllegiance,
@@ -645,7 +654,11 @@ pub const ICON_SUMMON: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellSummon_Spirit
 );
 
-pub const ICON_VAMPIRE: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::ClassVampire);
+pub const ICON_VAMPIRE: EnumSet<SpellKeywords> =
+    enum_set!(SpellKeywords::ClassVampire | SpellKeywords::MagicVampireDrain);
+
+pub const ICON_BLOOD: EnumSet<SpellKeywords> =
+    enum_set!(SpellKeywords::Spell_Blood | SpellKeywords::MagicVampireDrain);
 
 pub const ICON_VISION: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::SpellEnhance_Sight
@@ -823,3 +836,45 @@ pub const COLOR_WIND: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_WindCloak
         | SpellKeywords::SpellDamage_Sonic
 );
+
+pub fn color_for_tagset(tagset: &EnumSet<SpellKeywords>) -> Option<InvColor> {
+    if !tagset.is_disjoint(DARENII_ARCLIGHT) {
+        Some(InvColor::ShockArc)
+    } else if !tagset.is_disjoint(COLOR_ASH) {
+        Some(InvColor::Ash)
+    } else if !tagset.is_disjoint(COLOR_BLOOD) {
+        Some(InvColor::Blood)
+    } else if !tagset.is_disjoint(COLOR_BOUND_ITEMS) {
+        Some(InvColor::Bound)
+    } else if !tagset.is_disjoint(COLOR_EARTH) {
+        Some(InvColor::Brown)
+    } else if !tagset.is_disjoint(COLOR_ELDRITCH) {
+        Some(InvColor::Eldritch)
+    } else if !tagset.is_disjoint(COLOR_HOLY) {
+        Some(InvColor::Holy)
+    } else if !tagset.is_disjoint(DARENII_LUNARIS) {
+        Some(InvColor::Lunar)
+    } else if !tagset.is_disjoint(COLOR_NECROTIC) {
+        Some(InvColor::Necrotic)
+    } else if !tagset.is_disjoint(COLOR_POISON) {
+        Some(InvColor::Poison)
+    } else if !tagset.is_disjoint(COLOR_SHADOW) {
+        Some(InvColor::Shadow)
+    } else if !tagset.is_disjoint(COLOR_SUN) {
+        Some(InvColor::Sun)
+    } else if !tagset.is_disjoint(COLOR_WATER) {
+        Some(InvColor::Water)
+    } else if !tagset.is_disjoint(COLOR_WIND) {
+        Some(InvColor::Gray)
+    } else if !tagset.is_disjoint(ICON_HEALING) {
+        Some(InvColor::Green)
+    } else if !tagset.is_disjoint(COLOR_FIRE) {
+        Some(InvColor::Fire)
+    } else if !tagset.is_disjoint(COLOR_FROST) {
+        Some(InvColor::Frost)
+    } else if !tagset.is_disjoint(COLOR_SHOCK) {
+        Some(InvColor::Shock)
+    } else {
+        None
+    }
+}

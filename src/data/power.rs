@@ -16,8 +16,14 @@ impl PowerType {
 
         let icon = if kywds.contains(SpellKeywords::SpellShapechange_Werebeast) {
             Icon::PowerWerewolf
-        } else if kywds.contains(SpellKeywords::SpellShapechange) {
-            Icon::PowerWerebear
+        } else if kywds.contains(SpellKeywords::Power_Vampire)
+            || kywds.contains(SpellKeywords::SpellShapechange_Vampire)
+        {
+            Icon::PowerVampire
+        } else if kywds.contains(SpellKeywords::Power_Bats) {
+            Icon::PowerBats
+        } else if kywds.contains(SpellKeywords::Power_RevertForm) {
+            Icon::PowerRevertForm
         } else if kywds.contains(SpellKeywords::PowerAction_Bag) {
             Icon::ArmorBackpack
         } else if kywds.contains(SpellKeywords::PowerAction_Bard) {
@@ -78,7 +84,7 @@ impl PowerType {
 
         PowerType {
             icon,
-            color: InvColor::default(),
+            color: color_for_tagset(&kywds).unwrap_or_default(),
         }
     }
 }
