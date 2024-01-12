@@ -1,11 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="512pt" height="512pt" version="1.1" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
- <g fill="#fff">
-  <path d="m397.82 346.62h-74.238l-43.012-57.855 8.1953-14.336 71.68 7.6797z"/>
-  <path d="m397.82 185.34-36.863 64.512-72.191 8.1914-8.1953-14.336 43.012-58.367z"/>
-  <path d="m258.05 427.52-37.375-64.512 29.184-66.047h16.383l29.188 66.047z"/>
-  <path d="m118.27 346.62 36.863-64.512 72.191-7.6797 8.1914 14.336-43.008 57.855z"/>
-  <path d="m118.27 185.34h74.238l43.008 58.367-8.1914 14.336-72.191-8.1914z"/>
-  <path d="m258.05 104.45 37.379 64.512-29.188 66.559h-16.383l-29.184-66.559z"/>
- </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1.5848,0,0,1.5848,-152.949,-165.532)">
+        <path d="M397.82,346.62L323.582,346.62L280.57,288.765L288.765,274.429L360.445,282.109L397.82,346.62Z" style="fill:white;fill-rule:nonzero;"/>
+        <path d="M397.82,185.34L360.957,249.852L288.766,258.043L280.571,243.707L323.583,185.34L397.82,185.34Z" style="fill:white;fill-rule:nonzero;"/>
+        <path d="M258.05,427.52L220.675,363.008L249.859,296.961L266.242,296.961L295.43,363.008L258.05,427.52Z" style="fill:white;fill-rule:nonzero;"/>
+        <path d="M118.27,346.62L155.133,282.108L227.324,274.428L235.515,288.764L192.507,346.619L118.27,346.62Z" style="fill:white;fill-rule:nonzero;"/>
+        <path d="M118.27,185.34L192.508,185.34L235.516,243.707L227.325,258.043L155.134,249.852L118.27,185.34Z" style="fill:white;fill-rule:nonzero;"/>
+        <path d="M258.05,104.45L295.429,168.962L266.241,235.521L249.858,235.521L220.674,168.962L258.05,104.45Z" style="fill:white;fill-rule:nonzero;"/>
+    </g>
 </svg>
