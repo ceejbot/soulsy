@@ -247,6 +247,13 @@ namespace equippable
 			}
 		}
 
+		if (form->Is(RE::FormType::Book))
+		{
+			rlog::debug("making HudItem for boook: '{}';"sv, safename);
+			rust::Box<HudItem> item = simple_from_formdata(ItemCategory::Book, std::move(safename), formSpec);
+			return item;
+		}
+
 		const auto formtype    = form->GetFormType();
 		const auto formtypestr = RE::FormTypeToString(formtype);
 		rlog::debug("hudItemFromForm() fell all the way through; type={}; name='{}'; formspec='{}';",

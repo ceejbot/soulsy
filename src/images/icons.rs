@@ -82,8 +82,9 @@ pub enum Icon {
     #[default]
     IconDefault,
     Illusion,
-    MiscLantern,
+    MiscBook,
     MiscCampfire,
+    MiscLantern,
     MiscLute,
     MiscTent,
     PotionDefault,
@@ -342,6 +343,7 @@ impl Icon {
             Icon::HandToHand => Icon::HandToHand,
             Icon::IconDefault => Icon::IconDefault,
 
+            Icon::MiscBook => Icon::IconDefault,
             Icon::MiscCampfire => Icon::IconDefault,
             Icon::MiscLantern => Icon::MiscLantern,
             Icon::MiscLute => Icon::IconDefault,

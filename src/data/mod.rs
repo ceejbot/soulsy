@@ -100,6 +100,7 @@ pub fn categorize_shout(
 
 pub fn simple_from_formdata(kind: ItemCategory, name: String, form_string: String) -> Box<HudItem> {
     let classification = match kind {
+        ItemCategory::Book => BaseType::Book,
         ItemCategory::HandToHand => BaseType::HandToHand,
         ItemCategory::Lantern => BaseType::Light(base::LightType::Lantern),
         ItemCategory::Torch => BaseType::Light(base::LightType::Torch),

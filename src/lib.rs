@@ -213,11 +213,13 @@ pub mod plugin {
     }
 
     /// A high-level item category, used to jump-start item categorization via keywords & form data.
-    /// These categories make sense to the HUD and do not have to map to form types.
+    /// These categories make sense to the HUD and do not have to map to form types. They are, however,
+    /// pretty related.
     #[derive(Debug, Clone, Hash)]
     enum ItemCategory {
         Ammo,
         Armor,
+        Book,
         Food,
         HandToHand,
         Lantern,
