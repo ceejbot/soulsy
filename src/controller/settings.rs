@@ -610,8 +610,23 @@ impl FromIniStr for NamedAnchor {
     where
         Self: Sized,
     {
-        eprintln!("read: {value}");
-        Some(NamedAnchor::from(value))
+        if let Ok(v) = value.parse::<i32>() {
+            match v {
+                0 => Some(NamedAnchor::None),
+                1 => Some(NamedAnchor::TopLeft),
+                2 => Some(NamedAnchor::TopRight),
+                3 => Some(NamedAnchor::BottomLeft),
+                4 => Some(NamedAnchor::BottomRight),
+                5 => Some(NamedAnchor::Center),
+                6 => Some(NamedAnchor::CenterTop),
+                7 => Some(NamedAnchor::CenterBottom),
+                8 => Some(NamedAnchor::LeftCenter),
+                9 => Some(NamedAnchor::LeftCenter),
+                _ => Some(NamedAnchor::None),
+            }
+        } else {
+            None
+        }
     }
 }
 
