@@ -28,6 +28,8 @@ namespace player
 	bool isInCombat();
 	bool weaponsAreDrawn();
 	bool hasRangedEquipped();
+	bool isVampireLord();
+	bool isWerewolf();
 
 	void unequipSlot(Action slot);
 	void unequipShout();

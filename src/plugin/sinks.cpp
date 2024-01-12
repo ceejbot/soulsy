@@ -198,6 +198,8 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApply
 		return RE::BSEventNotifyControl::kContinue;
 	}
 
+	// We are specifically looking for VampireLordEffect on the player.
+
 	rlog::info("Effect status change: '{}' {} put \"{}\" ({}) on '{}' {}",
 		casterName,
 		event->caster ? rlog::formatAsHex(event->caster->GetFormID()) : "<none>",

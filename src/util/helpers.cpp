@@ -113,6 +113,9 @@ namespace helpers
 		const auto* control_map = RE::ControlMap::GetSingleton();
 		if (!control_map || !control_map->AreControlsEnabled(requiredControlFlags)) { return true; }
 
+		// Lock out the hud if the player is a vampire lord. issue #100
+		if (player::isVampireLord()) { return true; }
+
 		return false;  // FOR NOW
 	}
 

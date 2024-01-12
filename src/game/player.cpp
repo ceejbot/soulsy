@@ -16,6 +16,28 @@ namespace player
 
 	bool weaponsAreDrawn() { return RE::PlayerCharacter::GetSingleton()->AsActorState()->IsWeaponDrawn(); }
 
+	bool isVampireLord()
+	{
+		// DLC1VampireBeastRace; form id 0x0200283a
+		const auto* race = RE::PlayerCharacter::GetSingleton()->GetRace();
+		if (!race) { return false; }
+		if (race->GetFormID() == 0x0200283a) { return true; }
+		const auto* editorID = race->GetFormEditorID();
+		if (editorID && std::strcmp(editorID, "DLC1VampireBeastRace")) { return true; }
+		return false;
+	}
+
+	bool isWerewolf()
+	{
+		// WerewolfBeastRace; form id 0x000cdd84
+		const auto* race = RE::PlayerCharacter::GetSingleton()->GetRace();
+		if (!race) { return false; }
+		if (race->GetFormID() == 0x000cdd84) { return true; }
+		const auto* editorID = race->GetFormEditorID();
+		if (editorID && std::strcmp(editorID, "WerewolfBeastRace")) { return true; }
+		return false;
+	}
+
 	bool useCGOAltGrip()
 	{
 		bool useAltGrip = false;
