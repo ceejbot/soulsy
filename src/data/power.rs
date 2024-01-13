@@ -1,6 +1,7 @@
 use super::color::InvColor;
 use super::keywords::*;
 use super::{strings_to_enumset, HasIcon};
+use crate::data::color::color_from_keywords;
 use crate::images::Icon;
 use crate::plugin::Color;
 
@@ -22,10 +23,13 @@ impl PowerType {
             Icon::Power
         };
 
-        PowerType {
-            icon,
-            color: color_for_tagset(&kywds).unwrap_or_default(),
-        }
+        let color = if let Some(c) = color_from_keywords(&tags) {
+            c
+        } else {
+            color_for_tagset(&kywds).unwrap_or_default()
+        };
+
+        PowerType { icon, color }
     }
 }
 

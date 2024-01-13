@@ -11,10 +11,10 @@
 
 use enumset::EnumSet;
 
-use super::color::InvColor;
+use super::color::{color_from_keywords, InvColor};
 use super::keywords::*;
 use super::magic::{School, SpellData};
-use super::{strings_to_enumset, strings_to_keywords, HasIcon};
+use super::{strings_to_enumset, HasIcon};
 use crate::images::icons::Icon;
 use crate::plugin::Color;
 
@@ -51,11 +51,10 @@ impl SpellType {
 
         // Colors. We base this on damage type, mostly, but first we look to see
         // if we have a color keyword.
-        let color_kwds = strings_to_keywords::<InvColor>(&tags);
-        let color = if let Some(assigned) = color_kwds.first() {
-            assigned.clone()
-        } else if let Some(color) = color_for_tagset(&tagset) {
-            color
+        let color = if let Some(c) = color_from_keywords(&tags) {
+            c
+        } else if let Some(c) = color_for_tagset(&tagset) {
+            c
         } else {
             match data.school {
                 // TODO identify common colors for magical schools
