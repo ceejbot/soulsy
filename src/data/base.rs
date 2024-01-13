@@ -21,6 +21,7 @@ pub enum BaseType {
     Empty,
     Ammo(AmmoType),
     Armor(ArmorType),
+    Book,
     Food(FoodType),
     HandToHand,
     Light(LightType),
@@ -91,6 +92,7 @@ impl BaseType {
             ItemCategory::Armor => {
                 Self::Armor(ArmorType::classify(name, keywords.clone(), twohanded))
             }
+            ItemCategory::Book => Self::Book,
             ItemCategory::Food => Self::Food(FoodType::classify(name, keywords.clone(), twohanded)),
             ItemCategory::HandToHand => Self::HandToHand,
             ItemCategory::Lantern => Self::Light(LightType::Lantern),
@@ -112,6 +114,7 @@ impl BaseType {
             BaseType::Empty => false,
             BaseType::Ammo(_) => true,
             BaseType::Armor(_) => true,
+            BaseType::Book => true,
             BaseType::Equipset(_) => false,
             BaseType::Food(_) => true,
             BaseType::HandToHand => false,
@@ -155,6 +158,7 @@ impl BaseType {
             BaseType::Empty => false,
             BaseType::Ammo(_) => false,
             BaseType::Armor(t) => t.is_utility(),
+            BaseType::Book => true,
             BaseType::Equipset(_) => false,
             BaseType::Food(_) => true,
             BaseType::HandToHand => false,
@@ -195,6 +199,7 @@ impl BaseType {
             BaseType::Empty => false,
             BaseType::Ammo(_) => false,
             BaseType::Armor(t) => !t.is_utility(),
+            BaseType::Book => false,
             BaseType::Equipset(_) => false,
             BaseType::Food(_) => false,
             BaseType::HandToHand => true,
@@ -214,6 +219,7 @@ impl BaseType {
             BaseType::Empty => false,
             BaseType::Ammo(_) => false,
             BaseType::Armor(_) => false,
+            BaseType::Book => false,
             BaseType::Equipset(_) => false,
             BaseType::Food(_) => false,
             BaseType::HandToHand => true,
@@ -235,6 +241,7 @@ impl HasIcon for BaseType {
             BaseType::Empty => Color::default(),
             BaseType::Ammo(t) => t.color(),
             BaseType::Armor(t) => t.color(),
+            BaseType::Book => Color::default(), // for now
             BaseType::Equipset(_) => Color::default(),
             BaseType::Food(t) => t.color(),
             BaseType::HandToHand => Color::default(),
@@ -254,6 +261,7 @@ impl HasIcon for BaseType {
             BaseType::Empty => &Icon::IconDefault,
             BaseType::Ammo(t) => t.icon(),
             BaseType::Armor(t) => t.icon(),
+            BaseType::Book => &Icon::MiscBook,
             BaseType::Equipset(t) => t,
             BaseType::Food(t) => t.icon(),
             BaseType::HandToHand => &Icon::HandToHand,

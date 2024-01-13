@@ -542,7 +542,7 @@ namespace ui
 			auto entry_name        = std::string(entry->name());
 			const auto hotkey      = settings->hotkey_for(slotLayout.element);
 			const auto slot_center = ImVec2(slotLayout.center.x, slotLayout.center.y);
-			const bool skipItem    = entry_name.empty() && entry->icon_key().empty();
+			const bool skipItem    = (entry_name.empty() && entry->icon_key().empty()) || entry->form_string().empty();
 
 			const auto slotbg = std::string(slotLayout.bg_image);
 			if (slotLayout.bg_color.a > 0 && ui_renderer::lazyLoadHudImage(slotbg))

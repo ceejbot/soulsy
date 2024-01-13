@@ -61,7 +61,7 @@ impl ShoutType {
             ShoutVariant::KynesPeace => InvColor::Green,
             ShoutVariant::MarkedForDeath => InvColor::Poison,
             ShoutVariant::Stormcall => InvColor::Shock,
-            _ => InvColor::White,
+            _ => color_for_tagset(&keywords).unwrap_or_default(),
         };
 
         Self {
@@ -147,7 +147,7 @@ impl ShoutType {
             ShoutVariant::WailOfTheBanshee => "Faaz-zah-frul",
             ShoutVariant::Wanderlust => "Od-vah-koor",
             ShoutVariant::Warcry => "Zun-kaal-zoor",
-            ShoutVariant::Unclassified => "This shout is new to me!",
+            ShoutVariant::Unclassified => "This shout is new to me.",
         }
     }
 }

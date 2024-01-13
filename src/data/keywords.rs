@@ -7,6 +7,10 @@
 use enumset::{enum_set, EnumSet, EnumSetType};
 use strum::{Display, EnumIter, IntoEnumIterator};
 
+use crate::images::Icon;
+
+use super::color::InvColor;
+
 impl TryFrom<&str> for SpellKeywords {
     type Error = eyre::Error;
 
@@ -93,6 +97,7 @@ pub enum SpellKeywords {
     MagicSummonUndead,
     MagicTelekinesis,
     MagicTurnUndead,
+    MagicVampireDrain,
     MagicWard,
     MagicWeaponSpeed,
 
@@ -103,6 +108,12 @@ pub enum SpellKeywords {
     IconWater,
     IconMagicWater,
     DAR_SummonAstralWyrm,
+
+    // Vampire and werewolf icons.
+    Power_Bats,
+    Power_RevertForm,
+    Power_Vampire,
+    Spell_Blood,
 
     // vanilla shouts
     Shout_AnimalAllegiance,
@@ -645,7 +656,14 @@ pub const ICON_SUMMON: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellSummon_Spirit
 );
 
-pub const ICON_VAMPIRE: EnumSet<SpellKeywords> = enum_set!(SpellKeywords::ClassVampire);
+pub const ICON_VAMPIRE: EnumSet<SpellKeywords> = enum_set!(
+    SpellKeywords::ClassVampire
+        | SpellKeywords::MagicVampireDrain
+        | SpellKeywords::SpellShapechange_Vampire
+);
+
+pub const ICON_BLOOD: EnumSet<SpellKeywords> =
+    enum_set!(SpellKeywords::Spell_Blood | SpellKeywords::MagicVampireDrain);
 
 pub const ICON_VISION: EnumSet<SpellKeywords> = enum_set!(
     SpellKeywords::SpellEnhance_Sight
@@ -823,3 +841,228 @@ pub const COLOR_WIND: EnumSet<SpellKeywords> = enum_set!(
         | SpellKeywords::SpellDamage_WindCloak
         | SpellKeywords::SpellDamage_Sonic
 );
+
+pub fn icon_for_tagset(tagset: &EnumSet<SpellKeywords>) -> Option<Icon> {
+    if tagset.contains(SpellKeywords::Power_Bats) {
+        Some(Icon::PowerBats)
+    } else if tagset.contains(SpellKeywords::SpellShapechange_Werebeast) {
+        Some(Icon::PowerWerewolf)
+    } else if tagset.contains(SpellKeywords::Power_RevertForm) {
+        Some(Icon::PowerRevertForm)
+    } else if tagset.contains(SpellKeywords::PowerAction_Bag) {
+        Some(Icon::ArmorBackpack)
+    } else if tagset.contains(SpellKeywords::PowerAction_Bard) {
+        Some(Icon::MiscLute)
+    } else if tagset.contains(SpellKeywords::PowerAction_Bathe) {
+        // I have no joke here; I just like saying power wash.
+        Some(Icon::PowerWash)
+    } else if tagset.contains(SpellKeywords::PowerAction_Bless) {
+        Some(Icon::ArmorBackpack) // TODO bless icon
+    } else if tagset.contains(SpellKeywords::PowerAction_BuryCorpse) {
+        Some(Icon::ToolShovel)
+    } else if tagset.contains(SpellKeywords::PowerAction_Campfire) {
+        Some(Icon::MiscCampfire)
+    // } else if tagset.contains(SpellKeywords::PowerAction_Coin) {
+    // Some(Icon::MiscCoin)
+    // } else if tagset.contains(SpellKeywords::PowerAction_CommandFollower) {
+    // Some(Icon::ArmorBackpack) // TODO command icon
+    // } else if tagset.contains(SpellKeywords::PowerAction_Craft) {
+    // Some(Icon::ArmorBackpack) // TODO craft icon
+    } else if tagset.contains(SpellKeywords::PowerAction_FillWater) {
+        Some(Icon::PowerFillBottles)
+    } else if tagset.contains(SpellKeywords::PowerAction_HarvestCorpse) {
+        Some(Icon::ToolShovel) // TODO wrong!
+    } else if tagset.contains(SpellKeywords::PowerAction_HarvestGather) {
+        Some(Icon::ToolSickle)
+    } else if tagset.contains(SpellKeywords::PowerAction_HarvestWood) {
+        Some(Icon::WeaponWoodAxe)
+    } else if tagset.contains(SpellKeywords::PowerAction_Horse) {
+        Some(Icon::PowerHorse)
+    } else if tagset.contains(SpellKeywords::PowerAction_Lantern) {
+        Some(Icon::MiscLantern)
+    } else if tagset.contains(SpellKeywords::PowerAction_PitchTent) {
+        Some(Icon::MiscTent)
+    } else if tagset.contains(SpellKeywords::PowerAction_PeekKeyhole) {
+        Some(Icon::PowerPeek)
+    } else if tagset.contains(SpellKeywords::PowerAction_Potion) {
+        Some(Icon::PotionDefault)
+    } else if tagset.contains(SpellKeywords::PowerAction_Pray) {
+        Some(Icon::PowerPray)
+    } else if tagset.contains(SpellKeywords::PowerAction_Relax) {
+        Some(Icon::PowerPeek)
+    // } else if tagset.contains(SpellKeywords::PowerAction_Speech) {
+    //     Some(Icon::PowerPeek)
+    // } else if tagset.contains(SpellKeywords::PowerAction_StatusFrostfall) {
+    //     Some(Icon::PowerPeek)
+    // } else if tagset.contains(SpellKeywords::PowerAction_StatusSunhelm) {
+    //     Some(Icon::PowerPeek)
+    } else if tagset.contains(SpellKeywords::PowerAction_TameAnimal) {
+        Some(Icon::ShoutAnimalAllegiance)
+        // } else if tagset.contains(SpellKeywords::PowerAction_Train) {
+        //     Some(Icon::PowerPeek)
+        // } else if tagset.contains(SpellKeywords::PowerAction_WeaponGrip) {
+        //     Some(Icon::WeaponGrip)
+    } else if !tagset.is_disjoint(ICON_CLOAK) {
+        Some(Icon::ArmorCloak)
+    } else if !tagset.is_disjoint(ICON_BUFF) {
+        Some(Icon::SpellStamina)
+    } else if !tagset.is_disjoint(ICON_CONTROL) {
+        Some(Icon::SpellControl)
+    } else if !tagset.is_disjoint(ICON_FEAR) {
+        Some(Icon::SpellFear)
+    } else if !tagset.is_disjoint(ICON_LIGHT) {
+        Some(Icon::SpellLight)
+    } else if !tagset.is_disjoint(ICON_SUMMON) {
+        Some(Icon::SpellSummon)
+    } else if !tagset.is_disjoint(ICON_PARALYZE) {
+        Some(Icon::SpellParalyze)
+    } else if !tagset.is_disjoint(ICON_VISION) {
+        Some(Icon::SpellEagleEye)
+        // bound weapons
+    } else if tagset.contains(SpellKeywords::SpellBound_Weapon) {
+        if tagset.contains(SpellKeywords::BoundBattleAxe) {
+            Some(Icon::WeaponAxeTwoHanded)
+        } else if tagset.contains(SpellKeywords::BoundBow) {
+            Some(Icon::WeaponBow)
+        } else if tagset.contains(SpellKeywords::BoundDagger) {
+            Some(Icon::WeaponDagger)
+        } else if tagset.contains(SpellKeywords::BoundGreatsword) {
+            Some(Icon::WeaponSwordTwoHanded)
+        } else if tagset.contains(SpellKeywords::BoundHammer) {
+            Some(Icon::WeaponHammer)
+        } else if tagset.contains(SpellKeywords::BoundMace) {
+            Some(Icon::WeaponMace)
+        } else if tagset.contains(SpellKeywords::BoundShield) {
+            Some(Icon::ArmorShieldHeavy)
+        } else if tagset.contains(SpellKeywords::BoundSword) {
+            Some(Icon::WeaponSwordOneHanded)
+        } else if tagset.contains(SpellKeywords::BoundWarAxe) {
+            Some(Icon::WeaponAxeOneHanded)
+        } else {
+            Some(Icon::WeaponSwordOneHanded)
+        }
+    } else if tagset.contains(SpellKeywords::SpellBound_Armor) {
+        Some(Icon::ArmorShieldHeavy)
+    } else if !tagset.is_disjoint(ICON_HEALING) {
+        Some(Icon::SpellHeal)
+    } else if !tagset.is_disjoint(ICON_EARTH) {
+        Some(Icon::SpellEarth)
+    } else if !tagset.is_disjoint(ICON_STORM) {
+        Some(Icon::SpellLightningBlast)
+    } else if !tagset.is_disjoint(ICON_VAMPIRE) {
+        Some(Icon::PowerVampire)
+    } else if !tagset.is_disjoint(ICON_DRUID) {
+        Some(Icon::SpellLeaves)
+    } else if !tagset.is_disjoint(ICON_ROOT) {
+        Some(Icon::SpellRoot)
+    } else if !tagset.is_disjoint(ICON_CIRCLE) {
+        Some(Icon::SpellCircle)
+    } else if !tagset.is_disjoint(ICON_HOLY) {
+        Some(Icon::SpellSun)
+    // next one-off vanilla spells
+    } else if tagset.contains(SpellKeywords::Archetype_Teleport) {
+        Some(Icon::SpellTeleport)
+    } else if tagset.contains(SpellKeywords::SpellTime) {
+        Some(Icon::SpellTime)
+    } else if tagset.contains(SpellKeywords::Archetype_Detect) {
+        Some(Icon::SpellDetect)
+    } else if tagset.contains(SpellKeywords::Archetype_WeaponBuff) {
+        Some(Icon::SpellSharpen)
+    } else if tagset.contains(SpellKeywords::Archetype_Guide) {
+        Some(Icon::SpellWisp)
+    } else if tagset.contains(SpellKeywords::Archetype_CarryWeight) {
+        Some(Icon::SpellFeather)
+    } else if tagset.contains(SpellKeywords::Archetype_Cure) {
+        Some(Icon::SpellCure)
+    } else if tagset.contains(SpellKeywords::SpellReanimate) {
+        Some(Icon::SpellReanimate)
+    } else if tagset.contains(SpellKeywords::Archetype_Reflect) {
+        Some(Icon::SpellReflect)
+    } else if tagset.contains(SpellKeywords::MagicRune) {
+        Some(Icon::SpellRune)
+    } else if tagset.contains(SpellKeywords::Archetype_Silence) {
+        Some(Icon::SpellSilence)
+    } else if tagset.contains(SpellKeywords::SpellSoulTrap) {
+        Some(Icon::SpellSoultrap)
+    } else if tagset.contains(SpellKeywords::MagicSlow) {
+        Some(Icon::SpellSlow)
+    } else if tagset.contains(SpellKeywords::MagicNightEye) {
+        Some(Icon::SpellDetect)
+    } else if tagset.contains(SpellKeywords::MagicTurnUndead) {
+        Some(Icon::SpellSun)
+    } else if tagset.contains(SpellKeywords::MagicWard) {
+        Some(Icon::SpellWard)
+    } else if tagset.contains(SpellKeywords::MagicWeaponSpeed) {
+        Some(Icon::ShoutElementalFury)
+    } else if tagset.contains(SpellKeywords::MagicSummonFamiliar) {
+        Some(Icon::SpellSummon)
+    } else if tagset.contains(SpellKeywords::MagicSummonUndead) {
+        Some(Icon::SpellReanimate)
+    } else if tagset.contains(SpellKeywords::Spell_Blood) {
+        Some(Icon::SpellBlood)
+    } else if tagset.contains(SpellKeywords::SpellShapechange_Werebeast) {
+        Some(Icon::PowerWerewolf)
+        // next icon packs
+    } else if !tagset.is_disjoint(DARENII_ARCLIGHT) {
+        Some(Icon::SpellArclight)
+    } else if !tagset.is_disjoint(DARENII_DESECRATION) {
+        Some(Icon::SpellDesecration)
+    } else if !tagset.is_disjoint(DARENII_STELLARIS) {
+        Some(Icon::SpellStars)
+    } else if !tagset.is_disjoint(DARENII_LUNARIS) {
+        Some(Icon::SpellMoon)
+    } else if !tagset.is_disjoint(CONSTELLATION_SPELLS) {
+        Some(Icon::SpellConstellation)
+    // now really generic damage spells
+    } else if !tagset.is_disjoint(ICON_FIRE) {
+        Some(Icon::SpellFire)
+    } else if !tagset.is_disjoint(ICON_SHOCK) {
+        Some(Icon::SpellShock)
+    } else if !tagset.is_disjoint(ICON_FROST) {
+        Some(Icon::SpellFrost)
+    } else {
+        None
+    }
+}
+
+pub fn color_for_tagset(tagset: &EnumSet<SpellKeywords>) -> Option<InvColor> {
+    if !tagset.is_disjoint(DARENII_ARCLIGHT) {
+        Some(InvColor::ShockArc)
+    } else if !tagset.is_disjoint(COLOR_ASH) {
+        Some(InvColor::Ash)
+    } else if !tagset.is_disjoint(COLOR_BLOOD) {
+        Some(InvColor::Blood)
+    } else if !tagset.is_disjoint(COLOR_BOUND_ITEMS) {
+        Some(InvColor::Bound)
+    } else if !tagset.is_disjoint(COLOR_EARTH) {
+        Some(InvColor::Brown)
+    } else if !tagset.is_disjoint(COLOR_ELDRITCH) {
+        Some(InvColor::Eldritch)
+    } else if !tagset.is_disjoint(COLOR_HOLY) {
+        Some(InvColor::Holy)
+    } else if !tagset.is_disjoint(DARENII_LUNARIS) {
+        Some(InvColor::Lunar)
+    } else if !tagset.is_disjoint(COLOR_NECROTIC) {
+        Some(InvColor::Necrotic)
+    } else if !tagset.is_disjoint(COLOR_POISON) {
+        Some(InvColor::Poison)
+    } else if !tagset.is_disjoint(COLOR_SHADOW) {
+        Some(InvColor::Shadow)
+    } else if !tagset.is_disjoint(COLOR_SUN) {
+        Some(InvColor::Sun)
+    } else if !tagset.is_disjoint(COLOR_WATER) {
+        Some(InvColor::Water)
+    } else if !tagset.is_disjoint(COLOR_WIND) {
+        Some(InvColor::Gray)
+    } else if !tagset.is_disjoint(ICON_HEALING) {
+        Some(InvColor::Green)
+    } else if !tagset.is_disjoint(COLOR_FIRE) {
+        Some(InvColor::Fire)
+    } else if !tagset.is_disjoint(COLOR_FROST) {
+        Some(InvColor::Frost)
+    } else if !tagset.is_disjoint(COLOR_SHOCK) {
+        Some(InvColor::Shock)
+    } else {
+        None
+    }
+}

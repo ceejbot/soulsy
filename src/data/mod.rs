@@ -54,6 +54,17 @@ pub fn hud_item_from_keywords(
     Box::new(result)
 }
 
+pub fn categorize_shout(
+    keywords_ffi: &CxxVector<CxxString>,
+    name: String,
+    form_string: String,
+) -> Box<HudItem> {
+    let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
+    let kind = BaseType::Shout(ShoutType::new(keywords));
+    let result = HudItem::preclassified(name, form_string, 1, kind);
+    Box::new(result)
+}
+
 pub fn fill_out_spell_data(
     hostile: bool,
     resist: i32,
@@ -87,19 +98,9 @@ pub fn magic_from_spelldata(
     Box::new(result)
 }
 
-pub fn categorize_shout(
-    keywords_ffi: &CxxVector<CxxString>,
-    name: String,
-    form_string: String,
-) -> Box<HudItem> {
-    let keywords: Vec<String> = keywords_ffi.iter().map(|xs| xs.to_string()).collect();
-    let kind = BaseType::Shout(ShoutType::new(keywords));
-    let result = HudItem::preclassified(name, form_string, 1, kind);
-    Box::new(result)
-}
-
 pub fn simple_from_formdata(kind: ItemCategory, name: String, form_string: String) -> Box<HudItem> {
     let classification = match kind {
+        ItemCategory::Book => BaseType::Book,
         ItemCategory::HandToHand => BaseType::HandToHand,
         ItemCategory::Lantern => BaseType::Light(base::LightType::Lantern),
         ItemCategory::Torch => BaseType::Light(base::LightType::Torch),
@@ -172,23 +173,6 @@ pub trait HasIcon {
 /// Trait for turning keywords into an item with an icon.
 pub trait HasKeywords {
     fn classify(name: &str, keywords: Vec<String>, twohanded: bool) -> Self;
-}
-
-// A generic convert keywords to enum variants function.
-pub fn strings_to_keywords<T: for<'a> TryFrom<&'a str>>(tags: &[String]) -> Vec<T> {
-    let keywords: Vec<T> = tags
-        .iter()
-        .filter_map(|xs| {
-            if let Ok(subtype) = T::try_from(xs.as_str()) {
-                Some(subtype)
-            } else {
-                log::trace!("Unknown keyword: '{xs}';");
-
-                None
-            }
-        })
-        .collect();
-    keywords
 }
 
 // Generic convert keywords to an enum set.
