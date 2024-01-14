@@ -207,7 +207,7 @@ impl Controller {
         // holds this would be a lot less work, but I am stupid.
 
         let kind = item.kind().clone();
-        log::debug!(
+        log::trace!(
             "inventory count update: name='{}'; count={new_count}",
             item.name()
         );
