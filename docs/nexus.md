@@ -34,9 +34,9 @@ SoulsyHUD has an MCM menu that allows you to edit its options and, most importan
 
 You can use a hotkey, a modifier + a hotkey, or a long-press to do most actions.
 
-__Important notes for controller users:__ A natural setup for HUD mods like this is to use the dpad keys to cycle. You can't do that out of the box with the game's control maps. I suggest you pair a [souls-like control map](https://www.nexusmods.com/skyrimspecialedition/mods/44160) file with the mod [Gamepad Plus Plus](https://www.nexusmods.com/skyrimspecialedition/mods/27007). You can find many premade examples of control maps on the Nexus if you don't want to edit one yourself. There is also a web app to [edit control maps](https://hawk.bar/SkyrimControlMapper/). Upload your current control map, edit, then copy-and-paste the result.
+__Important notes for controller users:__ A natural setup for HUD mods like this is to use the dpad keys to cycle. You can't do that out of the box with the game's control maps. I suggest you use a [souls-like control map](https://www.nexusmods.com/skyrimspecialedition/mods/44160). You can find many premade examples of control maps on the Nexus if you don't want to edit one yourself. There is also a web app to [edit control maps](https://hawk.bar/SkyrimControlMapper/). Upload your current control map, edit, then copy-and-paste the result.
 
-I am not sure how to best work around the way the dpad keys navigate in menus. I might end up needing to re-implement Flash menus.
+⚠️ If you have upgraded to game version 1.6.1130, you *must* use a control map updated for that version. Bethesda added new things to control maps and older files missing the new items will crash the game.
 
 ## Other options
 

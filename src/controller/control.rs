@@ -1371,8 +1371,8 @@ impl Controller {
             return;
         }
 
-        log::info!("handle_favorite_event(); is_favorite={is_favorite};");
-        log::info!("    {item}; two-handed={};", item.two_handed());
+        log::debug!("handle_favorite_event(); is_favorite={is_favorite};");
+        log::debug!("    {item}; two-handed={};", item.two_handed());
 
         let maybe_message = if !is_favorite {
             // This formerly-favorite item is now disliked.

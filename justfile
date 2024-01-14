@@ -141,7 +141,7 @@ packs:
 
 # Use spriggit to dump the plugin to text.
 plugin-ser:
-    {{SPRIGGIT}} serialize --InputPath ./data/SoulsyHUD.esl --OutputPath ./plugin/ --GameRelease SkyrimSE --PackageName Spriggit.Json
+    {{SPRIGGIT}} serialize --InputPath ./installer/core/SoulsyHUD.esl --OutputPath ./plugin/ --GameRelease SkyrimSE --PackageName Spriggit.Json
 
 # Use spriggit to rehydrate the plugin.
 @plugin-de:
