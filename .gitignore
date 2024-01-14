@@ -1,4 +1,5 @@
 /target
+Cargo.lock
 build
 .env
 .vscode
@@ -10,3 +11,4 @@ SoulsyHUD_v*
 /vcpkg_installed
 **/unused
 compile_flags.txt
+notes.txt

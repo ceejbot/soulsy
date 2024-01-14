@@ -1,6 +1,7 @@
 //! Character encoding shenanigans. Bethesda is very bad at utf-8, I am told.
 use cxx::CxxVector;
-use textcode::{iso8859_15, iso8859_9};
+use encoding::label::encoding_from_whatwg_label;
+use encoding::DecoderTrap;
 
 // To test in game: install daegon
 // player.additem 4c2b15f4 1
@@ -33,21 +34,13 @@ pub fn convert_to_utf8(bytes: Vec<u8>) -> String {
     }
 
     let (encoding, _confidence, _language) = chardet::detect(&bytes);
-    match encoding.as_str() {
-        "utf-8" => String::from_utf8(bytes.clone())
-            .unwrap_or_else(|_| String::from_utf8_lossy(&bytes).to_string()),
-        "ISO-8859-9" => {
-            let mut dst = String::new();
-            iso8859_9::decode(bytes.as_slice(), &mut dst);
-            dst
+    if let Some(coder) = encoding_from_whatwg_label(chardet::charset2encoding(&encoding)) {
+        if let Ok(utf8string) = coder.decode(&bytes, DecoderTrap::Replace) {
+            return utf8string.to_string();
         }
-        "ISO-8859-15" => {
-            let mut dst = String::new();
-            iso8859_15::decode(bytes.as_slice(), &mut dst);
-            dst
-        }
-        _ => String::from_utf8_lossy(&bytes).to_string(),
     }
+
+    String::from_utf8_lossy(&bytes).to_string()
 }
 
 #[cfg(test)]
