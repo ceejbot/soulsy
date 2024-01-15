@@ -43,6 +43,10 @@ impl ItemCache {
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.lru.len()
+    }
+
     /// On load from save, we do not bother attempting to reconcile what
     /// we have cached with what the save state is. We merely enjoy the
     /// eternal sunshine of the spotless mind.

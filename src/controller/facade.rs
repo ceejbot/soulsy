@@ -177,6 +177,17 @@ pub fn clear_cache() {
     control::get().cache.clear();
 }
 
+/// Crash logger support.
+pub fn get_helpful_crash_info() -> Vec<String> {
+    let ctrl = control::get();
+
+    let result = vec![
+        format!("{} hud items in cache", ctrl.cache.len()),
+        format!("{} icons loaded", rasterizedSVGCount()),
+    ];
+    result
+}
+
 /// This is straight-up papyrus support. We choose to return -1 to signal
 /// failure because our use case is as array indexes in papyrus.
 pub fn string_to_int(number: String) -> i32 {

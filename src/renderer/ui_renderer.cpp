@@ -170,6 +170,8 @@ namespace ui
 		return d3dTextureFromBuffer(&loadedImg, out_srv, out_width, out_height);
 	}
 
+	u32 rasterizedSVGCount() { return ICON_MAP.count(); }
+
 	bool ui_renderer::lazyLoadIcon(std::string name)
 	{
 		auto key = std::string(get_icon_key(name));
