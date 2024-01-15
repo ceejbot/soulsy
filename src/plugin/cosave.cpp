@@ -26,7 +26,6 @@ namespace cosave
 		const uint32_t version    = serialize_version();
 		rust::Vec<uint8_t> buffer = serialize_cycles();
 		uint32_t bufsize          = static_cast<uint32_t>(buffer.size());
-		rlog::debug("cycles serialized into a Vec<u8> of size={};"sv, bufsize);
 
 		if (!cosave->OpenRecord(CYCLE_RECORD, version))
 		{
