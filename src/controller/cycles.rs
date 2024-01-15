@@ -23,7 +23,7 @@ use crate::plugin::{
 pub struct CycleData {
     /// Vec of item formspecs. A formspec looks like "mod.esp|0xdeadbeef":
     /// mod esp file and form id delimited by |.
-    pub left: Vec<String>,
+    left: Vec<String>,
     /// Right hand cycle formspecs.
     right: Vec<String>,
     /// Shouts and powers cycle formspecs.
