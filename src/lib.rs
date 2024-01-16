@@ -539,6 +539,10 @@ pub mod plugin {
         fn chargeLevelByFormSpec(form_spec: &CxxString) -> f32;
         /// Get all of an item's relevant extra data in pass.
         fn relevantExtraData(form_spec: &CxxString) -> Box<RelevantExtraData>;
+        /// Set the appropriate cycle keyword for this item, removing any others.
+        fn setCycleKeyword(form_spec: &CxxString, keyword: &CxxString);
+        /// Remove any cycle keywords from this item.
+        fn clearCycleKeywords(form_spec: &CxxString);
     }
 
     #[namespace = "ui"]

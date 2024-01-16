@@ -8,6 +8,7 @@
 #include "utility.h"
 
 #include "lib.rs.h"
+#include <vector>
 
 namespace helpers
 {
@@ -307,28 +308,52 @@ namespace helpers
 		rlog::info("Slow motion: returned to normal time."sv);
 	}
 
-	/*
-	// TODO move to the right home
-	void addCycleKeyword(const std::string& form_spec)
+	// InSoulsyCycle - shouts, powers, utility items
+	// InSoulsyCycleRight - anything in right hand cycle (weapons, spells)
+	// InSoulsyCycleLeft - anything in left hand cycle (weapons, spells, torches, shields)
+	// InSoulsyCycleBothHands - anything in both hand cycles (weapons, spells)
+
+	bool keywordsLoaded                          = false;
+	std::map<std::string, RE::TesForm> KEYWD_MAP = {};
+
+	void loadKeywords()
 	{
-		auto* item = formSpecToFormItem(form_spec);
-		if (!item) { return; }
-		// The keyword is going to be a fixed formid in the plugin esp.
-		// AddKeyword(BGSKeyword* a_keyword)
-		// const auto kwd = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(a_edid))
-		// or
-		// const auto kwd = RE::TESForm::LookupByID(0x00106614)->As<RE::BGSKeyword>();
-		// item->AddKeyword(kwd);
+		const auto keywords = std::vector<std::string> =
+			[ "InSoulsyCycle"s, "InSoulsyCycleRight"s, "InSoulsyCycleLeft"s, "InSoulsyCycleBothHands"s ];
+
+		for (auto word : keywords)
+		{
+			const auto* kwd = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(word));
+			if (kwd) { KEYWD_MAP[word] = kwd; }
+			else { rlog::warn("missing keyword form item for {}. Something is broken.", word); }
+		}
+		keywordsLoaded = true;
 	}
 
-	// TODO move to the right home
-	void removeCycleKeyword(const std::string& form_spec)
+	// Set the soulsy cycle indicator keyword. We want to make sure all
+	// other soulsy cycle keywords are *removed* from this item so the
+	// correct one is displayed.
+	void setCycleKeyword(const std::string& form_spec, const std::string& keyword)
 	{
+		if (!keywordsLoaded) { loadKeywords(); }
 		auto* item = formSpecToFormItem(form_spec);
 		if (!item) { return; }
-		// bool RemoveKeyword(BGSKeyword* a_keyword)
+		for (auto* kvpair : KEYWD_MAP)
+		{
+			if (kvpair->first == keyword) { item->AddKeyword(kvpair->second); }
+			else { item->RemoveKeyword(kvpair->second); }
+		}
 	}
-	*/
+
+	// Clear all cycle keywords.
+	void clearCycleKeywords(const std::string& form_spec)
+	{
+		if (!keywordsLoaded) { loadKeywords(); }
+		auto* item = formSpecToFormItem(form_spec);
+		if (!item) { return; }
+
+		for (auto* kvpair : KEYWD_MAP) { item->RemoveKeyword(kvpair->second); }
+	}
 
 	bool isPoisonedByFormSpec(const std::string& form_spec)
 	{

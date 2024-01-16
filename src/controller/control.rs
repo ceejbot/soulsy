@@ -1475,6 +1475,7 @@ impl Controller {
         if let Some(msg) = maybe_message {
             log::info!("{msg}");
             notify(&msg);
+            self.assign_keyword(&item);
         } else {
             log::info!("Favoriting or unfavoriting didn't change cycles.");
         }
@@ -1564,6 +1565,7 @@ impl Controller {
         if let Ok(message) = strfmt(&verb, &vars) {
             log::info!("{}; kind={:?};", message, item.kind());
             notify(&message);
+            self.assign_keyword(&item);
         } else {
             log::debug!("No notification sent to player because message couldn't be formatted");
         }
@@ -1731,6 +1733,36 @@ impl Controller {
         let icon = source.icon().clone();
         self.cycles.set_icon_by_id(id, icon)
     }
+
+    /// Call this after any add/remove actions are fully complete to
+    /// assign the appropriate keyword to an item to update the menu.
+    fn assign_keyword(&self, item: &HudItem) {
+        if item.is_power() {
+            if self.cycles.includes(&CycleSlot::Power, item) {
+                keywords::set_keyword(item, keywords::IN_CYCLE);
+            } else {
+                keywords::clear_keywords(item);
+            }
+        } else if item.is_utility() {
+            if self.cycles.includes(&CycleSlot::Utility, item) {
+                keywords::set_keyword(item, keywords::IN_CYCLE);
+            } else {
+                keywords::clear_keywords(item);
+            }
+        } else {
+            let in_left = self.cycles.includes(&CycleSlot::Left, item);
+            let in_right = self.cycles.includes(&CycleSlot::Right, item);
+            if in_left && in_right {
+                keywords::set_keyword(item, keywords::IN_CYCLE_BOTHHANDS);
+            } else if in_right {
+                keywords::set_keyword(item, keywords::IN_CYCLE_RIGHT);
+            } else if in_left {
+                keywords::set_keyword(item, keywords::IN_CYCLE_LEFT);
+            } else {
+                keywords::clear_keywords(item);
+            }
+        }
+    }
 }
 
 impl Default for KeyEventResponse {
@@ -1779,6 +1811,48 @@ impl From<u32> for Action {
         } else {
             Action::None
         }
+    }
+}
+
+/// Keywords and functions for settings and removing them.
+pub mod keywords {
+    #[cfg(not(test))]
+    use crate::plugin::{clearCycleKeywords, setCycleKeyword};
+    use crate::HudItem;
+
+    /// shouts, powers, utility items
+    pub const IN_CYCLE: &str = "InSoulsyCycle";
+    /// anything in right hand cycle (weapons, spells)
+    pub const IN_CYCLE_RIGHT: &str = "InSoulsyCycleRight";
+    /// anything in left hand cycle (weapons, spells, torches, shields)
+    pub const IN_CYCLE_LEFT: &str = "InSoulsyCycleLeft";
+    /// anything in both hand cycles (weapons, spells)
+    pub const IN_CYCLE_BOTHHANDS: &str = "InSoulsyCycleBothHands";
+
+    /// Add a keyword to an item.
+    #[cfg(not(test))]
+    pub fn set_keyword(item: &HudItem, keyword: &str) {
+        log::trace!("adding keyword to '{}': {keyword}", item.name());
+        cxx::let_cxx_string!(form_spec = item.form_string());
+        cxx::let_cxx_string!(kwd = keyword);
+        setCycleKeyword(&form_spec, &kwd);
+    }
+
+    #[cfg(test)]
+    pub fn set_keyword(item: &HudItem, keyword: &str) {
+        log::debug!("would be adding soulsy keyword {keyword} to {item}");
+    }
+
+    #[cfg(not(test))]
+    pub fn clear_keywords(item: &HudItem) {
+        log::trace!("removing all soulsy keywords from '{}';", item.name());
+        cxx::let_cxx_string!(form_spec = item.form_string());
+        clearCycleKeywords(&form_spec);
+    }
+
+    #[cfg(test)]
+    pub fn clear_keywords(item: &HudItem) {
+        log::debug!("would be removing all soulsy keywords from {item}");
     }
 }
 

@@ -8,6 +8,7 @@ use super::control::MenuEventResponse;
 use super::cycleentries::*;
 use super::keys::CycleSlot;
 use super::user_settings;
+use crate::controller::control::keywords::*;
 use crate::data::item_cache::ItemCache;
 use crate::data::{BaseType, HudItem};
 use crate::images::icons::Icon;
@@ -270,6 +271,11 @@ impl CycleData {
                     cxx::let_cxx_string!(form_spec = spec.clone());
                     if hasItemOrSpell(&form_spec) {
                         log::info!("    {item}");
+                        match &xs.0 {
+                            CycleSlot::Power => set_keyword(&item, IN_CYCLE),
+                            CycleSlot::Utility => set_keyword(&item, IN_CYCLE),
+                            _ => {}
+                        }
                         return Some(spec);
                     }
 
@@ -320,6 +326,22 @@ impl CycleData {
         });
         //log::info!("hud_visible: {}", self.hud_visible);
         log::info!("Have a nice day and remember to put on a cloak if it starts snowing.");
+
+        // Now that the dust has settled, we add indicators to left & right cycle items.
+        self.left.iter().for_each(|xs| {
+            let item = cache.get(xs);
+            if !self.right.includes(xs) {
+                set_keyword(&item, IN_CYCLE_LEFT);
+            }
+        });
+        self.right.iter().for_each(|xs| {
+            let item = cache.get(xs);
+            if self.left.includes(xs) {
+                set_keyword(&item, IN_CYCLE_BOTHHANDS);
+            } else {
+                set_keyword(&item, IN_CYCLE_RIGHT);
+            }
+        });
     }
 
     // equipset cycling
