@@ -178,14 +178,8 @@ pub fn clear_cache() {
 }
 
 /// Crash logger support.
-pub fn get_helpful_crash_info() -> Vec<String> {
-    let ctrl = control::get();
-
-    let result = vec![
-        format!("{} hud items in cache", ctrl.cache.len()),
-        format!("{} icons loaded", rasterizedSVGCount()),
-    ];
-    result
+pub fn cache_size() -> usize {
+    control::get().cache.len()
 }
 
 /// This is straight-up papyrus support. We choose to return -1 to signal

@@ -292,9 +292,8 @@ pub mod plugin {
         fn cstr_to_utf8(bytes_ffi: &CxxVector<u8>) -> String;
 
         /// If we're registered with the trainwreck crash logger, and we're in
-        /// the process of crashing, try to generate an array of strings to emit
-        /// in the crashlog that might help.
-        fn get_helpful_crash_info() -> Vec<String>;
+        /// the process of crashing, try to provide info for the Trainwreck section.
+        fn cache_size() -> usize;
 
         /// Trigger rust to read config, figure out what the player has equipped,
         /// and figure out what it should draw.
@@ -560,8 +559,6 @@ pub mod plugin {
         fn startAlphaTransition(fade_in: bool, alpha: f32);
         /// Set the max alpha value the HUD is allowed to reach. From user settings.
         fn setMaxAlpha(max: f32);
-        /// Get the count of how many icons we've rasterized as textures. A proxy for memory used.
-        fn rasterizedSVGCount() -> u32;
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.

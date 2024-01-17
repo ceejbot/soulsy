@@ -2,7 +2,7 @@
 
 #include "lib.rs.h"
 #include "trainwreck.h"
-#include <cstdint>
+#include "ui_renderer.h"
 
 struct TESForm
 {
@@ -19,11 +19,12 @@ void register_with_trainwreck()
 		{
 			auto log = trainwreck::Log(args->log_context);
 			log.write_line("Relevant Soulsy data:");
-			const auto crash_info = get_helpful_crash_info();
-			for (const auto line : crash_info)
-			{
-				log.with_indent([](auto&& log) { log.write_line(line); });
-			}
+			log.with_indent(
+				[](auto&& log)
+				{
+					log.write_line(fmt::format("{} icons loaded", ui::rasterizedSVGCount()));
+					log.write_line(fmt::format("{} hud items in cache", cache_size()));
+				});
 		});
 
 	trainwreck::register_decoder(".?AVTESForm@@",

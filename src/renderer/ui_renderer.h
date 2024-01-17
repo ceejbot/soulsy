@@ -58,7 +58,7 @@ namespace ui
 	void drawTextureQuad(ID3D11ShaderResourceView* texture,
 		const std::array<ImVec2, 4> bounds,
 		const soulsy::Color color);
-	u32 rasterizedSVGCount();
+	size_t rasterizedSVGCount();
 
 	// TODO either make this use the fact that it's a class or make it not a class.
 	class ui_renderer

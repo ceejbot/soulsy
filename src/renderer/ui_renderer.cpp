@@ -170,7 +170,7 @@ namespace ui
 		return d3dTextureFromBuffer(&loadedImg, out_srv, out_width, out_height);
 	}
 
-	u32 rasterizedSVGCount() { return ICON_MAP.count(); }
+	size_t rasterizedSVGCount() { return ICON_MAP.size(); }
 
 	bool ui_renderer::lazyLoadIcon(std::string name)
 	{
