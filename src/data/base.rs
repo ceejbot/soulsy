@@ -87,6 +87,8 @@ impl BaseType {
         keywords: Vec<String>,
         twohanded: bool,
     ) -> Self {
+        log::info!("making HUD item: {keywords:?}");
+
         match category {
             ItemCategory::Ammo => Self::Ammo(AmmoType::classify(name, keywords.clone(), twohanded)),
             ItemCategory::Armor => {

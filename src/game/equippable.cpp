@@ -91,7 +91,9 @@ namespace equippable
 			rlog::trace("making HudItem for shout: '{}'"sv, safename);
 			auto* shout = form->As<RE::TESShout>();
 
+			// Fall back to something if we can't find it.
 			if (!shout) return simple_from_formdata(ItemCategory::Shout, std::move(safename), formSpec);
+
 			auto* spell = shout->variations[RE::TESShout::VariationIDs::kOne].spell;  // always the first to ID
 			if (!spell) return simple_from_formdata(ItemCategory::Shout, std::move(safename), formSpec);
 

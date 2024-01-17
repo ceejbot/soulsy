@@ -312,36 +312,95 @@ namespace helpers
 	// InSoulsyCycleRight - anything in right hand cycle (weapons, spells)
 	// InSoulsyCycleLeft - anything in left hand cycle (weapons, spells, torches, shields)
 	// InSoulsyCycleBothHands - anything in both hand cycles (weapons, spells)
-
-	bool keywordsLoaded                          = false;
-	std::map<std::string, RE::TesForm> KEYWD_MAP = {};
+	bool keywordsLoaded                  = false;
+	std::vector<RE::FormID> KEYWORD_LIST = {};
 
 	void loadKeywords()
 	{
-		const auto keywords = std::vector<std::string> =
-			[ "InSoulsyCycle"s, "InSoulsyCycleRight"s, "InSoulsyCycleLeft"s, "InSoulsyCycleBothHands"s ];
+		const std::vector<std::string> keywords = {
+			"InSoulsyCycle", "InSoulsyCycleRight", "InSoulsyCycleLeft", "InSoulsyCycleBothHands"
+		};
 
 		for (auto word : keywords)
 		{
-			const auto* kwd = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(word));
-			if (kwd) { KEYWD_MAP[word] = kwd; }
+			const auto* kwd = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(word);
+			if (kwd) { KEYWORD_LIST.push_back(kwd->GetFormID()); }
 			else { rlog::warn("missing keyword form item for {}. Something is broken.", word); }
 		}
+		rlog::info("keywords loaded");
 		keywordsLoaded = true;
+	}
+
+	RE::BGSKeywordForm* findKeywordHolder(RE::TESForm* form)
+	{
+		// The simple case.
+		auto* holder = form->As<RE::BGSKeywordForm>();
+		if (holder) return holder;
+
+		// Find the related object that holds keywords.
+		switch (form->GetFormType())
+		{
+			case RE::FormType::Shout:
+				{
+					auto* shout = form->As<RE::TESShout>();
+					if (shout) { return shout->variations[RE::TESShout::VariationIDs::kOne].spell; }
+				}
+				break;
+
+			case RE::FormType::AlchemyItem: rlog::info("alchemy items need the treatment"); break;
+			case RE::FormType::Light:
+				{
+					rlog::info("handling lights; probably wrong.");
+					auto* light = form->As<RE::TESObjectLIGH>();
+					if (light) { return light->As<RE::BGSKeywordForm>(); }
+				}
+				break;
+			case RE::FormType::Scroll:
+				{
+					auto* scroll = form->As<RE::ScrollItem>();
+					if (scroll->GetCostliestEffectItem() && scroll->GetCostliestEffectItem()->baseEffect)
+					{
+						return scroll->GetCostliestEffectItem()->baseEffect;
+					}
+				}
+				break;
+
+			default: break;
+		}
+		rlog::info("findKeywordHolder() fell through; no results.");
+
+		return nullptr;
+	}
+
+	RE::BGSKeyword* idToKeywordForm(RE::FormID id)
+	{
+		auto* found = RE::TESForm::LookupByID(id);
+		if (found) { return found->As<RE::BGSKeyword>(); }
+		return nullptr;
 	}
 
 	// Set the soulsy cycle indicator keyword. We want to make sure all
 	// other soulsy cycle keywords are *removed* from this item so the
 	// correct one is displayed.
-	void setCycleKeyword(const std::string& form_spec, const std::string& keyword)
+	void setCycleKeyword(const std::string& form_spec, const std::string& desired)
 	{
 		if (!keywordsLoaded) { loadKeywords(); }
 		auto* item = formSpecToFormItem(form_spec);
 		if (!item) { return; }
-		for (auto* kvpair : KEYWD_MAP)
+		auto keywordHolder = findKeywordHolder(item);
+		if (!keywordHolder) { return; }
+
+		for (const auto& keywordID : KEYWORD_LIST)
 		{
-			if (kvpair->first == keyword) { item->AddKeyword(kvpair->second); }
-			else { item->RemoveKeyword(kvpair->second); }
+			auto* keyword = idToKeywordForm(keywordID);
+			if (!keyword) { continue; }  // should log
+
+			if (keyword->GetFormEditorID() == desired)
+			{
+				rlog::info("should be adding keyword {} to {}", desired, item->GetName());
+				keywordHolder->AddKeyword(keyword);
+			}
+			else { keywordHolder->RemoveKeyword(keyword); }
 		}
 	}
 
@@ -351,8 +410,14 @@ namespace helpers
 		if (!keywordsLoaded) { loadKeywords(); }
 		auto* item = formSpecToFormItem(form_spec);
 		if (!item) { return; }
-
-		for (auto* kvpair : KEYWD_MAP) { item->RemoveKeyword(kvpair->second); }
+		auto keywordHolder = findKeywordHolder(item);
+		if (!keywordHolder) { return; }
+		for (const auto& keywordID : KEYWORD_LIST)
+		{
+			auto* keyword = idToKeywordForm(keywordID);
+			if (!keyword) { continue; }  // should log
+			keywordHolder->RemoveKeyword(keyword);
+		}
 	}
 
 	bool isPoisonedByFormSpec(const std::string& form_spec)
