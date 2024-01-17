@@ -1,173 +1,174 @@
 {
-    "$schema": "https://raw.githubusercontent.com/Exit-9B/InventoryInjector/main/docs/InventoryInjector.schema.json",
-    "rules": [
-        {
-            "match": {
-                "formType": "Spell",
-                "keywords": "InSoulsyCycle"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Potion",
-                "keywords": "InSoulsyCycle"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Armor",
-                "keywords": "InSoulsyCycle"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Spell",
-                "keywords": "InSoulsyCycleLeft"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_left_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Spell",
-                "keywords": "InSoulsyCycleRight"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_right_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Spell",
-                "keywords": "InSoulsyCycleBothHands"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_bothhands_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Weapon",
-                "keywords": "InSoulsyCycleLeft"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_left_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Weapon",
-                "keywords": "InSoulsyCycleRight"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_right_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Weapon",
-                "keywords": "InSoulsyCycleBothHands"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_bothhands_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Scroll",
-                "keywords": "InSoulsyCycleLeft"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_left_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Scroll",
-                "keywords": "InSoulsyCycleRight"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_right_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Scroll",
-                "keywords": "InSoulsyCycleBothHands"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_bothhands_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "Light",
-                "keywords": "InSoulsyCycleLeft"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_left_indicator"
-                }
-            }
-        },
-        {
-            "match": {
-                "formType": "MiscItem",
-                "keywords": "InSoulsyCycle"
-            },
-            "assign": {
-                "customData": {
-                    "iconSource": "SoulsyHUD/i4_indicators.swf",
-                    "iconLabel": "cycle_indicator"
-                }
-            }
+  "$schema": "https://raw.githubusercontent.com/Exit-9B/InventoryInjector/main/docs/InventoryInjector.schema.json",
+  "rules": [
+    {
+      "match": {
+        "formType": "Spell",
+        "keywords": ["InSoulsyCycle"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_indicator"
         }
-    ]
+      }
+    },
+    {
+      "match": {
+        "formType": "Potion",
+        "keywords": ["InSoulsyCycle"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Armor",
+        "keywords": ["InSoulsyCycle"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Spell",
+        "keywords": ["InSoulsyCycleLeft"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_left_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Spell",
+        "keywords": ["InSoulsyCycleRight"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_right_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Spell",
+        "keywords": ["InSoulsyCycleBothHands"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_bothhands_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Weapon",
+        "keywords": ["InSoulsyCycleLeft"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_left_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Weapon",
+        "keywords": ["InSoulsyCycleRight"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_right_indicator",
+          "iconColor": "#ffffff"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Weapon",
+        "keywords": ["InSoulsyCycleBothHands"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_bothhands_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Scroll",
+        "keywords": ["InSoulsyCycleLeft"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_left_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Scroll",
+        "keywords": ["InSoulsyCycleRight"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_right_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Scroll",
+        "keywords": ["InSoulsyCycleBothHands"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_bothhands_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "Light",
+        "keywords": ["InSoulsyCycleLeft"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_left_indicator"
+        }
+      }
+    },
+    {
+      "match": {
+        "formType": "MiscItem",
+        "keywords": ["InSoulsyCycle"]
+      },
+      "assign": {
+        "customData": {
+          "iconSource": "SoulsyHUD/icons.swf",
+          "iconLabel": "cycle_indicator"
+        }
+      }
+    }
+  ]
 }
