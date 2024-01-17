@@ -21,6 +21,8 @@ set(headers ${headers}
     src/util/helpers.h
     src/util/key_path.h
     src/util/offset.h
+    src/util/trains.h
+    src/util/trainwreck.h
 )
 set(sources ${sources}
     ${headers}
@@ -39,4 +41,5 @@ set(sources ${sources}
     src/plugin/sinks.cpp
     src/renderer/ui_renderer.cpp
     src/util/helpers.cpp
+    src/util/trains.cpp
 )

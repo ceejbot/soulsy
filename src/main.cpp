@@ -1,9 +1,11 @@
+#include "SKSE/Interfaces.h"
 #include "cosave.h"
 #include "inventory.h"
 #include "log.h"
 #include "menus.h"
 #include "papyrus.h"
 #include "sinks.h"
+#include "trains.h"
 #include "ui_renderer.h"
 
 #include "lib.rs.h"
@@ -56,6 +58,10 @@ void message_callback(SKSE::MessagingInterface::Message* msg)
 		case SKSE::MessagingInterface::kNewGame:
 			rlog::trace("SKSE kNewGame message received: type={};"sv, static_cast<uint32_t>(msg->type));
 			initialize_hud();
+			break;
+		case SKSE::MessagingInterface::kPostPostLoad:
+			rlog::debug("Registering with Trainwreck if it's found...");
+			register_with_trainwreck();
 			break;
 		default: break;
 	}

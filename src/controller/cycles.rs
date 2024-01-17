@@ -399,7 +399,7 @@ impl CycleData {
         let config = bincode::config::standard();
         let bytes: Vec<u8> = bincode::encode_to_vec(value, config).unwrap_or_default();
         log::info!(
-            "Writing cosave data. Format version {}; save data size={} bytes;",
+            "Writing SKSE cosave data. Format version {}; save data size={} bytes.",
             CycleData::serialize_version(),
             bytes.len()
         );
