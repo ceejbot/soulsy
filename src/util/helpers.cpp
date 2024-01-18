@@ -90,8 +90,8 @@ namespace helpers
 			rlog::info("no control map");
 			return false;
 		}
-		const auto canMove = controlMap->IsMovementControlsEnabled() && controlMap->IsActivateControlsEnabled();
-		return canMove;
+		return controlMap->AreControlsEnabled(requiredControlFlags);
+		// return controlMap->IsMovementControlsEnabled() && controlMap->IsActivateControlsEnabled();
 	}
 
 	bool ignoreKeyEvents()
@@ -110,8 +110,7 @@ namespace helpers
 		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>()) { return true; }
 
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
-		const auto* control_map = RE::ControlMap::GetSingleton();
-		if (!control_map || !control_map->AreControlsEnabled(requiredControlFlags)) { return true; }
+		if (!playerInControl()) { return true; }
 
 		// Lock out the hud if the player is a vampire lord. issue #100
 		if (player::isVampireLord()) { return true; }
