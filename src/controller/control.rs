@@ -341,7 +341,10 @@ impl Controller {
         }
 
         let le_options = settings();
-        showBriefly();
+        // if the hud is NOT visible, we show it briefly before acting.
+        if showBriefly() {
+            return KeyEventResponse::handled();
+        }
 
         match hotkey {
             Hotkey::Power => self.handle_cycle_power(),

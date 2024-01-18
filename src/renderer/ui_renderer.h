@@ -23,7 +23,7 @@ namespace ui
 	void drawHud();
 
 	void makeFadeDecision();
-	void showBriefly();
+	bool showBriefly();
 	void setMaxAlpha(float max);
 	void setMinAlpha(float min);
 

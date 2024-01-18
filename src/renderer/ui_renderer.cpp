@@ -833,12 +833,14 @@ namespace ui
 	float resolutionWidth() { return ImGui::GetIO().DisplaySize.x; }
 	float resolutionHeight() { return ImGui::GetIO().DisplaySize.y; }
 
-	void showBriefly()
+	// Returns true if the HUD was invisible and we began showing it.
+	bool showBriefly()
 	{
-		if (gDoingBriefPeek || gHudAlpha >= gMaxAlpha || (doFadeIn == true && gHudAlpha > gMinAlpha)) { return; }
+		if (gDoingBriefPeek || gHudAlpha >= gMaxAlpha || (doFadeIn == true && gHudAlpha > gMinAlpha)) { return false; }
 
 		gDoingBriefPeek = true;
 		startAlphaTransition(true, gMaxAlpha);
+		return gHudAlpha <= 0.0f;
 	}
 
 	void setMaxAlpha(float max)
