@@ -166,6 +166,7 @@ impl Controller {
         }
 
         setMaxAlpha(settings.max_alpha());
+        setMinAlpha(settings.min_alpha());
 
         if !settings.autofade() {
             if self.cycles.hud_visible() {

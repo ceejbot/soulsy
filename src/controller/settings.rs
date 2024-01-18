@@ -113,6 +113,8 @@ pub struct UserSettings {
     fade_time: u32,
     /// Max alpha: the most transparent the HUD goes.
     max_alpha: f32,
+    /// Min alpha: the least transparent the HUD gets.
+    min_alpha: f32,
 
     /// Whether to slow down time when cycling
     cycling_slows_time: bool,
@@ -161,6 +163,7 @@ impl Default for UserSettings {
             long_press_ms: 1250, // in milliseconds
             autofade: true,
             max_alpha: 1.0,
+            min_alpha: 0.0,
             fade_time: 2000,    // in milliseconds
             controller_kind: 0, // PS5
             cycling_slows_time: false,
@@ -261,6 +264,7 @@ impl UserSettings {
         self.autofade = read_from_ini(self.autofade, "bAutoFade", options);
         self.fade_time = u32::clamp(read_from_ini(self.fade_time, "uFadeTime", options), 0, 2500);
         self.max_alpha = read_from_ini(self.max_alpha, "fMaxAlpha", options);
+        self.min_alpha = read_from_ini(self.min_alpha, "fMinAlpha", options);
 
         self.controller_kind = u32::clamp(
             read_from_ini(self.controller_kind, "uControllerKind", options),
@@ -435,6 +439,9 @@ impl UserSettings {
     }
     pub fn max_alpha(&self) -> f32 {
         self.max_alpha
+    }
+    pub fn min_alpha(&self) -> f32 {
+        self.min_alpha
     }
     pub fn controller_kind(&self) -> u32 {
         u32::clamp(self.controller_kind, 0, 2)
@@ -663,6 +670,8 @@ impl std::fmt::Display for UserSettings {
                long_press_ms: {} ms
                     autofade: {}
                    fade_time: {} ms
+                   max alpha: {}
+                   min alpha: {}
              controller_kind: {}
           cycling_slows_time: {}
             slow_time_factor: {} %
@@ -696,6 +705,8 @@ impl std::fmt::Display for UserSettings {
             self.long_press_ms,
             self.autofade,
             self.fade_time,
+            self.max_alpha,
+            self.min_alpha,
             self.controller_kind,
             self.cycling_slows_time,
             self.slow_time_factor,

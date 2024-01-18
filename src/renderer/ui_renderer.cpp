@@ -38,6 +38,7 @@ namespace ui
 	auto gHudAlpha          = 0.0f;  // this is the current alpha
 	auto gGoalAlpha         = 1.0f;  // our goal if we're fading
 	auto gMaxAlpha          = 1.0f;  // the least transparent we allow ourselves to be (user setting)
+	auto gMinAlpha          = 0.0f;  // the most transparent
 	auto doFadeIn           = true;
 	auto gFullFadeDuration  = 3.0f;  // seconds
 	auto gFadeDurRemaining  = 2.0f;  // seconds
@@ -834,7 +835,7 @@ namespace ui
 
 	void showBriefly()
 	{
-		if (gDoingBriefPeek || gHudAlpha >= gMaxAlpha || (doFadeIn == true && gHudAlpha > 0.0f)) { return; }
+		if (gDoingBriefPeek || gHudAlpha >= gMaxAlpha || (doFadeIn == true && gHudAlpha > gMinAlpha)) { return; }
 
 		gDoingBriefPeek = true;
 		startAlphaTransition(true, gMaxAlpha);
@@ -842,15 +843,21 @@ namespace ui
 
 	void setMaxAlpha(float max)
 	{
-		gMaxAlpha = std::clamp(std::abs(max), 0.2f, 1.0f);
+		gMaxAlpha = std::clamp(std::abs(max), gMinAlpha, 1.0f);
 		if (gHudAlpha > gMaxAlpha) { gHudAlpha = gMaxAlpha; }
+	}
+
+	void setMinAlpha(float min)
+	{
+		gMinAlpha = std::clamp(std::abs(min), 0.0f, gMaxAlpha);
+		if (gHudAlpha < gMinAlpha) { gHudAlpha = gMinAlpha; }
 	}
 
 	void startAlphaTransition(const bool becomeVisible, const float goal)
 	{
-		gGoalAlpha = std::clamp(goal, 0.0f, gMaxAlpha);
+		gGoalAlpha = std::clamp(goal, gMinAlpha, gMaxAlpha);
 		if (becomeVisible && gHudAlpha >= gMaxAlpha) { return; }
-		if (!becomeVisible && gHudAlpha == 0.0f) { return; }
+		if (!becomeVisible && gHudAlpha <= gMinAlpha) { return; }
 		rlog::trace("startAlphaTransition() called with in={} and goal={}; gHudAlpha={};"sv,
 			becomeVisible,
 			gGoalAlpha,
@@ -912,7 +919,7 @@ namespace ui
 				gDoingBriefPeek = false;
 			}
 			// The auto-fade case here.
-			if ((gHudAlpha > 0.0f && !gIsFading) || (gIsFading && doFadeIn)) { startAlphaTransition(false, 0.0f); }
+			if ((gHudAlpha > gMinAlpha && !gIsFading) || (gIsFading && doFadeIn)) { startAlphaTransition(false, 0.0f); }
 		}
 		else if (helpers::hudShouldAutoFadeIn())
 		{
@@ -939,8 +946,6 @@ namespace ui
 
 	void advanceTransition(float timeDelta)
 	{
-		// This fading code is triggered by the toggle hud shortcut even if autofade
-		// is off. This is maybe the only place where bug #44 might be caused.
 		if (doFadeIn && gIsFading)
 		{
 			if (gHudAlpha >= gMaxAlpha)
@@ -958,9 +963,9 @@ namespace ui
 			if (delayBeforeFadeout > 0.0f) { delayBeforeFadeout -= timeDelta; }
 			else
 			{
-				if (gHudAlpha <= 0.0f)
+				if (gHudAlpha <= gMinAlpha)
 				{
-					gHudAlpha         = 0.0f;
+					gHudAlpha         = gMinAlpha;
 					gFadeDurRemaining = 0.0f;
 					gIsFading         = false;
 				}

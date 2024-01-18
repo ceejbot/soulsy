@@ -559,6 +559,8 @@ pub mod plugin {
         fn startAlphaTransition(fade_in: bool, alpha: f32);
         /// Set the max alpha value the HUD is allowed to reach. From user settings.
         fn setMaxAlpha(max: f32);
+        /// Set the min alpha value the HUD is allowed to reach. From user settings.
+        fn setMinAlpha(max: f32);
     }
 
     // A verbose shim between Rust and the PlayerCharacter type.
