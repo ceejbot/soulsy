@@ -672,7 +672,7 @@ namespace ui
 		std::string& imgDirectory)
 	{
 		const auto settings        = user_settings();
-		const auto resolutionScale = settings->scale();
+		const auto resolutionScale = settings->resolution_scale();
 
 		for (const auto& entry : std::filesystem::directory_iterator(imgDirectory))
 		{
@@ -708,8 +708,8 @@ namespace ui
 
 	void ui_renderer::loadAnimationFrames(std::string& file_path, std::vector<TextureData>& frame_list)
 	{
-		const auto settings        = user_settings();
-		const auto resolutionScale = settings->scale();
+		// const auto settings        = user_settings();
+		// const auto resolutionScale = settings->resolution_scale();
 
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
@@ -827,7 +827,7 @@ namespace ui
 	float resolutionWidth()
 	{
 		const auto settings = user_settings();
-		const auto scale    = settings->scale();
+		const auto scale    = static_cast<float>(settings->resolution_scale());
 		return scale * displayWidth();
 	}
 
@@ -835,7 +835,7 @@ namespace ui
 	float resolutionHeight()
 	{
 		const auto settings = user_settings();
-		const auto scale    = settings->scale();
+		const auto scale    = static_cast<float>(settings->resolution_scale());
 		return scale * displayHeight();
 	}
 
