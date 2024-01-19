@@ -117,12 +117,14 @@ impl HudLayout2 {
     }
 
     fn flatten_slot(&self, slot: &SlotElement, element: HudElement) -> SlotFlattened {
+        let scale = self.global_scale;
+
         let bg = slot.background.clone().unwrap_or_default();
         let hotkey = slot.hotkey.clone().unwrap_or_default();
         let hkbg = hotkey.background.unwrap_or_default();
 
         let anchor = self.anchor_point();
-        let center = anchor.translate(&slot.offset.scale(self.global_scale));
+        let center = anchor.translate(&slot.offset.scale(scale));
         let text = slot
             .text
             .iter()
@@ -131,9 +133,9 @@ impl HudLayout2 {
 
         let poison = slot.poison.clone().unwrap_or_default();
         let poison_image = poison.indicator.svg;
-        let poison_size = poison.indicator.size.scale(self.global_scale);
+        let poison_size = poison.indicator.size.scale(scale);
         let poison_color = poison.indicator.color;
-        let poison_center = center.translate(&poison.offset.scale(self.global_scale));
+        let poison_center = center.translate(&poison.offset.scale(scale));
 
         let meter = slot.meter.clone().unwrap_or_default();
         let (
@@ -148,21 +150,21 @@ impl HudLayout2 {
             meter_start_angle,
             meter_end_angle,
             meter_arc_width,
-        ) = meter.tuple_for_flattening(&center, self.global_scale);
+        ) = meter.tuple_for_flattening(&center, scale);
 
         SlotFlattened {
             element,
             center: center.clone(),
-            bg_size: bg.size.scale(self.global_scale),
+            bg_size: bg.size.scale(scale),
             bg_color: bg.color,
             bg_image: bg.svg,
-            icon_size: slot.icon.size.scale(self.global_scale),
-            icon_center: slot.icon.offset.scale(self.global_scale).translate(&center),
+            icon_size: slot.icon.size.scale(scale),
+            icon_center: slot.icon.offset.scale(scale).translate(&center),
             icon_color: slot.icon.color.clone(),
-            hotkey_size: hotkey.size.scale(self.global_scale),
-            hotkey_center: hotkey.offset.scale(self.global_scale).translate(&center),
+            hotkey_size: hotkey.size.scale(scale),
+            hotkey_center: hotkey.offset.scale(scale).translate(&center),
             hotkey_color: hotkey.color,
-            hotkey_bg_size: hkbg.size.scale(self.global_scale),
+            hotkey_bg_size: hkbg.size.scale(scale),
             hotkey_bg_color: hkbg.color,
             hotkey_bg_image: hkbg.svg,
             poison_size,
@@ -185,12 +187,13 @@ impl HudLayout2 {
     }
 
     fn flatten_text(&self, text: &TextElement, center: &Point) -> TextFlattened {
+        let scale = self.global_scale;
         TextFlattened {
-            anchor: center.translate(&text.offset.scale(self.global_scale)),
+            anchor: center.translate(&text.offset.scale(scale)),
             color: text.color.clone(),
             alignment: text.alignment,
             contents: text.contents.clone(),
-            font_size: text.font_size * self.global_scale,
+            font_size: text.font_size * scale,
             wrap_width: text.wrap_width,
         }
     }
@@ -480,18 +483,19 @@ impl From<&HudLayout2> for LayoutFlattened {
             slots.push(v.flatten_slot(equipset, HudElement::EquipSet));
         }
         let bg = v.background.clone().unwrap_or_default();
+        let scale = v.global_scale;
 
         LayoutFlattened {
-            global_scale: v.global_scale,
+            global_scale: scale,
             anchor: v.anchor_point(),
-            size: v.size.scale(v.global_scale),
-            bg_size: bg.size.scale(v.global_scale),
+            size: v.size.scale(scale),
+            bg_size: bg.size.scale(scale),
             bg_color: bg.color.clone(),
             bg_image: bg.svg.clone(),
             hide_ammo_when_irrelevant: v.hide_ammo_when_irrelevant,
             hide_left_when_irrelevant: v.hide_left_when_irrelevant,
             font: v.font.clone(),
-            font_size: v.font_size * v.global_scale,
+            font_size: v.font_size * scale,
             chinese_full_glyphs: v.chinese_full_glyphs,
             simplified_chinese_glyphs: v.simplified_chinese_glyphs,
             cyrillic_glyphs: v.cyrillic_glyphs,
@@ -507,7 +511,7 @@ impl From<&HudLayout2> for LayoutFlattened {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::layouts::{resolutionHeight, Layout};
+    use crate::layouts::{displayHeight, Layout};
 
     #[test]
     fn default_layout_valid() {
@@ -746,7 +750,7 @@ mod tests {
             anchor,
             Point {
                 x: 190.0,
-                y: resolutionHeight() - layout.size.y
+                y: displayHeight() - layout.size.y
             }
         );
 

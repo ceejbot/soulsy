@@ -551,6 +551,9 @@ pub mod plugin {
         fn resolutionWidth() -> f32;
         /// Get the display height in pixels.
         fn resolutionHeight() -> f32;
+        fn displayWidth() -> f32;
+        fn displayHeight() -> f32;
+
         /// Start the named timer. Duration is looked up from settings.
         fn startTimer(which: Action, duration: u32);
         /// Stop the named timer.

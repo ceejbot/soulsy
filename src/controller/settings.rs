@@ -762,6 +762,12 @@ impl DisplayTweaks {
         self.update_from_ini(&fpath);
         let fpath = std::path::Path::new("Data/SKSE/Plugins/SSEDisplayTweaks_Custom.ini");
         self.update_from_ini(&fpath);
+
+        log::trace!(
+            "display tweaks scaling: {}; scale={};",
+            self.upscaling,
+            self.scale
+        );
     }
 
     fn update_from_ini(&mut self, fpath: &Path) {
@@ -771,17 +777,13 @@ impl DisplayTweaks {
         let Ok(conf) = Ini::load_from_file(fpath) else {
             return;
         };
-        let section = conf.general_section();
+        let Some(section) = conf.section(Some("Render")) else {
+            return;
+        };
         self.upscaling = read_from_ini(self.upscaling, "BorderlessUpscale", section);
         self.scale = read_from_ini(self.scale, "ResolutionScale", section);
     }
 }
-
-/*
-const wchar_t* defaultDisplayTweaksPath{ L"Data/SKSE/Plugins/SSEDisplayTweaks.ini" };
-    const wchar_t* userDisplayTweaksPath{ L"Data/SKSE/Plugins/SSEDisplayTweaks_Custom.ini" };
-    read ResolutionScale (double) and BorderlessUpscale (bool) from ini
-*/
 
 impl Default for DisplayTweaks {
     fn default() -> Self {
