@@ -12,6 +12,7 @@ use crate::layouts::shared::NamedAnchor;
 use crate::plugin::{
     Align, Color, HudElement, LayoutFlattened, MeterKind, Point, SlotFlattened, TextFlattened,
 };
+use crate::settings::settings;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct HudLayout1 {
@@ -144,30 +145,28 @@ impl HudLayout1 {
     }
 
     fn flatten(&self, slot: &SlotLayout) -> SlotFlattened {
+        let factor = self.scale_for_display();
         let anchor = self.anchor_point();
-        let center = anchor.translate(&slot.offset.scale(self.global_scale));
+        let center = anchor.translate(&slot.offset.scale(factor));
 
         let mut text = Vec::new();
         if slot.name_color.a > 0 {
             text.push(TextFlattened {
-                anchor: slot.name_offset.scale(self.global_scale).translate(&center),
+                anchor: slot.name_offset.scale(factor).translate(&center),
                 color: slot.name_color.clone(),
                 alignment: slot.align_text,
                 contents: "{name}".to_string(),
-                font_size: slot.name_font_size * self.global_scale,
+                font_size: slot.name_font_size * factor,
                 wrap_width: slot.name_wrap_width,
             });
         }
         if slot.count_color.a > 0 {
             text.push(TextFlattened {
-                anchor: slot
-                    .count_offset
-                    .scale(self.global_scale)
-                    .translate(&center),
+                anchor: slot.count_offset.scale(factor).translate(&center),
                 color: slot.count_color.clone(),
                 alignment: slot.align_text,
                 contents: "{count}".to_string(),
-                font_size: slot.count_font_size * self.global_scale,
+                font_size: slot.count_font_size * factor,
                 wrap_width: slot.count_wrap_width,
             });
         }
@@ -175,22 +174,19 @@ impl HudLayout1 {
         SlotFlattened {
             element: slot.element,
             center: center.clone(),
-            bg_size: slot.size.scale(self.global_scale),
+            bg_size: slot.size.scale(factor),
             bg_color: slot.bg_color.clone(),
             bg_image: "slot_bg.svg".to_string(),
 
-            icon_size: slot.icon_size.scale(self.global_scale),
-            icon_center: slot.icon_offset.scale(self.global_scale).translate(&center),
+            icon_size: slot.icon_size.scale(factor),
+            icon_center: slot.icon_offset.scale(factor).translate(&center),
             icon_color: slot.icon_color.clone(),
 
-            hotkey_size: slot.hotkey_size.scale(self.global_scale),
-            hotkey_center: slot
-                .hotkey_offset
-                .scale(self.global_scale)
-                .translate(&center),
+            hotkey_size: slot.hotkey_size.scale(factor),
+            hotkey_center: slot.hotkey_offset.scale(factor).translate(&center),
             hotkey_color: slot.hotkey_color.clone(),
 
-            hotkey_bg_size: slot.hotkey_size.scale(self.global_scale),
+            hotkey_bg_size: slot.hotkey_size.scale(factor),
             hotkey_bg_color: slot.hotkey_bg_color.clone(),
             hotkey_bg_image: "key_bg.svg".to_string(),
 
@@ -214,26 +210,38 @@ impl HudLayout1 {
             text,
         }
     }
+
+    fn scale_for_display(&self) -> f32 {
+        let config = settings();
+        let reso = config.resolution_scale();
+        let display_scale = if config.is_upscaling() {
+            (reso * reso) as f32
+        } else {
+            reso as f32
+        };
+        self.global_scale * display_scale
+    }
 }
 
 impl From<&HudLayout1> for LayoutFlattened {
     fn from(v: &HudLayout1) -> Self {
         let slots = v.layouts.iter().map(|xs| v.flatten(xs)).collect();
+        let factor = v.scale_for_display();
 
         LayoutFlattened {
-            global_scale: v.global_scale,
+            global_scale: factor,
             anchor: v.anchor_point(),
-            size: v.size.scale(v.global_scale),
+            size: v.size.scale(factor),
             bg_size: Point {
-                x: v.size.x * v.global_scale,
-                y: v.size.y * v.global_scale,
+                x: v.size.x * factor,
+                y: v.size.y * factor,
             },
             bg_color: v.bg_color.clone(),
             bg_image: "hud_bg.svg".to_string(),
             hide_ammo_when_irrelevant: v.hide_ammo_when_irrelevant,
             hide_left_when_irrelevant: v.hide_left_when_irrelevant,
             font: v.font.clone(),
-            font_size: v.font_size * v.global_scale,
+            font_size: v.font_size * factor,
             // glyphs requested
             chinese_full_glyphs: v.chinese_full_glyphs,
             simplified_chinese_glyphs: v.simplified_chinese_glyphs,

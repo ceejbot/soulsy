@@ -15,10 +15,12 @@ namespace ui
 		int32_t height                    = 0;
 	};
 
+	// display-tweaks aware
 	float resolutionWidth();
 	float resolutionHeight();
-	float resolutionScaleWidth();
-	float resolutionScaleHeight();
+	// from imgui's pov, unaware of scaling
+	float displayWidth();
+	float displayHeight();
 
 	void drawHud();
 

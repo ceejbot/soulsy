@@ -337,6 +337,8 @@ pub mod plugin {
         fn log_level_number(self: &UserSettings) -> u32;
         /// The identifier to use for this mod in SKSE cosaves. Not exposed in UI.
         fn skse_identifier(self: &UserSettings) -> u32;
+        /// The display-tweaks aware resolution scale.
+        fn resolution_scale(self: &UserSettings) -> f64;
 
         /// After an MCM-managed change, re-read our .ini file.
         fn refresh_user_settings();
@@ -549,6 +551,9 @@ pub mod plugin {
         fn resolutionWidth() -> f32;
         /// Get the display height in pixels.
         fn resolutionHeight() -> f32;
+        fn displayWidth() -> f32;
+        fn displayHeight() -> f32;
+
         /// Start the named timer. Duration is looked up from settings.
         fn startTimer(which: Action, duration: u32);
         /// Stop the named timer.

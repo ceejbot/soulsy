@@ -671,8 +671,8 @@ namespace ui
 		std::map<uint32_t, TextureData>& textureCache,
 		std::string& imgDirectory)
 	{
-		const auto res_width  = resolutionScaleWidth();
-		const auto res_height = resolutionScaleHeight();
+		const auto settings        = user_settings();
+		const auto resolutionScale = settings->resolution_scale();
 
 		for (const auto& entry : std::filesystem::directory_iterator(imgDirectory))
 		{
@@ -700,14 +700,17 @@ namespace ui
 				}
 				else { rlog::error("failed to load texture {}"sv, entry.path().filename().string().c_str()); }
 
-				textureCache[index].width  = static_cast<int32_t>(textureCache[index].width * res_width);
-				textureCache[index].height = static_cast<int32_t>(textureCache[index].height * res_height);
+				textureCache[index].width  = static_cast<int32_t>(textureCache[index].width * resolutionScale);
+				textureCache[index].height = static_cast<int32_t>(textureCache[index].height * resolutionScale);
 			}
 		}
 	}
 
 	void ui_renderer::loadAnimationFrames(std::string& file_path, std::vector<TextureData>& frame_list)
 	{
+		// const auto settings        = user_settings();
+		// const auto resolutionScale = settings->resolution_scale();
+
 		for (const auto& entry : std::filesystem::directory_iterator(file_path))
 		{
 			ID3D11ShaderResourceView* texture = nullptr;
@@ -725,8 +728,8 @@ namespace ui
 			// rlog::trace("loading animation frame: {}"sv, entry.path().string().c_str());
 			TextureData img;
 			img.texture = texture;
-			// img.width   = static_cast<int32_t>(width * resolutionScaleWidth());
-			// img.height  = static_cast<int32_t>(height * resolutionScaleHeight());
+			// img.width   = static_cast<int32_t>(width * resolutionScale);
+			// img.height  = static_cast<int32_t>(height * resolutionScale);
 			frame_list.push_back(img);
 		}
 	}
@@ -820,18 +823,21 @@ namespace ui
 		rlog::trace("frame length is {}"sv, animation_frame_map[animation_type::highlight].size());
 	}
 
-	// These values scale the UI from the resolution the mod author used to the resolution
-	// of the player's screen. The effect is to make things not over-large for smaller resolutions.
-	// TODO this should be restored BUT as a lookup from the layout file. The designer can
-	// state their intent.
-	// float ui_renderer::resolutionScaleWidth() { return ImGui::GetIO().DisplaySize.x / 1920.f; }
-	// float ui_renderer::resolutionScaleHeight() { return ImGui::GetIO().DisplaySize.y / 1080.f; }
+	float displayWidth() { return ImGui::GetIO().DisplaySize.x; }
+	float resolutionWidth()
+	{
+		const auto settings = user_settings();
+		const auto scale    = static_cast<float>(settings->resolution_scale());
+		return scale * displayWidth();
+	}
 
-	float resolutionScaleWidth() { return 1.0f; }
-	float resolutionScaleHeight() { return 1.0f; }
-
-	float resolutionWidth() { return ImGui::GetIO().DisplaySize.x; }
-	float resolutionHeight() { return ImGui::GetIO().DisplaySize.y; }
+	float displayHeight() { return ImGui::GetIO().DisplaySize.y; }
+	float resolutionHeight()
+	{
+		const auto settings = user_settings();
+		const auto scale    = static_cast<float>(settings->resolution_scale());
+		return scale * displayHeight();
+	}
 
 	// Returns true if the HUD was invisible and we began showing it.
 	bool showBriefly()

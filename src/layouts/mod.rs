@@ -139,15 +139,14 @@ pub fn anchor_point(
 ) -> Point {
     // If we read a named anchor point, turn it into pixels.
     // The anchor point is the location of the hud CENTER, so we offset.
-    let screen_width = resolutionWidth();
-    let screen_height = resolutionHeight();
+    let config = *user_settings();
+    let screen_width = displayWidth();
+    let screen_height = displayHeight();
 
     let width = size.x * global_scale;
     let height = size.y * global_scale;
 
-    let config = *user_settings();
     let user_pref_anchor = config.anchor_loc();
-    eprintln!("{user_pref_anchor}");
     let anchor_to_use = if !matches!(user_pref_anchor, &NamedAnchor::None) {
         user_pref_anchor
     } else {
@@ -197,8 +196,8 @@ pub fn anchor_point(
             } else {
                 // note the opportunity for refactoring but I am too stressed right now
                 Point {
-                    x: width / 2.0,
-                    y: height / 2.0,
+                    x: width * 0.5,
+                    y: height * 0.5,
                 }
             }
         }
@@ -232,19 +231,19 @@ impl Point {
 }
 
 #[cfg(not(test))]
-use crate::plugin::{resolutionHeight, resolutionWidth};
+use crate::plugin::{displayHeight, displayWidth};
 
 // Mocked screen resolution numbers, because these functions are provided by
 // C++ and require imgui etc. The names come from C++ and are not snake case.
 #[cfg(test)]
 #[allow(non_snake_case)]
-fn resolutionWidth() -> f32 {
+fn displayWidth() -> f32 {
     3440.0
 }
 
 #[cfg(test)]
 #[allow(non_snake_case)]
-fn resolutionHeight() -> f32 {
+fn displayHeight() -> f32 {
     1440.0
 }
 
