@@ -1,8 +1,10 @@
 //! Structs and trait impls for considering keyboard/controller state.
+//! There are too many enums here and a substantial rework is called for.
 
 use std::fmt::Display;
 use std::time::{Duration, Instant};
 
+use enumset::{enum_set, EnumSet, EnumSetType};
 use eyre::eyre;
 use strum::Display;
 
@@ -18,7 +20,7 @@ pub enum CycleSlot {
     Utility,
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Default, Display)]
+#[derive(Debug, Hash, Default, Display, EnumSetType)]
 pub enum Hotkey {
     Power,
     Utility,
@@ -37,22 +39,92 @@ pub enum Hotkey {
     None,
 }
 
+const CYCLE_KEYS: EnumSet<Hotkey> =
+    enum_set!(Hotkey::Left | Hotkey::Power | Hotkey::Right | Hotkey::Utility | Hotkey::Equipment);
+const MODIFIER_KEYS: EnumSet<Hotkey> = enum_set!(
+    Hotkey::ActivateModifier
+        | Hotkey::CycleModifier
+        | Hotkey::MenuModifier
+        | Hotkey::UnequipModifier
+);
+
 impl Hotkey {
-    pub fn is_cycle_key(&self) -> bool {
-        matches!(
-            *self,
-            Hotkey::Left | Hotkey::Power | Hotkey::Right | Hotkey::Utility | Hotkey::Equipment
-        )
+    pub fn key_for(&self) -> i32 {
+        let options = settings();
+
+        match self {
+            Hotkey::Power => options.power() as i32,
+            Hotkey::Utility => options.utility() as i32,
+            Hotkey::Left => options.left() as i32,
+            Hotkey::Right => options.right() as i32,
+            Hotkey::Equipment => options.equipset() as i32,
+            Hotkey::Activate => options.activate() as i32,
+            Hotkey::UnequipHands => options.unequip_hotkey() as i32,
+            Hotkey::Refresh => options.refresh_layout() as i32,
+            Hotkey::ShowHide => options.showhide() as i32,
+            Hotkey::UnequipModifier => options.unequip_modifier(),
+            Hotkey::CycleModifier => options.cycle_modifier(),
+            Hotkey::ActivateModifier => options.activate_modifier(),
+            Hotkey::MenuModifier => options.menu_modifier(),
+            Hotkey::None => -1,
+        }
     }
 
-    pub fn is_modifier_key(&self) -> bool {
-        matches!(
-            *self,
-            Hotkey::ActivateModifier
-                | Hotkey::CycleModifier
-                | Hotkey::MenuModifier
-                | Hotkey::UnequipModifier
-        )
+    pub fn relevant_shortcuts(v: u32) -> EnumSet<Hotkey> {
+        let settings = settings();
+        let mut set: EnumSet<Hotkey> = EnumSet::new();
+
+        if v == settings.power() {
+            set.insert(Hotkey::Power);
+        }
+        if v == settings.utility() {
+            set.insert(Hotkey::Utility);
+        }
+        if v == settings.left() {
+            set.insert(Hotkey::Left);
+        }
+        if v == settings.right() {
+            set.insert(Hotkey::Right);
+        }
+        if v == settings.equipset() as u32 {
+            set.insert(Hotkey::Equipment);
+        }
+        if v == settings.refresh_layout() {
+            set.insert(Hotkey::Refresh);
+        }
+        if v == settings.showhide() {
+            set.insert(Hotkey::ShowHide);
+        }
+        if v == settings.activate() {
+            set.insert(Hotkey::Activate);
+        }
+
+        if v == settings.unequip_hotkey() as u32 {
+            set.insert(Hotkey::UnequipHands);
+        }
+
+        if settings.activate_modifier().is_positive()
+            && v == settings.activate_modifier().unsigned_abs()
+        {
+            set.insert(Hotkey::ActivateModifier);
+        }
+
+        if settings.cycle_modifier().is_positive() && v == settings.cycle_modifier().unsigned_abs()
+        {
+            set.insert(Hotkey::CycleModifier);
+        }
+
+        if settings.unequip_modifier().is_positive()
+            && v == settings.unequip_modifier().unsigned_abs()
+        {
+            set.insert(Hotkey::UnequipModifier);
+        }
+
+        if settings.menu_modifier().is_positive() && v == settings.menu_modifier().unsigned_abs() {
+            set.insert(Hotkey::MenuModifier);
+        }
+
+        set
     }
 
     pub fn long_press_action(&self) -> RequestedAction {
@@ -129,49 +201,6 @@ impl From<&Action> for Hotkey {
     }
 }
 
-impl From<u32> for Hotkey {
-    fn from(v: u32) -> Self {
-        let settings = settings();
-        if v == settings.power() {
-            Hotkey::Power
-        } else if v == settings.utility() {
-            Hotkey::Utility
-        } else if v == settings.left() {
-            Hotkey::Left
-        } else if v == settings.right() {
-            Hotkey::Right
-        } else if v == settings.equipset() as u32 {
-            Hotkey::Equipment
-        } else if v == settings.refresh_layout() {
-            Hotkey::Refresh
-        } else if v == settings.showhide() {
-            Hotkey::ShowHide
-        } else if v == settings.activate() {
-            Hotkey::Activate
-        } else if v == settings.unequip_hotkey() as u32 {
-            Hotkey::UnequipHands
-        } else if settings.activate_modifier().is_positive()
-            && v == settings.activate_modifier().unsigned_abs()
-        {
-            Hotkey::ActivateModifier
-        } else if settings.cycle_modifier().is_positive()
-            && v == settings.cycle_modifier().unsigned_abs()
-        {
-            Hotkey::CycleModifier
-        } else if settings.unequip_modifier().is_positive()
-            && v == settings.unequip_modifier().unsigned_abs()
-        {
-            Hotkey::UnequipModifier
-        } else if settings.menu_modifier().is_positive()
-            && v == settings.menu_modifier().unsigned_abs()
-        {
-            Hotkey::MenuModifier
-        } else {
-            Hotkey::None
-        }
-    }
-}
-
 #[derive(Debug, Default, Clone, Hash, PartialEq, Eq, Display)]
 pub enum KeyState {
     #[default]
@@ -194,14 +223,44 @@ impl From<&ButtonEvent> for KeyState {
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct TrackedKey {
-    pub key: Hotkey,
+    /// The code for the pressed key being tracked.
+    pub key: u32,
+    /// The UX-meaningful hotkey actions represented by this key event.
+    hotkeys: EnumSet<Hotkey>,
+    /// The current statue of the key.
     pub state: KeyState,
+    /// When we started tracking this key.
     pub press_start: Option<Instant>,
 }
 
 impl TrackedKey {
+    pub fn new(key: u32, event: &ButtonEvent) -> Self {
+        let press_start = Some(Instant::now());
+        let state = KeyState::from(event);
+        let hotkeys = Hotkey::relevant_shortcuts(key);
+
+        Self {
+            key,
+            hotkeys,
+            state,
+            press_start,
+        }
+    }
+
+    pub fn shortcut_for(&self) -> Hotkey {
+        self.hotkeys.iter().find_map(Some).unwrap_or_default()
+    }
+
     pub fn ignore(&self) -> bool {
-        matches!(self.key, Hotkey::None)
+        self.hotkeys.contains(Hotkey::None) || self.hotkeys.is_empty()
+    }
+
+    pub fn is_modifier(&self) -> bool {
+        self.hotkeys.is_subset(MODIFIER_KEYS)
+    }
+
+    pub fn is_cycle_key(&self) -> bool {
+        self.hotkeys.is_subset(CYCLE_KEYS)
     }
 
     pub fn update(&mut self, event: &ButtonEvent) {
@@ -242,7 +301,8 @@ impl TrackedKey {
 impl Default for TrackedKey {
     fn default() -> Self {
         Self {
-            key: Hotkey::None,
+            key: 0,
+            hotkeys: enum_set!(Hotkey::None),
             state: KeyState::Up,
             press_start: None,
         }

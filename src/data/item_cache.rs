@@ -47,6 +47,10 @@ impl ItemCache {
         self.lru.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.lru.is_empty()
+    }
+
     /// On load from save, we do not bother attempting to reconcile what
     /// we have cached with what the save state is. We merely enjoy the
     /// eternal sunshine of the spotless mind.

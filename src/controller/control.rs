@@ -54,7 +54,7 @@ pub struct Controller {
     /// We cache a right-hand form spec string similarly.
     right_hand_cached: String,
     /// We need to track keystate to implement modifier keys.
-    tracked_keys: HashMap<Hotkey, TrackedKey>,
+    tracked_keys: HashMap<u32, TrackedKey>,
     /// True if we're using CGO's alternative grip.
     cgo_alt_grip: bool,
 }
@@ -314,46 +314,39 @@ impl Controller {
     /// Returns an enum indicating what we did in response, so that the C++ layer can
     /// start a tick timer for cycle delay.
     pub fn handle_key_event(&mut self, key: u32, button: &ButtonEvent) -> KeyEventResponse {
-        let hotkey = Hotkey::from(key);
-        let state = KeyState::from(button);
-        // log::info!(
-        //     "{key} {} {hotkey}  {state}",
-        //     char::from_u32(key).unwrap_or('X')
-        // );
-        if matches!(hotkey, Hotkey::None) {
-            return KeyEventResponse::default();
-        }
-
-        // log::trace!("incoming key={}; state={};", hotkey, state);
-
-        // We want all updates so we can track mod keys & long presses.
         // This call starts and stops long-press timers as well.
-        let keep_handling = self.update_tracked_key(&hotkey, button, false);
+        // It returns nothing if the handler should take no further action.
+        let Some(tracked) = self.create_or_update_tracked(key, button, false) else {
+            return KeyEventResponse::default();
+        };
 
-        // For mod keys, we're done.
-        if hotkey.is_modifier_key() || !keep_handling {
+        if tracked.ignore() || tracked.is_modifier() {
             return KeyEventResponse::default();
         }
+
+        log::trace!("handling keypress={tracked}");
 
         // From here on, we only care if the key has gone up.
-        if state != KeyState::Up {
+        if tracked.state != KeyState::Up {
             return KeyEventResponse::handled();
         }
 
-        let le_options = settings();
+        let options = settings();
         // if the hud is NOT visible, we show it briefly before acting.
         if showBriefly() {
             return KeyEventResponse::handled();
         }
 
+        let hotkey = tracked.shortcut_for();
+
         match hotkey {
             Hotkey::Power => self.handle_cycle_power(),
             Hotkey::Utility => self.handle_cycle_utility(),
-            Hotkey::Left => self.handle_cycle_left(&hotkey),
-            Hotkey::Right => self.handle_cycle_right(&hotkey),
-            Hotkey::Equipment => self.handle_cycle_equipset(&hotkey),
+            Hotkey::Left => self.handle_cycle_left(tracked),
+            Hotkey::Right => self.handle_cycle_right(tracked),
+            Hotkey::Equipment => self.handle_cycle_equipset(tracked),
             Hotkey::Activate => {
-                let activation_method = le_options.utility_activation_method();
+                let activation_method = options.utility_activation_method();
                 if matches!(activation_method, ActivationMethod::Hotkey) {
                     self.use_utility_item()
                 } else {
@@ -361,7 +354,7 @@ impl Controller {
                 }
             }
             Hotkey::UnequipHands => {
-                let unarmed_method = le_options.unequip_method();
+                let unarmed_method = options.unequip_method();
                 if matches!(unarmed_method, UnarmedMethod::Hotkey) {
                     self.disarm_player()
                 } else {
@@ -373,7 +366,7 @@ impl Controller {
                 KeyEventResponse::handled()
             }
             Hotkey::ShowHide => {
-                if !le_options.autofade() {
+                if !options.autofade() {
                     self.cycles.toggle_hud();
                 }
                 KeyEventResponse::handled()
@@ -384,21 +377,20 @@ impl Controller {
 
     /// Handle the power/shouts key being pressed.
     fn handle_cycle_power(&mut self) -> KeyEventResponse {
-        // We don't need to worry about long presses here: those are handled by timers.
-        let settings = settings();
-        let cycle_method = settings.cycle_advance_method();
-        if matches!(cycle_method, ActivationMethod::Hotkey) {
-            self.advance_cycle_power()
-        } else if matches!(cycle_method, ActivationMethod::Modifier) {
-            let hotkey = self.get_tracked_key(&Hotkey::CycleModifier);
-            if hotkey.is_pressed() {
-                self.advance_cycle_power()
-            } else {
-                KeyEventResponse::default()
+        let options = settings();
+        match options.cycle_advance_method() {
+            ActivationMethod::Hotkey => return self.advance_cycle_power(),
+            // We don't need to worry about long presses here: those are handled by timers.
+            ActivationMethod::LongPress => {}
+            ActivationMethod::Modifier => {
+                let hotkey = self.tracked_state_for(&Hotkey::CycleModifier);
+                if hotkey.is_pressed() {
+                    return self.advance_cycle_power();
+                }
             }
-        } else {
-            KeyEventResponse::default()
         }
+
+        KeyEventResponse::default()
     }
 
     /// The power/shouts keypress resulted in advancing the cycle.
@@ -430,26 +422,26 @@ impl Controller {
     /// Hande the utilities/consumable key being pressed.
     fn handle_cycle_utility(&mut self) -> KeyEventResponse {
         // Same comment about long presses.
-        let settings = settings();
+        let options = settings();
 
         if matches!(
-            settings.utility_activation_method(),
+            options.utility_activation_method(),
             ActivationMethod::Modifier
         ) {
-            let modifier = self.get_tracked_key(&Hotkey::ActivateModifier);
+            let modifier = self.tracked_state_for(&Hotkey::ActivateModifier);
             if modifier.is_pressed() {
                 log::debug!("activating utilities/consumables");
                 return self.use_utility_item();
             }
         }
 
-        let cycle_method = settings.cycle_advance_method();
+        let cycle_method = options.cycle_advance_method();
         if matches!(cycle_method, ActivationMethod::Hotkey) {
             log::debug!("cycling utilities/consumables");
             return self.advance_cycle_utilities();
         }
         if matches!(cycle_method, ActivationMethod::Modifier) {
-            let modifier = self.get_tracked_key(&Hotkey::CycleModifier);
+            let modifier = self.tracked_state_for(&Hotkey::CycleModifier);
             if modifier.is_pressed() {
                 log::debug!("cycling utilities/consumables");
                 return self.advance_cycle_utilities();
@@ -487,34 +479,39 @@ impl Controller {
 
     /// Figure out what is supposed to happen on a key up, given settings and keystate.
     /// Only used for right and left hand.
-    fn requested_keyup_action(&self, hotkey: &Hotkey) -> RequestedAction {
-        let settings = settings();
-        let tracked = self.get_tracked_key(hotkey);
+    fn requested_keyup_action(&self, tracked: TrackedKey) -> RequestedAction {
+        let options = settings();
         let is_long_press = tracked.is_long_press();
 
-        let unequip_requested = match settings.unequip_method() {
-            UnarmedMethod::None => false,
-            UnarmedMethod::LongPress => tracked.is_long_press(),
+        let unequip_requested = match options.unequip_method() {
+            UnarmedMethod::LongPress => is_long_press,
             UnarmedMethod::Modifier => {
-                let unequipmod = self.get_tracked_key(&Hotkey::UnequipModifier);
+                let unequipmod = self.tracked_state_for(&Hotkey::UnequipModifier);
                 unequipmod.is_pressed()
             }
+            UnarmedMethod::None => false,
             UnarmedMethod::AddToCycles => false,
             UnarmedMethod::Hotkey => false, // this hotkey has its own handler
         };
 
         if unequip_requested {
-            RequestedAction::Unequip
-        } else if is_long_press && settings.long_press_to_dual_wield() {
-            RequestedAction::Match
-        } else if match settings.cycle_advance_method() {
+            return RequestedAction::Unequip;
+        }
+
+        if is_long_press && options.long_press_to_dual_wield() {
+            return RequestedAction::Match;
+        }
+
+        let advance_requested = match options.cycle_advance_method() {
             ActivationMethod::Hotkey => true,
             ActivationMethod::LongPress => is_long_press,
             ActivationMethod::Modifier => {
-                let cyclemod = self.get_tracked_key(&Hotkey::CycleModifier);
+                let cyclemod = self.tracked_state_for(&Hotkey::CycleModifier);
                 cyclemod.is_pressed()
             }
-        } {
+        };
+
+        if advance_requested {
             RequestedAction::Advance
         } else {
             RequestedAction::None
@@ -522,17 +519,17 @@ impl Controller {
     }
 
     /// Handle the right hand hotkey.
-    fn handle_cycle_right(&mut self, hotkey: &Hotkey) -> KeyEventResponse {
-        let requested_action = self.requested_keyup_action(hotkey);
+    fn handle_cycle_right(&mut self, tracked: TrackedKey) -> KeyEventResponse {
+        let requested_action = self.requested_keyup_action(tracked);
         // The left hand needs these two steps separated. See next function.
         self.do_hand_action(requested_action, Action::Right, CycleSlot::Right)
     }
 
     /// Hande the left hand hotkey.
-    fn handle_cycle_left(&mut self, hotkey: &Hotkey) -> KeyEventResponse {
+    fn handle_cycle_left(&mut self, tracked: TrackedKey) -> KeyEventResponse {
         let settings = settings();
         let cycle_ammo = settings.cycle_ammo();
-        let requested_action = self.requested_keyup_action(hotkey);
+        let requested_action = self.requested_keyup_action(tracked);
 
         // Here's our different left-hand decision.
         // Do we have a bow equipped, and if so, is the "handle ammo" boolean set?
@@ -843,7 +840,7 @@ impl Controller {
             return;
         }
 
-        let tracked = self.get_tracked_key(&Hotkey::from(&which));
+        let tracked = self.tracked_state_for(&Hotkey::from(&which));
         if tracked.is_pressed() {
             // Here's the reasoning. The player might be mid-long-press, in
             // which case we do not want to interrupt by equipping. The player
@@ -1488,21 +1485,11 @@ impl Controller {
         // Much simpler than the cycle loop. We care if the cycle modifier key
         // is down (if one is set), and we care if the cycle button itself has
         // been pressed.
-        let hotkey = Hotkey::from(key);
-        if matches!(hotkey, Hotkey::None) {
+
+        let Some(tracked) = self.create_or_update_tracked(key, button, false) else {
             return false;
-        }
-
-        // You want a fun bug? I'll give you a fun bug. If these two keys are the
-        // same, which they might be, we suddenly have to become context-aware.
-        let hotkey = if matches!(hotkey, Hotkey::ActivateModifier) {
-            Hotkey::MenuModifier
-        } else {
-            hotkey
         };
-
-        self.update_tracked_key(&hotkey, button, true);
-        if !hotkey.is_cycle_key() || !button.IsDown() {
+        if !tracked.is_cycle_key() || !button.IsDown() {
             return false;
         }
 
@@ -1513,11 +1500,10 @@ impl Controller {
             ActivationMethod::Hotkey => true,
             ActivationMethod::LongPress => {
                 log::debug!("checking for long press in menu");
-                // if it's not found, will never be a long press
-                self.get_tracked_key(&hotkey).is_long_press()
+                tracked.is_long_press()
             }
             ActivationMethod::Modifier => {
-                let modkey = self.get_tracked_key(&Hotkey::MenuModifier);
+                let modkey = self.tracked_state_for(&Hotkey::MenuModifier);
                 log::debug!(
                     "checking for menu modifier key pressed in menu; {modkey:?} => {}",
                     modkey.is_pressed()
@@ -1575,10 +1561,16 @@ impl Controller {
 
     // Update the state of a tracked key so we can handle modifier keys and long-presses.
     // Returns whether the calling level should continue handling this key.
-    fn update_tracked_key(&mut self, hotkey: &Hotkey, button: &ButtonEvent, in_menu: bool) -> bool {
-        let mut retval = true;
-        let tracking_long_presses = !in_menu && settings().start_long_press_timer(hotkey);
-        let tracked = if let Some(previous) = self.tracked_keys.get_mut(hotkey) {
+    fn create_or_update_tracked(
+        &mut self,
+        key: u32,
+        button: &ButtonEvent,
+        in_menu: bool,
+    ) -> Option<TrackedKey> {
+        let mut return_the_key = true;
+        let tracking_long_presses = !in_menu; //  && settings().start_long_press_timer(tracked.hotkeys);
+
+        let tracked = if let Some(previous) = self.tracked_keys.get_mut(&key) {
             // We have seen this key before.
             // Did this key just have a long-press event? if so, ignore a key-up.
             // We ask this question before we update the tracking data.
@@ -1586,77 +1578,79 @@ impl Controller {
                 && previous.is_long_press()
                 && tracking_long_presses
             {
-                retval = false;
+                return_the_key = false;
             }
 
             previous.update(button);
             previous.clone()
         } else {
-            let mut tracked = TrackedKey {
-                key: hotkey.clone(),
-                state: KeyState::default(),
-                press_start: None,
-            };
-            tracked.update(button);
-            self.tracked_keys.insert(hotkey.clone(), tracked.clone());
-            tracked
+            let fresh = TrackedKey::new(key, button);
+            self.tracked_keys.insert(key, fresh.clone());
+            fresh
         };
 
         // long press timers; not started if we're in a menu
         if tracking_long_presses {
+            let shortcut = tracked.shortcut_for();
             if matches!(tracked.state, KeyState::Down) {
                 let duration = settings().long_press_ms();
-                match tracked.key {
-                    Hotkey::Left => startTimer(Action::LongPressLeft, duration),
-                    Hotkey::Right => startTimer(Action::LongPressRight, duration),
+                match shortcut {
                     Hotkey::Power => startTimer(Action::LongPressPower, duration),
                     Hotkey::Utility => startTimer(Action::LongPressUtility, duration),
+                    Hotkey::Left => startTimer(Action::LongPressLeft, duration),
+                    Hotkey::Right => startTimer(Action::LongPressRight, duration),
                     _ => {}
                 }
             } else if matches!(tracked.state, KeyState::Up) {
-                match tracked.key {
-                    Hotkey::Left => stopTimer(Action::LongPressLeft),
-                    Hotkey::Right => stopTimer(Action::LongPressRight),
+                match shortcut {
                     Hotkey::Power => stopTimer(Action::LongPressPower),
                     Hotkey::Utility => stopTimer(Action::LongPressUtility),
+                    Hotkey::Left => stopTimer(Action::LongPressLeft),
+                    Hotkey::Right => stopTimer(Action::LongPressRight),
                     _ => {}
                 }
             }
         }
-        retval
+
+        if return_the_key {
+            Some(tracked)
+        } else {
+            None
+        }
     }
 
-    fn get_tracked_key(&self, hotkey: &Hotkey) -> TrackedKey {
-        if let Some(tracked) = self.tracked_keys.get(hotkey) {
+    fn tracked_state_for(&self, hotkey: &Hotkey) -> TrackedKey {
+        let key = hotkey.key_for();
+        if key < 0 {
+            return TrackedKey::default();
+        }
+        if let Some(tracked) = self.tracked_keys.get(&key.unsigned_abs()) {
             tracked.clone()
         } else {
-            TrackedKey {
-                key: Hotkey::None,
-                state: KeyState::Up,
-                press_start: None,
-            }
+            TrackedKey::default()
         }
     }
 
     // ----------- equipment set functions
 
     /// Handle the power/shouts key being pressed.
-    fn handle_cycle_equipset(&mut self, _hotkey: &Hotkey) -> KeyEventResponse {
-        let le_options = settings();
-        let cycle_method = le_options.cycle_advance_method();
+    fn handle_cycle_equipset(&mut self, _tracked: TrackedKey) -> KeyEventResponse {
+        let options = settings();
+        let cycle_method = options.cycle_advance_method();
 
-        if matches!(cycle_method, ActivationMethod::Hotkey) {
-            self.advance_cycle_equipset()
-        } else if matches!(cycle_method, ActivationMethod::Modifier) {
-            let hotkey = self.get_tracked_key(&Hotkey::CycleModifier);
-            if hotkey.is_pressed() {
-                self.advance_cycle_equipset()
-            } else {
-                KeyEventResponse::default()
+        match cycle_method {
+            // handled with timers
+            ActivationMethod::LongPress => {}
+            ActivationMethod::Hotkey => return self.advance_cycle_equipset(),
+            ActivationMethod::Modifier => {
+                let modifier = self.tracked_state_for(&Hotkey::CycleModifier);
+                if modifier.is_pressed() {
+                    return self.advance_cycle_equipset();
+                }
             }
-        } else {
-            KeyEventResponse::default()
         }
+
+        KeyEventResponse::default()
     }
 
     /// Rotate to the next equipment set in the cycle and start the timer.
