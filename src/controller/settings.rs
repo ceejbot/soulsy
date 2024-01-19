@@ -318,9 +318,10 @@ impl UserSettings {
         }
     }
 
-    pub fn start_long_press_timer(&self, key: &Hotkey) -> bool {
-        let is_hand_cycle = matches!(key, Hotkey::Left | Hotkey::Right);
-        let can_be_unequipped = matches!(key, Hotkey::Left | Hotkey::Power | Hotkey::Right);
+    pub fn should_start_long_press_timer(&self, key: u32) -> bool {
+        let hotkey = Hotkey::from(key);
+        let is_hand_cycle = matches!(hotkey, Hotkey::Left | Hotkey::Right);
+        let can_be_unequipped = matches!(hotkey, Hotkey::Left | Hotkey::Power | Hotkey::Right);
 
         // These three should be mutually exclusive, so order shouldn't matter.
         // "should" ha ha ha
@@ -329,7 +330,7 @@ impl UserSettings {
         }
         if matches!(self.how_to_activate, ActivationMethod::LongPress)
             && matches!(
-                key,
+                hotkey,
                 Hotkey::Left | Hotkey::Power | Hotkey::Right | Hotkey::Utility
             )
         {
