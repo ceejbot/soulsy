@@ -477,6 +477,10 @@ impl UserSettings {
         u32::from_le_bytes(slice)
     }
 
+    pub fn is_upscaling(&self) -> bool {
+        self.display_tweaks.upscaling()
+    }
+
     pub fn resolution_scale(&self) -> f64 {
         self.display_tweaks.scale()
     }
@@ -749,11 +753,11 @@ struct DisplayTweaks {
 impl DisplayTweaks {
     /// Get the resolution scale, DisplayTweaks-aware.
     pub fn scale(&self) -> f64 {
-        if self.upscaling {
-            self.scale
-        } else {
-            1.0
-        }
+        self.scale
+    }
+
+    pub fn upscaling(&self) -> bool {
+        self.upscaling
     }
 
     /// Pluck scaling settings from the display tweaks ini.

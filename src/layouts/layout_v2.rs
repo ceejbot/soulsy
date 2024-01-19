@@ -12,6 +12,7 @@ use super::shared::*;
 use crate::plugin::{
     Align, Color, HudElement, LayoutFlattened, MeterKind, Point, SlotFlattened, TextFlattened,
 };
+use crate::settings::settings;
 
 /// Where to arrange the HUD elements and what color to draw them in.
 ///
@@ -109,7 +110,7 @@ impl HudLayout2 {
 
     pub fn anchor_point(&self) -> Point {
         super::anchor_point(
-            self.global_scale,
+            self.scale_for_display(),
             &self.size,
             &self.anchor_name,
             self.anchor.as_ref(),
@@ -117,7 +118,7 @@ impl HudLayout2 {
     }
 
     fn flatten_slot(&self, slot: &SlotElement, element: HudElement) -> SlotFlattened {
-        let scale = self.global_scale;
+        let scale = self.scale_for_display();
 
         let bg = slot.background.clone().unwrap_or_default();
         let hotkey = slot.hotkey.clone().unwrap_or_default();
@@ -187,7 +188,7 @@ impl HudLayout2 {
     }
 
     fn flatten_text(&self, text: &TextElement, center: &Point) -> TextFlattened {
-        let scale = self.global_scale;
+        let scale = self.scale_for_display();
         TextFlattened {
             anchor: center.translate(&text.offset.scale(scale)),
             color: text.color.clone(),
@@ -196,6 +197,17 @@ impl HudLayout2 {
             font_size: text.font_size * scale,
             wrap_width: text.wrap_width,
         }
+    }
+
+    fn scale_for_display(&self) -> f32 {
+        let config = settings();
+        let reso = config.resolution_scale();
+        let display_scale = if config.is_upscaling() {
+            (reso * reso) as f32
+        } else {
+            reso as f32
+        };
+        self.global_scale * display_scale
     }
 }
 
@@ -483,7 +495,7 @@ impl From<&HudLayout2> for LayoutFlattened {
             slots.push(v.flatten_slot(equipset, HudElement::EquipSet));
         }
         let bg = v.background.clone().unwrap_or_default();
-        let scale = v.global_scale;
+        let scale = v.scale_for_display();
 
         LayoutFlattened {
             global_scale: scale,

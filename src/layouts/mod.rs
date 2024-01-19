@@ -147,7 +147,6 @@ pub fn anchor_point(
     let height = size.y * global_scale;
 
     let user_pref_anchor = config.anchor_loc();
-    eprintln!("{user_pref_anchor}");
     let anchor_to_use = if !matches!(user_pref_anchor, &NamedAnchor::None) {
         user_pref_anchor
     } else {
@@ -197,8 +196,8 @@ pub fn anchor_point(
             } else {
                 // note the opportunity for refactoring but I am too stressed right now
                 Point {
-                    x: width / 2.0,
-                    y: height / 2.0,
+                    x: width * 0.5,
+                    y: height * 0.5,
                 }
             }
         }
