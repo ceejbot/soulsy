@@ -3,7 +3,7 @@
 //! validation and some translation from older versions, but this file is
 //! otherwise all fairly predictable.
 
-use std::sync::Mutex;
+use std::{path::Path, sync::Mutex};
 
 use eyre::Result;
 use ini::Ini;
@@ -131,6 +131,9 @@ pub struct UserSettings {
     equip_sets_unequip: bool,
     /// The identifier for the mod in SKSE cosaves. Defaults to SOLS.
     skse_identifier: String,
+
+    /// Settings we need from DisplayTweaks, if it exists
+    display_tweaks: DisplayTweaks,
 }
 
 impl Default for UserSettings {
@@ -172,6 +175,7 @@ impl Default for UserSettings {
             colorize_icons: true,
             equip_sets_unequip: true,
             skse_identifier: "SOLS".to_string(),
+            display_tweaks: DisplayTweaks::default(),
         }
     }
 }
@@ -285,6 +289,8 @@ impl UserSettings {
         self.equipset = read_from_ini(self.equipset, "iEquipSetCycleKey", controls);
         self.equip_sets_unequip =
             read_from_ini(self.equip_sets_unequip, "bEquipSetsUnequip", options);
+
+        self.display_tweaks.read_ini();
 
         Ok(())
     }
@@ -470,6 +476,10 @@ impl UserSettings {
             .expect("You must provide exactly four characters as the mod identifier string.");
         u32::from_le_bytes(slice)
     }
+
+    pub fn resolution_scale(&self) -> f64 {
+        self.display_tweaks.scale()
+    }
 }
 
 /// Generic for reading a typed value from the ini structure.
@@ -607,6 +617,17 @@ impl FromIniStr for f32 {
         }
     }
 }
+
+impl FromIniStr for f64 {
+    fn from_ini(value: &str) -> Option<Self> {
+        if let Ok(v) = value.parse::<f64>() {
+            Some(v)
+        } else {
+            None
+        }
+    }
+}
+
 impl FromIniStr for String {
     fn from_ini(value: &str) -> Option<Self> {
         Some(value.to_string())
@@ -716,6 +737,58 @@ impl std::fmt::Display for UserSettings {
             self.equip_sets_unequip,
             self.skse_identifier
         )
+    }
+}
+
+#[derive(Debug, Clone)]
+struct DisplayTweaks {
+    scale: f64,
+    upscaling: bool,
+}
+
+impl DisplayTweaks {
+    /// Get the resolution scale, DisplayTweaks-aware.
+    pub fn scale(&self) -> f64 {
+        if self.upscaling {
+            self.scale
+        } else {
+            1.0
+        }
+    }
+
+    /// Pluck scaling settings from the display tweaks ini.
+    pub fn read_ini(&mut self) {
+        let fpath = std::path::Path::new("Data/SKSE/Plugins/SSEDisplayTweaks.ini");
+        self.update_from_ini(&fpath);
+        let fpath = std::path::Path::new("Data/SKSE/Plugins/SSEDisplayTweaks_Custom.ini");
+        self.update_from_ini(&fpath);
+    }
+
+    fn update_from_ini(&mut self, fpath: &Path) {
+        if !fpath.exists() {
+            return;
+        }
+        let Ok(conf) = Ini::load_from_file(fpath) else {
+            return;
+        };
+        let section = conf.general_section();
+        self.upscaling = read_from_ini(self.upscaling, "BorderlessUpscale", section);
+        self.scale = read_from_ini(self.scale, "ResolutionScale", section);
+    }
+}
+
+/*
+const wchar_t* defaultDisplayTweaksPath{ L"Data/SKSE/Plugins/SSEDisplayTweaks.ini" };
+    const wchar_t* userDisplayTweaksPath{ L"Data/SKSE/Plugins/SSEDisplayTweaks_Custom.ini" };
+    read ResolutionScale (double) and BorderlessUpscale (bool) from ini
+*/
+
+impl Default for DisplayTweaks {
+    fn default() -> Self {
+        Self {
+            scale: 1.0,
+            upscaling: false,
+        }
     }
 }
 
