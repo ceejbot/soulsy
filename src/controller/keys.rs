@@ -3,6 +3,7 @@
 use std::fmt::Display;
 use std::time::{Duration, Instant};
 
+use enumset::{enum_set, EnumSet, EnumSetType};
 use eyre::eyre;
 use strum::Display;
 
@@ -18,7 +19,7 @@ pub enum CycleSlot {
     Utility,
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Default, Display)]
+#[derive(Debug, Hash, Default, Display, EnumSetType)]
 pub enum Hotkey {
     Power,
     Utility,
@@ -37,22 +38,44 @@ pub enum Hotkey {
     None,
 }
 
+const CYCLE_KEYS: EnumSet<Hotkey> =
+    enum_set!(Hotkey::Left | Hotkey::Power | Hotkey::Right | Hotkey::Utility | Hotkey::Equipment);
+
+const MODIFIER_KEYS: EnumSet<Hotkey> = enum_set!(
+    Hotkey::ActivateModifier
+        | Hotkey::CycleModifier
+        | Hotkey::MenuModifier
+        | Hotkey::UnequipModifier
+);
+
 impl Hotkey {
+    pub fn key_for(&self) -> i32 {
+        let options = settings();
+
+        match self {
+            Hotkey::Power => options.power() as i32,
+            Hotkey::Utility => options.utility() as i32,
+            Hotkey::Left => options.left() as i32,
+            Hotkey::Right => options.right() as i32,
+            Hotkey::Equipment => options.equipset() as i32,
+            Hotkey::Activate => options.activate() as i32,
+            Hotkey::UnequipHands => options.unequip_hotkey() as i32,
+            Hotkey::Refresh => options.refresh_layout() as i32,
+            Hotkey::ShowHide => options.showhide() as i32,
+            Hotkey::UnequipModifier => options.unequip_modifier(),
+            Hotkey::CycleModifier => options.cycle_modifier(),
+            Hotkey::ActivateModifier => options.activate_modifier(),
+            Hotkey::MenuModifier => options.menu_modifier(),
+            Hotkey::None => -1,
+        }
+    }
+
     pub fn is_cycle_key(&self) -> bool {
-        matches!(
-            *self,
-            Hotkey::Left | Hotkey::Power | Hotkey::Right | Hotkey::Utility | Hotkey::Equipment
-        )
+        CYCLE_KEYS.contains(*self)
     }
 
     pub fn is_modifier_key(&self) -> bool {
-        matches!(
-            *self,
-            Hotkey::ActivateModifier
-                | Hotkey::CycleModifier
-                | Hotkey::MenuModifier
-                | Hotkey::UnequipModifier
-        )
+        MODIFIER_KEYS.contains(*self)
     }
 
     pub fn long_press_action(&self) -> RequestedAction {
