@@ -13,7 +13,7 @@ pub struct PowerType {
 
 impl PowerType {
     pub fn new(name: &str, tags: Vec<String>) -> Self {
-        log::info!("{tags:?}");
+        // log::trace!("{tags:?}");
         let kywds = strings_to_enumset::<SpellKeywords>(&tags);
 
         let icon = if let Some(found) = icon_for_tagset(&kywds) {
