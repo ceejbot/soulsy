@@ -213,13 +213,16 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESActiveEffectAppl
 	[[maybe_unused]] RE::BSTEventSource<RE::TESActiveEffectApplyRemoveEvent>* source)
 {
 	// TODO; just logging for now
-	auto caster     = event->caster->GetBaseObject();
-	auto casterName = helpers::displayNameAsUtf8(caster);
+	auto caster     = event->caster ? event->caster->GetBaseObject() : nullptr;
+	auto casterName = caster ? helpers::displayNameAsUtf8(caster) : "<unknown>";
 
-	auto target     = event->target->GetBaseObject();
-	auto targetName = helpers::displayNameAsUtf8(target);
+	auto target     = event->target ? event->target->GetBaseObject() : nullptr;
+	auto targetName = target ? helpers::displayNameAsUtf8(target) : "<unknown>";
 
-	rlog::info(" apply remove event; effect id={:x};", event->activeEffectUniqueID);
+	rlog::info(
+		"effect unique id={:#04x}; verb: {}", event->activeEffectUniqueID, event->isApplied ? "applied" : "removed");
+
+	if (!caster || !target) { return RE::BSEventNotifyControl::kContinue; }
 
 	const auto playerID = RE::PlayerCharacter::GetSingleton()->GetFormID();
 	if (caster->GetFormID() != playerID && target->GetFormID() != playerID)

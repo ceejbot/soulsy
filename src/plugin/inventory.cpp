@@ -73,6 +73,7 @@ void PlayerHook::add_item_functor(RE::TESObjectREFR* a_this, RE::TESObjectREFR* 
 {
 	add_item_functor_(a_this, object, delta, a4, a5);
 	auto item_form = RE::TESForm::LookupByID(object->GetBaseObject()->formID);
+	rlog::info("add_item_functor; {};", object->GetBaseObject()->formID);
 	notifyInventoryChanged(item_form);
 }
 
