@@ -219,6 +219,8 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESActiveEffectAppl
 	auto target     = event->target->GetBaseObject();
 	auto targetName = helpers::displayNameAsUtf8(target);
 
+	rlog::info(" apply remove event; effect id={:x};", event->activeEffectUniqueID);
+
 	const auto playerID = RE::PlayerCharacter::GetSingleton()->GetFormID();
 	if (caster->GetFormID() != playerID && target->GetFormID() != playerID)
 	{
