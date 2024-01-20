@@ -43,7 +43,7 @@ namespace shouts
 		{
 			auto* task = SKSE::GetTaskInterface();
 			if (!task) return;
-			rlog::trace("unequipping shout/power formID={};"sv, rlog::formatAsHex(selected_power->formID));
+			rlog::trace("unequipping shout/power formID={:#08x};"sv, selected_power->formID);
 			if (selected_power->Is(RE::FormType::Shout))
 			{
 				task->AddTask(

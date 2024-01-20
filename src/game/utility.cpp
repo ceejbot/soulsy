@@ -29,13 +29,12 @@ namespace utility
 
 		if (const auto* current_ammo = thePlayer->GetCurrentAmmo(); current_ammo && current_ammo->formID == obj->formID)
 		{
-			// rlog::trace("ammo is already equipped; bound formID={}"sv, rlog::formatAsHex(obj->formID));
+			// rlog::trace("ammo is already equipped; bound formID={:#08x}"sv, obj->formID);
 			return;
 		}
 
-		rlog::debug("queuing task to equip ammo; name='{}'; bound formID={}"sv,
-			helpers::nameAsUtf8(obj),
-			rlog::formatAsHex(obj->formID));
+		rlog::debug(
+			"queuing task to equip ammo; name='{}'; bound formID={:#08x};"sv, helpers::nameAsUtf8(obj), obj->formID);
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
@@ -59,8 +58,7 @@ namespace utility
 			{
 				task->AddTask([=]() { RE::ActorEquipManager::GetSingleton()->UnequipObject(thePlayer, ammo); });
 			}
-			rlog::debug(
-				"ammo unequipped; name='{}'; formID={}"sv, helpers::nameAsUtf8(ammo), rlog::formatAsHex(ammo->formID));
+			rlog::debug("ammo unequipped; name='{}'; formID={:#08x};"sv, helpers::nameAsUtf8(ammo), ammo->formID);
 		}
 	}
 
@@ -133,8 +131,8 @@ namespace utility
 
 	void consumePotion(const RE::TESForm* potionForm, RE::PlayerCharacter*& thePlayer)
 	{
-		rlog::trace("consumePotion called; form_id={}; potion='{}';"sv,
-			rlog::formatAsHex(potionForm->formID),
+		rlog::trace("consumePotion called; form_id={:#08x}; potion='{}';"sv,
+			potionForm->formID,
 			helpers::nameAsUtf8(potionForm));
 
 		RE::TESBoundObject* obj      = nullptr;
@@ -151,9 +149,9 @@ namespace utility
 		if (!obj->Is(RE::FormType::AlchemyItem))
 		{
 			helpers::honk();
-			rlog::warn("bound object is not an alchemy item? name='{}'; formID={};"sv,
+			rlog::warn("bound object is not an alchemy item? name='{}'; formID={:#08x};"sv,
 				helpers::nameAsUtf8(obj),
-				rlog::formatAsHex(obj->formID));
+				obj->formID);
 			return;
 		}
 
@@ -325,7 +323,7 @@ namespace utility
 		const auto* entry_point = static_cast<RE::BGSEntryPointPerkEntry*>(perk_entry);
 		const auto* perk        = entry_point->perk;
 
-		rlog::trace("perk formID={}; name='{}';"sv, rlog::formatAsHex(perk->formID), helpers::nameAsUtf8(perk));
+		rlog::trace("perk formID={:#08x}; name='{}';"sv, perk->formID, helpers::nameAsUtf8(perk));
 
 		// This was originally intended to handle many variations of the poison
 		// dose perk-- it should calculate the correct value from vanilla,

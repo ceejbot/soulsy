@@ -75,8 +75,8 @@ RE::BSEventNotifyControl MenuHook::process_event(RE::InputEvent** eventPtr,
 					auto menu_form           = MenuSelection::getSelectionFromMenu(ui, selection);
 					if (!menu_form) continue;
 
-					rlog::debug("Got toggled favorite: form_id={}; form_type={}; is-favorited={};"sv,
-						rlog::formatAsHex(selection->form_id),
+					rlog::debug("Got toggled favorite: form_id={:#08x}; form_type={}; is-favorited={};"sv,
+						selection->form_id,
 						selection->formType,
 						selection->favorite);
 
@@ -156,7 +156,7 @@ uint32_t MenuSelection::makeFromFavoritesMenu(RE::FavoritesMenu* menu, MenuSelec
 	if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 	{
 		form_id = static_cast<std::uint32_t>(result.GetNumber());
-		// rlog::debug("favorites menu selection has formid {}"sv, rlog::formatAsHex(form_id));
+		// rlog::debug("favorites menu selection has formid {:#08x}"sv, form_id);
 	}
 	if (form_id == 0) { return 0; }
 
@@ -218,7 +218,7 @@ void MenuSelection::makeFromInventoryMenu(RE::InventoryMenu* menu, MenuSelection
 	if (result.GetType() == RE::GFxValue::ValueType::kNumber)
 	{
 		RE::FormID form_id = static_cast<std::uint32_t>(result.GetNumber());
-		rlog::trace("formid {}"sv, rlog::formatAsHex(form_id));
+		rlog::trace("formid {:#08x}"sv, form_id);
 		auto* item_form = RE::TESForm::LookupByID(form_id);
 		if (!item_form) return;
 
@@ -261,7 +261,7 @@ void MenuSelection::makeFromMagicMenu(RE::MagicMenu* menu, MenuSelection*& outSe
 
 	for (auto* form : mfaves->spells)
 	{
-		rlog::debug("mfave form: id={}; name='{}'"sv, rlog::formatAsHex(form->GetFormID()), helpers::nameAsUtf8(form));
+		rlog::debug("mfave form: id={:#08x}; name='{}'"sv, form->GetFormID(), helpers::nameAsUtf8(form));
 		if (form->GetFormID() == form_id)
 		{
 			// match time

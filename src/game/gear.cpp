@@ -134,9 +134,9 @@ namespace gear
 
 		if (!foundObject) { return 0; }
 
-		rlog::debug("boundObjectForWornItem(constraint={}) found formid='{}';",
+		rlog::debug("boundObjectForWornItem(constraint={}) found formid='{:#08x}';",
 			static_cast<std::underlying_type_t<WornWhere>>(constraint),
-			rlog::formatAsHex(foundObject->formID));
+			foundObject->formID);
 
 		if (extraDataCopy.size() > 0) { outextra = extraDataCopy.back(); }
 		outobj = foundObject;
@@ -189,8 +189,7 @@ namespace gear
 
 		if (!foundObject) { return 0; }
 
-		rlog::debug(
-			"boundObjectMatchName '{}'; found formID={};"sv, nameToMatch, rlog::formatAsHex(foundObject->formID));
+		rlog::debug("boundObjectMatchName '{}'; found formID={:#08x};"sv, nameToMatch, foundObject->formID);
 		if (extraDataCopy.size() > 0) { outextra = extraDataCopy.back(); }
 		outobj = foundObject;
 		return equipData.count;
@@ -226,10 +225,10 @@ namespace gear
 
 		if (!foundObject) { return 0; }
 
-		rlog::trace("found {} instance(s) for bound object; name='{}'; formID={};"sv,
+		rlog::trace("found {} instance(s) for bound object; name='{}'; formID={:#08x};"sv,
 			count,
 			helpers::nameAsUtf8(form),
-			rlog::formatAsHex(form->formID));
+			form->formID);
 
 		if (extraDataCopy.size() > 0) { outextra = extraDataCopy.back(); }
 		outobj = foundObject;
@@ -520,10 +519,10 @@ namespace gear
 			return;
 		}
 
-		rlog::debug("queuing task to equip '{}'; left={}; formID={};"sv,
+		rlog::debug("queuing task to equip '{}'; left={}; formID={:#08x};"sv,
 			helpers::nameAsUtf8(form),
 			slot_is_left,
-			rlog::formatAsHex(equipObject->formID));
+			equipObject->formID);
 		auto* task = SKSE::GetTaskInterface();
 		if (task)
 		{
@@ -572,10 +571,10 @@ namespace gear
 			return;
 		}
 
-		rlog::debug("queued task to equip '{}'; left={}; formID={};"sv,
+		rlog::debug("queued task to equip '{}'; left={}; formID={:#08x};"sv,
 			helpers::nameAsUtf8(form),
 			slot_is_left,
-			rlog::formatAsHex(form->formID));
+			form->formID);
 	}
 
 	void unequipHand(RE::PlayerCharacter*& player, Action which)

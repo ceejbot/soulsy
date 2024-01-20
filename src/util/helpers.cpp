@@ -179,8 +179,7 @@ namespace helpers
 		if (form->IsDynamicForm())
 		{
 			// rlog::trace("it is dynamic"sv);
-			form_string =
-				fmt::format("{}{}{}", util::dynamic_name, util::delimiter, rlog::formatAsHex(form->GetFormID()));
+			form_string = fmt::format("{}{}{:#08x}", util::dynamic_name, util::delimiter, form->GetFormID());
 		}
 		else
 		{
