@@ -106,8 +106,7 @@ impl ItemCache {
     /// Set the count of a cached item to the passed-in value.
     pub fn set_count(&mut self, form_spec: &str, new_count: u32) -> Option<&HudItem> {
         if !self.contains(form_spec) {
-            let fetched = fetch_game_item(form_spec);
-            self.record(fetched);
+            return None;
         }
 
         let Some(item) = self.lru.get_mut(form_spec) else {
@@ -121,8 +120,7 @@ impl ItemCache {
     /// cache, no action is taken.
     pub fn update_count(&mut self, form_spec: &str, new_count: u32) -> Option<&HudItem> {
         if !self.contains(form_spec) {
-            let fetched = fetch_game_item(form_spec);
-            self.record(fetched);
+            return None;
         }
         let Some(item) = self.lru.get_mut(form_spec) else {
             return None;
