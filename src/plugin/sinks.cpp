@@ -32,9 +32,9 @@ void registerAllListeners()
 	auto okay    = player->AddAnimationGraphEventSink(listener);
 	if (okay) { rlog::info("    animation graph events to get grip changes."); }
 
-	// scriptEventSourceHolder->GetEventSource<RE::TESMagicEffectApplyEvent>()->AddEventSink(listener);
-	// scriptEventSourceHolder->GetEventSource<RE::TESActiveEffectApplyRemoveEvent>()->AddEventSink(listener);
-	// rlog::info("    magic effects come and go, talking of Michelangelo."sv);
+	scriptEventSourceHolder->GetEventSource<RE::TESMagicEffectApplyEvent>()->AddEventSink(listener);
+	scriptEventSourceHolder->GetEventSource<RE::TESActiveEffectApplyRemoveEvent>()->AddEventSink(listener);
+	rlog::info("    magic effects come and go, talking of Michelangelo."sv);
 }
 
 TheListener* TheListener::singleton()
@@ -197,8 +197,6 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESMagicEffectApply
 	{
 		return RE::BSEventNotifyControl::kContinue;
 	}
-
-	// We are specifically looking for VampireLordEffect on the player.
 
 	rlog::info("Effect status change: '{}' {} put \"{}\" ({}) on '{}' {}",
 		casterName,
