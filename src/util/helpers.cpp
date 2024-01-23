@@ -90,8 +90,8 @@ namespace helpers
 			rlog::info("no control map");
 			return false;
 		}
-		return controlMap->AreControlsEnabled(requiredControlFlags);
-		// return controlMap->IsMovementControlsEnabled() && controlMap->IsActivateControlsEnabled();
+		// return controlMap->AreControlsEnabled(requiredControlFlags);
+		return controlMap->IsMovementControlsEnabled() && controlMap->IsActivateControlsEnabled();
 	}
 
 	bool ignoreKeyEvents()
