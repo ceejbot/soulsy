@@ -373,21 +373,52 @@ namespace ui
 		ImVec2 alignedCenter  = ImVec2(center.x, center.y);
 		const auto* cstr      = text.c_str();
 
+		// Unrolling our cases here to try to make each pass through do the least
+		// work it can get away with. Probably needs a re-think.
+
+		// Simple fast case first: no truncation, left alignment. Imgui wraps the
+		// text for us if wrap width is non-zero.
+		if (!label->truncate && align == Align::Left)
+		{
+			ImGui::GetWindowDrawList()->AddText(
+				font, label->font_size, alignedCenter, textColor, cstr, nullptr, wrapWidth, nullptr);
+			return;
+		}
+
+		// We're aligning, but not truncating or wrapping, so we can draw one bounds-adjusted line.
+		if (!label->truncate && wrapWidth == 0.0f)
+		{
+			const ImVec2 bounds = font->CalcTextSizeA(label->font_size, 0.0f, 0.0f, cstr);
+			if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
+			else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
+			ImGui::GetWindowDrawList()->AddText(font, label->font_size, alignedCenter, textColor, cstr);
+			return;
+		}
+
+		// The next fastest cases are truncation cases. We find our truncation point,
+		// then justify that single line.
 		if (label->truncate && wrapWidth > 0.0f)
 		{
 			const char* remainder = nullptr;
 			const auto bounds     = font->CalcTextSizeA(label->font_size, wrapWidth, 0.0f, cstr, nullptr, &remainder);
+			if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
+			else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
 			ImGui::GetWindowDrawList()->AddText(font, label->font_size, alignedCenter, textColor, cstr, remainder);
 			return;
 		}
 
-		// The imgui functions here handle wrapWidth=0 as no wrapping, which is what we want.
-		const ImVec2 bounds = font->CalcTextSizeA(label->font_size, wrapWidth, wrapWidth, cstr);
-		if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
-		else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
-
-		ImGui::GetWindowDrawList()->AddText(
-			font, label->font_size, alignedCenter, textColor, cstr, nullptr, wrapWidth, nullptr);
+		// Now we must wrap, not truncate, and align each line as we discover it. We stop
+		// when we run out of text to draw.
+		const char* lineToDraw = cstr;
+		do {
+			const char* remainder = nullptr;
+			const auto bounds = font->CalcTextSizeA(label->font_size, wrapWidth, 0.0f, lineToDraw, nullptr, &remainder);
+			auto lineCenter   = ImVec2(center.x, center.y);
+			if (align == Align::Center) { lineCenter.x += bounds.x * 0.5f; }
+			else if (align == Align::Right) { lineCenter.x -= bounds.x; }
+			ImGui::GetWindowDrawList()->AddText(font, label->font_size, lineCenter, textColor, lineToDraw, remainder);
+			lineToDraw = remainder;
+		} while (lineToDraw != nullptr)
 	}
 
 	void ui_renderer::initializeAnimation(const animation_type animation_type,
