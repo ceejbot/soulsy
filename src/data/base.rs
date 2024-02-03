@@ -1,7 +1,5 @@
 //! Base item kinds, from the starting icon set.
 
-use strum::Display;
-
 use super::ammo::AmmoType;
 use super::armor::ArmorType;
 use super::color::InvColor;
@@ -15,7 +13,7 @@ use super::{HasIcon, HasKeywords};
 use crate::images::icons::Icon;
 use crate::plugin::{Color, ItemCategory};
 
-#[derive(Clone, Debug, Default, Display, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub enum BaseType {
     #[default]
     Empty,
@@ -35,11 +33,39 @@ pub enum BaseType {
     Equipset(Icon),
 }
 
-#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
+impl std::fmt::Display for BaseType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BaseType::Empty => write!(f, ""),
+            BaseType::Ammo(t) => write!(f, "{t}"),
+            BaseType::Armor(t) => write!(f, "{t}"),
+            BaseType::Book => write!(f, "Book"),
+            BaseType::Food(t) => write!(f, "{t}"),
+            BaseType::HandToHand => write!(f, "Empty hand"),
+            BaseType::Light(t) => write!(f, "{t}"),
+            BaseType::Potion(t) => write!(f, "{t}"),
+            BaseType::PotionProxy(t) => write!(f, "{t}"),
+            BaseType::Power(t) => write!(f, "{t}"),
+            BaseType::Scroll(t) => write!(f, "{t}"),
+            BaseType::Shout(t) => write!(f, "{t}"),
+            BaseType::Spell(t) => write!(f, "{t}"),
+            BaseType::Weapon(t) => write!(f, "{t}"),
+            BaseType::Equipset(t) => write!(f, "{t}"),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum Proxy {
     Health,
     Magicka,
     Stamina,
+}
+
+impl std::fmt::Display for Proxy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Potion Proxy")
+    }
 }
 
 impl HasIcon for Proxy {
@@ -60,11 +86,17 @@ impl HasIcon for Proxy {
     }
 }
 
-#[derive(Clone, Debug, Display, Eq, Hash, PartialEq, Default)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Default)]
 pub enum LightType {
     #[default]
     Torch,
     Lantern,
+}
+
+impl std::fmt::Display for LightType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Light")
+    }
 }
 
 impl HasIcon for LightType {

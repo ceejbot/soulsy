@@ -182,7 +182,8 @@ namespace ui
 		if (loadedImg.width == 0) { return false; }
 		if (d3dTextureFromBuffer(&loadedImg, &ICON_MAP[key].texture, ICON_MAP[key].width, ICON_MAP[key].height))
 		{
-			rlog::info("Lazy-loaded icon '{}'; width={}; height={}", key, ICON_MAP[key].width, ICON_MAP[key].height);
+			rlog::info(
+				"Lazy-loaded icon '{}.svg'; width={}; height={}", key, ICON_MAP[key].width, ICON_MAP[key].height);
 			return true;
 		}
 		return false;

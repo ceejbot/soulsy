@@ -43,7 +43,7 @@ impl PotionType {
             ActorValue::ResistDisease => PotionType::Resist(MagicCategory::Disease),
             ActorValue::PoisonResist => PotionType::Resist(MagicCategory::Poison),
             _ => {
-                log::debug!("Falling back to default potion type; effect={effect}");
+                log::debug!("Falling back to generic potion type; effect={effect}");
                 PotionType::Default
             }
         }

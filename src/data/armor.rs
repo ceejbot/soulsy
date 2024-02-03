@@ -24,6 +24,12 @@ impl ArmorType {
     }
 }
 
+impl std::fmt::Display for ArmorType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "icon={}; color='{}';", self.icon, self.color)
+    }
+}
+
 impl HasIcon for ArmorType {
     fn color(&self) -> Color {
         self.color.color()
@@ -99,7 +105,7 @@ impl HasKeywords for ArmorType {
         } else if !QUIVERS.is_disjoint(tagset) {
             Icon::ArmorQuiver
         } else {
-            log::warn!("We couldn't classify this armor! name='{name}'; keywords: {keywords:?}");
+            log::debug!("Falling back to generic armor icon: name='{name}'; keywords={keywords:?}");
             Icon::ArmorHeavy
         };
 

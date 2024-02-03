@@ -9,6 +9,8 @@
 //! if other icons aren't available. 90% of the classification work is done in `keywords.rs`,
 //! which creates enum sets to match keywords against.
 
+use std::fmt::Display;
+
 use enumset::EnumSet;
 
 use super::color::{color_from_keywords, InvColor};
@@ -96,5 +98,15 @@ impl HasIcon for SpellType {
 
     fn color(&self) -> Color {
         self.color.color()
+    }
+}
+
+impl Display for SpellType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Spell: icon='{}'; color='{}'; data: {}",
+            self.icon, self.color, self.data
+        )
     }
 }

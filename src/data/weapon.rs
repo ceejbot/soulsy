@@ -150,7 +150,7 @@ impl HasKeywords for WeaponType {
         } else if !WARAXES.is_disjoint(tagset) {
             Icon::WeaponAxeOneHanded
         } else {
-            log::debug!("Falling back to default icon for weapon '{name}'; keywords={keywords:?}");
+            log::debug!("Falling back to generic icon for weapon '{name}'; keywords={keywords:?}");
             Icon::WeaponSwordOneHanded
         };
 
@@ -175,6 +175,16 @@ impl HasIcon for WeaponType {
 
     fn icon(&self) -> &Icon {
         &self.icon
+    }
+}
+
+impl std::fmt::Display for WeaponType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Weapon: icon={}; color={}; equip-type={:?}",
+            self.icon, self.color, self.equiptype
+        )
     }
 }
 

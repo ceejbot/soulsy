@@ -16,6 +16,12 @@ pub struct FoodType {
     color: InvColor,
 }
 
+impl std::fmt::Display for FoodType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "icon={}; color='{}';", self.icon, self.color)
+    }
+}
+
 /// Quack quack icon trait.
 impl HasIcon for FoodType {
     fn color(&self) -> Color {
@@ -68,7 +74,7 @@ impl HasKeywords for FoodType {
         } else if !ICON_STEW_BOWL.is_disjoint(containers) {
             Icon::FoodStew
         } else {
-            log::debug!("Falling back to default food icon: name='{name}'; keywords={keywords:?}");
+            log::debug!("Falling back to generic food icon: name='{name}'; keywords={keywords:?}");
             Icon::Food
         };
         // ContainerKeywords::OCF_VesselBottlePotion => Icon::PotionDefault,

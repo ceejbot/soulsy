@@ -670,7 +670,7 @@ impl std::fmt::Display for UserSettings {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            r#"   log level: {}
+            r#"  log level: {}
            show/hide HUD key: {}
              power cycle key: {}
            utility cycle key: {}

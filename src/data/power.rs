@@ -19,7 +19,7 @@ impl PowerType {
         let icon = if let Some(found) = icon_for_tagset(&kywds) {
             found
         } else {
-            log::debug!("Falling back to default icon for power; name='{name}'; keywords={tags:?}");
+            log::debug!("Falling back to generic icon for power; name='{name}'; keywords={tags:?}");
             Icon::Power
         };
 
@@ -40,5 +40,11 @@ impl HasIcon for PowerType {
 
     fn icon(&self) -> &Icon {
         &self.icon
+    }
+}
+
+impl std::fmt::Display for PowerType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "icon={}; color='{}';", self.icon, self.color)
     }
 }

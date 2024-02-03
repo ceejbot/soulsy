@@ -35,6 +35,18 @@ impl HasIcon for ShoutType {
     }
 }
 
+impl std::fmt::Display for ShoutType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "shout='{:?}'; icon='{}.svg'; translation='{}';",
+            self.variant,
+            self.icon,
+            self.translation()
+        )
+    }
+}
+
 impl ShoutType {
     pub fn new(tags: Vec<String>) -> Self {
         let keywords = strings_to_enumset::<SpellKeywords>(&tags);

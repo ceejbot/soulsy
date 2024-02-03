@@ -48,6 +48,16 @@ impl SpellData {
     }
 }
 
+impl std::fmt::Display for SpellData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "school='{}'; hostile={}; damage-type={}; level={}; archetype={};",
+            self.school, self.level, self.hostile, self.damage, self.archetype
+        )
+    }
+}
+
 #[derive(Clone, Debug, Default, Display, Hash, Eq, PartialEq)]
 pub enum MagicCategory {
     #[default]

@@ -420,13 +420,23 @@ impl HudItem {
 
 impl Display for HudItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "name='{}'; kind='{:?}'; count={}; form_string='{}';",
-            self.name(),
-            self.kind(),
-            self.count(),
-            self.form_string(),
-        )
+        if self.count_matters() {
+            write!(
+                f,
+                "name=\"{}\"; {} count={}; form_string='{}';",
+                self.name(),
+                self.kind(),
+                self.count(),
+                self.form_string(),
+            )
+        } else {
+            write!(
+                f,
+                "name=\"{}\" {} form_string='{}';",
+                self.name(),
+                self.kind(),
+                self.form_string(),
+            )
+        }
     }
 }
