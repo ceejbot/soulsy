@@ -16,6 +16,7 @@ namespace soulsy
 	struct SlotFlattened;
 	struct SlotLayout;
 	struct SpellData;
+	struct TextFlattened;
 }
 
 using namespace soulsy;

@@ -158,6 +158,7 @@ impl HudLayout1 {
                 contents: "{name}".to_string(),
                 font_size: slot.name_font_size * factor,
                 wrap_width: slot.name_wrap_width,
+                truncate: false,
             });
         }
         if slot.count_color.a > 0 {
@@ -168,6 +169,7 @@ impl HudLayout1 {
                 contents: "{count}".to_string(),
                 font_size: slot.count_font_size * factor,
                 wrap_width: slot.count_wrap_width,
+                truncate: false,
             });
         }
 

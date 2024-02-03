@@ -167,6 +167,7 @@ pub mod plugin {
         CircleArc,
     }
 
+    /// A text element in a form ready to use by the renderer.
     #[derive(Clone, Debug)]
     pub struct TextFlattened {
         anchor: Point,
@@ -175,10 +176,12 @@ pub mod plugin {
         contents: String,
         font_size: f32,
         wrap_width: f32,
+        truncate: bool,
     }
 
     /// This enum maps key presses to the desired action. More like a C/java
-    /// enum than a Rust sum type enum.
+    /// enum than a Rust sum type enum. It's also more like an event name than
+    /// a key press map at this point.
     #[derive(Debug, Clone, Hash)]
     enum Action {
         /// We do not need to do anything, possibly because the key was not one of our hotkeys.

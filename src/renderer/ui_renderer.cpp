@@ -361,26 +361,31 @@ namespace ui
 		}
 	}
 
-	void drawText(const std::string text,
-		const ImVec2 center,
-		const float fontSize,
-		const soulsy::Color color,
-		const Align align,
-		const float wrapWidth)
+	void drawText(const std::string text, const ImVec2 center, const TextFlattened* label)
 	{
-		if (!text.length() || color.a == 0) { return; }
+		if (!text.length() || label->color.a == 0) { return; }
+		const float wrapWidth = label->wrap_width;
+		const auto align      = label->alignment;
 
 		auto* font = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
-		const ImU32 text_color = IM_COL32(color.r, color.g, color.b, color.a * gHudAlpha);
-		const ImVec2 bounds    = font->CalcTextSizeA(fontSize, wrapWidth, wrapWidth, text.c_str());
-		ImVec2 alignedCenter   = ImVec2(center.x, center.y);
+		const ImU32 textColor = IM_COL32(label->color.r, label->color.g, label->color.b, label->color.a * gHudAlpha);
+		ImVec2 alignedCenter  = ImVec2(center.x, center.y);
 
+		if (label->truncate && wrapWidth > 0.0f)
+		{
+			const char* here = ImGui::CalcWordWrapPositionA(1.0f, text.c_str(), nullptr, wrapWidth);
+			ImGui::GetWindowDrawList()->AddText(font, label->font_size, alignedCenter, textColor, text.c_str(), here);
+			return;
+		}
+
+		// The imgui functions here handle wrapWidth=0 as no wrapping, which is what we want.
+		const ImVec2 bounds = font->CalcTextSizeA(label->font_size, wrapWidth, wrapWidth, text.c_str());
 		if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
 		else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
 
 		ImGui::GetWindowDrawList()->AddText(
-			font, fontSize, alignedCenter, text_color, text.c_str(), nullptr, wrapWidth, nullptr);
+			font, fontSize, alignedCenter, textColor, text.c_str(), nullptr, wrapWidth, nullptr);
 	}
 
 	void ui_renderer::initializeAnimation(const animation_type animation_type,
@@ -582,11 +587,7 @@ namespace ui
 					if (label.color.a == 0) { continue; }
 					const auto textPos = ImVec2(label.anchor.x, label.anchor.y);
 					auto entrytxt      = std::string(entry->fmtstr(label.contents));
-					// Let's try a wrap width here. This is going to be wrong, but we'll experiment.
-					if (!entrytxt.empty())
-					{
-						drawText(entrytxt, textPos, label.font_size, label.color, label.alignment, label.wrap_width);
-					}
+					if (!entrytxt.empty()) { drawText(entrytxt, textPos, &label); }
 				}
 			}
 
