@@ -371,21 +371,23 @@ namespace ui
 		if (!font) { font = ImGui::GetDefaultFont(); }
 		const ImU32 textColor = IM_COL32(label->color.r, label->color.g, label->color.b, label->color.a * gHudAlpha);
 		ImVec2 alignedCenter  = ImVec2(center.x, center.y);
+		const auto* cstr      = text.c_str();
 
 		if (label->truncate && wrapWidth > 0.0f)
 		{
-			const char* here = ImGui::CalcWordWrapPositionA(1.0f, text.c_str(), nullptr, wrapWidth);
-			ImGui::GetWindowDrawList()->AddText(font, label->font_size, alignedCenter, textColor, text.c_str(), here);
+			const char* remainder = nullptr;
+			const auto bounds     = font->CalcTextSizeA(label->font_size, wrapWidth, 0.0f, cstr, nullptr, &remainder);
+			ImGui::GetWindowDrawList()->AddText(font, label->font_size, alignedCenter, textColor, cstr, remainder);
 			return;
 		}
 
 		// The imgui functions here handle wrapWidth=0 as no wrapping, which is what we want.
-		const ImVec2 bounds = font->CalcTextSizeA(label->font_size, wrapWidth, wrapWidth, text.c_str());
+		const ImVec2 bounds = font->CalcTextSizeA(label->font_size, wrapWidth, wrapWidth, cstr);
 		if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
 		else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
 
 		ImGui::GetWindowDrawList()->AddText(
-			font, fontSize, alignedCenter, textColor, text.c_str(), nullptr, wrapWidth, nullptr);
+			font, label->font_size, alignedCenter, textColor, cstr, nullptr, wrapWidth, nullptr);
 	}
 
 	void ui_renderer::initializeAnimation(const animation_type animation_type,
