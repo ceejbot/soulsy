@@ -196,6 +196,7 @@ impl HudLayout2 {
             contents: text.contents.clone(),
             font_size: text.font_size * scale,
             wrap_width: text.wrap_width,
+            truncate: text.truncate,
         }
     }
 
@@ -265,6 +266,8 @@ pub struct TextElement {
     bounds: Option<Point>,
     #[serde(default)]
     wrap_width: f32,
+    #[serde(default)]
+    truncate: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]

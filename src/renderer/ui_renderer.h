@@ -48,11 +48,7 @@ namespace ui
 		const ImVec2 size,
 		const float angle,
 		const ImU32 im_color);  // retaining support for animations...
-	void drawText(const std::string text,
-		const ImVec2 center,
-		const float font_size,
-		const soulsy::Color color,
-		const Align alignment);
+	void drawText(const std::string text, const ImVec2 center, const TextFlattened* label);
 	void drawMeterCircleArc(float level, SlotFlattened slotLayout);
 	void drawMeterRectangular(float level, SlotFlattened slotLayout);
 	ImVec2 rotateVector(const ImVec2 vector, const float angle);
@@ -76,8 +72,6 @@ namespace ui
 
 		ui_renderer();
 
-		// Oxidation section.
-		// older...
 		static void initializeAnimation(animation_type animation_type,
 			float a_screen_x,
 			float a_screen_y,

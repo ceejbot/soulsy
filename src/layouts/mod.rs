@@ -115,6 +115,9 @@ impl Layout {
         }
     }
 
+    /// Convert the editable human-facing layout format to the format used by
+    /// the renderer. This process scales all sizes and translates all locations
+    /// from relative to absolute in screen space.
     pub fn flatten(&self) -> LayoutFlattened {
         match self {
             // *v dereference the ref-to-box, **v unbox, &**v borrow
@@ -123,6 +126,7 @@ impl Layout {
         }
     }
 
+    /// Find the coordinates of the layout's location in screen space.
     pub fn anchor_point(&self) -> Point {
         match self {
             Layout::Version1(v) => v.anchor_point(),
@@ -131,6 +135,8 @@ impl Layout {
     }
 }
 
+/// An implementation detail of the anchor point calculation, used by both
+/// layout formats.
 pub fn anchor_point(
     global_scale: f32,
     size: &Point,

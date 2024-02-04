@@ -112,11 +112,13 @@ Each slot layout has a list of *text* elements. These describe text that should 
 
 Here are the fields a text element has:
 
-- `offset`: Where to draw this text, relative to the center of the slot
+- `offset`: Where to draw this text, relative to the center of the slot. This location is the *left edge* of the text box.
 - `alignment`: How to justify the text. Possible values are `left`, `center`, and `right`.
 - `font_size`: A floating-point number for the size of the type used.
 - `color`: The color to use to draw the text.
 - `contents`: A format string describing the text to draw.
+- `wrap_width`: The maximum allowed width of the text. If set, text is wrapped if it would be longer.
+` truncate`: A boolean value (`true` or `false`) indicating if the text should be cut short at the wrap width instead of wrapped. Set this to keep text at one line max.
 
 The data that can be filled into a format string is:
 
@@ -147,6 +149,8 @@ color = { r = 255, g = 255, b = 255, a = 255 }
 alignment = "left"
 contents = "{name}"
 font_size = 20.0
+wrap_width = 130.0
+truncate = false
 ```
 
 Any additional text elements for the power slot would also be named `[[power.text]]`. The double square brackets tells TOML that this is an [list of items](https://toml.io/en/v1.0.0#array-of-tables). Each new element named that is added to the end of the list.
