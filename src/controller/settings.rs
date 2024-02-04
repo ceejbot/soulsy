@@ -102,6 +102,8 @@ pub struct UserSettings {
     refresh_layout: u32,
     /// Layout anchor override. uAnchorLocation
     anchor_loc: NamedAnchor,
+    /// HUD scale override. fHudScale
+    scale_override: f32,
 
     /// The number of milliseconds to delay before equipping a selection. Max 2500, min 0.
     equip_delay_ms: u32,
@@ -149,6 +151,7 @@ impl Default for UserSettings {
             equipset: 9,
             refresh_layout: 8,
             anchor_loc: NamedAnchor::None,
+            scale_override: 0.0,
             how_to_activate: ActivationMethod::Hotkey,
             activate: 4,
             activate_modifier: -1,
@@ -249,6 +252,7 @@ impl UserSettings {
         self.showhide = read_from_ini(self.showhide, "uShowHideKey", controls);
         self.refresh_layout = read_from_ini(self.refresh_layout, "uRefreshKey", controls);
         self.anchor_loc = read_from_ini(self.anchor_loc.clone(), "uAnchorLocation", options);
+        self.scale_override = read_from_ini(self.scale_override, "fHudScale", options);
 
         self.unarmed_handling = read_from_ini(self.unarmed_handling, "uHowToUnequip", controls);
         self.unequip_modifier =
@@ -484,6 +488,25 @@ impl UserSettings {
     pub fn resolution_scale(&self) -> f64 {
         self.display_tweaks.scale()
     }
+
+    pub fn scale_override(&self) -> f32 {
+        self.scale_override
+    }
+
+    /// Get the user-config aware, display-tweaks-aware scaling factor to use on all layouts.
+    pub fn hud_scale(&self) -> f32 {
+        let reso = self.resolution_scale();
+        let display_scale = if self.is_upscaling() {
+            (reso * reso) as f32
+        } else {
+            reso as f32
+        };
+        if self.scale_override() > 0.0 {
+            self.scale_override() * display_scale
+        } else {
+            display_scale
+        }
+    }
 }
 
 /// Generic for reading a typed value from the ini structure.
@@ -679,6 +702,7 @@ impl std::fmt::Display for UserSettings {
           equipset cycle key: {}
           refresh layout key: {}
       layout anchor override: {}
+       layout scale override: {}
              how_to_activate: {}
         activate consumables: {}
            activate_modifier: {}
@@ -688,7 +712,7 @@ impl std::fmt::Display for UserSettings {
     dual-wield on long press: {}
                how_to_toggle: {}
                menu_modifier: {}
-           link_to_favorites: {}
+         favorites in cycles: {}
             unarmed_handling: {}
             unequip_modifier: {}
               unequip_hotkey: {}
@@ -714,6 +738,7 @@ impl std::fmt::Display for UserSettings {
             self.equipset,
             self.refresh_layout,
             self.anchor_loc,
+            self.scale_override,
             self.how_to_activate,
             self.activate,
             self.activate_modifier,

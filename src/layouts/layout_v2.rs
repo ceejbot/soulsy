@@ -108,6 +108,10 @@ impl HudLayout2 {
         Ok(parsed)
     }
 
+    pub fn size(&self) -> Point {
+        self.size.clone()
+    }
+
     pub fn anchor_point(&self) -> Point {
         super::anchor_point(
             self.scale_for_display(),
@@ -200,15 +204,9 @@ impl HudLayout2 {
         }
     }
 
-    fn scale_for_display(&self) -> f32 {
+    pub fn scale_for_display(&self) -> f32 {
         let config = settings();
-        let reso = config.resolution_scale();
-        let display_scale = if config.is_upscaling() {
-            (reso * reso) as f32
-        } else {
-            reso as f32
-        };
-        self.global_scale * display_scale
+        self.global_scale * config.hud_scale()
     }
 }
 

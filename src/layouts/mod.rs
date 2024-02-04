@@ -133,6 +133,21 @@ impl Layout {
             Layout::Version2(v) => v.anchor_point(),
         }
     }
+
+    pub fn size(&self) -> Point {
+        match self {
+            Layout::Version1(v) => v.size(),
+            Layout::Version2(v) => v.size(),
+        }
+    }
+
+    /// Get the settings-aware scale to use for this layout.
+    pub fn scale_for_display(&self) -> f32 {
+        match self {
+            Layout::Version1(v) => v.scale_for_display(),
+            Layout::Version2(v) => v.scale_for_display(),
+        }
+    }
 }
 
 /// An implementation detail of the anchor point calculation, used by both
@@ -365,5 +380,32 @@ mod tests {
 
         let flattened = named.flatten();
         assert_eq!(flattened.anchor, relocated);
+    }
+
+    #[test]
+    fn scaling_respects_settings() {
+        // override the defaults with what we need for this test
+        let _ = crate::controller::UserSettings::refresh_with("tests/fixtures/scale-settings.ini");
+        let config = *user_settings();
+        assert_eq!(config.scale_override(), 0.5); // this is the user setting
+        assert_eq!(config.hud_scale(), 0.5); // this is display-tweaks-aware
+
+        let squarev1 = Layout::read_from_file("tests/fixtures/layout-v1.toml")
+            .expect("the original square layout can be loaded");
+        let squarev2 = Layout::read_from_file(
+            "installer/core/SKSE/plugins/soulsy_layouts/SoulsyHUD_square.toml",
+        )
+        .expect("the square layout has been ported");
+
+        assert_eq!(squarev2.scale_for_display(), 0.5);
+        assert_eq!(squarev1.scale_for_display(), squarev2.scale_for_display());
+
+        let flat1 = squarev1.flatten();
+        let flat2 = squarev2.flatten();
+        assert_eq!(flat2.global_scale, 0.5);
+        assert_eq!(flat1.global_scale, flat2.global_scale);
+
+        assert_eq!(squarev1.size(), squarev2.size());
+        assert_eq!(flat2.bg_size, squarev2.size().scale(0.5));
     }
 }
