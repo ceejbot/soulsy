@@ -61,21 +61,30 @@ sources:
     sed -e 's/^\.\//    /' test.txt > cmake/sourcelist.cmake
     rm test.txt
 
-# Set the crate version and tag the repo to match. Requires bash.
+# Set the version in four (!!) places and tag the repo to match. Requires bash.
 [unix]
 tag VERSION:
-    #!/usr/bin/env bash
-    set -e
-    tomato set package.version {{VERSION}} Cargo.toml
-    # update the version header for the plugin
-    sed -i -e 's/set(VERSION [0-9][0-9]*\.[0-9]*\.[0-9]*\(\.[0-9]*\)/set(VERSION {{VERSION}}\1/' CMakeLists.txt
-    # update the lock file
-    #cargo check
-    jq '."version-string" = "{{VERSION}}"' vcpkg.json > vcpkg.tmp
-    mv vcpkg.tmp vcpkg.json
-    git commit CMakeLists.txt Cargo.toml vcpkg.json -m "v{{VERSION}}"
-    git tag "v{{VERSION}}"
-    echo "Release tagged for version v{{VERSION}}"
+	#!/usr/bin/env bash
+	set -e
+	sed="sed"
+	if [ -e $(which gsed) ]; then
+		sed="gsed"
+	fi
+	tomato set package.version {{VERSION}} Cargo.toml
+	# update the version header for the plugin
+	$sed -i -e 's/set(VERSION [0-9][0-9]*\.[0-9]*\.[0-9]*\(\.[0-9]*\)/set(VERSION {{VERSION}}\1/' CMakeLists.txt
+	# update the lock file
+	cargo check --target-dir target/wsl-check
+	jq '."version-string" = "{{VERSION}}"' vcpkg.json > vcpkg.tmp
+	mv vcpkg.tmp vcpkg.json
+	# update the fomod version
+	iconv -f UTF-16LE -t UTF-8 installer/fomod/info.xml >installer/fomod/info_utf8.xml
+	$sed -i -e 's/<Version>[0-9][0-9]*\.[0-9]*\.[0-9]*<\/Version>/<Version>{{VERSION}}<\/Version>/' installer/fomod/info_utf8.xml
+	iconv -f UTF-8 -t UTF-16LE installer/fomod/info_utf8.xml >installer/fomod/info.xml
+	rm installer/fomod/info_utf8.xml
+	git commit CMakeLists.txt Cargo.toml vcpkg.json -m "v{{VERSION}}"
+	git tag "v{{VERSION}}"
+	echo "Release tagged for version v{{VERSION}}"
 
 # Copy the built mod files to my test mod.
 [unix]
