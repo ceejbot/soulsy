@@ -763,9 +763,9 @@ impl DisplayTweaks {
     /// Pluck scaling settings from the display tweaks ini.
     pub fn read_ini(&mut self) {
         let fpath = std::path::Path::new("Data/SKSE/Plugins/SSEDisplayTweaks.ini");
-        self.update_from_ini(&fpath);
+        self.update_from_ini(fpath);
         let fpath = std::path::Path::new("Data/SKSE/Plugins/SSEDisplayTweaks_Custom.ini");
-        self.update_from_ini(&fpath);
+        self.update_from_ini(fpath);
 
         log::trace!(
             "display tweaks scaling: {}; scale={};",
