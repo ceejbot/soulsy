@@ -370,7 +370,7 @@ namespace ui
 		auto* font = imFont;
 		if (!font) { font = ImGui::GetDefaultFont(); }
 		const ImU32 textColor = IM_COL32(label->color.r, label->color.g, label->color.b, label->color.a * gHudAlpha);
-		ImVec2 alignedCenter  = ImVec2(center.x, center.y);
+		ImVec2 lineLeftCorner = ImVec2(center.x, center.y);
 		const auto* cstr      = text.c_str();
 
 		// Unrolling our cases here to try to make each pass through do the least
@@ -381,44 +381,62 @@ namespace ui
 		if (!label->truncate && align == Align::Left)
 		{
 			ImGui::GetWindowDrawList()->AddText(
-				font, label->font_size, alignedCenter, textColor, cstr, nullptr, wrapWidth, nullptr);
+				font, label->font_size, lineLeftCorner, textColor, cstr, nullptr, wrapWidth, nullptr);
 			return;
 		}
 
-		// We're aligning, but not truncating or wrapping, so we can draw one bounds-adjusted line.
+		// We're aligning, but not truncating or wrapping, so we can draw one location-adjusted line.
 		if (!label->truncate && wrapWidth == 0.0f)
 		{
 			const ImVec2 bounds = font->CalcTextSizeA(label->font_size, 0.0f, 0.0f, cstr);
-			if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
-			else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
-			ImGui::GetWindowDrawList()->AddText(font, label->font_size, alignedCenter, textColor, cstr);
+			if (align == Align::Center) { lineLeftCorner.x = center.x + (wrapWidth - bounds.x) * 0.5f; }
+			else if (align == Align::Right) { lineLeftCorner.x = center.x + (wrapWidth - bounds.x); }
+			ImGui::GetWindowDrawList()->AddText(font, label->font_size, lineLeftCorner, textColor, cstr);
 			return;
 		}
 
 		// The next fastest cases are truncation cases. We find our truncation point,
-		// then justify that single line.
+		// then align that single line by moving the draw location.
 		if (label->truncate && wrapWidth > 0.0f)
 		{
 			const char* remainder = nullptr;
 			const auto bounds     = font->CalcTextSizeA(label->font_size, wrapWidth, 0.0f, cstr, nullptr, &remainder);
-			if (align == Align::Center) { alignedCenter.x += bounds.x * 0.5f; }
-			else if (align == Align::Right) { alignedCenter.x -= bounds.x; }
-			ImGui::GetWindowDrawList()->AddText(font, label->font_size, alignedCenter, textColor, cstr, remainder);
+			if (align == Align::Center) { lineLeftCorner.x = center.x + (wrapWidth - bounds.x) * 0.5f; }
+			else if (align == Align::Right) { lineLeftCorner.x = center.x + (wrapWidth - bounds.x); }
+			ImGui::GetWindowDrawList()->AddText(font, label->font_size, lineLeftCorner, textColor, cstr, remainder);
 			return;
 		}
 
 		// Now we must wrap, not truncate, and align each line as we discover it. We stop
-		// when we run out of text to draw.
+		// when we run out of text to draw or we decide we've drawn a ridiculous number of lines.
+		int loops              = 0;
 		const char* lineToDraw = cstr;
+		auto lineLoc           = ImVec2(center.x, center.y);
+		const auto length      = text.length();
+
 		do {
 			const char* remainder = nullptr;
-			const auto bounds = font->CalcTextSizeA(label->font_size, wrapWidth, 0.0f, lineToDraw, nullptr, &remainder);
-			auto lineCenter   = ImVec2(center.x, center.y);
-			if (align == Align::Center) { lineCenter.x += bounds.x * 0.5f; }
-			else if (align == Align::Right) { lineCenter.x -= bounds.x; }
-			ImGui::GetWindowDrawList()->AddText(font, label->font_size, lineCenter, textColor, lineToDraw, remainder);
+			auto bounds = font->CalcTextSizeA(label->font_size, wrapWidth, 0.0f, lineToDraw, nullptr, &remainder);
+			if ((remainder < cstr + length) && *remainder != ' ')
+			{
+				int adjust = 0;
+				// magic constant; guess about how much we can shorten without being silly
+				int furthest = std::min(8, static_cast<int>(strlen(lineToDraw)));
+				while (adjust < furthest && *(remainder - adjust) != ' ') { adjust++; };
+				if (*(remainder - adjust) == ' ')
+				{
+					remainder -= adjust;
+					bounds = font->CalcTextSizeA(label->font_size, wrapWidth, 0.0f, lineToDraw, remainder);
+				}
+			}
+			if (*remainder == ' ') { remainder++; }
+
+			if (align == Align::Center) { lineLoc.x = center.x + (wrapWidth - bounds.x) * 0.5f; }
+			else if (align == Align::Right) { lineLoc.x = center.x + (wrapWidth - bounds.x); }
+			ImGui::GetWindowDrawList()->AddText(font, label->font_size, lineLoc, textColor, lineToDraw, remainder);
 			lineToDraw = remainder;
-		} while (lineToDraw != nullptr)
+			lineLoc.y += bounds.y;  // move down one line
+		} while (strlen(lineToDraw) > 0 && ++loops < 5);
 	}
 
 	void ui_renderer::initializeAnimation(const animation_type animation_type,
