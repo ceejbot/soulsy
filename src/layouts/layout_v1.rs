@@ -144,6 +144,10 @@ impl HudLayout1 {
         )
     }
 
+    pub fn size(&self) -> Point {
+        self.size.clone()
+    }
+
     fn flatten(&self, slot: &SlotLayout) -> SlotFlattened {
         let factor = self.scale_for_display();
         let anchor = self.anchor_point();
@@ -213,15 +217,9 @@ impl HudLayout1 {
         }
     }
 
-    fn scale_for_display(&self) -> f32 {
+    pub fn scale_for_display(&self) -> f32 {
         let config = settings();
-        let reso = config.resolution_scale();
-        let display_scale = if config.is_upscaling() {
-            (reso * reso) as f32
-        } else {
-            reso as f32
-        };
-        self.global_scale * display_scale
+        self.global_scale * config.hud_scale()
     }
 }
 

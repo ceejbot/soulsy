@@ -369,6 +369,19 @@
                     }
                 },
                 {
+                    "id": "fHudScale:Options",
+                    "text": "$SoulsyHUD_Options_HudScale_Text",
+                    "help": "$SoulsyHUD_Options_HudScale_Help",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 0.0,
+                        "max": 1.0,
+                        "step": 0.01,
+                        "sourceType": "ModSettingFloat",
+                        "formatString": "{2}"
+                    }
+                },
+                {
                     "id": "bAutoFade:Options",
                     "text": "$SoulsyHUD_Options_Fade_Text",
                     "help": "$SoulsyHUD_Options_Fade_Help",
