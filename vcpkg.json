@@ -1,13 +1,16 @@
 {
   "name": "soulsyhud",
-  "version-string": "0.16.6",
+  "version-string": "0.16.7",
   "description": "hotkey and hud for Skyrim AE",
   "homepage": "https://github.com/ceejbot/soulsy",
   "license": "GPL-2.0-or-later",
   "dependencies": [
     {
       "name": "imgui",
-      "features": ["dx11-binding", "win32-binding"]
+      "features": [
+        "dx11-binding",
+        "win32-binding"
+      ]
     },
     "fmt",
     "spdlog",

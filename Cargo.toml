@@ -7,7 +7,7 @@ license      = "GPL-3.0"
 name         = "soulsy"
 readme       = "README.md"
 rust-version = "1.71.1"
-version      = "0.16.6"
+version      = "0.16.7"
 
 [lib]
 crate-type = ["staticlib"]
