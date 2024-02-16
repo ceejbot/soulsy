@@ -65,11 +65,12 @@ sources:
 [unix]
 tag VERSION:
 	#!/usr/bin/env bash
-	set -e
 	sed="sed"
-	if [ -e $(which gsed) ]; then
+	ignored=$(which gsed)
+	if [ $? == 0 ]; then
 		sed="gsed"
 	fi
+	set -e
 	tomato set package.version {{VERSION}} Cargo.toml
 	# update the version header for the plugin
 	$sed -i -e 's/set(VERSION [0-9][0-9]*\.[0-9]*\.[0-9]*\(\.[0-9]*\)/set(VERSION {{VERSION}}\1/' CMakeLists.txt
@@ -82,7 +83,7 @@ tag VERSION:
 	$sed -i -e 's/<Version>[0-9][0-9]*\.[0-9]*\.[0-9]*<\/Version>/<Version>{{VERSION}}<\/Version>/' installer/fomod/info_utf8.xml
 	iconv -f UTF-8 -t UTF-16LE installer/fomod/info_utf8.xml >installer/fomod/info.xml
 	rm installer/fomod/info_utf8.xml
-	git commit CMakeLists.txt Cargo.toml vcpkg.json -m "v{{VERSION}}"
+	git commit CMakeLists.txt Cargo.toml Cargo.lock installer/fomod/info.xml vcpkg.json -m "v{{VERSION}}"
 	git tag "v{{VERSION}}"
 	echo "Release tagged for version v{{VERSION}}"
 
