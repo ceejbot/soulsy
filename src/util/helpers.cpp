@@ -131,16 +131,20 @@ namespace helpers
 		       ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
 	}
 
+	bool relevantMenuIsOpen = false;
+	void setRelevantMenuOpen(bool isOpen) { relevantMenuIsOpen = isOpen; }
+
 	bool hudAllowedOnScreen()
 	{
 		// There are some circumstances where we never want to draw it.
-		auto* ui              = RE::UI::GetSingleton();
-		bool hudInappropriate = !ui || ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() ||
-		                        !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>() ||
-		                        ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
+		auto* ui = RE::UI::GetSingleton();
+		if (!ui) { return false; }
+		if (relevantMenuIsOpen) { return false; }
+		if (!playerInControl()) { return false; }
+		bool hudInappropriate = ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
+		                        !ui->GetMenu<RE::HUDMenu>() || ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
 		if (hudInappropriate) { return false; }
 
-		if (!playerInControl()) { return false; }
 
 		return true;
 	}

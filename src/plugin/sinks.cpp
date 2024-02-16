@@ -22,8 +22,8 @@ void registerAllListeners()
 	// scriptEventSourceHolder->GetEventSource<RE::TESHitEvent>()->AddEventSink(listener);
 	// rlog::info("    hit events: {}"sv, typeid(RE::TESHitEvent).name());
 
-	// RE::UI::GetSingleton()->AddEventSink<RE::MenuOpenCloseEvent>(listener);
-	//rlog::info("    menu open/close events: {}"sv, typeid(RE::MenuOpenCloseEvent).name());
+	RE::UI::GetSingleton()->AddEventSink<RE::MenuOpenCloseEvent>(listener);
+	rlog::info("    menu open/close events: {}"sv, typeid(RE::MenuOpenCloseEvent).name());
 
 	RE::BSInputDeviceManager::GetSingleton()->AddEventSink(listener);
 	rlog::info("    player input events."sv);
@@ -99,8 +99,7 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESHitEvent* event,
 RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::MenuOpenCloseEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::MenuOpenCloseEvent>* source)
 {
-	// TODO; just logging for now
-	rlog::info("menu event: '{}' {}", event->menuName, event->opening ? "opened" : "closed");
+	if (event->menuName == "Cursor Menu") { helpers::setRelevantMenuOpen(event->opening); }
 	return RE::BSEventNotifyControl::kContinue;
 }
 
