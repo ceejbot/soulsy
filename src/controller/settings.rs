@@ -270,7 +270,7 @@ impl UserSettings {
         }
 
         self.autofade = read_from_ini(self.autofade, "bAutoFade", options);
-        self.fade_time = u32::clamp(read_from_ini(self.fade_time, "uFadeTime", options), 0, 2500);
+        self.fade_time = read_from_ini(self.fade_time, "uFadeTime", options);
         self.max_alpha = read_from_ini(self.max_alpha, "fMaxAlpha", options);
         self.min_alpha = read_from_ini(self.min_alpha, "fMinAlpha", options);
 

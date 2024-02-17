@@ -41,7 +41,7 @@ namespace ui
 	auto gMinAlpha          = 0.0f;  // the most transparent
 	auto doFadeIn           = true;
 	auto gFullFadeDuration  = 3.0f;  // seconds
-	auto gFadeDurRemaining  = 2.0f;  // seconds
+	auto gFadeDurRemaining  = 3.0f;  // seconds
 	auto gIsFading          = false;
 	auto delayBeforeFadeout = 0.33f;  // seconds
 	bool gDoingBriefPeek    = false;
