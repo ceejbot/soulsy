@@ -61,19 +61,21 @@ RE::ObjectRefHandle PlayerHook::itemRemoved(RE::Actor* actor,
 	const RE::NiPoint3* a_drop_loc,
 	const RE::NiPoint3* a_rotate)
 {
+	const auto retval =
+		remove_item_(actor, object, delta, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
 	if (object->IsInventoryObject())
 	{
 		auto* item_form = RE::TESForm::LookupByID(object->formID);
 		notifyInventoryChanged(item_form);
 	}
-	return remove_item_(actor, object, delta, a_reason, extraDataList, a_move_to_ref, a_drop_loc, a_rotate);
+	return retval;
 }
 
 void PlayerHook::add_item_functor(RE::TESObjectREFR* a_this, RE::TESObjectREFR* object, int32_t delta, bool a4, bool a5)
 {
 	add_item_functor_(a_this, object, delta, a4, a5);
 	auto item_form = RE::TESForm::LookupByID(object->GetBaseObject()->formID);
-	rlog::info("add_item_functor; {};", object->GetBaseObject()->formID);
+	rlog::trace("add_item_functor; {}; delta={};", object->GetBaseObject()->formID, delta);
 	notifyInventoryChanged(item_form);
 }
 
