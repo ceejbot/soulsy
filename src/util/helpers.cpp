@@ -76,6 +76,12 @@ namespace helpers
 		return std::move(result);
 	}
 
+	bool incompatibleMenuIsOpen = false;
+	void setNoShowMenuOpen(bool isOpen) { incompatibleMenuIsOpen = isOpen; }
+
+	bool noInputMenuIsOpen = false;
+	void setNoInputMenuOpen(bool isOpen) { noInputMenuIsOpen = isOpen; }
+
 	// See UserEvents.h -- this is kMovement | kActivate | kMenu
 	// Handles photo mode and possibly others.
 	static constexpr auto requiredControlFlags = static_cast<RE::ControlMap::UEFlag>(1036);
@@ -98,16 +104,12 @@ namespace helpers
 	{
 		// We pay attention to keypress events when:
 		// - we are in normal gameplay mode
-		// - the item, magic, or favorites menus are visible
+		// - the item, magic, or favorites menus are visible (but we get those events differently)
 		// We ignore them when other menus are up or when controls are disabled for quest reasons.
 
-		// If we can't ask questions about the state of the UI, we respectfully decline to act.
-		auto* ui = RE::UI::GetSingleton();
-		if (!ui) { return true; }
-
-		// We only want to act on button presses when in gameplay, not menus of any kind.
-		if (ui->GameIsPaused() || ui->IsMenuOpen("LootMenu")) return true;
-		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>()) { return true; }
+		// If we've observed a menu opening that should suppress our key input,
+		// we can answer immediately.
+		if (noInputMenuIsOpen) return true;
 
 		// If we're not in control of the player character or otherwise not in gameplay, move on.
 		if (!playerInControl()) { return true; }
@@ -115,7 +117,20 @@ namespace helpers
 		// Lock out the hud if the player is a vampire lord. issue #100
 		if (player::isVampireLord()) { return true; }
 
-		return false;  // FOR NOW
+		// All the questions we ask of the UI here can potentially be removed now.
+
+		// If we can't ask questions about the state of the UI, we respectfully decline to act.
+		auto* ui = RE::UI::GetSingleton();
+		if (!ui) { return true; }
+
+		// The game pauses when in menus normally. Skyrim Souls unpauses menus, so we have to track
+		// menu open/close events as noted above. We do this as a fallback, just in case.
+		if (ui->GameIsPaused()) return true;
+		// if the game's own hud is hidden, we should not act
+		if (!ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() || !ui->GetMenu<RE::HUDMenu>()) { return true; }
+
+		// We passed all checks.
+		return false;
 	}
 
 	bool gamepadInUse()
@@ -131,17 +146,15 @@ namespace helpers
 		       ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME);
 	}
 
-	bool relevantMenuIsOpen = false;
-	void setRelevantMenuOpen(bool isOpen) { relevantMenuIsOpen = isOpen; }
-
 	bool hudAllowedOnScreen()
 	{
 		// There are some circumstances where we never want to draw it.
 		auto* ui = RE::UI::GetSingleton();
 		if (!ui) { return false; }
-		if (relevantMenuIsOpen) { return false; }
+		if (incompatibleMenuIsOpen) { return false; }
+		if (ui->GameIsPaused()) { return false; }
 		if (!playerInControl()) { return false; }
-		bool hudInappropriate = ui->GameIsPaused() || !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
+		bool hudInappropriate = !ui->IsCursorHiddenWhenTopmost() || !ui->IsShowingMenus() ||
 		                        !ui->GetMenu<RE::HUDMenu>() || ui->IsMenuOpen(RE::LoadingMenu::MENU_NAME);
 		if (hudInappropriate) { return false; }
 

@@ -20,7 +20,10 @@ namespace helpers
 	void notifyPlayer(const std::string& message);
 	rust::String lookupTranslation(const std::string& key);
 
-	void setRelevantMenuOpen(bool isOpen);
+	// A menu where we should ignore key events is open.
+	void setNoInputMenuOpen(bool isOpen);
+	// Hide the hud because a menu that should take over the screen is open.
+	void setNoShowMenuOpen(bool isOpen);
 	bool hudAllowedOnScreen();  // the authority on whether we should show the hud or not
 	bool hudShouldAutoFadeOut();
 	bool hudShouldAutoFadeIn();

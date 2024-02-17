@@ -96,10 +96,32 @@ RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::TESHitEvent* event,
 	return RE::BSEventNotifyControl::kContinue;
 }
 
+inline const std::set<std::string_view> NO_SHOW_MENUS{
+	RE::ContainerMenu::MENU_NAME,
+	RE::CursorMenu::MENU_NAME,
+	RE::FavoritesMenu::MENU_NAME,
+	RE::JournalMenu::MENU_NAME,
+	RE::LockpickingMenu::MENU_NAME,
+	RE::MapMenu::MENU_NAME,
+};
+
+inline const std::set<std::string_view> NO_INPUT_MENUS{
+	RE::Console::MENU_NAME,
+	RE::CursorMenu::MENU_NAME,
+	RE::JournalMenu::MENU_NAME,
+	RE::LockpickingMenu::MENU_NAME,
+	"LootMenu",
+	RE::MapMenu::MENU_NAME,
+	RE::SleepWaitMenu::MENU_NAME,
+	RE::LoadingMenu::MENU_NAME,
+};
+
 RE::BSEventNotifyControl TheListener::ProcessEvent(const RE::MenuOpenCloseEvent* event,
 	[[maybe_unused]] RE::BSTEventSource<RE::MenuOpenCloseEvent>* source)
 {
-	if (event->menuName == "Cursor Menu") { helpers::setRelevantMenuOpen(event->opening); }
+	const auto menu = std::string(event->menuName);
+	if (NO_SHOW_MENUS.contains(menu)) { helpers::setNoShowMenuOpen(event->opening); }
+	if (NO_INPUT_MENUS.contains(menu)) { helpers::setNoInputMenuOpen(event->opening); }
 	return RE::BSEventNotifyControl::kContinue;
 }
 
