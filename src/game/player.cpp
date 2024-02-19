@@ -296,13 +296,14 @@ namespace player
 		gear::equipItemByFormAndSlot(form, slot, thePlayer, nameToMatch);
 	}
 
-	uint32_t inventoryCount(const RE::TESForm* a_form, RE::FormType a_type, RE::PlayerCharacter*& a_player)
+	uint32_t inventoryCount(const RE::TESForm* form, RE::FormType formType, RE::PlayerCharacter*& thePlayer)
 	{
+		if (!form || !formType) { return 0; }
 		auto count     = 0;
-		auto inventory = getInventoryForType(a_player, a_type);
+		auto inventory = getInventoryForType(thePlayer, formType);
 		for (const auto& [item, inv_data] : inventory)
 		{
-			if (const auto& [num_items, entry] = inv_data; entry->object->formID == a_form->formID)
+			if (const auto& [num_items, entry] = inv_data; entry->object->formID == form->formID)
 			{
 				count = num_items;
 				break;
